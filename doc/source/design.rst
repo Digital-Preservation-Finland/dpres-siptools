@@ -1,159 +1,77 @@
 
-Lisää tähän suunnitelmat... https://jira.csc.fi/browse/KDKPAS-1082
 
-Paketointipalvelun koodit
-===================
+https://jira.csc.fi/browse/KDKPAS-1082
+Komponentin avulla voidaan tuottaa SIP-paketti tai mets.xml:n osia kuten esim. tekniset metatiedot tiedostosta.
+Paketointikomponenttia voidaan käyttää komentoriviltä ja REST-rajapinnan kautta. Myös paketointikirjastot tarjotaan asiakkaille käytettäviksi asiakkaan omassa ympäristössä (esim. githubin kautta).
 
-Käytä koodille scratch-hakemistoa omassa kotihakemistosssa::
+Alustavaa suunnittelua:
 
-    mkdir -p scratch
-    cd scratch
-    git clone https://mikko.vatanen@source.csc.fi/scm/git/pas/siptools
+Paketointikomponentti rakentaa METSiä pala palalta, ja tiettyyn METS-dokumenttiin viitataan parametrina välitettävän METS.OBJIDn perusteella. Komponentin avulla voi laatia myös yksittäisiä METS-dokumentin osia, kuten teknisen metatiedon. Koko METS-dokumentin voi pyytää komponentilta niin ikään METS.OBJIDn avulla.
+1.	Luo METS-dokumentin runko ja header (1 kpl), parametrit:
+-	Organisaation nimi 
+-	vapaaehtoisesti siirtopaketin tunniste sekä luontiaika
+-	vapaaehtoinen METS.OBJID (generoidaan, jos ei tule)
+-	Luo hallinnollinen (amdSec) ja rakennekartta (structMap)-runko
+RETURN METS.OBJID
 
-Koodin muokkaaminen, kannattaa lisätä aina yksi kokonaisuus kerrallaan / tehdä yhtä asiaa yhdessä commitissa. Pieni tai iso committi. Riippuu vähän tehtävän luonteesta.
-Tämä helpottaa katselmointia huomattavasti aka. voi katsoa “miksi tekijä on tehnyt tämän” ja sen jälkeen tarkastaa “ahaa, näinhän se sitten on toteutettu / tehty oikeasti”.
+Jokaista digitaalista objektia kohden (2-7, parametrina annettu METS.OBJID liittää laaditun XML-sanoman tiettyyn METS-sanomaan):
 
-Hae ensin viimeisin koodi / dokumentaatio::
+2.	Luo kuvaileva metatieto (1-n kpl), parametrit:
+-	kuvailevan metatiedon XML-formaatti
+-	kuvaileva metatieto annetussa XML-formaatissa
+-	vapaaehtoisesti metatiedon luontiaika
+-	METS.OBJID 
+RETURN dmdSec.ID
+3.	Luo käyttörajoitus (1-n kpl), parametrit:
+-	PREMIS:rights-elementin mukaisia parametreja
+-	METS.OBJID
+RETURN rigthsMD.ID
+4.	Luo lähdetiedot (0-n kpl), paramerit:
+-	kuvailevan metatiedon XML-formaatti
+-	kuvaileva metatieto annetussa XML-formaatissa
+-	vapaaehtoisesti metatiedon luontiaika
+-	METS.OBJID
+RETURN sourceMD.ID
+5.	Luo synty- ja tapahtumahistoria (1-n kpl), parametrit:
+-	Tapahtuman nimi
+-	tapahtuman kohde
+-	tapahtuman suorittajat
+-	METS.OBJID
+RETURN digiprovMD.ID
+6.	Luo tiedostoviite (1 kpl), parametrit:
+-	tiedostopolku (1 kpl)
+-	viittaus käyttörajoitukseen; RightsMD-elementin tunniste (1-n kpl)
+-	viittaus lähdetietoihin; SourceMD-elementin tunniste (1-n kpl)
+-	viittaus synty- ja tapahtumahistoriaan; DigiprovMD-elementin tunniste (1-n kpl)
+-	vapaaehtoinen tarkistussumma ja algoritmi (1 kpl)
+-	paketointikomponentti luo tekniset metatiedot: 
+        - tarkistussumman (jos ei annettu), 
+        - tiedostomuodon ja sen version, 
+        - tiedostotyyppikohtaiset metatiedot (TextMD, MIX, AudioMD, VideoMD), 
+        - sekä lisää viittaukset file-elementistä näihin techMD-elementteihin (1-n kpl)
+-	METS.OBJID
+RETURN file.ID
+7.	Luo rakennekarttaan div-elementti (1 kpl), parametrit
+-	tiedostoviite; File-elementin tunniste = file.ID
+-	viittaus kuvailevaan metatietoon, dmdSec-elementin tunniste = dmdSec.ID
+-	vapaaehtoinen isätieto div.ID, luo hierarkian
+-	METS.OBJID
+RETURN div.ID
 
-    git fetch
-    git checkout develop
-    git merge —ff-only origin/develop
+8.	Anna METS
+-	METS.OBJID
+RETURN METS
 
-    … tee muutokset …
+9. Muodosta SIP
+- allekirjoita digitaalisesti
+- zip
 
-Hyväksy muutokset::
+Jos kutsuu yksittäistä metodia ilman METS.OBJID –parametria, ko. metodi palauttaa XML-sanoman, esim.
 
-    git status
-    git diff
-    git add <tiedostonimi> tai git add .
-    git status
-    git commit -m ‘KDKPAS-XYZ Miksi tein tämän asian’
-
-Toimita muutokset sourcelle::
-
-    git push
-
-Mikäli ei onnistu niin::
-
-    git fetch
-    git rebase origin/develop
-    git push
-
-
-Palaverissa suunnitellut asiat
-======================
-
-Kirjoitetaan dokumentaatio rst-muodossa, englanniksi. Katso esimerkkiä “preservation” ja “storage” dokumentaatiosta.
-
-Aloitetaan mets-muodostaminen näistä tiedostomuodoista::
-
-    * museoviraston tiedostomuodot
-        * pdf
-        * tiff
-
-
-Esimerkki komentorivikäyttöliittymästä
-=============================
-
-Huomaa vahva analogia/yhtäläisyys make -komentoon.
-
-Komennot:
-
-    * extract-metadata
-    * extract-checksum
-    * extract-XYZ
-    * compile-mets
-    * validate-sip
-        -> schema
-        -> shematron
-        -> digital objects
-        -> checksums
-        -> virus
-        ==> OK / ERROR
-
-
-
-Esimerkki syötteen kanssa
-------------------------------------
-
-Lähtötilanne::
-
-
-    $ find .
-    /home/pekkaliisa/paketit/oma-sippi-0001/
-        aineisto/
-            kuva.jpg
-            teksti.pdf
-
-Metadatan purkaminen tiedostoista::
-
-    $ extract-metadata kuva.jpg
-
-        packaging-metadata/
-            kuva.jpg-<uuid>-metadata.xml
-
-    $ extract-metadata teksti.pdf
-
-        packaging-metadata/
-            kuva.jpg-<uuid>-metadata.xml
-            teksti.pdf-<uuid>-metadata.xml
-
-    $ extract-metadata *.jpg
-    $ extract-metadata *.pdf
-    $ extract-metadata -r aineisto
-
-    $ extract-checksums *
-
-
-    $ compile-mets <mets-objid> packaging-metadata
-
-
-    /home/pekkaliisa/paketit/oma-sippi-0001/
-
-        kuva.jpg
-        teksti.pdf
-        mets.xml
-
-        metadata.tmp/
-            kuva.jpg-<uuid>-metadata.xml
-            teksti.pdf-<uuid>-metadata.xml
-    
-
-    $ sign-xml mets.xml
-
-
-    /home/pekkaliisa/paketit/oma-sippi-0001/
-        kuva.jpg
-        teksti.pdf
-        mets.xml
-        signature.sig
-
-        metadata.tmp/
-            kuva.jpg-<uuid>-metadata.xml
-            teksti.pdf-<uuid>-metadata.xml
-
-
-    $ clean-temp-metadata
-
-    /home/pekkaliisa/paketit/oma-sippi-0001/
-        mets.xml
-        signature.sig
-        aineisto/
-            kuva.jpg
-            teksti.pdf
-
-    $ cd ..
-
-    $ zip -r oma-sippi-0001.zip oma-sippi-0001
-    $ tar czvf oma-sippi-0001.tar.gz oma-sippi-0001
-
-
-    $ validate-sip mets.xml
-
-        -> ERROR
-        -> OK
-
-
-
+Luo synty- ja tapahtumahistoria, parametrit:
+-	Tapahtuman nimi
+-	tapahtuman kohde
+-	tapahtuman suorittajat
+RETURN PREMIS
 
 
