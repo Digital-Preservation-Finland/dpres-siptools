@@ -1,0 +1,15 @@
+*.sw?
+*.pyc
+*.swp
+*.swo
+build
+dist
+.ropeproject
+*.egg-info
+INSTALLED_FILES
+INSTALLED_FILES.*
+PKG-INFO
+__pycache__
+doc/build
+doc/source/modules
+doc/source/tests
