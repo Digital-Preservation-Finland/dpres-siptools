@@ -1,10 +1,11 @@
 
-Command line example
+Command Line Usage Instructions
 =============================
 
-Huomaa vahva analogia/yht\'e4l\'e4isyys make -komentoon.\
+
 
 Commands:
+*************************
 
     * extract-metadata
     * extract-checksum
@@ -24,7 +25,7 @@ Examples
 Files to be preserved::
 
 
-    $ find .\
+    $ find .
     /home/pekkaliisa/paketit/oma-sippi-0001/
         aineisto/
             kuva.jpg
