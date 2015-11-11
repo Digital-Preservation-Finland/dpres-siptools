@@ -13,3 +13,4 @@ __pycache__
 doc/build
 doc/source/modules
 doc/source/tests
+.DS_Store
