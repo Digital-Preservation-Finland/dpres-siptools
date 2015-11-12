@@ -1,5 +1,5 @@
 Architecture
-================
+============
 
 .. figure images/arkkitehtuuri.png
    :align: center

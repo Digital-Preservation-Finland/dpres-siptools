@@ -8,10 +8,14 @@ Commands:
 *************************
 
     * extract-metadata
+	Used for extracting technical metadata of a file.
     * extract-checksum
+	Used for calculating the checksum of a file.
     * extract-XYZ
     * compile-mets
+	Used for compiling mets.xml
     * validate-sip
+	Validates
         -> schema
         -> shematron
         -> digital objects
@@ -48,7 +52,11 @@ Extract technical metatdata from files::
     $ extract-metadata *.pdf
     $ extract-metadata -r aineisto
 
+Extract file checksums::
+
     $ extract-checksums *
+
+Create a SIP::
 
     $ compile-mets <mets-objid> packaging-metadata
 

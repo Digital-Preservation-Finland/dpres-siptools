@@ -1,5 +1,7 @@
-The Digital Preservation SIP tools library - Documentation index
+The Digital Preservation SIP Tools Library - Documentation index
 ================================================================
+
+
 
 Contents:
 
