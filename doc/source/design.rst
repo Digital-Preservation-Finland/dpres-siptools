@@ -1,121 +1,66 @@
-Design
-=====
-
 Component purpose
-**************
+===================
 
-This component is used for creating Digital Preservation Submission Information Package (SIP). You can use the component for forming a SIP or only parts of mets.xml. For example you can extract technical metadata of a file. The component can be used either in command line or over REST. 
+This component is used for creating Digital Preservation Submission Information Package (SIP). You can use the component for forming SIP or only parts of mets.xml. For example you can extract tec
+hnical metadata of a file. The component can be used either in command line or over REST. 
 
 
 Initial Plans
-***********
+===========
 
-Here is a plan how the component builds mets.xml. The component is building mets piece by
-piece. Each task creates a new piece of output, so that the input is not modified. The specific mets document can be referred by parameter METS.OBJID. 
 
-Paketointikomponentti rakentaa METSiä pala palalta, ja tiettyyn METS-dokumenttiin viitataan parametrina välitettävän METS.OBJIDn perusteella. Komponentin avulla voi laatia myös yksittäisiä METS-dokumentin osia, kuten teknisen metatiedon. Koko METS-dokumentin voi pyytää komponentilta niin ikään METS.OBJIDn avulla.
+Työkalu sisältää toimintoja, jotka suorittamalla saa koostettua SIP-paketin. Työkalun komennot luovat xml-tiedostoja, jotka ovat osia mets.xml:stä. Työkalu luo tätä varten myös tilapäisiä tiedostoja. Työkalun komennot suoritetaan alla kuvatussa järjestyksessä, jotta mets.xml saadaan luotua.
 
+import-description:
+
+Kuvailevat metatiedot tuodaan työkalulle kutsumalla import-description-toimintoa. Kuvailevat metatiedot ovat valmiiksi KDK:n xml-formaatissa. Komentoa voidaan kutsua erikseen jokaiselle metatiedolle tai parametrina voidaan antaa hakemisto. Työkalu luo kuvaileva-metatieto-elementin (dmdSec).
+
+::
+        
+        import_description  files/*.xml
+
+import-object:
+
+Kaikki digitaaliset objektit tuodaan työkalulle kutsumalla import-object-toimintoa. Parametrina annetaan tiedosto tai hakemistopolku. Työkalu luo techMD-elementin ja tähän Premis:objektin sekä sopivan teknisen metatiedon formaatin (esim. textMD). Premis:objektiin tallennetaan tarkistussumma. 
+
+::
  
-1. Luo METS-dokumentin runko ja header (1 kpl)
-
-	input: 	
-
-	* Organisaation nimi 
-    	* vapaaehtoisesti siirtopaketin tunniste sekä luontiaika
-    	* vapaaehtoinen METS.OBJID (generoidaan, jos ei tule)
-    	* Luo hallinnollinen (amdSec) ja rakennekartta (structMap)-runko
-
-	output: 
-
-	* METS.OBJID
-   	* mets.xml
-
-Jokaista digitaalista objektia kohden (2-7, parametrina annettu METS.OBJID liittää laaditun XML-sanoman tiettyyn METS-sanomaan):
+        import_objecr files/*.jpg
 
 
-2. Luo kuvaileva metatieto (1-n kpl)
-    input:
 
-	* kuvailevan metatiedon XML-formaatti
-	* kuvaileva metatieto annetussa XML-formaatissa
-	* vapaaehtoisesti metatiedon luontiaika
-	* METS.OBJID 
+describe-object:
 
-    output: 
-	* dmdSec.ID
-	* dmdSec.xml
+Tällä toiminnolla saadaan liitettyä metatiedot tiedostoihin. Työkalun ensimmäisessä vaiheessa toteutetaan vain yksitasoinen tiedostorakenne, jossa siis kuvailu liittyy tiettyyn joukkoon tiedostoja, eikä alikansioita tai muita rakenteita ole. 
+Työkalu luo tiedostometatiedon(fileSec), jossa liitetään yhteen tiedostot ja niihin liittyvät hallinnolliset metatiedot. Tiedostometatiedon file-elementissä on listattu tiedostoon liittyvät tekniset metatiedot ja syntyhistoria-tapahtumat.
+Työkalu luo rakennekartan, jossa kuvailevat metatiedot on liitetty tiedostoihin. Rakennekartan div-elementissä on listana viittaukset kuvaileviin metatietoihin ja ftpr-elementistä on viittaus file-elementin tiedostoid:hen.
 
-3. Luo käyttörajoitus
-	* PREMIS-rights-elementin mukaisia parametreja
-	* METS.OBJID
-	* rightsMD.ID
+::
 
-4. Luo lähdetiedot
-	input:
-	* kuvailevan metatiedon XML-formaatti
-	* kuvaileva metatieto annetussa XML-formaatissa
-	* vapaaehtoisesti metatiedon luontiaika
-	* METS.OBJID
-	output:
-	* sourceMD.ID
-	* digiprov.xml
+        n x describe_object files/de1.xml files/
 
-5. Luo synty- ja tapahtumahistoria (1-n kpl) 
-	input:
- 	* Tapahtuman nimi
- 	* tapahtuman kohde
- 	* tapahtuman suorittajat
- 	* METS.OBJID
-	output: 
-	* digiprovMD.ID
+Syntyhistoria luodaan add-event-komennnolla. Add-event -komennolle annetaan parametrina tiedosto, jossa on premis-eventien ja agentien tiedot ja toisena parametrina niihin liittyvä digitaalinen objekti. Komento luo viittauksen premis:objektista syntyhistorian premis:eventiin ja premis:agentiin.
 
-6. Luo tiedostoviite (1 kpl) 
-	
-	input:
-	* tiedostopolku (1 kpl)
-	* viittaus käyttörajoitukseen; RightsMD-elementin tunniste (1-n kpl)
-	* viittaus lähdetietoihin; SourceMD-elementin tunniste (1-n kpl)
-	* viittaus synty- ja tapahtumahistoriaan; DigiprovMD-elementin tunniste (1-n kpl)
-	* vapaaehtoinen tarkistussumma ja algoritmi (1 kpl)
-	output:
- 	* file.ID
+:: 
 
- 
-paketointikomponentti luo tekniset metatiedot:
+        add_event creation.xml -R movie.dcp  
 
-	* tarkistussumman (jos ei annettu), 
-	* tiedostomuodon ja sen version, 
-	* tiedostotyyppikohtaiset metatiedot (TextMD, MIX, AudioMD, VideoMD), 
-	* sekä lisää viittaukset file-elementistä näihin techMD-elementteihin (1-n kpl)	
+compile_mets:
 
-	input: METS.OBJID
-	output: file.ID
+Tuottaa mets.xml:n. Toiminto luo mets-headerin ja koostaa sitten koko mets.xml:n työkalun aiemmin luomista xml-paloista. Parametrina annetaan organisaation nimi.
 
-7. Luo rakennekarttaan div-elementti (1 kpl)
-	input:
-	* tiedostoviite; File-elementin tunniste = file.ID
-	* viittaus kuvailevaan metatietoon, dmdSec-elementin tunniste = dmdSec.ID
-	input:
- 	* vapaaehtoinen isätieto div.ID, luo hierarkian
-	* METS.OBJID
-	output: div.ID
+::
 
-8.	Anna METS
- * METS.OBJID
- * output: METS
+        compile_mets organisaation_nimi
 
-9. Muodosta SIP
- * allekirjoita digitaalisesti
- * zip
 
-Jos kutsuu yksittäistä metodia ilman METS.OBJID –parametria, ko. metodi palauttaa XML-sanoman, esim.
+validate_sip:
 
-Luo synty- ja tapahtumahistoria,
-input:
- *	Tapahtuman nimi
- *	tapahtuman kohde
- *	tapahtuman suorittajat
+Toiminto tarkistaa mets.xml:n mukaan puuttuvat ja ylimääräiset tiedostot.
 
- * output PREMIS
+
+compress:
+
+Koostaa sip-paketin. Poistaa työkalun luomat temp-hakemistot ja pakkaa tiedostot. 
 
 
