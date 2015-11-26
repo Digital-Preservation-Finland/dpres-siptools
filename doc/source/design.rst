@@ -1,3 +1,6 @@
+Design
+================
+
 Component purpose
 ===================
 
@@ -5,7 +8,7 @@ This component is used for creating Digital Preservation Submission Information 
 
 
 Initial Plans
-===========
+===================
 
 
 Työkalu sisältää toimintoja, jotka suorittamalla saa koostettua SIP-paketin. Työkalun komennot luovat xml-tiedostoja, jotka ovat osia mets.xml:stä. Työkalu luo tätä varten myös tilapäisiä tiedostoja. Työkalun komennot suoritetaan alla kuvatussa järjestyksessä, jotta mets.xml saadaan luotua.
@@ -30,9 +33,9 @@ algoritmi sekä tiedoston formaatti.
 
 premis-event:
 
-Syntyhistoria luodaan premis-event-komennnolla. Premis-event -komennolle annetaan parametrina tapahtuman tyyppi (premis-event-type, kontrolloitu 
+Syntyhistoria luodaan premis-event-komennolla. Premis-event -komennolle annetaan parametrina tapahtuman tyyppi (premis-event-type, kontrolloitu 
 sanasto, esim. creation tai processing), tapahtuman kuvaus ja kohteena oleva 
-digitaalinen objekti. Komento luo tapahtumatyypin mukaisen txml-tiedoston, 
+digitaalinen objekti. Komento luo tapahtumatyypin mukaisen xml-tiedoston, 
 esim. creation.xml
 
 :: 
@@ -41,8 +44,8 @@ esim. creation.xml
 
 add-event:
 
-Syntyhistoria lisätään add-event-komennnolla. Add-event -komennolle annetaan 
-parametrina tiedosto, jossa on premis-eventien ja agentien tiedot ja toisena 
+Syntyhistoria liitetään digitaaliseen objektiin add-event-komennnolla. Add-event -komennolle annetaan 
+parametrina tiedosto, jossa on premis-eventien ja -agentien tiedot ja toisena 
 parametrina niihin liittyvä digitaalinen objekti. Komento luo viittauksen 
 syntyhistorian premis:eventistä premis:objektiin.
 
@@ -52,7 +55,7 @@ syntyhistorian premis:eventistä premis:objektiin.
 
 describe-object:
 
-Tällä toiminnolla saadaan liitettyä metatiedot tiedostoihin. Parametrina annetaan kuvailevan metatietotiedoston polku ja siihen liittyvien digitaalisten objektin hakemistopolku.
+Tällä toiminnolla saadaan liitettyä metatiedot tiedostoihin. Parametrina annetaan kuvailevan metatietotiedoston polku ja siihen liittyvien digitaalisten objektien hakemistopolku.
 Työkalu luo tiedostometatiedon(fileSec), jossa liitetään yhteen tiedostot ja niihin liittyvät hallinnolliset metatiedot. Tiedostometatiedon file-elementissä on listattu tiedostoon liittyvät tekniset metatiedot ja syntyhistoria-tapahtumat.
 Työkalu luo rakennekartan, jossa kuvailevat metatiedot on liitetty tiedostoihin. Rakennekartan div-elementissä on listana viittaukset kuvaileviin metatietoihin ja ftpr-elementistä on viittaus file-elementin tiedostoid:hen. Työkalun ensimmäisessä vaiheessa toteutetaan vain yksitasoinen tiedostorakenne, jossa siis kuvailu liittyy tiettyyn joukkoon tiedostoja, eikä alikansioita tai muita rakenteita ole. 
 
@@ -79,12 +82,13 @@ compress:
 
 Koostaa sip-paketin. Poistaa työkalun luomat temp-hakemistot ja pakkaa tiedostot. 
 
-
+::
+	
 
 Alla on esimerkki hakemistorakenteesta, jossa on työkalulle annettavia tiedostoja ja työkalun tuottamia tiedostoja:
 
-kuvailevat metatiedot: workspace/metadata/description1.xml 
-
+kuvailevat metatiedot: workspace/metadata/description1.xml
+ 
 digitaaliset objektit: workspace/sip_source/files/kuva.jpg
 
 syntyhistoria: workspace/events/[creation][processing].xml
@@ -92,3 +96,11 @@ syntyhistoria: workspace/events/[creation][processing].xml
 työkalun tuottamat mets.xml:n osat: workspace/mets-parts
 
 lopullinen sip-paketti: compressed-sip/sip.tar.gz
+
+
+Data model
+===========================
+Alla esitetty rakennekarttaan ja tiedostoihin liittyviä suhteita.
+
+.. image:: images/sip-tietomalli.gif
+
