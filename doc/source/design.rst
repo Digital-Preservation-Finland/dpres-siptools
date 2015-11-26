@@ -20,20 +20,35 @@ Kuvailevat metatiedot tuodaan työkalulle kutsumalla import-description-toiminto
 
 import-object:
 
-Kaikki digitaaliset objektit tuodaan työkalulle kutsumalla import-object-toimintoa. Parametrina annetaan tiedosto tai hakemistopolku. Työkalu luo techMD-elementin ja tähän Premis:objektin sekä sopivan teknisen metatiedon formaatin (esim. textMD). Premis:objektiin tallennetaan tarkistussumma. 
+Kaikki digitaaliset objektit tuodaan työkalulle kutsumalla import-object-toimintoa. Parametrina annetaan tiedosto tai hakemistopolku. Työkalu luo techMD-elementin ja tähän Premis:objektin sekä sopivan teknisen metatiedon formaatin (esim. textMD). Premis:objektiin tallennetaan tarkistussumma ja sen muodostamisessa käytetty 
+algoritmi sekä tiedoston formaatti.
 
 ::
  
         import-object files/*.jpg
 
 
-add-event:
+premis-event:
 
-Syntyhistoria luodaan add-event-komennnolla. Add-event -komennolle annetaan parametrina tiedosto, jossa on premis-eventien ja agentien tiedot ja toisena parametrina niihin liittyvä digitaalinen objekti. Komento luo viittauksen premis:objektista syntyhistorian premis:eventiin ja premis:agentiin.
+Syntyhistoria luodaan premis-event-komennnolla. Premis-event -komennolle annetaan parametrina tapahtuman tyyppi (premis-event-type, kontrolloitu 
+sanasto, esim. creation tai processing), tapahtuman kuvaus ja kohteena oleva 
+digitaalinen objekti. Komento luo tapahtumatyypin mukaisen txml-tiedoston, 
+esim. creation.xml
 
 :: 
 
-        add-event creation.xml -R movie.dcp  
+        premis-event creation "Digitointi xyz" "HP superjet" 
+
+add-event:
+
+Syntyhistoria lisätään add-event-komennnolla. Add-event -komennolle annetaan 
+parametrina tiedosto, jossa on premis-eventien ja agentien tiedot ja toisena 
+parametrina niihin liittyvä digitaalinen objekti. Komento luo viittauksen 
+syntyhistorian premis:eventistä premis:objektiin.
+
+::
+
+        add-event creation.xml -R kuva.jpg
 
 describe-object:
 
@@ -43,7 +58,7 @@ Työkalu luo rakennekartan, jossa kuvailevat metatiedot on liitetty tiedostoihin
 
 ::
 
-        n x describe-object files/de1.xml files/
+        n x describe-object files/dublincore1.xml files/
 
 
 compile-mets:
@@ -72,7 +87,7 @@ kuvailevat metatiedot: workspace/metadata/description1.xml
 
 digitaaliset objektit: workspace/sip_source/files/kuva.jpg
 
-syntyhistoria: workspace/events/creation.xml
+syntyhistoria: workspace/events/[creation][processing].xml
 
 työkalun tuottamat mets.xml:n osat: workspace/mets-parts
 
