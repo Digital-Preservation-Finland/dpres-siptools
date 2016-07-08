@@ -33,7 +33,6 @@ Command line tools for creating Submission information packages (SIP) for preser
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -p -m 0440 %{SOURCE1} -D %{buildroot}/etc/sudoers.d/siptools
 make install PREFIX="%{_prefix}" ROOT="%{buildroot}"
 
 %clean
