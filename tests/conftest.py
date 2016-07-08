@@ -3,7 +3,6 @@
 import os
 import sys
 
-from tests.fixtures import *
 import pytest
 
 # Prefer modules from source directory rather than from site-python
