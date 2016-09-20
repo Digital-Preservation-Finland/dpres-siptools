@@ -13,29 +13,12 @@ import uuid
 import datetime
 import dateutil.tz
 
-#METS_NS="http://www.loc.gov/METS/"
-#METS = "{%s}" % METS_NS
-#METS_SCHEMALOCATION = "http://www.loc.gov/METS/ http://kdk.fi/standards/mets/mets.xsd"
-
-#XSI_NS = "http://www.w3.org/2001/XMLSchema-instance"
-
-#XSI = "{%s}" % XSI_NS
-#NAMESPACES = {'mets': METS_NS, 'xsi': XSI_NS}
-
-#workspace = "./workspace"
-
 def import_description(workspace_path, dmdsec_location):
-    """ kuvaus """
-
-    #print "workspace_path:%s" % workspace_path
-    #print "dmdsec_location:%s" % dmdsec_location
+    """ Read xml-file(s) into METS-files. """
 
     source_path = os.path.abspath(dmdsec_location)
     target_path = os.path.abspath(workspace_path)
-    print "source_path %s result_path %s" % (source_path, target_path)
 
-    #if not os.path.exists(source_path):
-    #    raise IOError( "Invalid File or Directory: %s" % source_path )
     if not os.path.exists(target_path):
             os.makedirs(target_path)
 
@@ -46,7 +29,7 @@ def import_description(workspace_path, dmdsec_location):
                 filecount+=1
                 s_path = os.path.join(root, name)
                 t_path = os.path.join(target_path, name)
-                print "copying %s to %s" % (s_path, t_path)
+                #print "copying %s to %s" % (s_path, t_path)
                 with open(s_path, 'r') as content_file:
                     content = content_file.read()
 
@@ -57,12 +40,12 @@ def import_description(workspace_path, dmdsec_location):
             content = content_file.read()
         filename = os.path.basename(source_path)
         t_path = os.path.join(target_path, filename)
-        print "filename: %s t_path: %s" % (filename, t_path)
+        #print "filename: %s t_path: %s" % (filename, t_path)
         with open(t_path, 'w') as target_file:
             target_file.write(serialize(content))
         filecount = 1
 
-    print "Filecount: %s" % filecount
+    #print "Filecount: %s" % filecount
     if filecount == 0:
         raise IOError( "Invalid descriptive metadata location: %s" % source_path )
 
@@ -101,6 +84,8 @@ def serialize(content):
             ns = namespace(node)[1:-1]
             if ns in METS_NS.keys():
                 el_mdwrap.set("MDTYPE", METS_NS[ns]['mdtype'])
+            else:
+                raise TypeError( "Invalid namespace: %s" % ns )
 
     except lxml.etree.XMLSyntaxError as exception:
         el_xmldata.text = content.decode("utf-8")
@@ -111,6 +96,7 @@ def serialize(content):
                                     encoding='UTF-8')
 
 def get_edtf_time():
+    """return current time in format yyy-mm-ddThh:mm:ss"""
     time_now = datetime.datetime.now()
     localtz = dateutil.tz.tzlocal()
     timezone_offset = localtz.utcoffset(time_now)
@@ -119,6 +105,7 @@ def get_edtf_time():
     return time_now.strftime('%Y-%m-%dT%H:%M:%S')
 
 def namespace(element):
+    """return xml element's namespace"""
     m = re.match('\{.*\}', element.tag)
     return m.group(0) if m else ''
 
@@ -127,10 +114,13 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     #print "args.workspace: %s" % args.workspace
+    #print "args.dmdsec_location: %s" % args.dmdsec_location
     try:
         import_description(args.workspace, args.dmdsec_location)
     except IOError as (strerror):
         print "I/O error: %s" % strerror
+    except TypeError as (strerror):
+        print "Type error: %s" % strerror
 
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
@@ -138,9 +128,9 @@ def parse_arguments(arguments):
             "program")
     parser.add_argument('dmdsec_location')
     argparse._StoreAction(option_strings=[], dest='dmdsec_location', nargs=None, const=None, default=None, type=None, choices=None, help=None, metavar=None)
-    parser.add_argument('--workspace')
+    parser.add_argument('--workspace', default='./')
     argparse._StoreAction(option_strings=['--workspace'], dest='workspace',
-            nargs=None, const=None, default="./", type=None, choices=None, help=None, metavar=None)
+            nargs=None, const=None, default='./', type=None, choices=None, help=None, metavar=None)
 
     return parser.parse_args(arguments)
 
