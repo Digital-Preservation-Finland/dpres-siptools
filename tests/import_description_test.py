@@ -3,6 +3,7 @@ from siptools.scripts.import_description import main
 import os
 import lxml.etree
 from lxml.etree import Element, SubElement, tostring
+import pytest
 
 # Testi oikealle datalle: Tutki syntyneen dmdsec-oikeellisuus
 # lukemalla lxml.etree.fromstring -funktiolla
@@ -40,30 +41,13 @@ def test_import_description_valid_file():
     dmdsec_location = 'tests/import_description/metadata/dc_description.xml'
     workspace = './workspace/mets-parts'
     main([dmdsec_location,  '--workspace', workspace])
-    try:
-        validate_dmd_files(workspace, dmdsec_location)
-        assert True
-    except lxml.etree.XMLSyntaxError as exception:
-        print "XML parser error: %s" % exception
-        assert False
-    except IOError as (strerror): 
-        print "I/O error: %s" % strerror
-        assert False
+    validate_dmd_files(workspace, dmdsec_location)
 
 def test_import_description_no_workspace():
     """ Test case for single valid xml-file. Uses default workspace location."""
     dmdsec_location = 'tests/import_description/metadata/dc_description.xml'
-    #workspace = './workspace/mets-parts'
     main([dmdsec_location])
-    try:
-        validate_dmd_files("./", dmdsec_location)
-        assert True
-    except lxml.etree.XMLSyntaxError as exception:
-        print "XML parser error: %s" % exception
-        assert False
-    except IOError as (strerror): 
-        print "I/O error: %s" % strerror
-        assert False
+    validate_dmd_files("./", dmdsec_location)
 
 def test_import_description_valid_directory():
     """ Test case for metadata directory, which consists of several valid
@@ -71,57 +55,25 @@ def test_import_description_valid_directory():
     dmdsec_location = 'tests/import_description/metadata/'
     workspace = './workspace/mets-parts'
     main([dmdsec_location,  '--workspace', workspace])
-    try:
-        validate_dmd_files(workspace, dmdsec_location)
-        assert True
-    except lxml.etree.XMLSyntaxError as exception:
-        print "XML parser error: %s" % exception
-        assert False
-    except IOError as (strerror): 
-        print "I/O error: %s" % strerror
-        assert False
+    validate_dmd_files(workspace, dmdsec_location)
 
 def test_import_description_file_not_found():
     """ Test case for not existing xml-file."""
     dmdsec_location = 'tests/import_description/metadata/dc_description_not_found.xml'
     workspace = './workspace/mets-parts'
-    main([dmdsec_location,  '--workspace', workspace])
-    try:
-        validate_dmd_files(workspace, dmdsec_location)
-        assert False
-    except lxml.etree.XMLSyntaxError as exception:
-        print "XML parser error: %s" % exception
-        assert False
-    except IOError as (strerror): 
-        print "I/O error: %s" % strerror
-        assert True
+    with pytest.raises(IOError):
+        main([dmdsec_location,  '--workspace', workspace])
 
 def test_import_description_no_xml():
     """ test case for invalid XML file """
     dmdsec_location = 'tests/import_description/metadata/plain_text.xml'
     workspace = './workspace/mets-parts'
     main([dmdsec_location,  '--workspace', workspace])
-    try:
-        validate_dmd_files(workspace, dmdsec_location)
-        assert True
-    except lxml.etree.XMLSyntaxError as exception:
-        print "XML parser error: %s" % exception
-        assert False
-    except IOError as (strerror): 
-        print "I/O error: %s" % strerror
-        assert False
+    validate_dmd_files(workspace, dmdsec_location)
 
 def test_import_description_invalid_namespace():
     """ test case for invalid namespace in XML file """
     dmdsec_location = 'tests/import_description/dc_invalid_ns.xml'
     workspace = './workspace/mets-parts'
-    main([dmdsec_location,  '--workspace', workspace])
-    try:
-        validate_dmd_files(workspace, dmdsec_location)
-        assert False
-    except lxml.etree.XMLSyntaxError as exception:
-        print "XML parser error: %s" % exception
-        assert True
-    except IOError as (strerror): 
-        print "I/O error: %s" % strerror
-        assert False
+    with pytest.raises(TypeError):
+        main([dmdsec_location,  '--workspace', workspace])

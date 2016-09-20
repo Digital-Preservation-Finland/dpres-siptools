@@ -19,9 +19,6 @@ def import_description(workspace_path, dmdsec_location):
     source_path = os.path.abspath(dmdsec_location)
     target_path = os.path.abspath(workspace_path)
 
-    if not os.path.exists(target_path):
-            os.makedirs(target_path)
-
     filecount = 0
     if os.path.isdir(source_path):
         for root, dirs, files in os.walk(source_path, topdown=False):
@@ -33,16 +30,23 @@ def import_description(workspace_path, dmdsec_location):
                 with open(s_path, 'r') as content_file:
                     content = content_file.read()
 
+                mets_dmdsec = serialize(content)
+                if not os.path.exists(target_path):
+                    os.makedirs(target_path)
+
                 with open(t_path, 'w') as target_file:
-                    target_file.write(serialize(content))
+                    target_file.write(mets_dmdsec)
     else:
         with open(source_path, 'r') as content_file:
             content = content_file.read()
         filename = os.path.basename(source_path)
         t_path = os.path.join(target_path, filename)
         #print "filename: %s t_path: %s" % (filename, t_path)
+        mets_dmdsec = serialize(content)
+        if not os.path.exists(target_path):
+            os.makedirs(target_path)
         with open(t_path, 'w') as target_file:
-            target_file.write(serialize(content))
+            target_file.write(mets_dmdsec)
         filecount = 1
 
     #print "Filecount: %s" % filecount
@@ -115,12 +119,7 @@ def main(arguments=None):
 
     #print "args.workspace: %s" % args.workspace
     #print "args.dmdsec_location: %s" % args.dmdsec_location
-    try:
-        import_description(args.workspace, args.dmdsec_location)
-    except IOError as (strerror):
-        print "I/O error: %s" % strerror
-    except TypeError as (strerror):
-        print "Type error: %s" % strerror
+    import_description(args.workspace, args.dmdsec_location)
 
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
