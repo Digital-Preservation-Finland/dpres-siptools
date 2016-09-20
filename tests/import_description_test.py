@@ -4,6 +4,7 @@ import os
 import lxml.etree
 from lxml.etree import Element, SubElement, tostring
 import pytest
+from urllib import quote
 
 # Testi oikealle datalle: Tutki syntyneen dmdsec-oikeellisuus
 # lukemalla lxml.etree.fromstring -funktiolla
@@ -19,7 +20,8 @@ def validate_dmd_files(workspace, dmdsec_location):
     if os.path.isdir(dmd_path):
         for root, dirs, files in os.walk(dmd_path, topdown=False):
              for name in files:
-                 t_path = os.path.join(workspace, name)
+                 url_t_path = quote(dmdsec_location,safe='') + name
+                 t_path = os.path.join(workspace, url_t_path)
                  with open(t_path, 'r') as content_file:
                      content = content_file.read()
                      parser = lxml.etree.XMLParser(
@@ -29,7 +31,8 @@ def validate_dmd_files(workspace, dmdsec_location):
         if not os.path.isfile(dmd_path):
             raise IOError( "File or directory not found: %s" % dmd_path )
         filename = os.path.basename(dmd_path)
-        t_path = os.path.join(workspace, filename)
+        url_t_path = quote(dmdsec_location,safe='')
+        t_path = os.path.join(workspace, url_t_path)
         with open(t_path, 'r') as content_file:
             content = content_file.read()
             parser = lxml.etree.XMLParser(
@@ -39,6 +42,7 @@ def validate_dmd_files(workspace, dmdsec_location):
 def test_import_description_valid_file():
     """ Test case for single valid xml-file"""
     dmdsec_location = 'tests/import_description/metadata/dc_description.xml'
+    url_location = quote(dmdsec_location, safe='')
     workspace = './workspace/mets-parts'
     main([dmdsec_location,  '--workspace', workspace])
     validate_dmd_files(workspace, dmdsec_location)

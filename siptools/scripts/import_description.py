@@ -12,6 +12,8 @@ from lxml.etree import Element, SubElement, tostring
 import uuid
 import datetime
 import dateutil.tz
+import urllib
+from urllib import quote
 
 def import_description(workspace_path, dmdsec_location):
     """ Read xml-file(s) into METS-files. """
@@ -24,8 +26,9 @@ def import_description(workspace_path, dmdsec_location):
         for root, dirs, files in os.walk(source_path, topdown=False):
             for name in files:
                 filecount+=1
+                url_t_path = quote(dmdsec_location,safe='') + name
                 s_path = os.path.join(root, name)
-                t_path = os.path.join(target_path, name)
+                t_path = os.path.join(target_path, url_t_path)
                 #print "copying %s to %s" % (s_path, t_path)
                 with open(s_path, 'r') as content_file:
                     content = content_file.read()
@@ -39,9 +42,9 @@ def import_description(workspace_path, dmdsec_location):
     else:
         with open(source_path, 'r') as content_file:
             content = content_file.read()
-        filename = os.path.basename(source_path)
-        t_path = os.path.join(target_path, filename)
-        #print "filename: %s t_path: %s" % (filename, t_path)
+        url_t_path = quote(dmdsec_location,safe='')
+        t_path = os.path.join(target_path, url_t_path)
+
         mets_dmdsec = serialize(content)
         if not os.path.exists(target_path):
             os.makedirs(target_path)
