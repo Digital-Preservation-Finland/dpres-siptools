@@ -1,5 +1,6 @@
 """Command line tool for importing digital objects"""
 
+import os
 import sys
 import hashlib
 import subprocess
@@ -14,8 +15,10 @@ def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
     parser = argparse.ArgumentParser(description="Tool for importing files "
                                      "which generates digital objects")
-    parser.add_argument('output_file', help="Destination file")
     parser.add_argument('files', nargs='+', help="Files to be imported")
+    parser.add_argument('--output_file', type=str,
+                        default='workspace/%s.xml' % str(uuid4()),
+                        help="Destination file")
     parser.add_argument('--stdout', help='Print output to stdout')
     return parser.parse_args(arguments)
 
@@ -35,7 +38,10 @@ def main(arguments=None):
     if args.stdout:
         print m.serialize(mets)
 
-    with open(args.output_file, 'w') as outfile:
+    if not os.path.exists(os.path.dirname(args.output_file)):
+        os.makedirs(os.path.dirname(args.output_file))
+
+    with open(args.output_file, 'w+') as outfile:
         outfile.write(m.serialize(mets))
 
     return 0
