@@ -1,7 +1,10 @@
 METS_SCHEMALOCATION = "http://www.loc.gov/METS/ http://kdk.fi/standards/mets/mets.xsd"
 
-METS_NAMESPACE = {'mets': 'http://www.loc.gov/METS/', 'xsi':
-        'http://www.w3.org/2001/XMLSchema-instance'}
+NAMESPACES = {
+    'mets': 'http://www.loc.gov/METS/',
+    'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+    'premis': 'info:lc/xmlns/premis-v2'
+}
 
 METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'dc', 'version' :
 ''}, 'http://www.loc.gov/MARC21/slim' : {'mdtype' : 'marc', 'version' : ''},
