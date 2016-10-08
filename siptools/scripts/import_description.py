@@ -1,6 +1,6 @@
 """ import_description"""
 
-from siptools.xml.namespaces import METS_NAMESPACE, METS_NS
+from siptools.xml.namespaces import NAMESPACES, METS_NS
 
 import re
 import sys
@@ -66,18 +66,18 @@ def serialize(content):
 
     ID = str(uuid.uuid4())
 
-    el_root = Element("mets", nsmap=METS_NAMESPACE)
+    el_root = Element("mets", nsmap=NAMESPACES)
     #el_root.set(XSI + 'schemaLocation', METS_SCHEMALOCATION)
 
-    el_dmdsec = Element("dmdSec", nsmap=METS_NAMESPACE) 
+    el_dmdsec = Element("dmdSec", nsmap=NAMESPACES) 
     el_dmdsec.set("ID", ID)
     el_dmdsec.set("CREATED", get_edtf_time())
     el_root.append(el_dmdsec)
 
-    el_mdwrap = Element("mdWrap", nsmap=METS_NAMESPACE) 
+    el_mdwrap = Element("mdWrap", nsmap=NAMESPACES) 
     el_dmdsec.append(el_mdwrap)
 
-    el_xmldata = Element("xmlData", nsmap=METS_NAMESPACE) 
+    el_xmldata = Element("xmlData", nsmap=NAMESPACES) 
 
     try:
         parser = lxml.etree.XMLParser(
