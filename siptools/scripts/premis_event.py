@@ -55,20 +55,6 @@ def main(arguments=None):
 
     return 0
 
-def create_premis_event(tree, event_type, event_datetime, event_detail):
-    """Create Premis event """
-
-    #create eventType element
-    el_event_type = p._element('eventType')
-
-    #create eventDateTime element
-
-    #create eventDetail element
-
-    #create event_outcome element
-
-
-
 if __name__ == '__main__':
     RETVAL = main()
     sys.exit(RETVAL)
