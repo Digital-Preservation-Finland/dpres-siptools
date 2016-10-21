@@ -5,20 +5,26 @@ import siptools.xml.premis as p
 import siptools.xml.mets as m
 import os
 from uuid import uuid4
+from siptools.xml.premis_event_types import PREMIS_EVENT_TYPES
+from siptools.xml.premis_event_types import PREMIS_EVENT_OUTCOME_TYPES
 
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
     parser = argparse.ArgumentParser(description="Tool for "
             "creating premis events")
 
-    parser.add_argument('event_type', type=str, help='list of event types here')
+    parser.add_argument('event_type', type=str, choices=PREMIS_EVENT_TYPES,
+            help='list of event types:%s' % PREMIS_EVENT_TYPES)
     parser.add_argument('event_datetime', type=str, help='Event datetime yyyy-mm-ddThh:mm:ss')
     parser.add_argument('--event_detail', dest='event_detail', type=str, help='Event detail')
-    parser.add_argument('--event_outcome', dest='event_outcome', type=str, help='Event outcome')
-    # Event outcome on lista
+    parser.add_argument('--event_outcome', choices=PREMIS_EVENT_OUTCOME_TYPES,
+            dest='event_outcome', type=str, help='Event outcome types: %s' %
+            PREMIS_EVENT_OUTCOME_TYPES)
+    parser.add_argument('--event_outcome_detail', dest='event_outcome_detail',
+            type=str, help='Event outcome_detail')
     parser.add_argument('--workspace', dest='workspace', type=str,
             default='./',
-            help="Destination file")
+            help="Workspace directory")
     parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)
@@ -37,11 +43,14 @@ def main(arguments=None):
             identifier_type='premis-event-id',
             identifier_value=unique)
 
+    premis_event_outcome = p.premis_event_outcome(args.event_outcome,
+            args.event_outcome_detail)
+
     premisevent = p.premis_event(event_identifier, args.event_type,
-            args.event_datetime,args.event_detail)
+            args.event_datetime,args.event_detail, child_elements=[premis_event_outcome])
     digiprovmd.append(premisevent)
 
-    print "mets:%s " % m.serialize(mets)
+    #print "mets:%s " % m.serialize(mets)
     if args.stdout:
         print m.serialize(mets)
 
