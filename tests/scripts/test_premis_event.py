@@ -10,14 +10,14 @@ def test_premis_event_ok():
 
     return_code = premis_event.main([event_type, '2016-10-13T12:30:55',
         '--event_detail', 'Testing', '--event_outcome', 'success',
-        '--event_outcome_detail', 'Outcome detail', '--workspace', './workspace'])
+        '--event_outcome_detail', 'Outcome detail', '--workspace',
+        './workspace', '--agent_name', 'Demo Application', '--agent_type', 'software'])
 
     output_file = os.path.join('./workspace', event_type + '.xml')
     tree = ET.parse(output_file)
     root = tree.getroot()
     #print "root: %s" % ET.tostring(root, encoding='UTF-8', method='xml')
 
-    # miten etsitaan digiprovMD?
     assert len(root.findall('{http://www.loc.gov/METS/}amdSec')) == 1
 
     assert return_code == 0
