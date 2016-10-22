@@ -19,6 +19,13 @@ def test_premis_event_ok():
     #print "root: %s" % ET.tostring(root, encoding='UTF-8', method='xml')
 
     assert len(root.findall('{http://www.loc.gov/METS/}amdSec')) == 1
+    assert root.findall(".//{info:lc/xmlns/premis-v2}eventType")[0].text == 'creation'
+    assert root.findall(".//{info:lc/xmlns/premis-v2}eventDateTime")[0].text == '2016-10-13T12:30:55'
+    assert root.findall(".//{info:lc/xmlns/premis-v2}eventDetail")[0].text == 'Testing'
+    assert root.findall(".//{info:lc/xmlns/premis-v2}eventOutcome")[0].text == 'success'
+    assert root.findall(".//{info:lc/xmlns/premis-v2}eventOutcomeDetailNote")[0].text == 'Outcome detail'
+    assert root.findall(".//{info:lc/xmlns/premis-v2}agentName")[0].text == 'Demo Application'
+    assert root.findall(".//{info:lc/xmlns/premis-v2}agentType")[0].text == 'software'
 
     assert return_code == 0
 
