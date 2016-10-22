@@ -92,3 +92,29 @@ def techmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
             _techmd.append(element)
 
     return _techmd
+
+def digiprovmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
+        child_elements=None):
+    """Return the digiprovMD element"""
+
+    _digiprovmd = _element('digiprovMD')
+    _digiprovmd.set('ID', element_id)
+    _digiprovmd.set('CREATED', created_date)
+
+    if child_elements:
+        for element in child_elements:
+            _techmd.append(element)
+
+    return _digiprovmd
+
+def amdsec(child_elements=None):
+    """Return the amdSec element"""
+
+    _amdsec = _element('amdSec')
+
+    if child_elements:
+        for element in child_elements:
+            _amdsec.append(element)
+
+    return _amdsec
+

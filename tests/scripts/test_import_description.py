@@ -41,7 +41,7 @@ def validate_dmd_files(workspace, dmdsec_location):
 
 def test_import_description_valid_file():
     """ Test case for single valid xml-file"""
-    dmdsec_location = 'tests/import_description/metadata/dc_description.xml'
+    dmdsec_location = 'tests/data/import_description/metadata/dc_description.xml'
     url_location = quote(dmdsec_location, safe='')
     workspace = './workspace/mets-parts'
     main([dmdsec_location,  '--workspace', workspace])
@@ -49,35 +49,35 @@ def test_import_description_valid_file():
 
 def test_import_description_no_workspace():
     """ Test case for single valid xml-file. Uses default workspace location."""
-    dmdsec_location = 'tests/import_description/metadata/dc_description.xml'
+    dmdsec_location = 'tests/data/import_description/metadata/dc_description.xml'
     main([dmdsec_location])
     validate_dmd_files("./", dmdsec_location)
 
 def test_import_description_valid_directory():
     """ Test case for metadata directory, which consists of several valid
     xml-files."""
-    dmdsec_location = 'tests/import_description/metadata/'
+    dmdsec_location = 'tests/data/import_description/metadata/'
     workspace = './workspace/mets-parts'
     main([dmdsec_location,  '--workspace', workspace])
     validate_dmd_files(workspace, dmdsec_location)
 
 def test_import_description_file_not_found():
     """ Test case for not existing xml-file."""
-    dmdsec_location = 'tests/import_description/metadata/dc_description_not_found.xml'
+    dmdsec_location = 'tests/data/import_description/metadata/dc_description_not_found.xml'
     workspace = './workspace/mets-parts'
     with pytest.raises(IOError):
         main([dmdsec_location,  '--workspace', workspace])
 
 def test_import_description_no_xml():
     """ test case for invalid XML file """
-    dmdsec_location = 'tests/import_description/metadata/plain_text.xml'
+    dmdsec_location = 'tests/data/import_description/metadata/plain_text.xml'
     workspace = './workspace/mets-parts'
     main([dmdsec_location,  '--workspace', workspace])
     validate_dmd_files(workspace, dmdsec_location)
 
 def test_import_description_invalid_namespace():
     """ test case for invalid namespace in XML file """
-    dmdsec_location = 'tests/import_description/dc_invalid_ns.xml'
+    dmdsec_location = 'tests/data/import_description/dc_invalid_ns.xml'
     workspace = './workspace/mets-parts'
     with pytest.raises(TypeError):
         main([dmdsec_location,  '--workspace', workspace])
