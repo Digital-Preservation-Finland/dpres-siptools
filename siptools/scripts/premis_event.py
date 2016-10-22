@@ -40,35 +40,13 @@ def main(arguments=None):
     mets = m._element('mets')
     amdsec = m.amdsec()
     mets.append(amdsec)
-    digiprovmd = m.digiprovmd('digiprovmd-%s' % str(uuid4()))
-    amdsec.append(digiprovmd)
 
-    digiprovmd_agent = m.digiprovmd('digiprovmd-%s' % str(uuid4()))
-    amdsec.append(digiprovmd_agent)
-
-    unique = str(uuid4())
-    event_identifier = p.premis_identifier(
-            identifier_type='premis-event-id',
-            identifier_value=unique)
-
-    agent_identifier = p.premis_identifier(
-            identifier_type='local',
-            identifier_value=args.agent_name, prefix='agent')
-    premis_agent = p.premis_agent(agent_identifier, args.agent_name,
+    linking_agent_identifier = create_premis_agent(amdsec, args.agent_name,
             args.agent_type)
-    digiprovmd_agent.append(premis_agent)
 
-    linking_agent_identifier = p.premis_identifier(
-            identifier_type='local',
-            identifier_value=args.agent_name, prefix='linkingAgent')
-
-    premis_event_outcome = p.premis_event_outcome(args.event_outcome,
-            args.event_outcome_detail)
-
-    premisevent = p.premis_event(event_identifier, args.event_type,
-            args.event_datetime,args.event_detail,
-            child_elements=[premis_event_outcome, linking_agent_identifier])
-    digiprovmd.append(premisevent)
+    create_premis_event(amdsec, args.event_type, args.event_datetime,
+            args.event_detail, args.event_outcome, args.event_outcome_detail,
+            linking_agent_identifier)
 
     #print "mets:%s " % m.serialize(mets)
     if args.stdout:
@@ -83,6 +61,41 @@ def main(arguments=None):
         outfile.write(m.serialize(mets))
 
     return 0
+
+def create_premis_agent(tree, agent_name, agent_type):
+    digiprovmd = m.digiprovmd('digiprovmd-%s' % str(uuid4()))
+    tree.append(digiprovmd)
+    agent_identifier = p.premis_identifier(
+            identifier_type='local',
+            identifier_value=agent_name, prefix='agent')
+    premis_agent = p.premis_agent(agent_identifier, agent_name,
+            agent_type)
+    digiprovmd.append(premis_agent)
+
+    linking_agent_identifier = p.premis_identifier(
+            identifier_type='local',
+            identifier_value=agent_name, prefix='linkingAgent')
+
+    return linking_agent_identifier
+
+def create_premis_event(tree, event_type, event_datetime, event_detail,
+        event_outcome, event_outcome_detail, linking_agent_identifier=None):
+    digiprovmd = m.digiprovmd('digiprovmd-%s' % str(uuid4()))
+    tree.append(digiprovmd)
+
+    unique = str(uuid4())
+    event_identifier = p.premis_identifier(
+            identifier_type='premis-event-id',
+            identifier_value=unique)
+
+    premis_event_outcome = p.premis_event_outcome(event_outcome,
+            event_outcome_detail)
+
+    premisevent = p.premis_event(event_identifier, event_type,
+            event_datetime,event_detail,
+            child_elements=[premis_event_outcome, linking_agent_identifier])
+    digiprovmd.append(premisevent)
+
 
 if __name__ == '__main__':
     RETVAL = main()
