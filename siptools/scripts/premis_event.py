@@ -25,6 +25,10 @@ def parse_arguments(arguments):
     parser.add_argument('--workspace', dest='workspace', type=str,
             default='./',
             help="Workspace directory")
+    parser.add_argument('--agent_name', dest='agent_name',
+            type=str, help='Agent name')
+    parser.add_argument('--agent_type', dest='agent_type',
+            type=str, help='Agent type')
     parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)
@@ -38,16 +42,32 @@ def main(arguments=None):
     mets.append(amdsec)
     digiprovmd = m.digiprovmd('digiprovmd-%s' % str(uuid4()))
     amdsec.append(digiprovmd)
+
+    digiprovmd_agent = m.digiprovmd('digiprovmd-%s' % str(uuid4()))
+    amdsec.append(digiprovmd_agent)
+
     unique = str(uuid4())
     event_identifier = p.premis_identifier(
             identifier_type='premis-event-id',
             identifier_value=unique)
 
+    agent_identifier = p.premis_identifier(
+            identifier_type='local',
+            identifier_value=args.agent_name, prefix='agent')
+    premis_agent = p.premis_agent(agent_identifier, args.agent_name,
+            args.agent_type)
+    digiprovmd_agent.append(premis_agent)
+
+    linking_agent_identifier = p.premis_identifier(
+            identifier_type='local',
+            identifier_value=args.agent_name, prefix='linkingAgent')
+
     premis_event_outcome = p.premis_event_outcome(args.event_outcome,
             args.event_outcome_detail)
 
     premisevent = p.premis_event(event_identifier, args.event_type,
-            args.event_datetime,args.event_detail, child_elements=[premis_event_outcome])
+            args.event_datetime,args.event_detail,
+            child_elements=[premis_event_outcome, linking_agent_identifier])
     digiprovmd.append(premisevent)
 
     #print "mets:%s " % m.serialize(mets)
