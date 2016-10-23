@@ -1,0 +1,57 @@
+"""Command line tool for creating mets header"""
+
+import argparse
+import siptools.xml.mets as m
+from siptools.xml.mets_record_status_types import RECORD_STATUS_TYPES
+import os
+import datetime
+
+
+def parse_arguments(arguments):
+    parser = argparse.ArgumentParser(description="Tool for "
+                                     "creating mets header")
+
+    parser.add_argument('organization_name', type=str,
+                        help='Creator name (organization)')
+    parser.add_argument('--create_date', dest='create_date',
+                        type=str, default=datetime.datetime.utcnow().isoformat(),
+                        help='SIP create datetime yyyy-mm-ddThh:mm:ss')
+    parser.add_argument('--last_moddate', dest='last_moddate',
+                        type=str, default=datetime.datetime.utcnow().isoformat(),
+                        help='Last modification datetime yyyy-mm-ddThh:mm:ss')
+    parser.add_argument('--record_status', dest='record_status',
+                        choices=RECORD_STATUS_TYPES,
+                        type=str, default='submission', help='list of record status types:%s' % RECORD_STATUS_TYPES)
+    parser.add_argument('--workspace', dest='workspace', type=str,
+                        default='./',
+                        help="Workspace directory")
+    parser.add_argument('--stdout', help='Print output to stdout')
+
+    return parser.parse_args(arguments)
+
+
+def main(arguments=None):
+    """The main method for argparser"""
+    args = parse_arguments(arguments)
+
+    mets = m._element('mets')
+    metshdr = m.metshdr(args.organization_name, args.create_date,
+                        args.last_moddate, args.record_status)
+    mets.append(metshdr)
+
+    if args.stdout:
+        print m.serialize(mets)
+
+    output_file = os.path.join(args.workspace, 'mets.xml')
+
+    if not os.path.exists(os.path.dirname(output_file)):
+        os.makedirs(os.path.dirname(output_file))
+
+    with open(output_file, 'w+') as outfile:
+        outfile.write(m.serialize(mets))
+
+    return 0
+
+if __name__ == '__main__':
+    RETVAL = main()
+    sys.exit(RETVAL)
