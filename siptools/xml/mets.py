@@ -118,3 +118,21 @@ def amdsec(child_elements=None):
 
     return _amdsec
 
+def metshdr(organisation_name, create_date=datetime.datetime.utcnow().isoformat(),
+        last_mod_date=None, record_status=None):
+    """Return the metsHdr element"""
+
+    _metshdr = _element('metsHdr')
+    _metshdr.set('CREATEDATE', create_date)
+    _metshdr.set('LASTMODDATE', last_mod_date)
+    _metshdr.set('RECORDSTATUS', record_status)
+
+    _metsagent = _element('agent')
+    _metsagent.set('ROLE', 'CREATOR')
+    _metsagent.set('TYPE', 'ORGANIZATION')
+    _orgname = _element('name')
+    _orgname.text = organisation_name 
+    _metsagent.append(_orgname)
+    _metshdr.append(_metsagent)
+
+    return _metshdr
