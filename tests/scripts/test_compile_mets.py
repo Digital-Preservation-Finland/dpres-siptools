@@ -6,7 +6,13 @@ import os
 
 def test_compile_mets_ok():
 
-    return_code = compile_mets.main(['CSC', '--create_date', '2016-10-28T09:30:55',
+    return_code = compile_mets.main(['http://www.kdk.fi/kdk-mets-profile',
+                                     'CSC', '--objid', 'ABC-123',
+                                     '--label', 'Test SIP',
+                                     '--catalog', '1.5.0',
+                                     '--specification', '1.5.0',
+                                     '--contentid', 'Aineisto-123',
+                                     '--create_date', '2016-10-28T09:30:55',
                                      '--last_moddate', '2016-10-28T09:30:55',
                                      '--record_status', 'submission', '--workspace',
                                      './workspace'])
@@ -16,6 +22,11 @@ def test_compile_mets_ok():
     root = tree.getroot()
     # print "root: %s" % ET.tostring(root, encoding='UTF-8', method='xml')
 
+    assert len(root.findall('[@OBJID="ABC-123"]')) == 1
+    assert len(root.findall('[@LABEL="Test SIP"]')) == 1
+    assert len(root.findall('[@{http://www.kdk.fi/standards/mets/kdk-extensions}CATALOG="1.5.0"]')) == 1
+    assert len(root.findall('[@{http://www.kdk.fi/standards/mets/kdk-extensions}SPECIFICATION="1.5.0"]')) == 1
+    assert len(root.findall('[@{http://www.kdk.fi/standards/mets/kdk-extensions}CONTENTID="Aineisto-123"]')) == 1
     assert len(root.findall('{http://www.loc.gov/METS/}metsHdr')) == 1
     assert len(root.findall(
         '{http://www.loc.gov/METS/}metsHdr[@CREATEDATE="2016-10-28T09:30:55"]')) == 1
@@ -31,6 +42,14 @@ def test_compile_mets_ok():
 def test_compile_mets_fail():
 
     with pytest.raises(SystemExit):
-        return_code = compile_mets.main(['CSC', '--create_date',
-                                         '2016-10-28T09:30:55', '--last_moddate', '2016-10-28T09:30:55',
-                                         '--record_status', 'nonsense', '--workspace', './workspace'])
+        return_code = compile_mets.main(['http://www.kdk.fi/kdk-mets-profile',
+                                         'CSC', '--objid', 'ABC-123',
+                                         '--label', 'Test SIP',
+                                         '--catalog', '1.5.0',
+                                         '--specification', '1.5.0',
+                                         '--contentid', 'Aineisto-123',
+                                         '--create_date', '2016-10-28T09:30:55',
+                                         '--last_moddate', '2016-10-28T09:30:55',
+                                         '--record_status', 'nonsense', '--workspace',
+                                         './workspace'])
+
