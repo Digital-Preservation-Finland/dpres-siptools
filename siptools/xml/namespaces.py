@@ -3,7 +3,8 @@ METS_SCHEMALOCATION = "http://www.loc.gov/METS/ http://kdk.fi/standards/mets/met
 NAMESPACES = {
     'mets': 'http://www.loc.gov/METS/',
     'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-    'premis': 'info:lc/xmlns/premis-v2'
+    'premis': 'info:lc/xmlns/premis-v2',
+    'fi': 'http://www.kdk.fi/standards/mets/kdk-extensions'
 }
 
 METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'dc', 'version' :
@@ -18,3 +19,5 @@ METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'dc', 'version' :
 'ddi:codebook:2_5' : {'mdtype' : 'ddi', 'version' : '2.5'},
 'http://www.icpsr.umich.edu/DDI' : {'mdtype' : 'ddi', 'version' : '2.1'},
 'http://www.vraweb.org/vracore4.htm' : {'mdtype' : 'vra', 'version' : ''}}
+
+METS_PROFILE = ['http://www.kdk.fi/kdk-mets-profile']
