@@ -1,7 +1,8 @@
-import xml.etree.ElementTree as ET
+import lxml.etree as ET
 from siptools.scripts import compile_mets
 import pytest
 import os
+from siptools.xml.namespaces import NAMESPACES
 
 
 def test_compile_mets_ok():
@@ -22,19 +23,28 @@ def test_compile_mets_ok():
     root = tree.getroot()
     # print "root: %s" % ET.tostring(root, encoding='UTF-8', method='xml')
 
-    assert len(root.findall('[@OBJID="ABC-123"]')) == 1
-    assert len(root.findall('[@LABEL="Test SIP"]')) == 1
-    assert len(root.findall('[@{http://www.kdk.fi/standards/mets/kdk-extensions}CATALOG="1.5.0"]')) == 1
-    assert len(root.findall('[@{http://www.kdk.fi/standards/mets/kdk-extensions}SPECIFICATION="1.5.0"]')) == 1
-    assert len(root.findall('[@{http://www.kdk.fi/standards/mets/kdk-extensions}CONTENTID="Aineisto-123"]')) == 1
-    assert len(root.findall('{http://www.loc.gov/METS/}metsHdr')) == 1
-    assert len(root.findall(
-        '{http://www.loc.gov/METS/}metsHdr[@CREATEDATE="2016-10-28T09:30:55"]')) == 1
-    assert len(root.findall(
-        '{http://www.loc.gov/METS/}metsHdr[@LASTMODDATE="2016-10-28T09:30:55"]')) == 1
-    assert len(root.findall(
-        '{http://www.loc.gov/METS/}metsHdr[@RECORDSTATUS="submission"]')) == 1
-    assert root.findall(".//{http://www.loc.gov/METS/}name")[0].text == 'CSC'
+    assert len(root.xpath(
+        '/mets:mets[@PROFILE="http://www.kdk.fi/kdk-mets-profile"]', namespaces=NAMESPACES)) == 1
+    assert len(root.xpath(
+        '/mets:mets[@OBJID="ABC-123"]', namespaces=NAMESPACES)) == 1
+    assert len(root.xpath(
+        '/mets:mets[@LABEL="Test SIP"]', namespaces=NAMESPACES)) == 1
+    assert len(root.xpath(
+        '/mets:mets[@fi:CATALOG="1.5.0"]', namespaces=NAMESPACES)) == 1
+    assert len(root.xpath(
+        '/mets:mets[@fi:SPECIFICATION="1.5.0"]', namespaces=NAMESPACES)) == 1
+    assert len(root.xpath(
+        '/mets:mets[@fi:CONTENTID="Aineisto-123"]', namespaces=NAMESPACES)) == 1
+    assert len(root.xpath('/mets:mets/mets:metsHdr',
+                          namespaces=NAMESPACES)) == 1
+    assert len(root.xpath(
+        '/mets:mets/mets:metsHdr[@CREATEDATE="2016-10-28T09:30:55"]', namespaces=NAMESPACES)) == 1
+    assert len(root.xpath(
+        '/mets:mets/mets:metsHdr[@LASTMODDATE="2016-10-28T09:30:55"]', namespaces=NAMESPACES)) == 1
+    assert len(root.xpath(
+        '/mets:mets/mets:metsHdr[@RECORDSTATUS="submission"]', namespaces=NAMESPACES)) == 1
+    assert root.xpath("/mets:mets/mets:metsHdr/mets:agent/mets:name",
+                      namespaces=NAMESPACES)[0].text == 'CSC'
 
     assert return_code == 0
 
@@ -52,4 +62,3 @@ def test_compile_mets_fail():
                                          '--last_moddate', '2016-10-28T09:30:55',
                                          '--record_status', 'nonsense', '--workspace',
                                          './workspace'])
-
