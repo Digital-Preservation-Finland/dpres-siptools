@@ -17,7 +17,6 @@ def test_import_object_ok(input_file):
     root = tree.getroot()
 
     assert len(root.findall('{http://www.loc.gov/METS/}techMD')) == 1
-    assert False
     assert return_code == 0
 
 
