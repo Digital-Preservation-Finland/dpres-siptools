@@ -3,6 +3,7 @@
 import os
 import sys
 from uuid import uuid4
+from urllib import quote_plus
 import argparse
 
 import siptools.scraper
@@ -15,8 +16,7 @@ def parse_arguments(arguments):
     parser = argparse.ArgumentParser(description="Tool for importing files "
                                      "which generates digital objects")
     parser.add_argument('files', nargs='+', help="Files to be imported")
-    parser.add_argument('--output', type=str,
-                        default='workspace/%s.xml' % str(uuid4()),
+    parser.add_argument('--output', type=str, default='./workspace/',
                         help="Destination file")
     parser.add_argument('--stdout', help='Print output to stdout')
     return parser.parse_args(arguments)
@@ -26,22 +26,24 @@ def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
 
-    mets = m._element('mets')
 
     # Loop files and create premis objects
     for filename in args.files:
+	mets = m._element('mets')
         techmd = m.techmd('techmd-%s' % filename)
         mets.append(techmd)
         digital_object = create_premis_object(techmd, filename)
 
-    if args.stdout:
-        print m.serialize(mets)
+	if args.stdout:
+            print m.serialize(mets)
 
-    if not os.path.exists(os.path.dirname(args.output)):
-        os.makedirs(os.path.dirname(args.output))
+    	if not os.path.exists(args.output):
+            os.makedirs(os.path.dirname(args.output))
 
-    with open(args.output, 'w+') as outfile:
-        outfile.write(m.serialize(mets))
+	filename = quote_plus(os.path.splitext(filename)[0]) + '-dmdsec.xml'
+
+	with open(os.path.join(args.output, filename), 'w+') as outfile:
+            outfile.write(m.serialize(mets))
 
     return 0
 
