@@ -13,7 +13,7 @@ import uuid
 import datetime
 import dateutil.tz
 import urllib
-from urllib import quote
+from urllib import quote_plus
 
 def import_description(workspace_path, dmdsec_location):
     """ Read xml-file(s) into METS-files. """
@@ -26,7 +26,7 @@ def import_description(workspace_path, dmdsec_location):
         for root, dirs, files in os.walk(source_path, topdown=False):
             for name in files:
                 filecount+=1
-                url_t_path = quote(dmdsec_location,safe='') + name
+                url_t_path = quote_plus(dmdsec_location,safe='') + name
                 s_path = os.path.join(root, name)
                 t_path = os.path.join(target_path, url_t_path)
                 #print "copying %s to %s" % (s_path, t_path)
@@ -42,7 +42,7 @@ def import_description(workspace_path, dmdsec_location):
     else:
         with open(source_path, 'r') as content_file:
             content = content_file.read()
-        url_t_path = quote(dmdsec_location,safe='')
+        url_t_path = quote_plus(dmdsec_location,safe='')
         t_path = os.path.join(target_path, url_t_path)
 
         mets_dmdsec = serialize(content)
