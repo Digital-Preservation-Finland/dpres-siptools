@@ -2,11 +2,10 @@
 
 import os
 import sys
-import hashlib
-import subprocess
 from uuid import uuid4
 import argparse
 
+import siptools.scraper
 import siptools.xml.premis as p
 import siptools.xml.mets as m
 
@@ -16,7 +15,7 @@ def parse_arguments(arguments):
     parser = argparse.ArgumentParser(description="Tool for importing files "
                                      "which generates digital objects")
     parser.add_argument('files', nargs='+', help="Files to be imported")
-    parser.add_argument('--output_file', type=str,
+    parser.add_argument('--output', type=str,
                         default='workspace/%s.xml' % str(uuid4()),
                         help="Destination file")
     parser.add_argument('--stdout', help='Print output to stdout')
@@ -38,17 +37,18 @@ def main(arguments=None):
     if args.stdout:
         print m.serialize(mets)
 
-    if not os.path.exists(os.path.dirname(args.output_file)):
-        os.makedirs(os.path.dirname(args.output_file))
+    if not os.path.exists(os.path.dirname(args.output)):
+        os.makedirs(os.path.dirname(args.output))
 
-    with open(args.output_file, 'w+') as outfile:
+    with open(args.output, 'w+') as outfile:
         outfile.write(m.serialize(mets))
 
     return 0
 
 
-def create_premis_object(tree, filename):
+def create_premis_object(tree, fname):
     """Create Premis object for given file."""
+    scraper = siptools.scraper.scraper(fname)
 
     # Create fixity element
     el_fixity = p._element('fixity')
@@ -56,12 +56,14 @@ def create_premis_object(tree, filename):
     el_fixity_algorithm.text = 'MD5'
 
     el_fixity_checksum = p._subelement(el_fixity, 'digest', 'message')
-    el_fixity_checksum.text = calculate_checksum(filename)
+    el_fixity_checksum.text = scraper.md5
 
     # Create format element
     el_format = p._element('format')
     el_format_name = p._subelement(el_format, 'name', 'format')
-    el_format_name.text = get_mimetype(filename)
+    el_format_name.text = scraper.mimetype
+    el_format_version = p._subelement(el_format, 'version', 'format')
+    el_format_version.text = scraper.file_version
 
     # Create object element
     unique = str(uuid4())
@@ -70,26 +72,11 @@ def create_premis_object(tree, filename):
         identifier_value=unique)
 
     el_premis_objectp_objectg = p.premis_object(
-        object_identifier, filename, child_elements=[el_fixity, el_format])
+        object_identifier, fname, child_elements=[el_fixity, el_format])
     tree.append(el_premis_objectp_objectg)
 
     return tree
 
-
-def calculate_checksum(fname):
-    """Calculate md5 checksum for given file."""
-    hash_md5 = hashlib.md5()
-    with open(fname, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
-
-
-def get_mimetype(fname):
-    """Get mimetype for given file."""
-    mime = subprocess.Popen("/usr/bin/file --mime-type %s" % fname, shell=True,
-                            stdout=subprocess.PIPE).communicate()[0]
-    return mime.split(' ')[1]
 
 if __name__ == '__main__':
     RETVAL = main()

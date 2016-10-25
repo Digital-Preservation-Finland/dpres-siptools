@@ -9,15 +9,15 @@ import pytest
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_ok(input_file):
 
-    output = NamedTemporaryFile(delete=True).name
-    arguments = [output, input_file]
+    output = NamedTemporaryFile().name
+    arguments = ['--output', output, input_file]
     return_code = import_object.main(arguments)
 
     tree = ET.parse(output)
     root = tree.getroot()
 
     assert len(root.findall('{http://www.loc.gov/METS/}techMD')) == 1
-
+    assert False
     assert return_code == 0
 
 
