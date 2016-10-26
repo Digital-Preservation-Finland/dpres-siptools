@@ -1,4 +1,5 @@
 import hashlib
+import os.path
 from cached_property import cached_property
 
 
@@ -7,6 +8,9 @@ class BaseScraper(object):
     filename = None
 
     def __init__(self, filename):
+	if not os.path.isfile(filename):
+	    raise IOError("File not found %s" % filename)
+
         self.filename = filename
 
     @cached_property
