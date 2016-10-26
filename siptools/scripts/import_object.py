@@ -26,23 +26,22 @@ def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
 
-
     # Loop files and create premis objects
     for filename in args.files:
-	mets = m._element('mets')
+        mets = m._element('mets')
         techmd = m.techmd('techmd-%s' % filename)
         mets.append(techmd)
         digital_object = create_premis_object(techmd, filename)
 
-	if args.stdout:
+        if args.stdout:
             print m.serialize(mets)
 
-    	if not os.path.exists(args.output):
-            os.makedirs(os.path.dirname(args.output))
+        if not os.path.exists(args.output):
+            os.makedirs(args.output)
 
-	filename = quote_plus(os.path.splitext(filename)[0]) + '-dmdsec.xml'
+        filename = quote_plus(os.path.splitext(filename)[0]) + '-dmdsec.xml'
 
-	with open(os.path.join(args.output, filename), 'w+') as outfile:
+        with open(os.path.join(args.output, filename), 'w+') as outfile:
             outfile.write(m.serialize(mets))
 
     return 0
@@ -54,7 +53,8 @@ def create_premis_object(tree, fname):
 
     # Create fixity element
     el_fixity = p._element('fixity')
-    el_fixity_algorithm = p._subelement(el_fixity, 'digestAlgorithm', 'message')
+    el_fixity_algorithm = p._subelement(
+        el_fixity, 'digestAlgorithm', 'message')
     el_fixity_algorithm.text = 'MD5'
 
     el_fixity_checksum = p._subelement(el_fixity, 'digest', 'message')
