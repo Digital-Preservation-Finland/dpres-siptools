@@ -69,10 +69,10 @@ def serialize(content):
 
     ID = str(uuid.uuid4())
 
-    el_root = Element("mets", nsmap=NAMESPACES)
+    el_root = Element("{%s}mets" % NAMESPACES['mets'], nsmap=NAMESPACES)
     #el_root.set(XSI + 'schemaLocation', METS_SCHEMALOCATION)
 
-    el_dmdsec = Element("dmdSec", nsmap=NAMESPACES)
+    el_dmdsec = Element("{%s}dmdSec" % NAMESPACES['mets'], nsmap=NAMESPACES)
     el_dmdsec.set("ID", ID)
     el_dmdsec.set("CREATED", get_edtf_time())
     el_root.append(el_dmdsec)
