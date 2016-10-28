@@ -1,11 +1,13 @@
 """Command line tool for creating mets"""
 
+import os
 import sys
 import argparse
+from scandir import scandir
+import lxml.etree
 import siptools.xml.mets as m
-from siptools.xml.namespaces import METS_PROFILE
+from siptools.xml.namespaces import NAMESPACES, METS_PROFILE
 from siptools.xml.mets_record_status_types import RECORD_STATUS_TYPES
-import os
 import datetime
 import uuid
 
@@ -50,13 +52,30 @@ def parse_arguments(arguments):
 def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
-    #print "args:%s", args
 
+    # Create mets header
     mets = m.mets_mets(METS_PROFILE[args.mets_profile], args.objid, args.label,
             args.catalog, args.specification, args.contentid)
     metshdr = m.metshdr(args.organization_name, args.create_date,
                         args.last_moddate, args.record_status)
     mets.append(metshdr)
+
+    # Append parts
+    trees = []
+    for entry in scandir(args.workspace):
+        if not entry.name.startswith('mets.xml') and entry.is_file():
+            trees.append(lxml.etree.parse(entry.path))
+
+
+    for order in ['{%s}dmdSec' % NAMESPACES['mets'],
+            '{%s}amdSec' % NAMESPACES['mets'],
+            '{%s}digiprovMd' % NAMESPACES['mets'],
+            '{%s}fileSec' % NAMESPACES['mets'],
+            '{%s}structMap' % NAMESPACES['mets']]:
+        for tree in trees:
+            if len(tree.findall(order)):
+                for element in tree.findall('*'):
+                    mets.append(element)
 
     if args.stdout:
         print m.serialize(mets)
