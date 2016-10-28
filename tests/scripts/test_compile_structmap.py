@@ -25,10 +25,10 @@ def test_compile_structmap_ok():
 def test_structmap_links():
     dmdsec_location = 'tests/data/import_description/metadata/dc_description.xml'
     dmdsec_url = quote_plus(dmdsec_location)
-    dmdsec_file = os.path.join('./workspace/mets-parts', dmdsec_url)
+    dmdsec_file = os.path.join('./workspace', dmdsec_url)
     dmdsec_tree = ET.parse(dmdsec_file)
     dmdsec_root = dmdsec_tree.getroot()
-    dmdsec_id = dmdsec_root.xpath('/mets/dmdSec/@ID',
+    dmdsec_id = dmdsec_root.xpath('/mets:mets/mets:dmdSec/@ID',
             namespaces=NAMESPACES)[0]
 
     return_code = compile_structmap.main(['tests/data/TPAS-20', '--workspace',
