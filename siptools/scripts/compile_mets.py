@@ -70,8 +70,7 @@ def main(arguments=None):
     for order in ['{%s}dmdSec' % NAMESPACES['mets'],
             '{%s}amdSec' % NAMESPACES['mets'],
             '{%s}digiprovMd' % NAMESPACES['mets'],
-            '{%s}fileSec' % NAMESPACES['mets'],
-            '{%s}structMap' % NAMESPACES['mets']]:
+            '{%s}fileSec' % NAMESPACES['mets']:
         for tree in trees:
             if len(tree.findall(order)):
                 for element in tree.findall('*'):
