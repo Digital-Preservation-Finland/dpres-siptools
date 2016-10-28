@@ -77,10 +77,10 @@ def serialize(content):
     el_dmdsec.set("CREATED", get_edtf_time())
     el_root.append(el_dmdsec)
 
-    el_mdwrap = Element("mdWrap", nsmap=NAMESPACES)
+    el_mdwrap = Element("{%s}mdWrap" % NAMESPACES['mets'], nsmap=NAMESPACES)
     el_dmdsec.append(el_mdwrap)
 
-    el_xmldata = Element("xmlData", nsmap=NAMESPACES)
+    el_xmldata = Element("{%s}xmlData" % NAMESPACES['mets'], nsmap=NAMESPACES)
 
     try:
         parser = lxml.etree.XMLParser(
