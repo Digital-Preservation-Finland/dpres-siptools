@@ -60,21 +60,31 @@ def main(arguments=None):
                         args.last_moddate, args.record_status)
     mets.append(metshdr)
 
+    # Create mets amdSec
+    amdsec = m.amdsec()
+
     # Append parts
     trees = []
     for entry in scandir(args.workspace):
         if not entry.name.startswith('mets.xml') and entry.is_file():
-            trees.append(lxml.etree.parse(entry.path))
+            element = lxml.etree.parse(entry.path).getroot()[0]
 
+            if element.tag == '{%s}dmdSec' % NAMESPACES['mets']:
+                mets.append(element)
 
-    for order in ['{%s}dmdSec' % NAMESPACES['mets'],
-            '{%s}amdSec' % NAMESPACES['mets'],
-            '{%s}digiprovMd' % NAMESPACES['mets'],
-            '{%s}fileSec' % NAMESPACES['mets']]:
-        for tree in trees:
-            if len(tree.findall(order)):
-                for element in tree.findall('*'):
-                    mets.append(element)
+            if element.tag == '{%s}techMD' % NAMESPACES['mets']:
+                amdsec.append(element)
+
+            if element.tag == '{%s}amdSec' % NAMESPACES['mets']:
+                amdsec.append(element[0])
+
+            if element.tag == '{%s}digiprovMD' % NAMESPACES['mets']:
+                amdsec.append(element)
+
+            if element.tag == '{%s}fileSec' % NAMESPACES['mets']:
+                mets.append(element)
+
+    mets.append(amdsec)
 
     if args.stdout:
         print m.serialize(mets)
