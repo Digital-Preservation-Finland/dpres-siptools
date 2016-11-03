@@ -118,3 +118,69 @@ def amdsec(child_elements=None):
 
     return _amdsec
 
+def mptr(loctype=None, xlink_href=None, xlink_type=None):
+    """Return the fptr element"""
+
+    _mptr = _element('mptr')
+    _mptr.set('LOCTYPE', loctype)
+    _mptr.set('xlink:href', xlink_href)
+    _mptr.set('xlink:type', xlink_type)
+
+    return _fptr
+
+def fptr(fileid=None):
+    """Return the fptr element"""
+
+    _fptr = _element('fptr')
+    _fptr.set('FILEID', filed)
+
+    return _fptr
+
+
+def div(type=None, order=None, contentids=None, label=None, orderlabel=None, dmdid=None, amdid=None,
+        div_elements=None, fptr_elements=None, mptr_elements=None):
+    """Return the div element"""
+
+    _div = _element('div')
+    _div.set('TYPE', type)
+    if order:
+        _div.set('ORDER', order)
+    if contentids:
+        _div.set('CONTENTIDS', contentids)
+    if label:
+        _div.set('LABEL', label)
+    if orderlabel:
+        _div.set('ORDERLABEL', orderlabel)
+    if dmdid:
+        _div.set('DMDID', dmdid)
+    if amdid:
+        _div.set('AMDID', amdid)
+
+    if div_elements:
+        for element in div_elements:
+            _div.append(element)
+    if fptr_elements:
+        for element in fprt_elements:
+            _div.append(element)
+    if mptr_elements:
+        for element in mprt_elements:
+            _div.append(element)
+
+    return _div
+
+def structmap(div_element=None, type=None, label=None, pid=None,
+        pidtype=None):
+    """Return the structmap element"""
+
+    _structMap = _element('structMap')
+    _structMap.append(div_element)
+    if type:
+        _structMap.set('TYPE', type)
+    if label:
+        _structMap.set('LABEL', label)
+    if pid:
+        _structMap.set('PID', pid)
+    if pidtype:
+        _structMap.set('PIDTYPE', pidtype)
+
+    return _structMap
