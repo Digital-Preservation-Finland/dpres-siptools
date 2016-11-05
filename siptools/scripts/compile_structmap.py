@@ -22,10 +22,11 @@ def parse_arguments(arguments):
 
 
 def is_valid_dir(parser, arg):
+    """Check if directory exists"""
     if not os.path.exists(os.path.abspath(arg)):
         parser.error("The file %s does not exist!" % arg)
     else:
-        return os.path.abspath(arg) 
+        return arg 
 
 
 def main(arguments=None):
@@ -39,7 +40,7 @@ def main(arguments=None):
     mets.set('xmlns:' + 'xlink', 'http://www.w3.org/1999/xlink')
     structmap = m.structmap()
     filesec = m.filesec()
-    filegrp = m.filegrp('production', file_elements=None)
+    filegrp = m.filegrp()
     filesec.append(filegrp)
     mets.append(filesec)
     mets.append(structmap)
@@ -67,13 +68,11 @@ def create_structMap(tree, path, filegrp):
                     amdid=None, div_elements=None, fptr_elements=None,
                     mptr_elements=None)
         tree.append(div)
-        # print "basename: %s" % os.path.basename(path)
         for item in scandir.scandir(path):
             create_structMap(div, item.path, filegrp)
     else:
-        # print "file: %s" % path
         fileid = str(uuid4())
-        file = m.file(fileid, admid='puppua', loctype='URL',
+        file = m.file(fileid, admid=str(uuid4()), loctype='URL',
                       xlink_href='file://%s' % os.path.relpath(path, os.curdir), xlink_type='simple',
                       groupid=None)
         filegrp.append(file)
