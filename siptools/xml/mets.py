@@ -7,10 +7,7 @@ import siptools.xml.namespaces
 METS_NS = 'http://www.loc.gov/METS/'
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
 FI_NS = 'http://www.kdk.fi/standards/mets/kdk-extensions'
-
-
-FI_NAMESPACE = "{%s}" % FI_NS
-FI_NAMESPACES = {'kdk': FI_NAMESPACE}
+XLINK = 'http://www.w3.org/1999/xlink'
 
 def serialize(root_element):
     """Serialize ElementTree structure with PREMIS namespace mapping.
@@ -40,20 +37,21 @@ def mets_mets(profile=None, objid=None, label=None, catalog=None,
         specification=None, contentid=None):
     """Create METS ElementTree"""
 
-    _mets = _element('mets')
-    _mets.set('xmlns:' + 'fi', FI_NS)
-    _mets.set('PROFILE', profile)
-    _mets.set('OBJID', objid)
+    mets = element('mets')
+    mets.set('xmlns:' + 'fi', FI_NS)
+    mets.set('xmlns:' + 'xlink', XLINK)
+    mets.set('PROFILE', profile)
+    mets.set('OBJID', objid)
     if label:
-        _mets.set('LABEL', label)
+        mets.set('LABEL', label)
     if catalog:
-        _mets.set('fi:CATALOG', catalog)
+        mets.set('fi:CATALOG', catalog)
     if specification:
-        _mets.set('fi:SPECIFICATION', specification)
+        mets.set('fi:SPECIFICATION', specification)
     if contentid:
-        _mets.set('fi:CONTENTID', contentid)
+        mets.set('fi:CONTENTID', contentid)
 
-    return _mets
+    return mets
 
 
 def mets_ns(tag, prefix=""):
@@ -103,7 +101,6 @@ def _subelement(parent, tag, prefix=""):
 
 def techmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
            child_elements=None):
-
     """Return the techMD element"""
 
     _techmd = _element('techMD')
@@ -116,8 +113,9 @@ def techmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
 
     return _techmd
 
+
 def digiprovmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
-        child_elements=None):
+               child_elements=None):
     """Return the digiprovMD element"""
 
     _digiprovmd = _element('digiprovMD')
@@ -130,6 +128,7 @@ def digiprovmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
 
     return _digiprovmd
 
+
 def amdsec(child_elements=None):
     """Return the amdSec element"""
 
@@ -140,6 +139,7 @@ def amdsec(child_elements=None):
             _amdsec.append(element)
 
     return _amdsec
+
 
 def mets_agent(organisation_name, agent_role='CREATOR',
         agent_type='ORGANIZATION'):
@@ -168,3 +168,116 @@ def metshdr(organisation_name, create_date=datetime.datetime.utcnow().isoformat(
     _metshdr.append(_metsagent)
 
     return _metshdr
+
+
+def mptr(loctype=None, xlink_href=None, xlink_type=None):
+    """Return the fptr element"""
+
+    _mptr = _element('mptr')
+    _mptr.set('LOCTYPE', loctype)
+    _mptr.set('xlink:href', xlink_href)
+    _mptr.set('xlink:type', xlink_type)
+
+    return _fptr
+
+
+def fptr(fileid=None):
+    """Return the fptr element"""
+
+    _fptr = _element('fptr')
+    _fptr.set('FILEID', fileid)
+
+    return _fptr
+
+
+def div(type=None, order=None, contentids=None, label=None, orderlabel=None, dmdid=None, amdid=None,
+        div_elements=None, fptr_elements=None, mptr_elements=None):
+    """Return the div element"""
+
+    _div = _element('div')
+    _div.set('TYPE', type)
+    if order:
+        _div.set('ORDER', order)
+    if contentids:
+        _div.set('CONTENTIDS', contentids)
+    if label:
+        _div.set('LABEL', label)
+    if orderlabel:
+        _div.set('ORDERLABEL', orderlabel)
+    if dmdid:
+        _div.set('DMDID', dmdid)
+    if amdid:
+        _div.set('AMDID', amdid)
+
+    if div_elements:
+        for element in div_elements:
+            _div.append(element)
+    if fptr_elements:
+        for element in fprt_elements:
+            _div.append(element)
+    if mptr_elements:
+        for element in mprt_elements:
+            _div.append(element)
+
+    return _div
+
+
+def structmap(type=None, label=None, pid=None,
+              pidtype=None):
+    """Return the structmap element"""
+
+    _structmap = _element('structMap')
+    #_structMap.append(div_element)
+    if type:
+        _structmap.set('TYPE', type)
+    if label:
+        _structmap.set('LABEL', label)
+    if pid:
+        _structmap.set('PID', pid)
+    if pidtype:
+        _structmap.set('PIDTYPE', pidtype)
+
+    return _structmap
+
+
+def filegrp(use=None, file_elements=None):
+    """Return the fileGrp element"""
+
+    _filegrp = _element('fileGrp')
+    if use:
+        _filegrp.set('USE', use)
+    if file_elements:
+        for element in file_elements:
+            _filegroup.append(elements)
+
+    return _filegrp
+
+
+def filesec(filegroup_elements=None):
+    """Return the fileSec element"""
+
+    _filesec = _element('fileSec')
+    if filegroup_elements:
+        for element in filegroup_elements:
+            _filesec.append(element)
+
+    return _filesec
+
+
+def file(id=None, admid=None, loctype=None, xlink_href=None, xlink_type=None,
+         groupid=None):
+    """Return the file element"""
+
+    _file = _element('file')
+    _file.set('ID', id)
+    _file.set('ADMID', admid)
+    if groupid:
+        _file.set('GROUPID', groupid)
+
+    _flocat = _element('FLocat')
+    _flocat.set('LOCTYPE', loctype)
+    _flocat.set('xlink:href', xlink_href)
+    _flocat.set('xlink:type', xlink_type)
+    _file.append(_flocat)
+
+    return _file
