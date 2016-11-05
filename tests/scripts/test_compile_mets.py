@@ -7,7 +7,7 @@ from siptools.xml.namespaces import NAMESPACES
 
 def test_compile_mets_ok():
 
-    return_code = compile_mets.main(['http://www.kdk.fi/kdk-mets-profile',
+    return_code = compile_mets.main(['kdk',
                                      'CSC', '--objid', 'ABC-123',
                                      '--label', 'Test SIP',
                                      '--catalog', '1.5.0',
@@ -52,7 +52,7 @@ def test_compile_mets_ok():
 def test_compile_mets_fail():
 
     with pytest.raises(SystemExit):
-        return_code = compile_mets.main(['http://www.kdk.fi/kdk-mets-profile',
+        return_code = compile_mets.main(['kdk',
                                          'CSC', '--objid', 'ABC-123',
                                          '--label', 'Test SIP',
                                          '--catalog', '1.5.0',

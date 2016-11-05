@@ -51,7 +51,7 @@ def main(arguments=None):
     args = parse_arguments(arguments)
     #print "args:%s", args
 
-    mets = m.mets_mets(args.mets_profile, args.objid, args.label,
+    mets = m.mets_mets(METS_PROFILE[args.mets_profile], args.objid, args.label,
             args.catalog, args.specification, args.contentid)
     metshdr = m.metshdr(args.organization_name, args.create_date,
                         args.last_moddate, args.record_status)

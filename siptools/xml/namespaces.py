@@ -20,4 +20,4 @@ METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'dc', 'version' :
 'http://www.icpsr.umich.edu/DDI' : {'mdtype' : 'ddi', 'version' : '2.1'},
 'http://www.vraweb.org/vracore4.htm' : {'mdtype' : 'vra', 'version' : ''}}
 
-METS_PROFILE = ['http://www.kdk.fi/kdk-mets-profile']
+METS_PROFILE = {'kdk': 'http://www.kdk.fi/kdk-mets-profile'}
