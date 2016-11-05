@@ -6,6 +6,7 @@ import siptools.xml.namespaces
 
 METS_NS = 'http://www.loc.gov/METS/'
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
+XLINK = 'http://www.w3.org/1999/xlink'
 
 
 def serialize(root_element):
@@ -80,7 +81,6 @@ def _subelement(parent, tag, prefix=""):
 
 def techmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
            child_elements=None):
-
     """Return the techMD element"""
 
     _techmd = _element('techMD')
@@ -93,8 +93,9 @@ def techmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
 
     return _techmd
 
+
 def digiprovmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
-        child_elements=None):
+               child_elements=None):
     """Return the digiprovMD element"""
 
     _digiprovmd = _element('digiprovMD')
@@ -107,6 +108,7 @@ def digiprovmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
 
     return _digiprovmd
 
+
 def amdsec(child_elements=None):
     """Return the amdSec element"""
 
@@ -118,6 +120,7 @@ def amdsec(child_elements=None):
 
     return _amdsec
 
+
 def mptr(loctype=None, xlink_href=None, xlink_type=None):
     """Return the fptr element"""
 
@@ -128,11 +131,12 @@ def mptr(loctype=None, xlink_href=None, xlink_type=None):
 
     return _fptr
 
+
 def fptr(fileid=None):
     """Return the fptr element"""
 
     _fptr = _element('fptr')
-    _fptr.set('FILEID', filed)
+    _fptr.set('FILEID', fileid)
 
     return _fptr
 
@@ -168,19 +172,63 @@ def div(type=None, order=None, contentids=None, label=None, orderlabel=None, dmd
 
     return _div
 
-def structmap(div_element=None, type=None, label=None, pid=None,
-        pidtype=None):
+
+def structmap(type=None, label=None, pid=None,
+              pidtype=None):
     """Return the structmap element"""
 
-    _structMap = _element('structMap')
-    _structMap.append(div_element)
+    _structmap = _element('structMap')
+    #_structMap.append(div_element)
     if type:
-        _structMap.set('TYPE', type)
+        _structmap.set('TYPE', type)
     if label:
-        _structMap.set('LABEL', label)
+        _structmap.set('LABEL', label)
     if pid:
-        _structMap.set('PID', pid)
+        _structmap.set('PID', pid)
     if pidtype:
-        _structMap.set('PIDTYPE', pidtype)
+        _structmap.set('PIDTYPE', pidtype)
 
-    return _structMap
+    return _structmap
+
+
+def filegrp(use=None, file_elements=None):
+    """Return the fileGrp element"""
+
+    _filegrp = _element('fileGrp')
+    if use:
+        _filegrp.set('USE', use)
+    if file_elements:
+        for element in file_elements:
+            _filegroup.append(elements)
+
+    return _filegrp
+
+
+def filesec(filegroup_elements=None):
+    """Return the fileSec element"""
+
+    _filesec = _element('fileSec')
+    if filegroup_elements:
+        for element in filegroup_elements:
+            _filesec.append(element)
+
+    return _filesec
+
+
+def file(id=None, admid=None, loctype=None, xlink_href=None, xlink_type=None,
+         groupid=None):
+    """Return the file element"""
+
+    _file = _element('file')
+    _file.set('ID', id)
+    _file.set('ADMID', admid)
+    if groupid:
+        _file.set('GROUPID', groupid)
+
+    _flocat = _element('FLocat')
+    _flocat.set('LOCTYPE', loctype)
+    _flocat.set('xlink:href', xlink_href)
+    _flocat.set('xlink:type', xlink_type)
+    _file.append(_flocat)
+
+    return _file

@@ -3,7 +3,8 @@ METS_SCHEMALOCATION = "http://www.loc.gov/METS/ http://kdk.fi/standards/mets/met
 NAMESPACES = {
     'mets': 'http://www.loc.gov/METS/',
     'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-    'premis': 'info:lc/xmlns/premis-v2'
+    'premis': 'info:lc/xmlns/premis-v2',
+    'xlink': 'http://www.w3.org/1999/xlink'
 }
 
 METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'dc', 'version' :
