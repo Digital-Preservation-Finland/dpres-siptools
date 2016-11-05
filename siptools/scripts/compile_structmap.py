@@ -35,8 +35,7 @@ def main(arguments=None):
 
     source_path = os.path.abspath(args.input_directory)
     mets = m._element('mets')
-    # Tama pitaa lisata mets_mets-funktioon, kunhan TPAS-9 on mergattu
-    # developpiin
+    # refaktoroinnin yhteydessa ehka pois
     mets.set('xmlns:' + 'xlink', 'http://www.w3.org/1999/xlink')
     structmap = m.structmap()
     filesec = m.filesec()

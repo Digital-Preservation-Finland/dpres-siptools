@@ -37,7 +37,7 @@ def mets_mets(profile=None, objid=None, label=None, catalog=None,
         specification=None, contentid=None):
     """Create METS ElementTree"""
 
-    mets = element('mets')
+    mets = _element('mets')
     mets.set('xmlns:' + 'fi', FI_NS)
     mets.set('xmlns:' + 'xlink', XLINK)
     mets.set('PROFILE', profile)
