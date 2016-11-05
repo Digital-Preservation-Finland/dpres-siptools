@@ -25,7 +25,6 @@ def is_valid_dir(parser, arg):
     if not os.path.exists(os.path.abspath(arg)):
         parser.error("The file %s does not exist!" % arg)
     else:
-        print "OK"
         return os.path.abspath(arg) 
 
 
