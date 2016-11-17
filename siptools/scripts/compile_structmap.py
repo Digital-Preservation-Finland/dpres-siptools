@@ -110,13 +110,14 @@ def get_md_id(path, workspace, xpos, suffix=''):
     else:
         return None
 
+
 def get_digiprovmd_id(admids, workspace):
     for ETYPE in PREMIS_EVENT_TYPES:
         md_file = os.path.join(workspace, ETYPE + ".xml")
         if os.path.isfile(md_file):
             md_tree = ET.parse(md_file)
             md_root = md_tree.getroot()
-            digiprovid = md_root.xpath('/mets:mets/mets:amdSec/mets:digiprovMD[1]/@ID', namespaces=NAMESPACES)[0]
+            digiprovid = md_root.xpath('/mets:mets/mets:amdSec/mets:digiprovMD[2]/@ID', namespaces=NAMESPACES)[0]
             admids.append(digiprovid)
     return admids
 
