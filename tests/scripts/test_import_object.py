@@ -26,17 +26,18 @@ def test_import_object_ok(input_file):
     assert return_code == 0
 
 def test_import_object_TPAS20_ok():
-    file_list = []
-    file_list = create_list_of_files(os.path.abspath(os.path.join(os.curdir,
-        'tests/data/TPAS-20')), file_list)
+
     output = os.path.abspath('./workspace') 
-    arguments = ['--output', output, file_list[0], file_list[1],  file_list[2],
-            file_list[3],  file_list[4],  file_list[5],  file_list[6],
-            file_list[7],  file_list[8]]
-    return_code = import_object.main(arguments)
+    do = os.path.abspath(os.path.join(os.curdir,
+                'tests/data/TPAS-20'))
+    test_file = ""
+    for element in iterate_files(do):
+        arguments = ['--output', output, element] 
+        return_code = import_object.main(arguments)
+        test_file = element
 
     output = os.path.join(output,
-                          quote_plus(os.path.splitext(file_list[0])[0]) +
+                          quote_plus(os.path.splitext(test_file)[0]) +
                           '-techmd.xml')
 
     tree = ET.parse(output)
@@ -46,15 +47,10 @@ def test_import_object_TPAS20_ok():
     assert return_code == 0
 
 
-def create_list_of_files(path, file_list):
-    if os.path.isdir(path):
-        for item in scandir.scandir(path):
-            create_list_of_files(item.path, file_list)
-    else:
-        file_list.append(os.path.relpath(path, os.curdir))
-
-    return file_list
-
+def iterate_files(path):
+    for root, dirs, files in os.walk(path, topdown=False):
+        for name in files:
+             yield os.path.join(root, name)
 
 
 @pytest.mark.parametrize('input_file', ['tests/data/missing-file'])
