@@ -32,9 +32,9 @@ def test_import_object_TPAS20_ok():
                 'tests/data/TPAS-20'))
     test_file = ""
     for element in iterate_files(do):
-        arguments = ['--output', output, element] 
+        arguments = ['--output', output, os.path.relpath(element,os.curdir)]
         return_code = import_object.main(arguments)
-        test_file = element
+        test_file = os.path.relpath(element, os.curdir)
 
     output = os.path.join(output,
                           quote_plus(os.path.splitext(test_file)[0]) +
