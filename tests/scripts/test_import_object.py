@@ -17,7 +17,8 @@ def test_import_object_ok(input_file):
     return_code = import_object.main(arguments)
 
     output = os.path.join(output,
-                          quote_plus(os.path.splitext(input_file)[0]) + '-dmdsec.xml')
+                          quote_plus(os.path.splitext(input_file)[0]) +
+                          '-techmd.xml')
 
     tree = ET.parse(output)
     root = tree.getroot()
