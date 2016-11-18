@@ -1,5 +1,6 @@
 """Command line tool for creating mets"""
 
+import sys
 import argparse
 import siptools.xml.mets as m
 from siptools.xml.namespaces import METS_PROFILE

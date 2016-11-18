@@ -39,7 +39,7 @@ def main(arguments=None):
         if not os.path.exists(args.output):
             os.makedirs(args.output)
 
-        filename = quote_plus(os.path.splitext(filename)[0]) + '-dmdsec.xml'
+        filename = quote_plus(os.path.splitext(filename)[0]) + '-techmd.xml'
 
         with open(os.path.join(args.output, filename), 'w+') as outfile:
             outfile.write(m.serialize(mets))

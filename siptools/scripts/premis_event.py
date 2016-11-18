@@ -1,5 +1,6 @@
 """Command line tool for creating premis events"""
 
+import sys
 import argparse
 import siptools.xml.premis as p
 import siptools.xml.mets as m
