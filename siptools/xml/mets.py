@@ -264,13 +264,14 @@ def filesec(filegroup_elements=None):
     return _filesec
 
 
-def file(id=None, admid=None, loctype=None, xlink_href=None, xlink_type=None,
+def file(id=None, admid_elements=None, loctype=None, xlink_href=None, xlink_type=None,
          groupid=None):
     """Return the file element"""
 
     _file = _element('file')
     _file.set('ID', id)
-    _file.set('ADMID', admid)
+    admids = ' '.join(admid_elements)
+    _file.set('ADMID', admids)
     if groupid:
         _file.set('GROUPID', groupid)
 
