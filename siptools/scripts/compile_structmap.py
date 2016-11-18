@@ -1,5 +1,6 @@
 """"Command line tool for compile structmap"""
 
+import sys
 import argparse
 import os
 import siptools.xml.mets as m
