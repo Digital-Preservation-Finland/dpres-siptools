@@ -42,7 +42,7 @@ def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
 
-    mets = m._element('mets')
+    mets = m.mets_mets()
     amdsec = m.amdsec()
     mets.append(amdsec)
 

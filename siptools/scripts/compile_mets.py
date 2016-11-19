@@ -27,7 +27,7 @@ def parse_arguments(arguments):
                         type=str, help='Short description of the information package')
     parser.add_argument('--catalog', dest='catalog',
                         type=str, help='Version number of the NDL schema catalog used')
-    parser.add_argument('--specification', dest='specification', 
+    parser.add_argument('--specification', dest='specification',
             type=str,
                         help='Version number of packaging specification used in creation of data package')
     parser.add_argument('--contentid', dest='contentid',
