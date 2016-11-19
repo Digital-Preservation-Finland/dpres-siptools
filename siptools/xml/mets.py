@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 
 import siptools.xml.xmlutil
 import siptools.xml.namespaces
+import uuid
 
 METS_NS = 'http://www.loc.gov/METS/'
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
@@ -33,8 +34,9 @@ def serialize(root_element):
     return ET.tostring(root_element)
 
 
-def mets_mets(profile=None, objid=None, label=None, catalog=None,
-        specification=None, contentid=None):
+def mets_mets(profile=siptools.xml.namespaces.METS_PROFILE['kdk'],
+        objid=str(uuid.uuid4()), label=None, catalog='1.5.0',
+        specification='1.5.0', contentid=None):
     """Create METS ElementTree"""
 
     mets = _element('mets')

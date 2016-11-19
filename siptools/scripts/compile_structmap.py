@@ -8,7 +8,7 @@ import scandir
 from uuid import uuid4
 from urllib import quote_plus
 import lxml.etree as ET
-from siptools.xml.namespaces import NAMESPACES
+from siptools.xml.namespaces import NAMESPACES, METS_PROFILE
 from siptools.xml.premis_event_types import PREMIS_EVENT_TYPES
 
 
@@ -42,9 +42,8 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     source_path = os.path.abspath(args.input_directory)
-    mets = m._element('mets')
-    # refaktoroinnin yhteydessa ehka pois
-    mets.set('xmlns:' + 'xlink', 'http://www.w3.org/1999/xlink')
+    mets = m.mets_mets()
+
     structmap = m.structmap()
     filesec = m.filesec()
     filegrp = m.filegrp()
