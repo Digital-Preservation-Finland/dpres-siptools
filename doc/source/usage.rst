@@ -7,21 +7,20 @@ Command Line Usage Instructions
 Commands:
 *************************
 
-    * extract-metadata
-	Used for extracting technical metadata of a file.
-    * extract-checksum
-	Used for calculating the checksum of a file.
-    * extract-XYZ
+    * import_description
+	Used for creating descriptive metadata (dmdSec) part of mets. Creates an xml file.
+    * import_object
+	Used for extracting technical metadata of a file. Calculates the checksum of a file. Creates an xml file containing amdSec part of mets. 
+    * premis_event
+	Used for creating digital provenance (digiprovMD)of mets. Creates premis_agent and premis_event.
+    * compile_structmap
+	Used for creating structMap and fileSec of mets. Links descriptive metadata to the content, links files to administrative metadata and structure.
     * compile-mets
 	Used for compiling mets.xml
-    * validate-sip
-	Validates
-        -> schema
-        -> shematron
-        -> digital objects
-        -> checksums
-        -> virus
-        ==> OK / ERROR
+    * compress
+	Compiles a SIP. Removes all temp files.
+
+   
 
 Examples
 ------------------------------------
@@ -34,73 +33,44 @@ Files to be preserved::
         aineisto/
             kuva.jpg
             teksti.pdf
+            dcdescription.xml
 
-Extract technical metatdata from files::
 
-    $ extract-metadata kuva.jpg
 
-        packaging-metadata/
-            kuva.jpg-<uuid>-metadata.xml
+Import descriptive metadata::
 
-    $ extract-metadata teksti.pdf
+    $ import_description workspace aineisto
 
-        packaging-metadata/
-            kuva.jpg-<uuid>-metadata.xml
-            teksti.pdf-<uuid>-metadata.xml
+        workspace/dcdescription-dmdsec.xml
 
-    $ extract-metadata *.jpg
-    $ extract-metadata *.pdf
-    $ extract-metadata -r aineisto
+Import files:: 
+    $ import_object kuva.pdf
+    $ import_object teksti.pdf 
 
-Extract file checksums::
+        workspace/
+            kuva-amdsec.xml
+            teksti-amdsec.xml
 
-    $ extract-checksums *
+    $ import_object aineisto*
+    
+Create digital provenance::
+    $ premis_event creation 2011-03-15T11:12:13
+
+        workspace/
+            creation.xml    
+
+Create structure::    
+    $ compile_structmap aineisto workspace
+
+    workspace/
+            structmap.xml
+
+
 
 Create a SIP::
 
-    $ compile-mets <mets-objid> packaging-metadata
+    $ compile-mets kdk CSC
 
 
-    /home/pekkaliisa/paketit/oma-sippi-0001/
-
-        kuva.jpg
-        teksti.pdf
-        mets.xml
-
-        metadata.tmp/
-            kuva.jpg-<uuid>-metadata.xml
-            teksti.pdf-<uuid>-metadata.xml
-
-    $ sign-xml mets.xml
-
-
-    /home/pekkaliisa/paketit/oma-sippi-0001/
-        kuva.jpg
-        teksti.pdf
-        mets.xml
-        signature.sig
-
-        metadata.tmp/
-            kuva.jpg-<uuid>-metadata.xml
-            teksti.pdf-<uuid>-metadata.xml
-
-            
-    $ clean-temp-metadata
-
-    /home/pekkaliisa/paketit/oma-sippi-0001/
-        mets.xml
-        signature.sig
-        aineisto/
-            kuva.jpg
-            teksti.pdf
-
-    $ cd ..
-
-    $ zip -r oma-sippi-0001.zip oma-sippi-0001
-    $ tar czvf oma-sippi-0001.tar.gz oma-sippi-0001
-
-    $ validate-sip mets.xml
-
-        -> ERROR
-        -> OK
+   
 
