@@ -42,14 +42,15 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     source_path = os.path.abspath(args.input_directory)
-    mets = m.mets_mets()
+    mets_structmap = m.mets_mets()
+    mets_filesec = m.mets_mets()
 
     structmap = m.structmap()
     filesec = m.filesec()
     filegrp = m.filegrp()
     filesec.append(filegrp)
-    mets.append(filesec)
-    mets.append(structmap)
+    mets_filesec.append(filesec)
+    mets_structmap.append(structmap)
     admids = []
     admids = get_digiprovmd_id(admids, args.workspace)
     create_structMap(structmap, source_path, filegrp, args.workspace, admids, args.dmdsec_id)
@@ -57,13 +58,20 @@ def main(arguments=None):
     if args.stdout:
         print m.serialize(mets)
 
-    output_file = os.path.join(args.workspace, 'structmap.xml')
+    output_sm_file = os.path.join(args.workspace, 'structmap.xml')
+    output_fs_file = os.path.join(args.workspace, 'filesec.xml')
 
-    if not os.path.exists(os.path.dirname(output_file)):
-        os.makedirs(os.path.dirname(output_file))
+    if not os.path.exists(os.path.dirname(output_sm_file)):
+        os.makedirs(os.path.dirname(output_sm_file))
 
-    with open(output_file, 'w+') as outfile:
-        outfile.write(m.serialize(mets))
+    if not os.path.exists(os.path.dirname(output_fs_file)):
+        os.makedirs(os.path.dirname(output_fs_file))
+
+    with open(output_sm_file, 'w+') as outfile:
+        outfile.write(m.serialize(mets_structmap))
+
+    with open(output_fs_file, 'w+') as outfile:
+        outfile.write(m.serialize(mets_filesec))
 
     return 0
 
