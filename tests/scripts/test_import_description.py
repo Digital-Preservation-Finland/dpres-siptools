@@ -76,10 +76,10 @@ def test_import_description_file_not_found():
 
 def test_import_description_no_xml():
     """ test case for invalid XML file """
-    dmdsec_location = 'tests/data/import_description/metadata/plain_text.xml'
+    dmdsec_location = 'tests/data/import_description/plain_text.xml'
     workspace = './workspace/mets-parts'
-    main([dmdsec_location,  '--workspace', workspace])
-    validate_dmd_files(workspace, dmdsec_location)
+    with pytest.raises(lxml.etree.XMLSyntaxError):
+        main([dmdsec_location,  '--workspace', workspace])
 
 
 def test_import_description_invalid_namespace():
