@@ -53,7 +53,6 @@ def main(arguments=None):
                         args.event_detail, args.event_outcome, args.event_outcome_detail,
                         linking_agent_identifier)
 
-    # print "mets:%s " % m.serialize(mets)
     if args.stdout:
         print m.serialize(mets)
 

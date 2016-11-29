@@ -1,9 +1,9 @@
 import datetime
 import xml.etree.ElementTree as ET
-
 import siptools.xml.xmlutil
 import siptools.xml.namespaces
 import uuid
+import re
 
 METS_NS = 'http://www.loc.gov/METS/'
 XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
@@ -99,6 +99,28 @@ def _subelement(parent, tag, prefix=""):
 
     """
     return ET.SubElement(parent, mets_ns(tag, prefix))
+
+def dmdSec(element_id, child_elements=None,
+        created_date=datetime.datetime.utcnow().isoformat()):
+    """Return the dmdSec element"""
+
+    dmdSec = _element('dmdSec')
+    dmdSec.set('ID', element_id)
+    dmdSec.set('CREATED', created_date)
+    mdWrap = _element('mdWrap')
+    xmlData = _element('xmlData')
+    if child_elements:
+        for element in child_elements:
+            xmlData.append(element)
+            ns = namespace(element)[1:-1]
+            if ns in siptools.xml.namespaces.METS_NS.keys():
+                mdWrap.set("MDTYPE", siptools.xml.namespaces.METS_NS[ns]['mdtype'])
+            else:
+                raise TypeError("Invalid namespace: %s" % ns)
+    mdWrap.append(xmlData)
+    dmdSec.append(mdWrap)
+
+    return dmdSec
 
 
 def techmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
@@ -284,3 +306,8 @@ def file(id=None, admid_elements=None, loctype=None, xlink_href=None, xlink_type
     _file.append(_flocat)
 
     return _file
+
+def namespace(element):
+    """return xml element's namespace"""
+    m = re.match('\{.*\}', element.tag)
+    return m.group(0) if m else ''

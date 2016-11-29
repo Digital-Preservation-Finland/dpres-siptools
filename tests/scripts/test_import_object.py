@@ -26,11 +26,11 @@ def test_import_object_ok(input_file):
     assert len(root.findall('{http://www.loc.gov/METS/}techMD')) == 1
     assert return_code == 0
 
-def test_import_object_TPAS20_ok():
+def test_import_object_structured_ok():
 
     output = os.path.abspath('./workspace') 
     do = os.path.abspath(os.path.join(os.curdir,
-                'tests/data/TPAS-20'))
+                'tests/data/structured'))
     test_file = ""
     for element in iterate_files(do):
         arguments = ['--output', output, os.path.relpath(element,os.curdir)]

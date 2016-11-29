@@ -9,6 +9,7 @@ import argparse
 import siptools.scraper
 import siptools.xml.premis as p
 import siptools.xml.mets as m
+import xml.etree.ElementTree as ET
 
 
 def parse_arguments(arguments):
@@ -28,7 +29,7 @@ def main(arguments=None):
 
     # Loop files and create premis objects
     for filename in args.files:
-        mets = m._element('mets')
+        mets = m.mets_mets()
         techmd = m.techmd('techmd-%s' % filename)
         mets.append(techmd)
         digital_object = create_premis_object(techmd, filename)

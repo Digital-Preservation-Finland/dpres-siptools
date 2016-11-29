@@ -9,6 +9,7 @@ import os
 import shutil
 import lxml.etree
 from lxml.etree import Element, SubElement, tostring
+import siptools.xml.mets as m
 import uuid
 import datetime
 import dateutil.tz
@@ -69,58 +70,17 @@ def serialize(content):
 
     ID = str(uuid.uuid4())
 
-    el_root = Element("{%s}mets" % NAMESPACES['mets'], nsmap=NAMESPACES)
-    #el_root.set(XSI + 'schemaLocation', METS_SCHEMALOCATION)
+    mets = m.mets_mets()
 
-    el_dmdsec = Element("{%s}dmdSec" % NAMESPACES['mets'], nsmap=NAMESPACES)
-    el_dmdsec.set("ID", ID)
-    el_dmdsec.set("CREATED", get_edtf_time())
-    el_root.append(el_dmdsec)
+    parser = lxml.etree.XMLParser(
+        dtd_validation=False, no_network=True)
+    tree = lxml.etree.fromstring(content)
 
-    el_mdwrap = Element("{%s}mdWrap" % NAMESPACES['mets'], nsmap=NAMESPACES)
-    el_dmdsec.append(el_mdwrap)
+    childNodeList = tree.findall('*')
+    dmdsec = m.dmdSec(ID, child_elements=childNodeList)
+    mets.append(dmdsec)
 
-    el_xmldata = Element("{%s}xmlData" % NAMESPACES['mets'], nsmap=NAMESPACES)
-
-    try:
-        parser = lxml.etree.XMLParser(
-            dtd_validation=False, no_network=True)
-        tree = lxml.etree.fromstring(content)
-
-        childNodeList = tree.findall('*')
-
-        for node in childNodeList:
-            el_xmldata.append(node)
-            ns = namespace(node)[1:-1]
-            if ns in METS_NS.keys():
-                el_mdwrap.set("MDTYPE", METS_NS[ns]['mdtype'])
-            else:
-                raise TypeError("Invalid namespace: %s" % ns)
-
-    except lxml.etree.XMLSyntaxError as exception:
-        el_xmldata.text = content.decode("utf-8")
-
-    el_mdwrap.append(el_xmldata)
-
-    return tostring(el_root, pretty_print=True, xml_declaration=True,
-                    encoding='UTF-8')
-
-
-def get_edtf_time():
-    """return current time in format yyy-mm-ddThh:mm:ss"""
-    time_now = datetime.datetime.now()
-    localtz = dateutil.tz.tzlocal()
-    timezone_offset = localtz.utcoffset(time_now)
-    timezone_offset = (timezone_offset.days * 86400 +
-                       timezone_offset.seconds) / 3600
-    return time_now.strftime('%Y-%m-%dT%H:%M:%S')
-
-
-def namespace(element):
-    """return xml element's namespace"""
-    m = re.match('\{.*\}', element.tag)
-    return m.group(0) if m else ''
-
+    return m.serialize(mets)
 
 def main(arguments=None):
     """The main method for argparser"""
@@ -135,12 +95,11 @@ def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
     parser = argparse.ArgumentParser(description="A short description of this "
                                      "program")
-    parser.add_argument('dmdsec_location')
-    argparse._StoreAction(option_strings=[], dest='dmdsec_location', nargs=None,
-                          const=None, default=None, type=None, choices=None, help=None, metavar=None)
-    parser.add_argument('--workspace', default='./')
-    argparse._StoreAction(option_strings=['--workspace'], dest='workspace',
-                          nargs=None, const=None, default='./', type=None, choices=None, help=None, metavar=None)
+    parser.add_argument('dmdsec_location', type=str,
+            help='Location of descriptive metadata')
+    parser.add_argument('--workspace', dest='workspace', type=str,
+            default='./', help="Workspace directory")
+    parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)
 
