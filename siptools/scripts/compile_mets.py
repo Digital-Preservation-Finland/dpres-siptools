@@ -84,6 +84,9 @@ def main(arguments=None):
             if element.tag == '{%s}fileSec' % NAMESPACES['mets']:
                 mets.append(element)
 
+            if element.tag == '{%s}structMap' % NAMESPACES['mets']:
+                mets.append(element)
+
     mets.append(amdsec)
 
     if args.stdout:
