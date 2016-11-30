@@ -3,10 +3,36 @@ from siptools.scripts import compile_mets
 import pytest
 import os
 from siptools.xml.namespaces import NAMESPACES
+from siptools.scripts.import_description import main
+from siptools.scripts import premis_event
+from siptools.scripts import import_object
+from siptools.scripts import compile_structmap
+from urllib import quote
 
 
-def test_compile_mets_ok():
+def create_test_data(workspace):
+    # create descriptive metadata
+    dmdsec_location = 'tests/data/import_description/metadata/dc_description.xml'
+    url_location = quote(dmdsec_location, safe='')
+    main([dmdsec_location,  '--workspace', workspace])
 
+    # create provenance metadata
+    premis_event.main(['creation', '2016-10-13T12:30:55',
+        '--event_detail', 'Testing', '--event_outcome', 'success',
+        '--event_outcome_detail', 'Outcome detail', '--workspace',
+        workspace, '--agent_name', 'Demo Application', '--agent_type', 'software'])
+
+    #create technical metadata
+    import_object.main(['--output', workspace,
+        'tests/data/structured/Software files/koodi.java'])
+
+    #create structural metadata
+    compile_structmap.main(['tests/data/structured/Software files',
+        '--workspace', workspace])
+
+
+def test_compile_mets_ok(testpath):
+    create_test_data(testpath)
     return_code = compile_mets.main(['kdk',
                                      'CSC', '--objid', 'ABC-123',
                                      '--label', 'Test SIP',
@@ -16,10 +42,11 @@ def test_compile_mets_ok():
                                      '--create_date', '2016-10-28T09:30:55',
                                      '--last_moddate', '2016-10-28T09:30:55',
                                      '--record_status', 'submission', '--workspace',
-                                     './workspace'])
+                                     testpath])
 
-    output_file = os.path.join('./workspace', 'mets.xml')
+    output_file = os.path.join(testpath, 'mets.xml')
     tree = ET.parse(output_file)
+
     root = tree.getroot()
     # print "root: %s" % ET.tostring(root, encoding='UTF-8', method='xml')
 
@@ -49,7 +76,7 @@ def test_compile_mets_ok():
     assert return_code == 0
 
 
-def test_compile_mets_fail():
+def test_compile_mets_fail(testpath):
 
     with pytest.raises(SystemExit):
         return_code = compile_mets.main(['kdk',
@@ -61,4 +88,4 @@ def test_compile_mets_fail():
                                          '--create_date', '2016-10-28T09:30:55',
                                          '--last_moddate', '2016-10-28T09:30:55',
                                          '--record_status', 'nonsense', '--workspace',
-                                         './workspace'])
+                                         testpath])

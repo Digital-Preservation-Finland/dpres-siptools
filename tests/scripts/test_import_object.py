@@ -1,6 +1,5 @@
 import os.path
 from urllib import quote_plus
-from tempfile import mkdtemp
 import xml.etree.ElementTree as ET
 
 from siptools.scripts import import_object
@@ -10,13 +9,12 @@ import scandir
 
 
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
-def test_import_object_ok(input_file):
+def test_import_object_ok(input_file, testpath):
 
-    output = mkdtemp()
-    arguments = ['--output', output, input_file]
+    arguments = ['--output', testpath, input_file]
     return_code = import_object.main(arguments)
 
-    output = os.path.join(output,
+    output = os.path.join(testpath,
                           quote_plus(os.path.splitext(input_file)[0]) +
                           '-techmd.xml')
 
@@ -26,9 +24,9 @@ def test_import_object_ok(input_file):
     assert len(root.findall('{http://www.loc.gov/METS/}techMD')) == 1
     assert return_code == 0
 
-def test_import_object_structured_ok():
+def test_import_object_structured_ok(testpath):
 
-    output = os.path.abspath('./workspace') 
+    output = os.path.abspath(testpath) 
     do = os.path.abspath(os.path.join(os.curdir,
                 'tests/data/structured'))
     test_file = ""

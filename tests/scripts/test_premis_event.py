@@ -5,16 +5,16 @@ import pytest
 import os
 
 
-def test_premis_event_ok():
+def test_premis_event_ok(testpath):
 
     event_type = 'creation'
 
     return_code = premis_event.main([event_type, '2016-10-13T12:30:55',
                                      '--event_detail', 'Testing', '--event_outcome', 'success',
                                      '--event_outcome_detail', 'Outcome detail', '--workspace',
-                                     './workspace', '--agent_name', 'Demo Application', '--agent_type', 'software'])
+                                     testpath, '--agent_name', 'Demo Application', '--agent_type', 'software'])
 
-    output_file = os.path.join('./workspace', event_type + '.xml')
+    output_file = os.path.join(testpath, event_type + '.xml')
     tree = ET.parse(output_file)
     root = tree.getroot()
     # print "root: %s" % ET.tostring(root, encoding='UTF-8', method='xml')
@@ -38,11 +38,11 @@ def test_premis_event_ok():
     assert return_code == 0
 
 
-def test_premis_event_fail():
+def test_premis_event_fail(testpath):
 
     event_type = 'nonsense'
 
     with pytest.raises(SystemExit):
         return_code = premis_event.main([event_type, '2016-10-13T12:30:55',
                                          '--event_detail', 'Testing', '--event_outcome', 'success',
-                                         '--event_outcome_detail', 'Outcome detail', '--workspace', './workspace'])
+                                         '--event_outcome_detail', 'Outcome detail', '--workspace', testpath])
