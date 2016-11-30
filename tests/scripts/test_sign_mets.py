@@ -1,11 +1,12 @@
 from tempfile import NamedTemporaryFile 
 import siptools.scripts.sign_mets
+import os
 import pytest
 
-def test_valid_sign_mets():
+def test_valid_sign_mets(testpath):
 
 
-    output=NamedTemporaryFile().name
+    output=os.path.join(testpath, 'signature.sig')
     signing_key='tests/data/rsa-keys.crt'
     arguments=['tests/data/text-file.txt', output, signing_key]
 
