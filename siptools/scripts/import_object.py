@@ -28,7 +28,9 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     # Loop files and create premis objects
-    for filename in args.files:
+    files = collect_filepaths(args.files)
+    for filename in files:
+        print filename
         mets = m.mets_mets()
         techmd = m.techmd('techmd-%s' % filename)
         mets.append(techmd)
@@ -74,12 +76,31 @@ def create_premis_object(tree, fname):
         identifier_type='digital-object-id',
         identifier_value=unique)
 
-    el_premis_objectp_objectg = p.premis_object(
+    el_premis_object = p.premis_object(
         object_identifier, fname, child_elements=[el_fixity, el_format])
-    tree.append(el_premis_objectp_objectg)
+    tree.append(el_premis_object)
 
     return tree
 
+import fnmatch
+import os
+
+def collect_filepaths(dirs=['.'], pattern='*'):
+    """Collect file paths recursively from given directory. Raises IOError
+    if given path does not exist."""
+    files = []
+    for directory in dirs:
+        if os.path.isdir(directory):
+            files += [os.path.join(looproot, filename)
+                    for looproot, _, filenames in os.walk(directory)
+                    for filename in filenames
+                    if fnmatch.fnmatch(filename, pattern)]
+        elif os.path.isfile(directory):
+            files += [directory]
+        else:
+            raise IOError
+
+    return files
 
 if __name__ == '__main__':
     RETVAL = main()
