@@ -24,7 +24,6 @@ def testpath(request):
 
     def fin():
         """remove temporary path"""
-        subprocess.call(['find', temp_path, '-ls'])
         shutil.rmtree(temp_path)
 
     request.addfinalizer(fin)
