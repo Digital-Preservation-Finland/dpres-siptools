@@ -55,5 +55,5 @@ def iterate_files(path):
 @pytest.mark.parametrize('input_file', ['tests/data/missing-file'])
 def test_import_object_fail(input_file):
     with pytest.raises(IOError):
-        arguments = [input_file, input_file]
+        arguments = [input_file]
         import_object.main(arguments)
