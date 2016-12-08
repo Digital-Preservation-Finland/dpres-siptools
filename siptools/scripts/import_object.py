@@ -49,6 +49,7 @@ def main(arguments=None):
 
         with open(os.path.join(args.output, filename), 'w+') as outfile:
             outfile.write(m.serialize(mets))
+            print "Wrote METS technical metadata to file %s" % outfile.name
 
     return 0
 
