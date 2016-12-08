@@ -2,10 +2,14 @@
 
 import os
 import sys
+import hashlib
+import fnmatch
 from uuid import uuid4
 from urllib import quote_plus
+import magic
 import argparse
 
+from ipt.validator import validate
 import siptools.scraper
 import siptools.xml.premis as p
 import siptools.xml.mets as m
@@ -30,7 +34,6 @@ def main(arguments=None):
     # Loop files and create premis objects
     files = collect_filepaths(args.files)
     for filename in files:
-        print filename
         mets = m.mets_mets()
         techmd = m.techmd('techmd-%s' % filename)
         mets.append(techmd)
@@ -52,8 +55,12 @@ def main(arguments=None):
 
 def create_premis_object(tree, fname):
     """Create Premis object for given file."""
-    scraper = siptools.scraper.scraper(fname)
+    validation_result = validate(fileinfo(fname))
 
+    if not validation_result['is_valid']:
+        raise Exception('File %s is not valid: %s', fname, validation_result['errors'])
+
+    techmd = validation_result['result']
     # Create fixity element
     el_fixity = p._element('fixity')
     el_fixity_algorithm = p._subelement(
@@ -61,14 +68,16 @@ def create_premis_object(tree, fname):
     el_fixity_algorithm.text = 'MD5'
 
     el_fixity_checksum = p._subelement(el_fixity, 'digest', 'message')
-    el_fixity_checksum.text = scraper.md5
+    el_fixity_checksum.text = md5(fname)
 
     # Create format element
     el_format = p._element('format')
     el_format_name = p._subelement(el_format, 'name', 'format')
-    el_format_name.text = scraper.mimetype
-    el_format_version = p._subelement(el_format, 'version', 'format')
-    el_format_version.text = scraper.file_version
+    el_format_name.text = techmd['format']['mimetype']
+
+    if 'version' in techmd['format']:
+        el_format_version = p._subelement(el_format, 'version', 'format')
+        el_format_version.text = techmd['format']['version']
 
     # Create object element
     unique = str(uuid4())
@@ -82,8 +91,41 @@ def create_premis_object(tree, fname):
 
     return tree
 
-import fnmatch
-import os
+
+def fileinfo(fname):
+    """Return fileinfo dict for given file."""
+    fm = magic.open(magic.MAGIC_MIME_TYPE)
+    fm.load()
+    mimetype = fm.file(fname)
+
+    m = magic.open(magic.MAGIC_NONE)
+    fm.load()
+    version = fm.file(fname).split("version ")[-1]
+
+    charset = None
+    if mimetype == 'text/plain':
+        charset = 'UTF-8' if 'UTF-8' in version else 'ISO-8859-15'
+        version = None
+
+    return {
+        'filename': fname,
+        'format': {
+            'mimetype': mimetype,
+            'version': version,
+            'charset': charset
+            }
+        }
+
+
+def md5(fname):
+    """Calculate md5 checksum for given file."""
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+
+    return hash_md5.hexdigest()
+
 
 def collect_filepaths(dirs=['.'], pattern='*'):
     """Collect file paths recursively from given directory. Raises IOError
