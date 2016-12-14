@@ -26,7 +26,8 @@ Usage
 ---------------------
 In order to build a SIP for digital preservation use the scripts in following order. These produce mets.xml and digital signature in the parametrized folder 'workspace'.
 
-Create technical metadata::
+Create technical metadata from files located in the folder
+tests/data/structured::
     python siptools/scripts/import_object.py --output ./workspace 'tests/data/structured'
 
 Create digital provenance::
