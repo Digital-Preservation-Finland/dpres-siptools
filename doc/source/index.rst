@@ -9,7 +9,6 @@ Contents:
     :maxdepth: 2
 
     intro
-    architecture
     design    
     usage
 
