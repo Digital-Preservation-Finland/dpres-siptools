@@ -102,7 +102,8 @@ def _subelement(parent, tag, prefix=""):
     return ET.SubElement(parent, mix_ns(tag, prefix))
 
 
-def mix_mix(child_elements=None):
+def mix_mix(BasicDigitalObjectInformation=None, BasicImageInformation=None,
+        ImageCaptureMetadata=None, ImageAssessmentMetadata=None ):
     """Create MIX Data Dictionary root element.
 
     :child_elements: Any elements appended to the MIX dictionary
@@ -123,15 +124,20 @@ def mix_mix(child_elements=None):
         'http://www.loc.gov/mix/v20 '
         'http://www.loc.gov/mix/mix.xsd')
 
-    if child_elements:
-        for element in child_elements:
-            _mix.append(element)
+    if BasicDigitalObjectInformation:
+        mix.append(BasicDigitalObjectInformation)
+    if BasicImageInformation:
+        mix.append(BasicImageInformation)
+    if ImageCaptureMetadata:
+        mix.append(ImageCaptureMetadata)
+    if ImageAssessmentMetadata:
+        mix.append(ImageAssessmentMetadata)
 
-    return _mix
+    return mix
 
 
 def mix_BasicDigitalObjectInformation(
-        byteOrder=None, compressionScheme=None, compressionRatio=None):
+        byteOrder=None, Compression_elements=None):
     """Returns MIX BasicDigitalObjectInformation element
 
     :byteOrder: byte order in which multi-byte numbers are stored 
@@ -142,10 +148,7 @@ def mix_BasicDigitalObjectInformation(
 
         <mix:BasicDigitalObjectInformation>
             <mix:byteOrder>big endian</mix:byteOrder>
-            <mix:Compression>
-                <mix:compressionScheme>JPEG 2000 Lossless</mix:compressionScheme>
-                <mix:compressionRatio>10</mix:compressionRatio>
-            </mix:Compression>
+            {{ Compression elements }}
         </mix:BasicDigitalObjectInformation>
 
     """
@@ -154,7 +157,28 @@ def mix_BasicDigitalObjectInformation(
 
     mix_byteorder = _subelement(mix_BasicDigitalObjectInformation, 'byteOrder')
     mix_byteorder.text = byteOrder
+    if Compression_elements:
+        for element in Compression_elements:
+            mix_BasicDigitalObjectInformation.append(element)
 
+
+    return mix_BasicDigitalObjectInformation
+
+
+def mix_Compression(compressionScheme=None, compressionRatio=None):
+    """Returns MIX Compression element
+
+    :compressionScheme: compression scheme used to store the image data
+    :compressionRatio: Agent type
+
+    Returns the following ElementTree structure::
+
+        <mix:Compression>
+            <mix:compressionScheme>JPEG 2000 Lossless</mix:compressionScheme>
+            <mix:compressionRatio>10</mix:compressionRatio>
+        </mix:Compression>
+
+    """
     mix_compression = _subelement(mix_BasicDigitalObjectInformation, 'Compression')
 
     mix_compressionScheme = _subelement(mix_compression, 'compressionScheme')
@@ -163,7 +187,8 @@ def mix_BasicDigitalObjectInformation(
     mix_compressionRatio = _subelement(mix_compression, 'compressionRatio')
     mix_compressionRatio.text = compressionRatio
 
-    return mix_BasicDigitalObjectInformation
+    return mix_compression
+
 
 def mix_BasicImageInformation(
         imageWidth=None, imageHeight=None, colorSpace=None,
@@ -390,6 +415,7 @@ def mix_Component(
 
     return mix_Component
 
+
 def mix_ReferenceBlackWhite(child_elements=None):
     """Returns MIX ReferenceBlackWhite element
 
@@ -410,7 +436,39 @@ def mix_ReferenceBlackWhite(child_elements=None):
 
     return mix_ReferenceBlackWhite
 
-def mix_ImageCaptureMetadata(sourceType=None, SourceID_elements=None):
+
+def mix_ImageCaptureMetadata(sourceType=None, SourceID_elements=None,
+        sourceXDimensionValue=None, sourceXDimensionUnit=None,
+        sourceYDimensionValue=None, sourceYDimensionUnit=None,
+        sourceZDimensionValue=None, sourceZDimensionUnit=None,
+        dateTimeCreated=None, imageProducer_elements=None, captureDevice=None,
+        scannerManufacturer=None, scannerModelName=None,
+        scannerModelNumber=None, scannerModelSerialNo=None,
+        xOpticalResolution=None, yOpticalResolution=None,
+        opticalResolutionUnit=None, scannerSensor=None, scanningSoftwareName=None,
+        scanningSoftwareVersionNo=None, digitalCameraManufacturer=None,
+        DigitalCameraModelName=None, DigitalCameraModelNumber=None,
+        DigitalCameraModelSerialNo=None, cameraSensor=None, fNumber=None,
+        exposureTime=None, exposureProgram=None, spectralSensitivity_elements=None,
+        isoSpeedRatings=None, rationalType=None, exifVersion=None,
+        shutterSpeedValue=None, apertureValue=None, brightnessValue=None,
+        exposureBiasValue=None, maxApertureValue=None, distance=None,
+        minDistance=None, maxDistance=None, meteringMode=None,
+        lightSource=None, flash=None, focalLength=None, flashEnergy=None,
+        backLight=None, exposureIndex=None, sensingMethod=None,
+        cfaPattern=None, autoFocus=None, xPrintAspectRatio=None,
+        yPrintAspectRatio=None, gpsVersionID=None, gpsLatitudeRef=None,
+        GPSLatitude_element=None, gpsLongitudeRef=None,
+        GPSLongitude_element=None, gpsAltitudeRef=None, gpsAltitude=None,
+        gpsTimeStamp=None, gpsSatellites=None, gpsStatus=None,
+        gpsMeasureMode=None, gpsDOP=None, gpsSpeedRef=None, gpsSpeed=None,
+        gpsTrackRef=None, gpsImgDirectionRef=None, gpsImgDirection=None,
+        gpsMapDatum=None, gpsDestLatitudeRef=None,
+        GPSDestLatitude_element=None, gpsDestLongitudeRef=None,
+        GPSDestLongitude_element=None, gpsDestBearingRef=None,
+        gpsDestBearing=None, gpsDestDistanceRef=None, gpsDestDistance=None,
+        gpsProcessingMethod=None, gpsAreaInformation=None, gpsDateStamp=None,
+        gpsDifferential=None, typeOfOrientationType=None, methodology=None):
     """Returns MIX ImageCaptureMetadata element
 
     :sourceType: specifies the medium of the analog source material scanned to
@@ -437,7 +495,116 @@ def mix_ImageCaptureMetadata(sourceType=None, SourceID_elements=None):
                         <mix:sourceZDimensionUnit></mix:sourceZDimensionUnit>
                     </mix:SourceZDimension>
                 </mix:SourceSize>
-            <mix:SourceInformation>
+            </mix:SourceInformation>
+            <mix:GeneralCaptureInformation>
+                <mix:dateTimeCreated></mix:dateTimeCreated>
+                {{ imageProducer elements }}
+                <mix:captureDevice></mix:captureDevice>
+            </mix:GeneralCaptureInformation>
+            <mix:ScannerCapture>
+                <mix:scannerManufacturer></mix:scannerManufacturer>
+                <mix:scannerModel>
+                    <mix:scannerModelName></mix:scannerModelName>
+                    <mix:scannerModelNumber></mix:scannerModelNumber>
+                    <mix:scannerModelSerialNo></mix:scannerModelSerialNo>
+                </mix:scannerModel>
+                <mix:MaximumOpticalResolution>
+                    <mix:xOpticalResolution></mix:xOpticalResolution>
+                    <mix:yOpticalResolution></mix:yOpticalResolution>
+                    <mix:opticalResolutionUnit></mix:opticalResolutionUnit>
+                </mix:MaximumOpticalResolution>
+                <mix:scannerSensor></mix:scannerSensor>
+                <mix:ScanningSystemSoftware>
+                    <mix:scanningSoftwareName></mix:scanningSoftwareName>
+                    <mix:scanningSoftwareVersionNo></mix:scanningSoftwareVersionNo>
+                </mix:ScanningSystemSoftware>
+            </mix:ScannerCapture>
+            <mix:DigitalCameraCapture>
+                <mix:digitalCameraManufacturer></mix:digitalCameraManufacturer>
+                <mix:DigitalCameraModel>
+                    <mix:DigitalCameraModelName></mix:DigitalCameraModelName>
+                    <mix:DigitalCameraModelNumber></mix:DigitalCameraModelNumber>
+                    <mix:DigitalCameraModelSerialNo></mix:DigitalCameraModelSerialNo>
+                </mix:DigitalCameraModel>
+                <mix:cameraSensor></mix:cameraSensor>
+                <mix:CameraCaptureSettings>
+                    <mix:ImageData>
+                        <mix:fNumber></mix:fNumber>
+                        <mix:exposureTime></mix:exposureTime>
+                        <mix:spectralSensitivity></mix:spectralSensitivity>
+                        <mix:isoSpeedRatings></mix:isoSpeedRatings>
+                        <mix:oECF></mix:oECF>
+                        <mix:exifVersion></mix:exifVersion>
+                        <mix:shutterSpeedValue></mix:shutterSpeedValue>
+                        <mix:apertureValue></mix:apertureValue>
+                        <mix:brightnessValue></mix:brightnessValue>
+                        <mix:exposureBiasValue></mix:exposureBiasValue>
+                        <mix:maxApertureValue></mix:maxApertureValue>
+                        <mix:SubjectDistance>
+                            <mix:distance></mix:distance>
+                            <mix:MinMaxDistance>
+                                <mix:minDistance></mix:minDistance>
+                                <mix:maxDistance></mix:maxDistance>
+                            </mix:MinMaxDistance>
+                        </mix:SubjectDistance>
+                        <mix:meteringMode></mix:meteringMode>
+                        <mix:lightSource></mix:lightSource>
+                        <mix:flash></mix:flash>
+                        <mix:focalLength></mix:focalLength>
+                        <mix:flashEnergy></mix:flashEnergy>
+                        <mix:backLight></mix:backLight>
+                        <mix:exposureIndex></mix:exposureIndex>
+                        <mix:sensingMethod></mix:sensingMethod>
+                        <mix:cfaPattern></mix:cfaPattern>
+                        <mix:autoFocus></mix:autoFocus>
+                        <mix:PrintAspectRatio>
+                            <mix:xPrintAspectRatio></mix:xPrintAspectRatio>
+                            <mix:yPrintAspectRatio></mix:yPrintAspectRatio>
+                        </mix:PrintAspectRatio>
+                        <mix:GPSData>
+                            <mix:gpsVersionID></mix:gpsVersionID>
+                            <mix:gpsLatitudeRef></mix:gpsLatitudeRef>
+                            {{ GPSLatitude gpsGroup element }}
+                            <mix:gpsLongitudeRef></mix:gpsLongitudeRef>
+                            {{ GPSLongitude gpsGroup element }}
+                            <mix:gpsAltitudeRef></mix:gpsAltitudeRef>
+                            <mix:gpsAltitude></mix:gpsAltitude>
+                            <mix:gpsTimeStamp></mix:gpsTimeStamp>
+                            <mix:gpsSatellites></mix:gpsSatellites>
+                            <mix:gpsStatus></mix:gpsStatus>
+                            <mix:gpsMeasureMode></mix:gpsMeasureMode>
+                            <mix:gpsDOP></mix:gpsDOP>
+                            <mix:gpsSpeedRef></mix:gpsSpeedRef>
+                            <mix:gpsSpeed></mix:gpsSpeed>
+                            <mix:gpsTrackRef></mix:gpsTrackRef>
+                            <mix:gpsTrack></mix:gpsTrack>
+                            <mix:gpsImgDirectionRef></mix:gpsImgDirectionRef>
+                            <mix:gpsImgDirection></mix:gpsImgDirection>
+                            <mix:gpsMapDatum></mix:gpsMapDatum>
+                            <mix:gpsDestLatitudeRef></mix:gpsDestLatitudeRef>
+                            {{ GPSDestLatitude gpsGroup element }}
+                            <mix:gpsDestLongitudeRef></mix:gpsDestLongitudeRef>
+                            {{ GPSDestLongitude gpsGroup element }}
+                            <mix:gpsDestBearingRef></mix:gpsDestBearingRef>
+                            <mix:gpsDestBearing></mix:gpsDestBearing>
+                            <mix:gpsDestDistanceRef></mix:gpsDestDistanceRef>
+                            <mix:gpsDestDistance></mix:gpsDestDistance>
+                            <mix:gpsProcessingMethod></mix:gpsProcessingMethod>
+                            <mix:gpsAreaInformation></mix:gpsAreaInformation>
+                            <mix:gpsDateStamp></mix:gpsDateStamp>
+                            <mix:gpsDifferential></mix:gpsDifferential>
+                        </mix:GPSData>
+
+
+                        <mix:orientation></mix:orientation>
+                        <mix:methodology></mix:methodology>
+
+                    </mix:ImageData>
+
+
+
+                </mix:CameraCaptureSettings>
+            </mix:DigitalCameraCapture>
         </mix:ImageCaptureMetadata>
 
     """
@@ -459,8 +626,285 @@ def mix_ImageCaptureMetadata(sourceType=None, SourceID_elements=None):
             'sourceXDimensionUnit')
     mix_sourceXDimensionUnit.text = sourceXDimensionUnit
 
+    mix_SourceYDimension = _subelement(mix_SourceInformation, 'SourceYDimension')
+    mix_sourceYDimensionValue = _subelement(mix_SourceYDimension,
+            'sourceYDimensionValue')
+    mix_sourceYDimensionValue.text = sourceYDimensionValue
+    mix_sourceYDimensionUnit = _subelement(mix_SourceYDimension,
+            'sourceYDimensionUnit')
+    mix_sourceYDimensionUnit.text = sourceYDimensionUnit
+
+    mix_SourceZDimension = _subelement(mix_SourceInformation, 'SourceZDimension')
+    mix_sourceZDimensionValue = _subelement(mix_SourceZDimension,
+            'sourceZDimensionValue')
+    mix_sourceZDimensionValue.text = sourceZDimensionValue
+    mix_sourceZDimensionUnit = _subelement(mix_SourceZDimension,
+            'sourceZDimensionUnit')
+    mix_sourceZDimensionUnit.text = sourceZDimensionUnit
+
+    mix_GeneralCaptureInformation = _subelement(mix_ImageCaptureMetadata,
+            'GeneralCaptureInformation')
+    mix_dateTimeCreated = _subelement(mix_GeneralCaptureInformation, 'dateTimeCreated')
+    mix_dateTimeCreated.text = dateTimeCreated
+
+    if imageProducer_elements:
+        for element in imageProducer_elements:
+            mix_imageProducer = _subelement(mix_GeneralCaptureInformation,
+                    'imageProducer')
+            mix_imageProducer.text = element
+
+    mix_captureDevice = _subelement(mix_GeneralCaptureInformation,
+            'captureDevice')
+    mix_captureDevice.text = captureDevice
+
+    mix_ScannerCapture = _subelement(mix_ImageCaptureMetadata, 'ScannerCapture')
+    mix_scannerManufacturer = _subelement(mix_ScannerCapture,
+             'scannerManufacturer')
+    mix_scannerManufacturer.text = scannerManufacturer
+    mix_scannerModel = _subelement(mix_ScannerCapture, 'scannerModel')
+
+    mix_scannerModelName = _subelement(mix_scannerModel, 'scannerModelName')
+    mix_scannerModelName.text = scannerModelName
+
+    mix_scannerModelNumber = _subelement(mix_scannerModel, 'scannerModelNumber')
+    mix_scannerModelNumber.text = scannerModelNumber
+
+    mix_scannerModelSerialNo = _subelement(mix_scannerModel,
+            'scannerModelSerialNo')
+    mix_scannerModelSerialNo.text = scannerModelSerialNo
+
+    mix_MaximumOpticalResolution = _subelement(mix_ScannerCapture,
+             'MaximumOpticalResolution')
+    mix_xOpticalResolution = _subelement(mix_MaximumOpticalResolution, 'xOpticalResolution')
+    mix_xOpticalResolution.text = xOpticalResolution
+
+    mix_yOpticalResolution = _subelement(mix_MaximumOpticalResolution, 'yOpticalResolution')
+    mix_yOpticalResolution.text = yOpticalResolution
+
+    mix_opticalResolutionUnit = _subelement(mix_MaximumOpticalResolution,
+            'opticalResolutionUnit')
+    mix_opticalResolutionUnit.text = opticalResolutionUnit
+
+    mix_scannerSensor = _subelement(mix_ScannerCapture, 'scannerSensor')
+    mix_scannerSensor.text = scannerSensor
+
+    mix_ScanningSystemSoftware = _subelement(mix_ScannerCapture,
+            'ScanningSystemSoftware')
+    mix_scanningSoftwareVersionNo = _subelement(mix_ScannerCapture,
+            'scanningSoftwareVersionNo')
+
+    mix_DigitalCameraCapture = _subelement(mix_ImageCaptureMetadata,
+            'DigitalCameraCapture')
+    mix_digitalCameraManufacturer = _subelement(mix_DigitalCameraCapture,
+             'digitalCameraManufacturer')
+    mix_digitalCameraManufacturer.text = digitalCameraManufacturer
+
+    mix_DigitalCameraModel = _subelement(mix_DigitalCameraCapture,
+    'DigitalCameraModel')
+    mix_DigitalCameraModelName = _subelement(mix_DigitalCameraModel,
+    'DigitalCameraModelName')
+    mix_digitalCameraModelName.text = digitalCameraModelName
+
+    mix_DigitalCameraModelNumber = _subelement(mix_DigitalCameraModel,
+    'DigitalCameraModelNumber')
+    mix_digitalCameraModelNumber.text = digitalCameraModelNumber
+
+    mix_DigitalCameraModelSerialNo = _subelement(mix_DigitalCameraModel,
+    'DigitalCameraModelSerialNo')
+    mix_digitalCameraModelSerialNo.text = digitalCameraModelSerialNo
+
+    mix_cameraSensor = _subelement(mix_ImageCaptureMetadata,
+            'cameraSensor')
+    mix_cameraSensor.text = cameraSensor
+
+    mix_CameraCaptureSettings = _subelement(mix_ImageCaptureMetadata,
+            'CameraCaptureSettings')
+    mix_ImageData = _subelement(mix_CameraCaptureSettings,
+            'ImageData')
+
+    mix_fNumber = _subelement(mix_ImageData, 'fNumber')
+    mix_fNumber.text = fNumber
+
+    mix_exposureTime = _subelement(mix_ImageData, 'exposureTime')
+    mix_exposureTime.text = exposureTime
+
+    if spectralSensitivity_elements:
+        for element in spectralSensitivity_elements:
+            mix_spectralSensitivity = _subelement(mix_ImageData, 'spectralSensitivity')
+            mix_spectralSensitivity.text = element
+
+    mix_isoSpeedRatings = _subelement(mix_ImageData, 'isoSpeedRatings')
+    mix_isoSpeedRatings.text = isoSpeedRatings
+
+    mix_oECF = _subelement(mix_ImageData, 'oECF')
+    mix_oECF.text = oECF
+
+    mix_exifVersion = _subelement(mix_ImageData, 'exifVersion')
+    mix_exifVersion.text = exifVersion
+
+    mix_shutterSpeedValue = _subelement(mix_ImageData, 'shutterSpeedValue')
+    mix_shutterSpeedValue.text = shutterSpeedValue
+
+    mix_apertureValue = _subelement(mix_ImageData, 'apertureValue')
+    mix_apertureValue.text = apertureValue
+
+    mix_brightnessValue = _subelement(mix_ImageData, 'brightnessValue')
+    mix_brightnessValue.text = brightnessValue
+
+    mix_exposureBiasValue = _subelement(mix_ImageData, 'exposureBiasValue')
+    mix_exposureBiasValue.text = exposureBiasValue
+
+    mix_maxApertureValue = _subelement(mix_ImageData, 'maxApertureValue')
+    mix_maxApertureValue.text = maxApertureValue
+
+    mix_SubjectDistance = _subelement(mix_ImageData, 'SubjectDistance')
+    mix_distance = _subelement(mix_SubjectDistance, 'distance')
+    mix_distance.text = distance
+
+    mix_MinMaxDistance = _subelement(mix_SubjectDistance, 'MinMaxDistance')
+    mix_minDistance = _subelement(mix_MinMaxDistance, 'minDistance')
+    mix_minDistance.text = minDistance
+    mix_maxDistance = _subelement(mix_MinMaxDistance, 'maxDistance')
+    mix_maxDistance.text = maxDistance
+
+    mix_meteringMode = _subelement(mix_ImageData, 'meteringMode')
+    mix_meteringMode.text = meteringMode
+
+    mix_lightSource = _subelement(mix_ImageData, 'lightSource')
+    mix_lightSource.text = lightSource
+
+    mix_flash = _subelement(mix_ImageData, 'flash')
+    mix_flash.text = flash
+
+    mix_focalLength = _subelement(mix_ImageData, 'focalLength')
+    mix_focalLength.text = focalLength
+
+    mix_flashEnergy = _subelement(mix_ImageData, 'flashEnergy')
+    mix_flashEnergy.text = flashEnergy
+
+    mix_backLight = _subelement(mix_ImageData, 'backLight')
+    mix_backLight.text = backLight
+
+    mix_exposureIndex = _subelement(mix_ImageData, 'exposureIndex')
+    mix_exposureIndex.text = exposureIndex
+
+    mix_sensingMethod = _subelement(mix_ImageData, 'sensingMethod')
+    mix_sensingMethod.text = sensingMethod
+
+    mix_cfaPattern = _subelement(mix_ImageData, 'cfaPattern')
+    mix_cfaPattern.text = cfaPattern
+
+    mix_autoFocus = _subelement(mix_ImageData, 'autoFocus')
+    mix_autoFocus.text = autoFocus
+
+    mix_PrintAspectRatio = _subelement(mix_ImageData, 'PrintAspectRatio')
+    mix_xPrintAspectRatio = _subelement(mix_ImageData, 'xPrintAspectRatio')
+    mix_xPrintAspectRatio.text = xPrintAspectRatio
+    mix_yPrintAspectRatio = _subelement(mix_ImageData, 'yPrintAspectRatio')
+    mix_yPrintAspectRatio.text = yPrintAspectRatio
+
+    mix_GPSData = _element('GPSData')
+    mix_gpsVersionID = _subelement(mix_GPSData, 'gpsVersionID')
+    mix_gpsVersionID.text = gpsVersionID
+
+    mix_gpsLatitudeRef = _subelement(mix_GPSData, 'gpsLatitudeRef')
+    mix_gpsLatitudeRef.text = gpsLatitudeRef
+
+    if GPSLatitude_elements:
+        mix_GPSData.append(GPSLatitude_elements)
+
+    mix_gpsLongitudeRef = _subelement(mix_GPSData, 'gpsLongitudeRef')
+    mix_gpsLongitudeRef.text = gpsLongitudeRef
+
+    if GPSLongitude_elements:
+        mix_GPSData.append(GPSLongitude_elements)
+
+    mix_gpsAltitudeRef = _subelement(mix_GPSData, 'gpsAltitudeRef')
+    mix_gpsAltitudeRef.text = gpsAltitudeRef
+
+    mix_gpsAltitude = _subelement(mix_GPSData, 'gpsAltitude')
+    mix_gpsAltitude.text = gpsAltitude
+
+    mix_gpsTimeStamp = _subelement(mix_GPSData, 'gpsTimeStamp')
+    mix_gpsTimeStamp.text = gpsTimeStamp
+
+    mix_gpsSatellites = _subelement(mix_GPSData, 'gpsSatellites')
+    mix_gpsSatellites.text = gpsSatellites
+
+    mix_gpsStatus = _subelement(mix_GPSData, 'gpsStatus')
+    mix_gpsStatus.text = gpsStatus
+
+    mix_gpsMeasureMode = _subelement(mix_GPSData, 'gpsMeasureMode')
+    mix_gpsMeasureMode.text = gpsMeasureMode
+
+    mix_gpsDOP = _subelement(mix_GPSData, 'gpsDOP')
+    mix_gpsDOP.text = gpsDOP
+
+    mix_gpsSpeedRef = _subelement(mix_GPSData, 'gpsSpeedRef')
+    mix_gpsSpeedRef.text = gpsSpeedRef
+
+    mix_gpsSpeed = _subelement(mix_GPSData, 'gpsSpeed')
+    mix_gpsSpeed.text = gpsSpeed
+
+    mix_gpsTrackRef = _subelement(mix_GPSData, 'gpsTrackRef')
+    mix_gpsTrackRef.text = gpsTrackRef
+
+    mix_gpsTrack = _subelement(mix_GPSData, 'gpsTrack')
+    mix_gpsTrack.text = gpsTrack
+
+    mix_gpsImgDirectionRef = _subelement(mix_GPSData, 'gpsImgDirectionRef')
+    mix_gpsImgDirectionRef.text = gpsImgDirectionRef
+
+    mix_gpsImgDirection = _subelement(mix_GPSData, 'gpsImgDirection')
+    mix_gpsImgDirection.text = gpsImgDirection
+
+    mix_gpsMapDatum = _subelement(mix_GPSData, 'gpsMapDatum')
+    mix_gpsMapDatum.text = gpsMapDatum
+
+    mix_gpsDestLatitudeRef = _subelement(mix_GPSData, 'gpsDestLatitudeRef')
+    mix_gpsDestLatitudeRef.text = gpsDestLatitudeRef
+
+    if GPSDestLatitude_elements:
+        mix_GPSData.append(GPSDestLatitude_elements)
+
+    mix_gpsDestLongitudeRef = _subelement(mix_GPSData, 'gpsDestLongitudeRef')
+    mix_gpsDestLongitudeRef.text = gpsDestLongitudeRef
+
+    if gpsDestLongitude_elements:
+        mix_GPSData.append(gpsDestLongitude_elements)
+
+    mix_gpsDestBearingRef = _subelement(mix_GPSData, 'gpsDestBearingRef')
+    mix_gpsDestBearingRef.text = gpsDestBearingRef
+
+    mix_gpsDestBearing = _subelement(mix_GPSData, 'gpsDestBearing')
+    mix_gpsDestBearing.text = gpsDestBearing
+
+    mix_gpsDestDistanceRef = _subelement(mix_GPSData, 'gpsDestDistanceRef')
+    mix_gpsDestDistanceRef.text = gpsDestDistanceRef
+
+    mix_gpsDestDistance = _subelement(mix_GPSData, 'gpsDestDistance')
+    mix_gpsDestDistance.text = gpsDestDistance
+
+    mix_gpsProcessingMethod = _subelement(mix_GPSData, 'gpsProcessingMethod')
+    mix_gpsProcessingMethod.text = gpsProcessingMethod
+
+    mix_gpsAreaInformation = _subelement(mix_GPSData, 'gpsAreaInformation')
+    mix_gpsAreaInformation.text = gpsAreaInformation
+
+    mix_gpsDateStamp = _subelement(mix_GPSData, 'gpsDateStamp')
+    mix_gpsDateStamp.text = gpsDateStamp
+
+    mix_gpsDifferential = _subelement(mix_GPSData, 'gpsDifferential')
+    mix_gpsDifferential.text = gpsDifferential
+
+    mix_orientation = _subelement(mix_ImageData, 'orientation')
+    mix_orientation.text = orientation
+
+    mix_methodology = _subelement(mix_ImageData, 'methodology')
+    mix_methodology.text = methodology
 
     return mix_ImageCaptureMetadata
+
 
 def mix_SourceID(sourceIDType=None, sourceIDValue=None):
     """Returns MIX sourceID element
@@ -484,5 +928,277 @@ def mix_SourceID(sourceIDType=None, sourceIDValue=None):
     mix_sourceIDValue = _subelement(mix_sourceID, 'sourceIDValue')
     mix_sourceIDValue.text = sourceIDValue
 
+    return mix_sourceID
 
-    return mix_ReferenceBlackWhite
+
+def mix_gpsGroup(degrees=None, minutes=None, seconds=None):
+    """Returns MIX gpsGroup element
+
+    :degrees:
+    :minutes:
+    :seconds:
+
+    Returns the following ElementTree structure::
+
+        <mix:gpsGroup>
+            <mix:degrees></mix:degrees>
+            <mix:minutes></mix:minutes>
+            <mix:seconds></mix:seconds>
+        </mix:sourceID>
+
+    """
+    mix_gpsGroup = _element('gpsGroup')
+    mix_degrees = _subelement(mix_gpsGroup, 'degrees')
+    mix_degrees.text = degrees
+
+    mix_minutes = _subelement(mix_gpsGroup, 'minutes')
+    mix_minutes.text = minutes
+
+    mix_seconds = _subelement(mix_gpsGroup, 'seconds')
+    mix_seconds.text = seconds
+
+    return mix_gpsGroup
+
+def mix_ImageAssessmentMetadata(samplingFrequencyPlane=None,
+        samplingFrequencyUnit=None, xSamplingFrequency=None,
+        ySamplingFrequency=None, bitsPerSampleValue_elements=None,
+        bitsPerSampleUnit=None, samplesPerPixel=None, extraSamples_elements=None,
+        colormapReference=None, embeddedColormap=None,
+        grayResponseCurve_elements=None, grayResponseUnit=None,
+        WhitePoint_elements=None, 
+        PrimaryChromaticities_elements=None, targetType_elements=None,
+        TargetID_elements=None, externalTarget_elements=None,
+        performanceData_elements=None):
+    """Returns MIX ImageAssessmentMetadata element
+
+    :samplingFrequencyPlane:
+    :samplingFrequencyUnit:
+    :xSamplingFrequency:
+    :ySamplingFrequency:
+    :bitsPerSampleValue:
+
+    Returns the following ElementTree structure::
+
+        <mix:ImageAssessmentMetadata>
+            <mix:SpatialMetrics>
+                <mix:samplingFrequencyPlane></mix:samplingFrequencyPlane>
+                <mix:samplingFrequencyUnit></mix:samplingFrequencyUnit>
+                <mix:xSamplingFrequency></mix:xSamplingFrequency>
+                <mix:ySamplingFrequency></mix:ySamplingFrequency>
+            </mix:SpatialMetrics>
+            <mix:ImageColorEncoding>
+                <mix:BitsPerSample>
+                    <mix:bitsPerSampleValue></mix:bitsPerSampleValue>
+                    <mix:bitsPerSampleUnit></mix:bitsPerSampleUnit>
+                </mix:BitsPerSample>
+                <mix:samplesPerPixel></mix:samplesPerPixel>
+                <mix:extraSamples></mix:extraSamples>
+                <mix:Colormap>
+                    <mix:colormapReference></mix:colormapReference>
+                    <mix:embeddedColormap></mix:embeddedColormap>
+                </mix:Colormap>
+                <mix:GrayResponse>
+                    <mix:grayResponseCurve></mix:grayResponseCurve>
+                    <mix:grayResponseUnit></mix:grayResponseUnit>
+                </mix:GrayResponse>
+                {{ WhitePoint elements }}
+                {{ PrimaryChromaticities elements }}
+
+            </mix:ImageColorEncoding>
+            <mix:TargetData>
+                <mix:targetType></mix:targetType>
+                {{ TargetID  elements }}
+                <mix:externalTarget></mix:externalTarget>
+                <mix:performanceData></mix:performanceData>
+            </mix:TargetData>
+        </mix:ImageAssessmentMetadata>
+
+    """
+    mix_ImageAssessmentMetadata = _element('ImageAssessmentMetadata')
+    mix_SpatialMetrics = _subelement(mix_ImageAssessmentMetadata, 'SpatialMetrics')
+    mix_samplingFrequencyPlane = _subelement(mix_SpatialMetrics, 'samplingFrequencyPlane')
+    mix_samplingFrequencyPlane.text = samplingFrequencyPlane
+
+    mix_samplingFrequencyUnit = _subelement(mix_SpatialMetrics, 'samplingFrequencyUnit')
+    mix_samplingFrequencyUnit.text = samplingFrequencyUnit
+
+    mix_xSamplingFrequency = _subelement(mix_SpatialMetrics, 'xSamplingFrequency')
+    mix_xSamplingFrequency.text = xSamplingFrequency
+
+    mix_ySamplingFrequency = _subelement(mix_SpatialMetrics, 'ySamplingFrequency')
+    mix_ySamplingFrequency.text = ySamplingFrequency
+
+    mix_ImageColorEncoding = _subelement(mix_ImageAssessmentMetadata, 'ImageColorEncoding')
+    mix_BitsPerSample = _subelement(mix_ImageColorEncoding, 'BitsPerSample')
+    if bitsPerSampleValue_elements:
+        for element in bitsPerSampleValue_elements:
+            mix_bitsPerSampleValue = _subelement(mix_BitsPerSample, 'bitsPerSampleValue')
+            mix_bitsPerSampleValue.text = element
+
+    mix_bitsPerSampleUnit = _subelement(mix_BitsPerSample, 'bitsPerSampleUnit')
+    mix_bitsPerSampleUnit.text = bitsPerSampleUnit
+
+    mix_samplesPerPixel = _subelement(mix_ImageColorEncoding, 'samplesPerPixel')
+    mix_samplesPerPixel.text = samplesPerPixel
+
+    if extraSamples_elements:
+        for element in extraSamples_elements:
+            mix_extraSamples = _subelement(mix_ImageColorEncoding, 'extraSamples')
+            mix_extraSamples.text = element
+
+    mix_Colormap = _subelement(mix_ImageColorEncoding, 'Colormap')
+    mix_colormapReference = _subelement(mix_Colormap, 'colormapReference')
+    mix_colormapReference.text = colormapReference
+
+    mix_embeddedColormap = _subelement(mix_Colormap, 'embeddedColormap')
+    mix_embeddedColormap.text = embeddedColormap
+
+    mix_GrayResponse = _subelement(mix_ImageColorEncoding, 'GrayResponse')
+    if grayResponseCurve_elements:
+        for element in grayResponseCurve_elements:
+            mix_grayResponseCurve = _subelement(mix_GrayResponse,
+                    'grayResponseCurve')
+            mix_grayResponseCurve.text = element
+
+    mix_grayResponseUnit = _subelement(mix_GrayResponse, 'grayResponseUnit')
+    mix_grayResponseUnit.text = grayResponseUnit
+
+    if WhitePoint_elements:
+        for element in WhitePoint_elements:
+            mix_ImageColorEncoding.append(element)
+
+    if PrimaryChromaticities_elements:
+        for element in PrimaryChromaticities_elements:
+            mix_ImageColorEncoding.append(element)
+
+    mix_TargetData = _subelement(mix_ImageAssessmentMetadata, 'TargetData')
+    if targetType_elements:
+        for element in targetType_elements:
+            mix_targetType = _subelement(mix_TargetData, 'targetType')
+            mix_targetType.text = element
+
+    if TargetID_elements:
+        for element in TargetID_elements:
+            mix_targetType.append(element)
+
+    if externalTarget_elements:
+        for element in externalTarget_elements:
+            mix_externalTarget = _subelement(mix_TargetData, 'externalTarget')
+            mix_externalTarget.text = element
+
+    if performanceData_elements:
+        for element in performanceData_elements:
+            mix_performanceData = _subelement(mix_TargetData, 'performanceData')
+            mix_performanceData.text = element
+
+    return mix_ImageAssessmentMetadata
+
+def mix_WhitePoint(whitePointXValue=None, whitePointYValue=None):
+    """Returns MIX gpsGroup element
+
+    :whitePointXValue:
+    :whitePointYValue:
+
+    Returns the following ElementTree structure::
+
+        <mix:WhitePoint>
+            <mix:whitePointXValue></mix:whitePointXValue>
+            <mix:whitePointYValue></mix:whitePointYValue>
+        </mix:WhitePoint>
+
+    """
+    mix_WhitePoint = _subelement(mix_ImageColorEncoding, 'WhitePoint')
+    mix_whitePointXValue = _subelement(mix_WhitePoint, 'whitePointXValue')
+    mix_whitePointXValue.text = whitePointXValue
+
+    mix_whitePointYValue = _subelement(mix_WhitePoint, 'whitePointYValue')
+    mix_whitePointYValue.text = whitePointYValue
+
+    return mix_WhitePoint
+
+
+def mix_PrimaryChromaticities(primaryChromaticitiesRedX=None,
+        primaryChromaticitiesRedY=None, primaryChromaticitiesGreenX=None,
+        primaryChromaticitiesGreenY=None, primaryChromaticitiesBlueX=None,
+        primaryChromaticitiesBlueY=None):
+    """Returns MIX PrimaryChromaticities element
+
+    :primaryChromaticitiesRedX:
+    :primaryChromaticitiesRedY:
+    :primaryChromaticitiesGreenX:
+    :primaryChromaticitiesGreenY:
+    :primaryChromaticitiesBlueX:
+    :primaryChromaticitiesBlueY:
+
+    Returns the following ElementTree structure::
+
+        <mix:PrimaryChromaticities>
+            <mix:primaryChromaticitiesRedX></mix:primaryChromaticitiesRedX>
+            <mix:primaryChromaticitiesRedY></mix:primaryChromaticitiesRedY>
+            <mix:primaryChromaticitiesGreenX></mix:primaryChromaticitiesGreenX>
+            <mix:primaryChromaticitiesGreenY></mix:primaryChromaticitiesGreenY>
+            <mix:primaryChromaticitiesBlueX></mix:primaryChromaticitiesBlueX>
+            <mix:primaryChromaticitiesBlueY></mix:primaryChromaticitiesBlueY>
+        </mix:PrimaryChromaticities>
+
+    """
+    mix_PrimaryChromaticities = _element('PrimaryChromaticities')
+    mix_primaryChromaticitiesRedX = _subelement(mix_PrimaryChromaticities,
+            'primaryChromaticitiesRedX')
+    mix_primaryChromaticitiesRedX.text = primaryChromaticitiesRedX
+
+    mix_primaryChromaticitiesRedY = _subelement(mix_PrimaryChromaticities,
+            'primaryChromaticitiesRedY')
+    mix_primaryChromaticitiesRedY.text = primaryChromaticitiesRedY
+
+    mix_primaryChromaticitiesGreenX = _subelement(mix_PrimaryChromaticities, 'primaryChromaticitiesGreenX')
+    mix_primaryChromaticitiesGreenX.text = primaryChromaticitiesGreenX
+
+    mix_primaryChromaticitiesGreenY = _subelement(mix_PrimaryChromaticities, 'primaryChromaticitiesGreenY')
+    mix_primaryChromaticitiesGreenY.text = primaryChromaticitiesGreenY
+
+    mix_primaryChromaticitiesBlueX = _subelement(mix_PrimaryChromaticities,
+            'primaryChromaticitiesBlueX')
+    mix_primaryChromaticitiesBlueX.text = primaryChromaticitiesBlueX
+
+    mix_primaryChromaticitiesBlueY = _subelement(mix_PrimaryChromaticities,
+            'primaryChromaticitiesBlueY')
+    mix_primaryChromaticitiesBlueY.text = primaryChromaticitiesBlueY
+
+    return mix_PrimaryChromaticities
+
+def mix_TargetID(targetManufacturer=None, targetName=None, targetNo=None,
+        targetMedia=None):
+    """Returns MIX TargetID element
+
+    :targetManufacturer:
+    :targetName:
+    :targetNo:
+    :targetMedia:
+
+    Returns the following ElementTree structure::
+
+        <mix:TargetID>
+            <mix:targetManufacturer></mix:targetManufacturer>
+            <mix:targetName></mix:targetName>
+            <mix:targetNo></mix:targetNo>
+            <mix:targetMedia></mix:targetMedia>
+        </mix:TargetID>
+
+    """
+    mix_TargetID = _element('TargetID')
+    mix_targetManufacturer = _subelement(TargetID, 'targetManufacturer')
+    mix_targetManufacturer.text = targetManufacturer
+
+    mix_targetName = _subelement(TargetID, 'targetName')
+    mix_targetName.text = targetName
+
+    mix_targetNo = _subelement(TargetID, 'targetNo')
+    mix_targetNo.text = targetNo
+
+    mix_targetMedia = _subelement(TargetID, 'targetMedia')
+    mix_targetMedia.text = targetMedia
+
+    return mix_TargetID
+
+
