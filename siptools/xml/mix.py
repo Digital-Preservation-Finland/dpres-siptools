@@ -169,7 +169,8 @@ def mix_Compression(compressionScheme=None, compressionRatio=None):
     """Returns MIX Compression element
 
     :compressionScheme: compression scheme used to store the image data
-    :compressionRatio: Agent type
+    :compressionRatio: the ratio of compressed file size to original file size
+    as a result of the use of compressionScheme
 
     Returns the following ElementTree structure::
 
