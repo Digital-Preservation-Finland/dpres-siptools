@@ -64,6 +64,8 @@ def main(arguments=None):
     with open(output_file, 'w+') as outfile:
         outfile.write(m.serialize(mets))
 
+    print "premis_event created file: %s" % output_file
+
     return 0
 
 
