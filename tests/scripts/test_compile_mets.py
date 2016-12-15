@@ -13,8 +13,9 @@ from urllib import quote
 def create_test_data(workspace):
     # create descriptive metadata
     dmdsec_location = 'tests/data/import_description/metadata/dc_description.xml'
-    url_location = quote(dmdsec_location, safe='')
-    main([dmdsec_location,  '--workspace', workspace])
+    dmdsec_target = 'tests/data/structured/Software files'
+
+    main([dmdsec_location, '--dmdsec_target', dmdsec_target, '--workspace', workspace])
 
     # create provenance metadata
     premis_event.main(['creation', '2016-10-13T12:30:55',

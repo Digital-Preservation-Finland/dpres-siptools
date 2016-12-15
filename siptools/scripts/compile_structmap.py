@@ -18,13 +18,11 @@ def parse_arguments(arguments):
 
     parser = argparse.ArgumentParser(description="Tool for importing files"
                                      "which generates digital objects")
-    parser.add_argument('input_directory', 
+    parser.add_argument('input_directory',
                         help="Input directory to create a structMap",
-                        type=lambda x: is_valid_dir(parser, x)) 
+                        type=lambda x: is_valid_dir(parser, x))
     parser.add_argument('--workspace', type=str, default='./workspace/',
                         help="Destination file")
-    parser.add_argument('--dmdsec_id', type=str, dest='dmdsec_id',
-                        help="Descriptive metadata file")
     parser.add_argument('--stdout', help='Print output to stdout')
     return parser.parse_args(arguments)
 
@@ -34,7 +32,7 @@ def is_valid_dir(parser, arg):
     if not os.path.exists(os.path.abspath(arg)):
         parser.error("The file %s does not exist!" % arg)
     else:
-        return arg 
+        return arg
 
 
 def main(arguments=None):
@@ -53,7 +51,7 @@ def main(arguments=None):
     mets_structmap.append(structmap)
     admids = []
     admids = get_digiprovmd_id(admids, args.workspace)
-    create_structMap(structmap, source_path, filegrp, args.workspace, admids, args.dmdsec_id)
+    create_structMap(structmap, source_path, filegrp, args.workspace, admids)
 
     if args.stdout:
         print m.serialize(mets)
@@ -73,20 +71,21 @@ def main(arguments=None):
     with open(output_fs_file, 'w+') as outfile:
         outfile.write(m.serialize(mets_filesec))
 
+    print "compile_structmap created files: %s %s" % (output_sm_file,output_fs_file)
+
     return 0
 
 
 def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
     """create structMap and fileSec elements from directories and files"""
     if os.path.isdir(path):
+        dmdsec_id = get_md_id(path, workspace, '/mets:mets/mets:dmdSec/@ID',
+                '-dmdsec.xml', dmdsec_id)
         div = m.div(type=os.path.basename(path), order=None, contentids=None,
                     label=None, orderlabel=None, dmdid=dmdsec_id,
                     amdid=None, div_elements=None, fptr_elements=None,
                     mptr_elements=None)
         tree.append(div)
-        # TPAS-36
-        #if not dmdsec_id:
-        #    dmdsec_id = get_dmdsec_id(path, workspace)
         for item in scandir.scandir(path):
             create_structMap(div, item.path, filegrp, workspace, admids, dmdsec_id)
     else:
@@ -104,7 +103,7 @@ def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
         tree.append(fptr)
 
 
-def get_md_id(path, workspace, xpos, suffix=''):
+def get_md_id(path, workspace, xpos, suffix='', md_id=None):
 
     relpath = os.path.relpath(path, os.curdir)
     url_path = quote_plus(os.path.splitext(relpath)[0]) + suffix
@@ -114,9 +113,7 @@ def get_md_id(path, workspace, xpos, suffix=''):
         md_root = md_tree.getroot()
         md_id = md_root.xpath(xpos,
                 namespaces=NAMESPACES)[0]
-        return md_id
-    else:
-        return None
+    return md_id
 
 
 def get_digiprovmd_id(admids, workspace):
