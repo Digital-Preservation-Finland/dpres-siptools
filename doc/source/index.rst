@@ -8,8 +8,7 @@ Contents:
 .. toctree::
     :maxdepth: 2
 
-    intro
-    design    
+    intro    
     usage
 
 .. only:: html
