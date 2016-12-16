@@ -27,31 +27,31 @@ sign_mets
 
 Usage
 ---------------------
-In order to build a SIP for digital preservation use the scripts in following order. These produce mets.xml and digital signature in the parametrized folder 'workspace'.
+In order to build a SIP for digital preservation use the scripts in the following order. These scripts produce mets.xml and digital signature in the parametrized folder 'workspace'.
 
 You can create technical metadata parts of mets.xml from files located in the folder
 tests/data/structured followingly::
     python siptools/scripts/import_object.py --output ./workspace 'tests/data/structured'
 
-To create digital provenance. Values for the parameter event type is a predefined list. ::
+An example how to create digital provenance in mets.xml. Values for the parameter event type is a predefined list. ::
     python siptools/scripts/premis_event.py creation  '2016-10-13T12:30:55'
     --event_detail Testing --event_outcome success --event_outcome_detail
     'Outcome detail' --workspace ./workspace --agent_name 'Demo Application'
     --agent_type software
 
-Create descriptive metadata. Script adds an xml file containing the descriptive
+Script adds an xml file containing the descriptive
 metadata into mets.xml. Metadata must be in accepted format::
     python siptools/scripts/import_description.py
     'tests/data/import_description/metadata/dc_description.xml'  --workspace
     ./workspace
 
-Create structure. ::
+The folder structure of a dataset is turned into the structmap of mets.xml::
     python siptools/scripts/compile_structmap.py tests/data/structured --workspace ./workspace --dmdsec_id 'e9c8a92e-c2da-4c38-a5a9-fc9aade99a0a'
 
-Compile mets::
+Compile mets.xml of previous script results::
     python siptools/scripts/compile_mets.py --workspace workspace/ kdk 'CSC'
 
-Digital signature::
+Digitally sign the mets.xml::
     python siptools/scripts/sign_mets.py workspace/mets.xml
     /home/vagrant/siptools/workspace/signature.sig tests/data/rsa-keys.crt
 
@@ -71,7 +71,7 @@ Alternatively you may view the documentation with the `docserver` command::
     make docserver
 
 Now point your browser to http://10.0.10.10:8000/html
-
+../../doc/source/architecture.rst
 After finishing the documentation you may stop the `docserver` with command::
 
     cd doc
