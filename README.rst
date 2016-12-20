@@ -46,7 +46,7 @@ metadata into mets.xml. Metadata must be in accepted format::
     ./workspace
 
 The folder structure of a dataset is turned into the structmap of mets.xml::
-    python siptools/scripts/compile_structmap.py tests/data/structured --workspace ./workspace --dmdsec_id 'e9c8a92e-c2da-4c38-a5a9-fc9aade99a0a'
+    python siptools/scripts/compile_structmap.py tests/data/structured --workspace ./workspace
 
 Compile mets.xml of previous script results::
     python siptools/scripts/compile_mets.py --workspace workspace/ kdk 'CSC'
@@ -71,7 +71,6 @@ Alternatively you may view the documentation with the `docserver` command::
     make docserver
 
 Now point your browser to http://10.0.10.10:8000/html
-../../doc/source/architecture.rst
 After finishing the documentation you may stop the `docserver` with command::
 
     cd doc
