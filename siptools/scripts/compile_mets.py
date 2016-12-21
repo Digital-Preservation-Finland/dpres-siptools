@@ -100,6 +100,8 @@ def main(arguments=None):
     with open(output_file, 'w+') as outfile:
         outfile.write(m.serialize(mets))
 
+    print "compile_mets created file: %s" % output_file
+
     return 0
 
 if __name__ == '__main__':

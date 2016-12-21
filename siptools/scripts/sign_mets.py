@@ -17,6 +17,8 @@ def main(arguments=None):
 
     signature.write_signature_file()
 
+    print "sign_mets created file: %s" % args.signature_filename
+
     return 0
 
 
