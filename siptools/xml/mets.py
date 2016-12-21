@@ -100,7 +100,7 @@ def _subelement(parent, tag, prefix=""):
     """
     return ET.SubElement(parent, mets_ns(tag, prefix))
 
-def dmdSec(element_id, child_elements=None,
+def dmdSec(child_elements=None, element_id=str(uuid.uuid4()),
         created_date=datetime.datetime.utcnow().isoformat()):
     """Return the dmdSec element"""
 
