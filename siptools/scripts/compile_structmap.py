@@ -12,7 +12,6 @@ from siptools.xml.namespaces import NAMESPACES, METS_PROFILE
 from siptools.xml.premis_event_types import PREMIS_EVENT_TYPES
 
 
-
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
 
@@ -71,7 +70,7 @@ def main(arguments=None):
     with open(output_fs_file, 'w+') as outfile:
         outfile.write(m.serialize(mets_filesec))
 
-    print "compile_structmap created files: %s %s" % (output_sm_file,output_fs_file)
+    print "compile_structmap created files: %s %s" % (output_sm_file, output_fs_file)
 
     return 0
 
@@ -80,20 +79,26 @@ def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
     """create structMap and fileSec elements from directories and files"""
     if os.path.isdir(path):
         dmdsec_id = get_md_id(path, workspace, '/mets:mets/mets:dmdSec/@ID',
-                '-dmdsec.xml', dmdsec_id)
+                              '-dmdsec.xml', dmdsec_id)
+        techmd_mix_id = get_md_id(path, workspace,
+                                  '/mets:mets/mets:techMD/@ID', '-mix-techmd.xml')
+        if techmd_mix_id:
+            admids.append(techmd_mix_id)
         div = m.div(type=os.path.basename(path), order=None, contentids=None,
                     label=None, orderlabel=None, dmdid=dmdsec_id,
                     amdid=None, div_elements=None, fptr_elements=None,
                     mptr_elements=None)
         tree.append(div)
         for item in scandir.scandir(path):
-            create_structMap(div, item.path, filegrp, workspace, admids, dmdsec_id)
+            create_structMap(div, item.path, filegrp,
+                             workspace, admids, dmdsec_id)
+        if techmd_mix_id:
+            del admids[-1]
     else:
-        #if not digiprov_id:
-        #    digiprov_id = get_digiprov_id(path, workspace)
-        techmd_id = get_md_id(path, workspace, '/mets:mets/mets:techMD/@ID', '-techmd.xml')
+        techmd_id = get_md_id(
+            path, workspace, '/mets:mets/mets:techMD/@ID', '-techmd.xml')
         techmd_mix_id = get_md_id(path, workspace,
-                '/mets:mets/mets:techMD/@ID', '-mix-techmd.xml')
+                                  '/mets:mets/mets:techMD/@ID', '-mix-techmd.xml')
         admids.append(techmd_id)
         if techmd_mix_id:
             admids.append(techmd_mix_id)
@@ -118,7 +123,7 @@ def get_md_id(path, workspace, xpos, suffix='', md_id=None):
         md_tree = ET.parse(md_path)
         md_root = md_tree.getroot()
         md_id = md_root.xpath(xpos,
-                namespaces=NAMESPACES)[0]
+                              namespaces=NAMESPACES)[0]
     return md_id
 
 
@@ -128,7 +133,8 @@ def get_digiprovmd_id(admids, workspace):
         if os.path.isfile(md_file):
             md_tree = ET.parse(md_file)
             md_root = md_tree.getroot()
-            digiprovid = md_root.xpath('/mets:mets/mets:amdSec/mets:digiprovMD[2]/@ID', namespaces=NAMESPACES)[0]
+            digiprovid = md_root.xpath(
+                '/mets:mets/mets:amdSec/mets:digiprovMD[2]/@ID', namespaces=NAMESPACES)[0]
             admids.append(digiprovid)
     return admids
 
