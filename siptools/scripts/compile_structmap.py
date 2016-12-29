@@ -92,12 +92,18 @@ def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
         #if not digiprov_id:
         #    digiprov_id = get_digiprov_id(path, workspace)
         techmd_id = get_md_id(path, workspace, '/mets:mets/mets:techMD/@ID', '-techmd.xml')
+        techmd_mix_id = get_md_id(path, workspace,
+                '/mets:mets/mets:techMD/@ID', '-mix-techmd.xml')
         admids.append(techmd_id)
+        if techmd_mix_id:
+            admids.append(techmd_mix_id)
         fileid = str(uuid4())
         file = m.file(fileid, admid_elements=admids, loctype='URL',
                       xlink_href='file://%s' % os.path.relpath(path, os.curdir), xlink_type='simple',
                       groupid=None)
         del admids[-1]
+        if techmd_mix_id:
+            del admids[-1]
         filegrp.append(file)
         fptr = m.fptr(fileid)
         tree.append(fptr)
