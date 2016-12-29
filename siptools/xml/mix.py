@@ -3,7 +3,7 @@ xml.etree.ElementTree data structures.
 
 References:
 
-    * PREMIS http://www.loc.gov/standards/mix/
+    * MIX http://www.loc.gov/standards/mix/
     * ElementTree
     https://docs.python.org/2.6/library/xml.etree.elementtree.html
 
@@ -165,7 +165,8 @@ def mix_BasicDigitalObjectInformation(
     return mix_BasicDigitalObjectInformation
 
 
-def mix_Compression(compressionScheme=None, compressionRatio=None):
+def mix_Compression(compressionScheme=None, compressionSchemeLocalList=None,
+        compressionSchemeLocalValue=None, compressionRatio=None):
     """Returns MIX Compression element
 
     :compressionScheme: compression scheme used to store the image data
@@ -176,14 +177,24 @@ def mix_Compression(compressionScheme=None, compressionRatio=None):
 
         <mix:Compression>
             <mix:compressionScheme>JPEG 2000 Lossless</mix:compressionScheme>
+            <mix:compressionSchemeLocalList></mix:compressionSchemeLocalList>
+            <mix:compressionSchemeLocalValue></mix:compressionSchemeLocalValue>
             <mix:compressionRatio>10</mix:compressionRatio>
         </mix:Compression>
 
     """
-    mix_compression = _subelement(mix_BasicDigitalObjectInformation, 'Compression')
+    mix_compression = _element('Compression')
 
     mix_compressionScheme = _subelement(mix_compression, 'compressionScheme')
     mix_compressionScheme.text = compressionScheme
+
+    if compressionScheme == 'enumerated in local list':
+        mix_compressionSchemeLocalList = _subelement(mix_compression, 'compressionSchemeLocalList')
+        mix_compressionSchemeLocalList.text = compressionSchemeLocalList
+
+    if compressionScheme == 'enumerated in local list':
+        mix_compressionSchemeLocalValue = _subelement(mix_compression, 'compressionSchemeLocalValue')
+        mix_compressionSchemeLocalValue.text = compressionSchemeLocalValue
 
     mix_compressionRatio = _subelement(mix_compression, 'compressionRatio')
     mix_compressionRatio.text = compressionRatio
@@ -1108,7 +1119,7 @@ def mix_WhitePoint(whitePointXValue=None, whitePointYValue=None):
         </mix:WhitePoint>
 
     """
-    mix_WhitePoint = _subelement(mix_ImageColorEncoding, 'WhitePoint')
+    mix_WhitePoint = _element('WhitePoint')
     mix_whitePointXValue = _subelement(mix_WhitePoint, 'whitePointXValue')
     mix_whitePointXValue.text = whitePointXValue
 
