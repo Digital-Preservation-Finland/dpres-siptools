@@ -5,7 +5,8 @@ NAMESPACES = {
     'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
     'premis': 'info:lc/xmlns/premis-v2',
     'fi': 'http://www.kdk.fi/standards/mets/kdk-extensions',
-    'xlink': 'http://www.w3.org/1999/xlink'
+    'xlink': 'http://www.w3.org/1999/xlink',
+    'mix': 'http://www.loc.gov/mix/v20'
 }
 
 METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'dc', 'version' :
