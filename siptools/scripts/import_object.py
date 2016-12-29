@@ -19,12 +19,6 @@ def parse_arguments(arguments):
     parser.add_argument('files', nargs='+', help="Files to be imported")
     parser.add_argument('--output', type=str, default='./workspace/',
                         help="Destination file")
-    parser.add_argument('--byteOrder', dest='byteOrder', type=str,
-    choices=['big_endian','little_endian'], help="byte order in which multi-byte numbers are stored")
-    parser.add_argument('--compressionScheme', dest='compressionScheme',
-            type=str, help="compression scheme used to store the image data")
-    parser.add_argument('--compressionRatio', dest='compressionRatio',
-            type=str, help="the ratio of compressed file size to original file size as a result of the use of compressionScheme")
     parser.add_argument('--stdout', help='Print output to stdout')
     return parser.parse_args(arguments)
 
