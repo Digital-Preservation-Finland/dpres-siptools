@@ -217,9 +217,7 @@ def mix_BasicImageInformation(
 
     """Returns MIX BasicImageInformation element
 
-    :byteOrder: byte order in which multi-byte numbers are stored 
-    :compressionScheme: compression scheme used to store the image data
-    :compressionRatio: Agent type
+    :imageWidth: 
     :ReferenceBlackWhite_elements: ReferenceBlackWhite elements appended to the
     PhotometricInterpretation (default=None)
 
@@ -307,70 +305,89 @@ def mix_BasicImageInformation(
     mix_colorSpace = _subelement(mix_PhotometricInterpretation, 'colorSpace')
     mix_colorSpace.text = colorSpace
 
-    mix_ColorProfile = _subelement(mix_PhotometricInterpretation, 'ColorProfile')
-    mix_IccProfile = _subelement(mix_ColorProfile, 'IccProfile')
-    mix_iccProfileName = _subelement(mix_IccProfile, 'iccProfileName')
-    mix_iccProfileName.text = iccProfileName
+    if iccProfileName:
+        mix_ColorProfile = _subelement(mix_PhotometricInterpretation, 'ColorProfile')
+        mix_IccProfile = _subelement(mix_ColorProfile, 'IccProfile')
+        mix_iccProfileName = _subelement(mix_IccProfile, 'iccProfileName')
+        mix_iccProfileName.text = iccProfileName
 
-    mix_iccProfileVersion = _subelement(mix_IccProfile, 'iccProfileVersion')
-    mix_iccProfileVersion.text = iccProfileVersion
+    if iccProfileVersion:
+        mix_iccProfileVersion = _subelement(mix_IccProfile, 'iccProfileVersion')
+        mix_iccProfileVersion.text = iccProfileVersion
 
-    mix_iccProfileURI = _subelement(mix_IccProfile, 'iccProfileURI')
-    mix_iccProfileURI.text = iccProfileURI
+    if iccProfileURI:
+        mix_iccProfileURI = _subelement(mix_IccProfile, 'iccProfileURI')
+        mix_iccProfileURI.text = iccProfileURI
 
-    mix_LocalProfile = _subelement(mix_ColorProfile, 'LocalProfile')
-    mix_localProfileName = _subelement(mix_LocalProfile, 'localProfileName')
-    mix_localProfileName.text = localProfileName
+    if localProfileName:
+        mix_LocalProfile = _subelement(mix_ColorProfile, 'LocalProfile')
+        mix_localProfileName = _subelement(mix_LocalProfile, 'localProfileName')
+        mix_localProfileName.text = localProfileName
 
-    mix_localProfileURL = _subelement(mix_LocalProfile, 'localProfileURL')
-    mix_localProfileURL.text = localProfileURL
+        mix_localProfileURL = _subelement(mix_LocalProfile, 'localProfileURL')
+        mix_localProfileURL.text = localProfileURL
 
-    mix_embeddedProfile = _subelement(mix_ColorProfile, 'embeddedProfile')
-    mix_embeddedProfile.text = embeddedProfile
+    if embeddedProfile:
+        mix_embeddedProfile = _subelement(mix_ColorProfile, 'embeddedProfile')
+        mix_embeddedProfile.text = embeddedProfile
 
-    mix_YCbCr = _subelement(mix_PhotometricInterpretation, 'YCbCr')
-    mix_YCbCrSubSampling = _subelement(mix_YCbCr, 'YCbCrSubSampling')
-    mix_yCbCrSubsampleHoriz = _subelement(mix_YCbCrSubSampling, 'yCbCrSubsampleHoriz')
-    mix_yCbCrSubsampleHoriz.text = yCbCrSubsampleHoriz
+    if yCbCrSubsampleHoriz:
+        mix_YCbCr = _subelement(mix_PhotometricInterpretation, 'YCbCr')
+        mix_YCbCrSubSampling = _subelement(mix_YCbCr, 'YCbCrSubSampling')
+        mix_yCbCrSubsampleHoriz = _subelement(mix_YCbCrSubSampling, 'yCbCrSubsampleHoriz')
+        mix_yCbCrSubsampleHoriz.text = yCbCrSubsampleHoriz
 
-    mix_yCbCrSubsampleVert = _subelement(mix_YCbCrSubSampling,
-            'yCbCrSubsampleVert')
-    mix_yCbCrSubsampleVert.text = yCbCrSubsampleVert
+    if yCbCrSubsampleVert:
+        mix_yCbCrSubsampleVert = _subelement(mix_YCbCrSubSampling, 'yCbCrSubsampleVert')
+        mix_yCbCrSubsampleVert.text = yCbCrSubsampleVert
 
-    mix_yCbCrPositioning = _subelement(mix_YCbCr, 'yCbCrPositioning')
-    mix_yCbCrPositioning.text = yCbCrPositioning
+    if yCbCrPositioning:
+        mix_yCbCrPositioning = _subelement(mix_YCbCr, 'yCbCrPositioning')
+        mix_yCbCrPositioning.text = yCbCrPositioning
 
-    mix_YCbCrCoefficients = _subelement(mix_YCbCr, 'YCbCrCoefficients')
-    mix_lumaRed = _subelement(mix_YCbCrCoefficients, 'lumaRed')
-    mix_lumaRed.text = lumaRed
+    if lumaRed:
+        mix_YCbCrCoefficients = _subelement(mix_YCbCr, 'YCbCrCoefficients')
+        mix_lumaRed = _subelement(mix_YCbCrCoefficients, 'lumaRed')
+        mix_lumaRed.text = lumaRed
 
-    mix_lumaGreen = _subelement(mix_YCbCrCoefficients, 'lumaGreen')
-    mix_lumaGreen.text = lumaGreen
+    if lumaGreen:
+        mix_lumaGreen = _subelement(mix_YCbCrCoefficients, 'lumaGreen')
+        mix_lumaGreen.text = lumaGreen
 
-    mix_lumaBlue = _subelement(mix_YCbCrCoefficients, 'lumaBlue')
-    mix_lumaBlue.text = lumaBlue
+    if lumaBlue:
+        mix_lumaBlue = _subelement(mix_YCbCrCoefficients, 'lumaBlue')
+        mix_lumaBlue.text = lumaBlue
 
     if ReferenceBlackWhite_elements:
         for element in ReferenceBlackWhite_elements:
             mix_PhotometricInterpretation.append(element)
 
-    mix_SpecialFormatCharacteristics = _subelement(mix_BasicImageInformation,
-            'SpecialFormatCharacteristics')
-    mix_JPEG2000 = _subelement(mix_SpecialFormatCharacteristics, 'JPEG2000')
-    mix_CodecCompliance = _subelement(mix_JPEG20, 'CodecCompliance')
-    mix_codec = _subelement(mix_CodecCompliance, 'codec')
-    mix_codec.text = codec
+    if codec or codecVersion or codestreamProfile or complianceClass or tileWidth or tileHeight or qualityLayers or resolutionLevels or zoomLevels or djvuFormat:
+        mix_SpecialFormatCharacteristics = _subelement(mix_BasicImageInformation,
+                'SpecialFormatCharacteristics')
+    if codec or codecVersion or codestreamProfile or complianceClass or tileWidth or tileHeight or qualityLayers or resolutionLevels:
+        mix_JPEG2000 = _subelement(mix_SpecialFormatCharacteristics, 'JPEG2000')
 
-    mix_codecVersion = _subelement(mix_CodecCompliance, 'codecVersion')
-    mix_codecVersion.text = codecVersion
+    if codec or codecVersion or codestreamProfile or complianceClass:
+        mix_CodecCompliance = _subelement(mix_JPEG2000, 'CodecCompliance')
 
-    mix_codestreamProfile = _subelement(mix_CodecCompliance, 'codestreamProfile')
-    mix_codestreamProfile.text = codestreamProfile
+    if codec:
+        mix_codec = _subelement(mix_CodecCompliance, 'codec')
+        mix_codec.text = codec
 
-    mix_complianceClass = _subelement(mix_CodecCompliance, 'complianceClass')
-    mix_complianceClass.text = complianceClass
+    if codecVersion:
+        mix_codecVersion = _subelement(mix_CodecCompliance, 'codecVersion')
+        mix_codecVersion.text = codecVersion
 
-    mix_EncodingOptions = _subelement(mix_JPEG20, 'EncodingOptions')
+    if codestreamProfile:
+        mix_codestreamProfile = _subelement(mix_CodecCompliance, 'codestreamProfile')
+        mix_codestreamProfile.text = codestreamProfile
+
+    if complianceClass:
+        mix_complianceClass = _subelement(mix_CodecCompliance, 'complianceClass')
+        mix_complianceClass.text = complianceClass
+
+    mix_EncodingOptions = _subelement(mix_JPEG2000, 'EncodingOptions')
     mix_Tiles = _subelement(mix_EncodingOptions, 'Tiles')
     mix_tileWidth = _subelement(mix_Tiles, 'tileWidth')
     mix_tileWidth.text = tileWidth
@@ -386,11 +403,11 @@ def mix_BasicImageInformation(
 
     mix_MrSID = _subelement(mix_SpecialFormatCharacteristics, 'MrSID')
     mix_zoomLevels = _subelement(mix_MrSID, 'zoomLevels')
-    mix_zoomLevels.text = mix_zoomLevels
+    mix_zoomLevels.text = zoomLevels
 
     mix_Djvu = _subelement(mix_SpecialFormatCharacteristics, 'Djvu')
     mix_djvuFormat = _subelement(mix_Djvu, 'djvuFormat')
-    mix_djvuFormat.text = mix_djvuFormat
+    mix_djvuFormat.text = djvuFormat
 
     return agent
 
