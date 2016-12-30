@@ -11,7 +11,10 @@ import scandir
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_ok(input_file, testpath):
 
-    arguments = ['--output', testpath, input_file]
+    testpath = './'
+    #arguments = ['--output', testpath, input_file]
+    arguments = ['--output', testpath, input_file, '--format_name', 'dpx',
+    '--format_version' , '1.0', '--digest_algorithm', 'MD5', '--message_digest', '1qw87geiewgwe9']
     return_code = import_object.main(arguments)
 
     output = os.path.join(testpath,

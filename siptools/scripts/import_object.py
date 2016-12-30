@@ -23,6 +23,14 @@ def parse_arguments(arguments):
     parser.add_argument('files', nargs='+', help="Files to be imported")
     parser.add_argument('--output', type=str, default='./workspace/',
                         help="Destination file")
+    parser.add_argument('--format_name', dest='format_name', type=str,
+                        help='Mimetype of a file')
+    parser.add_argument('--format_version', dest='format_version', type=str,
+                        help='Version of fileformat')
+    parser.add_argument('--digest_algorithm', dest='digest_algorithm', type=str,
+                        help='Message digest algorithm')
+    parser.add_argument('--message_digest', dest='message_digest', type=str,
+                        help='Message digest of a file')
     parser.add_argument('--stdout', help='Print output to stdout')
     return parser.parse_args(arguments)
 
@@ -30,6 +38,11 @@ def parse_arguments(arguments):
 def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
+    parameters = {
+            'format': {'mimetype': args.format_name, 'version': args.format_version},
+            'fixity': {'digestAlgorithm': args.digest_algorithm, 'checksum':
+                args.message_digest}
+            }
 
     # Loop files and create premis objects
     files = collect_filepaths(args.files)
@@ -37,7 +50,9 @@ def main(arguments=None):
         mets = m.mets_mets()
         techmd = m.techmd('techmd-%s' % filename)
         mets.append(techmd)
-        digital_object = create_premis_object(techmd, filename)
+        digital_object = create_premis_object(techmd, filename,
+                args.format_name, args.format_version,
+                args.digest_algorithm, args.message_digest)
 
         if args.stdout:
             print m.serialize(mets)
@@ -53,30 +68,36 @@ def main(arguments=None):
 
     return 0
 
-
-def create_premis_object(tree, fname):
+def create_premis_object(tree, fname, format_name=None, format_version=None,
+        digest_algorithm=None, message_digest=None):
     """Create Premis object for given file."""
-    validation_result = validate(fileinfo(fname))
 
-    if not validation_result['is_valid']:
-        raise Exception('File %s is not valid: %s', fname, validation_result['errors'])
+    techmd = {}
+    if not format_name:
+        validation_result = validate(fileinfo(fname))
 
-    techmd = validation_result['result']
+        if not validation_result['is_valid']:
+            raise Exception('File %s is not valid: %s', fname, validation_result['errors'])
+
+        techmd = validation_result['result']
+
     # Create fixity element
     el_fixity = p._element('fixity')
     el_fixity_algorithm = p._subelement(
         el_fixity, 'digestAlgorithm', 'message')
-    el_fixity_algorithm.text = 'MD5'
-
+    el_fixity_algorithm.text = digest_algorithm or 'MD5'
     el_fixity_checksum = p._subelement(el_fixity, 'digest', 'message')
-    el_fixity_checksum.text = md5(fname)
+    el_fixity_checksum.text = message_digest or md5(fname)
 
     # Create format element
     el_format = p._element('format')
     el_format_name = p._subelement(el_format, 'name', 'format')
-    el_format_name.text = techmd['format']['mimetype']
+    el_format_name.text = format_name or techmd['format']['mimetype']
 
-    if 'version' in techmd['format']:
+    if format_version:
+        el_format_version = p._subelement(el_format, 'version', 'format')
+        el_format_version.text = format_version
+    elif techmd and 'version' in techmd['format']:
         el_format_version = p._subelement(el_format, 'version', 'format')
         el_format_version.text = techmd['format']['version']
 
