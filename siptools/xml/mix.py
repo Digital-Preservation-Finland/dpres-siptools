@@ -4,6 +4,8 @@ xml.etree.ElementTree data structures.
 References:
 
     * MIX http://www.loc.gov/standards/mix/
+    * Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
+    * http://www.niso.org/kst/reports/standards?step=2&gid=None&project_key=b897b0cf3e2ee526252d9f830207b3cc9f3b6c2c
     * ElementTree
     https://docs.python.org/2.6/library/xml.etree.elementtree.html
 
@@ -106,6 +108,7 @@ def mix_mix(BasicDigitalObjectInformation=None, BasicImageInformation=None,
             ImageCaptureMetadata=None, ImageAssessmentMetadata=None):
     """Create MIX Data Dictionary root element.
 
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
     :child_elements: Any elements appended to the MIX dictionary
 
     Returns the following ElementTree structure::
@@ -140,9 +143,7 @@ def mix_BasicDigitalObjectInformation(
         byteOrder=None, Compression_elements=None):
     """Returns MIX BasicDigitalObjectInformation element
 
-    :byteOrder: byte order in which multi-byte numbers are stored 
-    :compressionScheme: compression scheme used to store the image data
-    :compressionRatio: Agent type
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
 
     Returns the following ElementTree structure::
 
@@ -169,9 +170,7 @@ def mix_Compression(compressionScheme=None, compressionSchemeLocalList=None,
                     compressionSchemeLocalValue=None, compressionRatio=None):
     """Returns MIX Compression element
 
-    :compressionScheme: compression scheme used to store the image data
-    :compressionRatio: the ratio of compressed file size to original file size
-    as a result of the use of compressionScheme
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
 
     Returns the following ElementTree structure::
 
@@ -218,9 +217,7 @@ def mix_BasicImageInformation(
         djvuFormat=None):
     """Returns MIX BasicImageInformation element
 
-    :imageWidth: 
-    :ReferenceBlackWhite_elements: ReferenceBlackWhite elements appended to the
-    PhotometricInterpretation (default=None)
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
 
     Returns the following ElementTree structure::
 
@@ -438,9 +435,7 @@ def mix_Component(
         componentPhotometricInterpretation=None, footroom=None, headroom=None):
     """Returns MIX Component element
 
-    :componentPhotometricInterpretation: byte order in which multi-byte numbers are stored 
-    :compressionScheme: compression scheme used to store the image data
-    :compressionRatio: Agent type
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
 
     Returns the following ElementTree structure::
 
@@ -470,6 +465,7 @@ def mix_Component(
 def mix_ReferenceBlackWhite(child_elements=None):
     """Returns MIX ReferenceBlackWhite element
 
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
     :child_elements: Any child elements appended to the ReferenceBlackWhite (default=None) 
 
     Returns the following ElementTree structure::
@@ -522,9 +518,7 @@ def mix_ImageCaptureMetadata(sourceType=None, SourceID_elements=None,
                              gpsDifferential=None, typeOfOrientationType=None, methodology=None):
     """Returns MIX ImageCaptureMetadata element
 
-    :sourceType: specifies the medium of the analog source material scanned to
-    create a digital still image
-    :SourceID_elements: SourceID elements appended to the SourceInformation (default=None) 
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
 
     Returns the following ElementTree structure::
 
@@ -970,9 +964,7 @@ def mix_ImageCaptureMetadata(sourceType=None, SourceID_elements=None,
 def mix_SourceID(sourceIDType=None, sourceIDValue=None):
     """Returns MIX sourceID element
 
-    :sourceIDType: designates the system or domain in which the identifier is
-    unque
-    :sourceIDValue: the value of the SourceID
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
 
     Returns the following ElementTree structure::
 
@@ -995,9 +987,7 @@ def mix_SourceID(sourceIDType=None, sourceIDValue=None):
 def mix_gpsGroup(degrees=None, minutes=None, seconds=None):
     """Returns MIX gpsGroup element
 
-    :degrees:
-    :minutes:
-    :seconds:
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
 
     Returns the following ElementTree structure::
 
@@ -1033,11 +1023,7 @@ def mix_ImageAssessmentMetadata(samplingFrequencyPlane=None,
                                 performanceData_elements=None):
     """Returns MIX ImageAssessmentMetadata element
 
-    :samplingFrequencyPlane:
-    :samplingFrequencyUnit:
-    :xSamplingFrequency:
-    :ySamplingFrequency:
-    :bitsPerSampleValue:
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
 
     Returns the following ElementTree structure::
 
@@ -1182,8 +1168,7 @@ def mix_ImageAssessmentMetadata(samplingFrequencyPlane=None,
 def mix_WhitePoint(whitePointXValue=None, whitePointYValue=None):
     """Returns MIX gpsGroup element
 
-    :whitePointXValue:
-    :whitePointYValue:
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
 
     Returns the following ElementTree structure::
 
@@ -1209,12 +1194,7 @@ def mix_PrimaryChromaticities(primaryChromaticitiesRedX=None,
                               primaryChromaticitiesBlueY=None):
     """Returns MIX PrimaryChromaticities element
 
-    :primaryChromaticitiesRedX:
-    :primaryChromaticitiesRedY:
-    :primaryChromaticitiesGreenX:
-    :primaryChromaticitiesGreenY:
-    :primaryChromaticitiesBlueX:
-    :primaryChromaticitiesBlueY:
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
 
     Returns the following ElementTree structure::
 
@@ -1260,10 +1240,7 @@ def mix_TargetID(targetManufacturer=None, targetName=None, targetNo=None,
                  targetMedia=None):
     """Returns MIX TargetID element
 
-    :targetManufacturer:
-    :targetName:
-    :targetNo:
-    :targetMedia:
+    :Schema documentation: Data Dictionary - Technical Metadata for Digital Still Images (ANSI/NISO Z39.87-2006)
 
     Returns the following ElementTree structure::
 
