@@ -11,10 +11,24 @@ import scandir
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_ok(input_file, testpath):
 
-    testpath = './'
-    #arguments = ['--output', testpath, input_file]
-    arguments = ['--output', testpath, input_file, '--format_name', 'dpx',
-    '--format_version' , '1.0', '--digest_algorithm', 'MD5', '--message_digest', '1qw87geiewgwe9']
+    arguments = ['--output', testpath, input_file]
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath,
+                          quote_plus(os.path.splitext(input_file)[0]) +
+                          '-techmd.xml')
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.findall('{http://www.loc.gov/METS/}techMD')) == 1
+    assert return_code == 0
+
+@pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
+def test_import_object_skip_inspection_ok(input_file, testpath):
+
+    arguments = ['--output', testpath, input_file, '--skip_inspection', '1',
+            '--format_name', 'image/dpx', '--format_version' , '1.0', '--digest_algorithm', 'MD5', '--message_digest', '1qw87geiewgwe9']
     return_code = import_object.main(arguments)
 
     output = os.path.join(testpath,

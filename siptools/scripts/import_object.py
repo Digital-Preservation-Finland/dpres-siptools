@@ -23,6 +23,8 @@ def parse_arguments(arguments):
     parser.add_argument('files', nargs='+', help="Files to be imported")
     parser.add_argument('--output', type=str, default='./workspace/',
                         help="Destination file")
+    parser.add_argument('--skip_inspection', dest='skip_inspection', type=str,
+                        help='Skip file inspection and give technical metadata as parameters')
     parser.add_argument('--format_name', dest='format_name', type=str,
                         help='Mimetype of a file')
     parser.add_argument('--format_version', dest='format_version', type=str,
@@ -38,11 +40,6 @@ def parse_arguments(arguments):
 def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
-    parameters = {
-            'format': {'mimetype': args.format_name, 'version': args.format_version},
-            'fixity': {'digestAlgorithm': args.digest_algorithm, 'checksum':
-                args.message_digest}
-            }
 
     # Loop files and create premis objects
     files = collect_filepaths(args.files)
@@ -51,7 +48,7 @@ def main(arguments=None):
         techmd = m.techmd('techmd-%s' % filename)
         mets.append(techmd)
         digital_object = create_premis_object(techmd, filename,
-                args.format_name, args.format_version,
+                args.skip_inspection, args.format_name, args.format_version,
                 args.digest_algorithm, args.message_digest)
 
         if args.stdout:
@@ -68,12 +65,12 @@ def main(arguments=None):
 
     return 0
 
-def create_premis_object(tree, fname, format_name=None, format_version=None,
-        digest_algorithm=None, message_digest=None):
+def create_premis_object(tree, fname, skip_inspection=None,
+        format_name=None, format_version=None, digest_algorithm=None, message_digest=None):
     """Create Premis object for given file."""
 
     techmd = {}
-    if not format_name:
+    if not skip_inspection:
         validation_result = validate(fileinfo(fname))
 
         if not validation_result['is_valid']:
@@ -94,12 +91,9 @@ def create_premis_object(tree, fname, format_name=None, format_version=None,
     el_format_name = p._subelement(el_format, 'name', 'format')
     el_format_name.text = format_name or techmd['format']['mimetype']
 
-    if format_version:
+    if format_version or (techmd and 'version' in techmd['format']):
         el_format_version = p._subelement(el_format, 'version', 'format')
-        el_format_version.text = format_version
-    elif techmd and 'version' in techmd['format']:
-        el_format_version = p._subelement(el_format, 'version', 'format')
-        el_format_version.text = techmd['format']['version']
+        el_format_version.text = format_version if format_version else techmd['format']['version']
 
     # Create object element
     unique = str(uuid4())
