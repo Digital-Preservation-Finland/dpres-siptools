@@ -16,6 +16,7 @@ import siptools.xml.mets as m
 
 import xml.etree.ElementTree as ET
 import datetime
+import platform
 
 
 def parse_arguments(arguments):
@@ -127,8 +128,7 @@ def create_premis_object(tree, fname, skip_inspection=None,
                                            'creatingApplication')
     el_dateCreatedByApplication = p._subelement(el_creatingApplication,
                                                 'dateCreatedByApplication')
-    el_dateCreatedByApplication.text = date_created or datetime.datetime.utcnow().isoformat()
-    # or techmd['format']['mimetype']
+    el_dateCreatedByApplication.text = date_created or creation_date(fname)
 
     # Create object element
     unique = str(uuid4())
@@ -192,6 +192,23 @@ def collect_filepaths(dirs=['.'], pattern='*'):
             raise IOError
 
     return files
+
+def creation_date(path_to_file):
+    """
+    Try to get the date that a file was created, falling back to when it was
+    last modified if that isn't possible.
+    See http://stackoverflow.com/a/39501288/1709587 for explanation.
+    """
+    if platform.system() == 'Windows':
+        return datetime.datetime.fromtimestamp(os.path.getctime(path_to_file)).isoformat()
+    else:
+        stat = os.stat(path_to_file)
+        try:
+            return datetime.datetime.fromtimestamp(stat.st_birthtime).isoformat()
+        except AttributeError:
+            # We're probably on Linux. No easy way to get creation dates here,
+            # so we'll settle for when its content was last modified.
+            return datetime.datetime.fromtimestamp(stat.st_mtime).isoformat() 
 
 if __name__ == '__main__':
     RETVAL = main()
