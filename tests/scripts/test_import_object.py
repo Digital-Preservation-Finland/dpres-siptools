@@ -32,7 +32,8 @@ def test_import_object_skip_inspection_ok(input_file, testpath):
 
     arguments = ['--output', testpath, input_file, '--skip_inspection',
                  '--format_name', 'image/dpx', '--format_version', '1.0',
-                 '--digest_algorithm', 'MD5', '--message_digest', '1qw87geiewgwe9',
+                 '--digest_algorithm', 'MD5', '--message_digest',
+                 '1qw87geiewgwe9',
                  '--date_created', datetime.datetime.utcnow().isoformat()]
     return_code = import_object.main(arguments)
 
@@ -46,6 +47,25 @@ def test_import_object_skip_inspection_ok(input_file, testpath):
     assert len(root.findall('{http://www.loc.gov/METS/}techMD')) == 1
     assert return_code == 0
 
+
+@pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
+def test_import_object_skip_inspection_nodate_ok(input_file, testpath):
+
+    arguments = ['--output', testpath, input_file, '--skip_inspection', '1',
+                 '--format_name', 'image/dpx', '--format_version', '1.0',
+                 '--digest_algorithm', 'MD5', '--message_digest',
+                 '1qw87geiewgwe9']
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath,
+                          quote_plus(os.path.splitext(input_file)[0]) +
+                          '-techmd.xml')
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.findall('{http://www.loc.gov/METS/}techMD')) == 1
+    assert return_code == 0
 
 def test_import_object_structured_ok(testpath):
 
