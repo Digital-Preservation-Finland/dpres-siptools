@@ -46,6 +46,8 @@ def parse_arguments(arguments):
     parser.add_argument('--workspace', dest='workspace', type=str,
                         default='./',
                         help="Workspace directory")
+    parser.add_argument('--clean', dest='clean', action='store_true',
+                        help='Workspace cleanup')
     parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)
@@ -86,9 +88,20 @@ def main(arguments=None):
     with open(output_file, 'w+') as outfile:
         outfile.write(m.serialize(mets))
 
+    if (args.clean):
+        clean_up(args.workspace, 'mets.xml')
+
     print "compile_mets created file: %s" % output_file
 
     return 0
+
+def clean_up(path, except_file):
+    for root, dirs, files in os.walk(path, topdown=False):
+        for name in files:
+            if name != except_file:
+                os.remove(os.path.join(root, name))
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
 
 if __name__ == '__main__':
     RETVAL = main()
