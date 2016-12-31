@@ -25,7 +25,7 @@ def parse_arguments(arguments):
     parser.add_argument('files', nargs='+', help="Files to be imported")
     parser.add_argument('--output', type=str, default='./workspace/',
                         help="Destination file")
-    parser.add_argument('--skip_inspection', dest='skip_inspection', type=str,
+    parser.add_argument('--skip_inspection', action='store_true',
                         help='Skip file inspection and give technical metadata as parameters')
     parser.add_argument('--format_name', dest='format_name', type=str,
                         help='Mimetype of a file')
