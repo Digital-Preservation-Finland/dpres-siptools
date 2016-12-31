@@ -49,7 +49,6 @@ def test_compile_mets_ok(testpath):
     tree = ET.parse(output_file)
 
     root = tree.getroot()
-    # print "root: %s" % ET.tostring(root, encoding='UTF-8', method='xml')
 
     assert len(root.xpath(
         '/mets:mets[@PROFILE="http://www.kdk.fi/kdk-mets-profile"]', namespaces=NAMESPACES)) == 1
@@ -94,7 +93,6 @@ def test_compile_mets_cleanup_ok(testpath):
     tree = ET.parse(output_file)
 
     root = tree.getroot()
-    # print "root: %s" % ET.tostring(root, encoding='UTF-8', method='xml')
 
     assert len(root.xpath(
         '/mets:mets[@PROFILE="http://www.kdk.fi/kdk-mets-profile"]', namespaces=NAMESPACES)) == 1
