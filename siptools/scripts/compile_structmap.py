@@ -106,7 +106,6 @@ def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
         file = m.file(fileid, admid_elements=admids, loctype='URL',
                       xlink_href='file://%s' % os.path.relpath(path, os.curdir), xlink_type='simple',
                       groupid=None)
-        del admids[-1]
         admids = admids[-1]
         if techmd_mix_id:
             admids = admids[-1]
