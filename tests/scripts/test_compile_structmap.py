@@ -1,15 +1,17 @@
 import pytest
 from siptools.scripts import compile_structmap
-from siptools.scripts import import_object 
+from siptools.scripts import import_object
 import os
 import lxml.etree as ET
 from siptools.xml.namespaces import NAMESPACES
 from urllib import quote_plus
 
+
 def create_test_data(workspace):
-    #create technical metadata
+    # create technical metadata
     import_object.main(['--output', workspace,
-        'tests/data/structured/Software files/koodi.java'])
+                        'tests/data/structured/Software files/koodi.java'])
+
 
 def test_compile_structmap_ok(testpath):
     create_test_data(testpath)

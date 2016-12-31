@@ -13,6 +13,7 @@ from ipt.validator import validate
 import siptools.xml.premis as p
 import siptools.xml.mets as m
 import xml.etree.ElementTree as ET
+import datetime
 
 
 def parse_arguments(arguments):
@@ -32,6 +33,8 @@ def parse_arguments(arguments):
                         help='Message digest algorithm')
     parser.add_argument('--message_digest', dest='message_digest', type=str,
                         help='Message digest of a file')
+    parser.add_argument('--date_created', dest='date_created', type=str,
+                        help='The actual or approximate date and time the object was created')
     parser.add_argument('--stdout', help='Print output to stdout')
     return parser.parse_args(arguments)
 
@@ -47,8 +50,8 @@ def main(arguments=None):
         techmd = m.techmd('techmd-%s' % filename)
         mets.append(techmd)
         digital_object = create_premis_object(techmd, filename,
-                args.skip_inspection, args.format_name, args.format_version,
-                args.digest_algorithm, args.message_digest)
+                                              args.skip_inspection, args.format_name, args.format_version,
+                                              args.digest_algorithm, args.message_digest, args.date_created)
 
         if args.stdout:
             print m.serialize(mets)
@@ -64,8 +67,10 @@ def main(arguments=None):
 
     return 0
 
+
 def create_premis_object(tree, fname, skip_inspection=None,
-        format_name=None, format_version=None, digest_algorithm=None, message_digest=None):
+                         format_name=None, format_version=None, digest_algorithm=None,
+                         message_digest=None, date_created=None):
     """Create Premis object for given file."""
 
     techmd = {}
@@ -73,12 +78,17 @@ def create_premis_object(tree, fname, skip_inspection=None,
         validation_result = validate(fileinfo(fname))
 
         if not validation_result['is_valid']:
-            raise Exception('File %s is not valid: %s', fname, validation_result['errors'])
+            raise Exception('File %s is not valid: %s', fname,
+                            validation_result['errors'])
 
         techmd = validation_result['result']
+    print "techmd:%s" % techmd
+
+    # Create objectCharacteristics element
+    el_objectCharacteristics = p._element('objectCharacteristics')
 
     # Create fixity element
-    el_fixity = p._element('fixity')
+    el_fixity = p._subelement(el_objectCharacteristics, 'fixity')
     el_fixity_algorithm = p._subelement(
         el_fixity, 'digestAlgorithm', 'message')
     el_fixity_algorithm.text = digest_algorithm or 'MD5'
@@ -86,13 +96,24 @@ def create_premis_object(tree, fname, skip_inspection=None,
     el_fixity_checksum.text = message_digest or md5(fname)
 
     # Create format element
-    el_format = p._element('format')
-    el_format_name = p._subelement(el_format, 'name', 'format')
+    el_format = p._subelement(el_objectCharacteristics, 'format')
+    el_formatDesignation = p._subelement(el_format, 'formatDesignation')
+    el_format_name = p._subelement(el_formatDesignation, 'name', 'format')
     el_format_name.text = format_name or techmd['format']['mimetype']
 
     if format_version or (techmd and 'version' in techmd['format']):
-        el_format_version = p._subelement(el_format, 'version', 'format')
-        el_format_version.text = format_version if format_version else techmd['format']['version']
+        el_format_version = p._subelement(
+            el_formatDesignation, 'version', 'format')
+        el_format_version.text = format_version if format_version else techmd[
+            'format']['version']
+
+    # Create creatingApplication element
+    el_creatingApplication = p._subelement(el_objectCharacteristics,
+                                           'creatingApplication')
+    el_dateCreatedByApplication = p._subelement(el_creatingApplication,
+                                                'dateCreatedByApplication')
+    el_dateCreatedByApplication.text = date_created or datetime.datetime.utcnow().isoformat()
+    # or techmd['format']['mimetype']
 
     # Create object element
     unique = str(uuid4())
@@ -101,7 +122,7 @@ def create_premis_object(tree, fname, skip_inspection=None,
         identifier_value=unique)
 
     el_premis_object = p.premis_object(
-        object_identifier, fname, child_elements=[el_fixity, el_format])
+        object_identifier, fname, child_elements=[el_objectCharacteristics])
     tree.append(el_premis_object)
 
     return tree
@@ -128,8 +149,8 @@ def fileinfo(fname):
             'mimetype': mimetype,
             'version': version,
             'charset': charset
-            }
         }
+    }
 
 
 def md5(fname):
@@ -149,9 +170,9 @@ def collect_filepaths(dirs=['.'], pattern='*'):
     for directory in dirs:
         if os.path.isdir(directory):
             files += [os.path.join(looproot, filename)
-                    for looproot, _, filenames in os.walk(directory)
-                    for filename in filenames
-                    if fnmatch.fnmatch(filename, pattern)]
+                      for looproot, _, filenames in os.walk(directory)
+                      for filename in filenames
+                      if fnmatch.fnmatch(filename, pattern)]
         elif os.path.isfile(directory):
             files += [directory]
         else:
