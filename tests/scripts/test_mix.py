@@ -28,11 +28,11 @@ def test_mix_ok(testpath):
                                                            iccProfileURI='http://www.adobe.com/digitalimag/adobergb.html',
                                                            qualityLayers='12', resolutionLevels='6')
 
-    imageAssessmentMetadata = miks.mix_ImageAssessmentMetadata(bitsPerSampleValue_elements=['16', '16', '16'],
+    imageAssessmentMetadata = miks.mix_ImageAssessmentMetadata(bitsPerSampleValue_elements=['16, 16, 16'],
                                                                bitsPerSampleUnit='integer', samplesPerPixel='4',
                                                                extraSamples_elements=[
-                                                                   'unspecified data'],
-                                                               colormapReference='http://foo.bar')
+        'unspecified data'],
+        colormapReference='http://foo.bar')
 
     mix.append(basicDigitalObjectInformation)
     mix.append(basicImageInformation)
