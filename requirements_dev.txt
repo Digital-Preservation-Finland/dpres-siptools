@@ -1,0 +1,7 @@
+pytest
+coverage
+pytest-coverage
+git+https://source.csc.fi/scm/git/pas/information-package-tools@TPAS-32#egg=ipt
+lxml
+scandir
+python-magic
