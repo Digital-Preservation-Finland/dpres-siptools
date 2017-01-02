@@ -127,15 +127,21 @@ def techmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
            child_elements=None):
     """Return the techMD element"""
 
-    _techmd = _element('techMD')
-    _techmd.set('ID', element_id)
-    _techmd.set('CREATED', created_date)
+    techmd = _element('techMD')
+    techmd.set('ID', element_id)
+    techmd.set('CREATED', created_date)
+
+    mdwrap = _element('mdWrap')
+    mdwrap.set('MDTYPE', 'PREMIS:OBJECT')
+    xmldata = _element('xmlData')
 
     if child_elements:
         for element in child_elements:
-            _techmd.append(element)
+            xmldata.append(element)
 
-    return _techmd
+    techmd.append(xmldata)
+
+    return techmd
 
 
 def digiprovmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
