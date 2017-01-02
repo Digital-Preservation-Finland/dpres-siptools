@@ -10,7 +10,6 @@ import magic
 import argparse
 
 from ipt.validator import validate
-import siptools.scraper
 import siptools.xml.premis as p
 import siptools.xml.mets as m
 import xml.etree.ElementTree as ET
@@ -110,13 +109,13 @@ def create_premis_object(tree, fname, skip_inspection=None,
 
 def fileinfo(fname):
     """Return fileinfo dict for given file."""
-    fm = magic.open(magic.MAGIC_MIME_TYPE)
-    fm.load()
-    mimetype = fm.file(fname)
+    fm = magic.Magic(mime=True)
+#    fm = magic.open(magic.MAGIC_MIME_TYPE)
+#    fm.load()
+    mimetype = fm.from_file(fname)
 
-    m = magic.open(magic.MAGIC_NONE)
-    fm.load()
-    version = fm.file(fname).split("version ")[-1]
+    fm = fm = magic.Magic(mime=False)
+    version = fm.from_file(fname).split("version ")[-1]
 
     charset = None
     if mimetype == 'text/plain':
