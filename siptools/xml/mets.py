@@ -35,8 +35,9 @@ def serialize(root_element):
 
 
 def mets_mets(profile=siptools.xml.namespaces.METS_PROFILE['kdk'],
-        objid=str(uuid.uuid4()), label=None, catalog='1.5.0',
-        specification='1.5.0', contentid=None):
+        objid=str(uuid.uuid4()), label=None,
+        catalog=siptools.xml.namespaces.METS_CATALOG,
+        specification=siptools.xml.namespaces.METS_SPECIFICATION, contentid=None):
     """Create METS ElementTree"""
 
     mets = _element('mets')
@@ -44,12 +45,10 @@ def mets_mets(profile=siptools.xml.namespaces.METS_PROFILE['kdk'],
     mets.set('xmlns:' + 'xlink', XLINK)
     mets.set('PROFILE', profile)
     mets.set('OBJID', objid)
+    mets.set('fi:CATALOG', catalog)
+    mets.set('fi:SPECIFICATION', specification)
     if label:
         mets.set('LABEL', label)
-    if catalog:
-        mets.set('fi:CATALOG', catalog)
-    if specification:
-        mets.set('fi:SPECIFICATION', specification)
     if contentid:
         mets.set('fi:CONTENTID', contentid)
 

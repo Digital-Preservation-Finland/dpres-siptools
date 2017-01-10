@@ -6,7 +6,7 @@ import argparse
 from scandir import scandir
 import lxml.etree
 import siptools.xml.mets as m
-from siptools.xml.namespaces import NAMESPACES, METS_PROFILE
+from siptools.xml.namespaces import NAMESPACES, METS_PROFILE, METS_CATALOG, METS_SPECIFICATION
 from siptools.xml.mets_record_status_types import RECORD_STATUS_TYPES
 import datetime
 import uuid
@@ -26,9 +26,11 @@ def parse_arguments(arguments):
     parser.add_argument('--label', dest='label',
                         type=str, help='Short description of the information package')
     parser.add_argument('--catalog', dest='catalog',
+                        default=METS_CATALOG,
                         type=str, help='Version number of the NDL schema catalog used')
     parser.add_argument('--specification', dest='specification',
-            type=str,
+                        default=METS_SPECIFICATION,
+                        type=str,
                         help='Version number of packaging specification used in creation of data package')
     parser.add_argument('--contentid', dest='contentid',
                         type=str, help='Identifier for SIP Content')

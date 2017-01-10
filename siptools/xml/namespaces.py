@@ -23,3 +23,7 @@ METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'dc', 'version' :
 'http://www.vraweb.org/vracore4.htm' : {'mdtype' : 'vra', 'version' : ''}}
 
 METS_PROFILE = {'kdk': 'http://www.kdk.fi/kdk-mets-profile'}
+
+METS_CATALOG = "1.5.0"
+
+METS_SPECIFICATION = "1.5.0"
