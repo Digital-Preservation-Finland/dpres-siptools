@@ -77,11 +77,14 @@ def main(arguments=None):
             if element.tag == '{%s}techMD' % NAMESPACES['mets']:
                 amdsec.append(element)
 
+            # Katso saisiko tata jarkevammaksi
             if element.tag == '{%s}amdSec' % NAMESPACES['mets']:
                 amdsec.append(element[0])
+                if len(element) == 2:
+                    amdsec.append(element[1])
 
-            if element.tag == '{%s}digiprovMD' % NAMESPACES['mets']:
-                amdsec.append(element)
+            if element[0] == '{%s}digiprovMD' % NAMESPACES['mets']:
+                amdsec.append(element[1])
 
             if element.tag == '{%s}fileSec' % NAMESPACES['mets']:
                 mets.append(element)
