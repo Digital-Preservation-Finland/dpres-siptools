@@ -1,17 +1,16 @@
 General
 --------------------
-This tool is intended to be used for generating an OAIS SIP for digital preservation. Tool produces mets.xml containing metadata required by Finnish National Digital Library and Open Science digital preservation. Tool contains code for extracting technical metadata, constructing structural map and digital signing of the package. 
-This tool is created by CSC Oy for National Digital Library and Open Science projects. The aim is to provide digital preservation services for Culture and Research to ensure the access and use of materials long in the future. Documentation and specifications for the digital preservation service can be found in http://www.kdk.fi/en/digital-preservation/specifications.
+This tool is intended to be used for generating an OAIS SIP for digital preservation. It produces mets.xml containing metadata required by Finnish National Digital Library and Open Science and Research digital preservation. Tool contains code for extracting technical metadata, creating and digitally signing the mets.xml. 
+This tool is created by CSC Oy for National Digital Library and Open Science and Research projects. The aim is to provide digital preservation services for culture and research to ensure the access and use of materials long in the future. Documentation and specifications for the digital preservation service can be found in http://www.kdk.fi/en/digital-preservation/specifications.
 
 Scripts
 ----------------------
 
 import_description
-    Used for adding decsriptive metadata to mets.xml. Creates a file containing this
-    part of mets.xml.
+    Used for creating a file containing descriptive metadata element of mets.xml.
 
 premis_event
-    for creating digital provenance part of mets.xml    
+    for creating digital provenance elements of mets.xml    
 
 import_object
     for adding all digital objects to mets.xml
@@ -20,39 +19,44 @@ compile_structmap
     for creating structural map in mets.xml
 
 compile_mets
-    compiles all previously created mets parts in a mets.xml file
+    compiles all previously created files in a mets.xml file
 
 sign_mets
     Digitally signs the mets.xml file
 
 Usage
 ---------------------
-In order to build a SIP for digital preservation use the scripts in the following order. These scripts produce mets.xml and digital signature in the parametrized folder 'workspace'.
+In order to build a SIP for digital preservation use the scripts in the following order. These scripts produce a digitally signed mets.xml file in the parametrized folder 'workspace'.
 
-You can create technical metadata parts of mets.xml from files located in the folder
+You can create technical metadata elements of mets.xml from files located in the folder
 tests/data/structured followingly::
     python siptools/scripts/import_object.py --output ./workspace 'tests/data/structured'
 
-An example how to create digital provenance in mets.xml. Values for the parameter event type is a predefined list. ::
-    python siptools/scripts/premis_event.py creation  '2016-10-13T12:30:55'
+An example how to create digital provenance in mets.xml. Values for the parameter event type is a predefined list::
+
+   python siptools/scripts/premis_event.py creation  '2016-10-13T12:30:55'
     --event_detail Testing --event_outcome success --event_outcome_detail
     'Outcome detail' --workspace ./workspace --agent_name 'Demo Application'
     --agent_type software
 
-Script adds an xml file containing the descriptive
-metadata into mets.xml. Metadata must be in accepted format::
+Script creates an xml file containing the descriptive
+metadata. Metadata must be in accepted format::
+
     python siptools/scripts/import_description.py
     'tests/data/import_description/metadata/dc_description.xml'  --workspace
     ./workspace
 
-The folder structure of a dataset is turned into the structmap of mets.xml::
+The folder structure of a dataset is turned into a file containing the structmap element of mets.xml::
+
     python siptools/scripts/compile_structmap.py tests/data/structured --workspace ./workspace
 
-Compile mets.xml of previous script results::
+Compiles a mets.xml file from the previous results::
+
     python siptools/scripts/compile_mets.py --workspace workspace/ kdk 'CSC'
 
 Digitally sign the mets.xml::
-    python siptools/scripts/sign_mets.py workspace/mets.xml
+
+   python siptools/scripts/sign_mets.py workspace/mets.xml
     /home/vagrant/siptools/workspace/signature.sig tests/data/rsa-keys.crt
 
 Building Documentation
