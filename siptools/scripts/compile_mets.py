@@ -62,37 +62,18 @@ def main(arguments=None):
                         args.last_moddate, args.record_status)
     mets.append(metshdr)
 
-    # Create mets amdSec
-    amdsec = m.amdsec()
-
-    # Append parts
-    trees = []
+    # Collect elements from workspace XML files
+    elements = []
     for entry in scandir(args.workspace):
         if not entry.name.startswith('mets.xml') and entry.is_file():
             element = lxml.etree.parse(entry.path).getroot()[0]
+            elements.append(element)
 
-            if element.tag == '{%s}dmdSec' % NAMESPACES['mets']:
-                mets.append(element)
+    elements = m.merge_elements('{%s}amdSec' % NAMESPACES['mets'], elements)
+    elements.sort(key=m.order)
 
-            if element.tag == '{%s}techMD' % NAMESPACES['mets']:
-                amdsec.append(element)
-
-            # Katso saisiko tata jarkevammaksi
-            if element.tag == '{%s}amdSec' % NAMESPACES['mets']:
-                amdsec.append(element[0])
-                if len(element) == 2:
-                    amdsec.append(element[1])
-
-            if element[0] == '{%s}digiprovMD' % NAMESPACES['mets']:
-                amdsec.append(element[1])
-
-            if element.tag == '{%s}fileSec' % NAMESPACES['mets']:
-                mets.append(element)
-
-            if element.tag == '{%s}structMap' % NAMESPACES['mets']:
-                mets.append(element)
-
-    mets.append(amdsec)
+    for element in elements:
+        mets.append(element)
 
     if args.stdout:
         print m.serialize(mets)

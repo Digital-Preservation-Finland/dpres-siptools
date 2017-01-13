@@ -55,6 +55,28 @@ def mets_mets(profile=siptools.xml.namespaces.METS_PROFILE['kdk'],
     return mets
 
 
+
+def order(element):
+    """Return order number for given element in METS schema. This can be
+    use for example with sort(). """
+    return  ['{%s}dmdSec' % METS_NS,
+            '{%s}amdSec' % METS_NS,
+            '{%s}digiprovMD' % METS_NS,
+            '{%s}fileSec' % METS_NS,
+            '{%s}structMap' % METS_NS].index(element.tag)
+
+
+def merge_elements(tag, elements):
+    """Merge elements with given tag in elements list"""
+    elements_to_merge = filter(lambda x: x.tag == tag, elements)
+
+    for element in elements_to_merge[1:]:
+        elements_to_merge[0].extend(element.getchildren())
+
+    elements = list(set(elements) - set(elements_to_merge))
+    return elements + [elements_to_merge[0]]
+
+
 def mets_ns(tag, prefix=""):
     """Prefix ElementTree tags with METS namespace.
 
