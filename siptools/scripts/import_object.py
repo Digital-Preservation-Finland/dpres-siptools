@@ -47,8 +47,10 @@ def main(arguments=None):
     files = collect_filepaths(args.files)
     for filename in files:
         mets = m.mets_mets()
+        amdsec = m.amdsec()
         techmd = m.techmd('techmd-%s' % filename)
-        mets.append(techmd)
+        amdsec.append(techmd)
+        mets.append(amdsec)
         digital_object = create_premis_object(techmd, filename,
                                               args.skip_inspection, args.format_name, args.format_version,
                                               args.digest_algorithm, args.message_digest, args.date_created)
