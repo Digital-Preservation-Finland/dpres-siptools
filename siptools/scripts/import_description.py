@@ -26,7 +26,11 @@ def main(arguments=None):
     tree = lxml.etree.fromstring(content)
 
     childNodeList = tree.findall('*')
+<<<<<<< HEAD
     dmdsec = m.dmdSec(element_id=encode_id(url_t_path), child_elements=childNodeList)
+=======
+    dmdsec = m.dmdSec(element_id=url_t_path, child_elements=childNodeList)
+>>>>>>> TPAS-53 Fix admid and dmdid references in structmap
     mets.append(dmdsec)
 
     if args.stdout:
