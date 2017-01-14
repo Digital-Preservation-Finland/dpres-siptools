@@ -49,11 +49,15 @@ def main(arguments=None):
         mets = m.mets_mets()
         amdsec = m.amdsec()
         techmd = m.techmd('techmd-%s' % filename)
+        mdwrap = m.mdwrap()
+        xmldata = m.xmldata()
+        create_premis_object(xmldata, filename, args.skip_inspection, args.format_name, args.format_version,
+                args.digest_algorithm, args.message_digest, args.date_created)
+
+        mdwrap.append(xmldata)
+        techmd.append(mdwrap)
         amdsec.append(techmd)
         mets.append(amdsec)
-        digital_object = create_premis_object(techmd, filename,
-                                              args.skip_inspection, args.format_name, args.format_version,
-                                              args.digest_algorithm, args.message_digest, args.date_created)
 
         if args.stdout:
             print m.serialize(mets)
@@ -84,7 +88,6 @@ def create_premis_object(tree, fname, skip_inspection=None,
                             validation_result['errors'])
 
         techmd = validation_result['result']
-    print "techmd:%s" % techmd
 
     # Create objectCharacteristics element
     el_objectCharacteristics = p._element('objectCharacteristics')
@@ -133,8 +136,6 @@ def create_premis_object(tree, fname, skip_inspection=None,
 def fileinfo(fname):
     """Return fileinfo dict for given file."""
     fm = magic.Magic(mime=True)
-#    fm = magic.open(magic.MAGIC_MIME_TYPE)
-#    fm.load()
     mimetype = fm.from_file(fname)
 
     fm = fm = magic.Magic(mime=False)
