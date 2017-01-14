@@ -53,7 +53,6 @@ def main(arguments=None):
         amdsec = m.amdsec()
         techmd = m.techmd(encode_id(encode_path(filename,
             suffix="-techmd.xml")))
-        #import pdb; pdb.set_trace()
         mdwrap = m.mdwrap()
         xmldata = m.xmldata()
         create_premis_object(xmldata, filename, args.skip_inspection, args.format_name, args.format_version,
