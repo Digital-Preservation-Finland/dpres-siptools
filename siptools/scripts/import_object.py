@@ -51,8 +51,12 @@ def main(arguments=None):
     for filename in files:
         mets = m.mets_mets()
         amdsec = m.amdsec()
+<<<<<<< HEAD
         techmd = m.techmd(encode_id(encode_path(filename,
             suffix="-techmd.xml")))
+=======
+        techmd = m.techmd(encode_path(filename, suffix="-techmd.xml"))
+>>>>>>> TPAS-53 Fix admid and dmdid references in structmap
         mdwrap = m.mdwrap()
         xmldata = m.xmldata()
         create_premis_object(xmldata, filename, args.skip_inspection, args.format_name, args.format_version,
