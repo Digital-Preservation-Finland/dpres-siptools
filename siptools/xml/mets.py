@@ -136,6 +136,8 @@ def dmdSec(child_elements=None, element_id=str(uuid.uuid4()),
             ns = namespace(element)[1:-1]
             if ns in siptools.xml.namespaces.METS_NS.keys():
                 mdWrap.set("MDTYPE", siptools.xml.namespaces.METS_NS[ns]['mdtype'])
+                mdWrap.set('MDTYPEVERSION',
+                        siptools.xml.namespaces.METS_NS[ns]['version'])
             else:
                 raise TypeError("Invalid namespace: %s" % ns)
     mdWrap.append(xmlData)

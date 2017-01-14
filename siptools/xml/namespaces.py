@@ -10,7 +10,7 @@ NAMESPACES = {
 }
 
 METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'DC', 'version' :
-''}, 'http://www.loc.gov/MARC21/slim' : {'mdtype' : 'MARC', 'version' : ''},
+'1.1'}, 'http://www.loc.gov/MARC21/slim' : {'mdtype' : 'MARC', 'version' : ''},
 'http://www.loc.gov/mods/v3' : {'mdtype' : 'MODS', 'version' : ''},
 'urn:isbn:1-931666-22-9': {'mdtype' : 'EAD', 'version' : ''},
 'http://ead3.archivists.org/schema/': {'mdtype' : 'EAD3', 'version' : ''},
