@@ -10,8 +10,10 @@ import magic
 import argparse
 
 from ipt.validator import validate
+from siptools.utils import encode_path
 import siptools.xml.premis as p
 import siptools.xml.mets as m
+
 import xml.etree.ElementTree as ET
 import datetime
 
@@ -48,7 +50,7 @@ def main(arguments=None):
     for filename in files:
         mets = m.mets_mets()
         amdsec = m.amdsec()
-        techmd = m.techmd('techmd-%s' % filename)
+        techmd = m.techmd(encode_path(filename, suffix="-techmd.xml"))
         mdwrap = m.mdwrap()
         xmldata = m.xmldata()
         create_premis_object(xmldata, filename, args.skip_inspection, args.format_name, args.format_version,
@@ -65,7 +67,7 @@ def main(arguments=None):
         if not os.path.exists(args.output):
             os.makedirs(args.output)
 
-        filename = quote_plus(os.path.splitext(filename)[0]) + '-techmd.xml'
+        filename = encode_path(filename, suffix="-techmd.xml")
 
         with open(os.path.join(args.output, filename), 'w+') as outfile:
             outfile.write(m.serialize(mets))
