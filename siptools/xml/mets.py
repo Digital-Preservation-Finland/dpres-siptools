@@ -152,17 +152,21 @@ def techmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
     techmd.set('ID', element_id)
     techmd.set('CREATED', created_date)
 
-    mdwrap = _element('mdWrap')
-    mdwrap.set('MDTYPE', 'PREMIS:OBJECT')
-    xmldata = _element('xmlData')
-
     if child_elements:
         for element in child_elements:
-            xmldata.append(element)
-
-    techmd.append(xmldata)
+            techmd.append(element)
 
     return techmd
+
+
+def mdwrap(mdtype='PREMIS:OBJECT', mdtypeversion="2.3"):
+    element = _element('mdWrap')
+    element.set('MDTYPE', mdtype)
+    element.set('MDTYPEVERSION', mdtypeversion)
+    return element
+
+def xmldata():
+    return _element('xmlData')
 
 
 def digiprovmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
