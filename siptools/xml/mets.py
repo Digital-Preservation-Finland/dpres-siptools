@@ -247,7 +247,8 @@ def fptr(fileid=None):
     return _fptr
 
 
-def div(type=None, order=None, contentids=None, label=None, orderlabel=None, dmdid=None, amdid=None,
+def div(type=None, order=None, contentids=None, label=None, orderlabel=None,
+        dmdid=None, admid=None,
         div_elements=None, fptr_elements=None, mptr_elements=None):
     """Return the div element"""
 
@@ -262,9 +263,9 @@ def div(type=None, order=None, contentids=None, label=None, orderlabel=None, dmd
     if orderlabel:
         _div.set('ORDERLABEL', orderlabel)
     if dmdid:
-        _div.set('DMDID', dmdid)
-    if amdid:
-        _div.set('AMDID', amdid)
+        _div.set('DMDID', ' '.join(dmdid))
+    if admid:
+        _div.set('admid', ' '.join(admid))
 
     if div_elements:
         for element in div_elements:
