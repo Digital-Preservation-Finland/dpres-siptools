@@ -77,10 +77,13 @@ def main(arguments=None):
 def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
     """create structMap and fileSec elements from directories and files"""
     if os.path.isdir(path):
-        dmdsec_id = id_for_file(workspace, path, 'dmdsec.xml')[0]
+        dmdsec_id = id_for_file(workspace, path, 'dmdsec.xml')
+        amdids = id_for_file(workspace, path, 'creation-event.xml')
+        amdids += id_for_file(workspace, path, 'creation-agent.xml')
+        #import pdb; pdb.set_trace()
         div = m.div(type=os.path.basename(path), order=None, contentids=None,
                     label=None, orderlabel=None, dmdid=dmdsec_id,
-                    amdid=None, div_elements=None, fptr_elements=None,
+                    admid=amdids, div_elements=None, fptr_elements=None,
                     mptr_elements=None)
         tree.append(div)
         for item in scandir.scandir(path):
@@ -88,6 +91,8 @@ def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
                              workspace, admids, dmdsec_id)
     else:
         techmd_id = id_for_file(workspace, path, 'techmd.xml')
+        if not techmd_id:
+            return
         fileid = str(uuid4())
         file = m.file(fileid, admid_elements=techmd_id, loctype='URL',
                       xlink_href='file://%s' % os.path.relpath(path, os.curdir), xlink_type='simple',
