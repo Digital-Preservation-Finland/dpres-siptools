@@ -21,14 +21,6 @@ def serialize(root_element):
 
     """
 
-    def register_namespace(prefix, uri):
-        """foo"""
-        ns_map = getattr(ET, '_namespace_map')
-        ns_map[uri] = prefix
-
-    for ns in siptools.xml.namespaces.NAMESPACES:
-        register_namespace(ns[0], ns[1])
-
     siptools.xml.xmlutil.indent(root_element)
 
     return ET.tostring(root_element)
@@ -39,6 +31,17 @@ def mets_mets(profile=siptools.xml.namespaces.METS_PROFILE['kdk'],
         catalog=siptools.xml.namespaces.METS_CATALOG,
         specification=siptools.xml.namespaces.METS_SPECIFICATION, contentid=None):
     """Create METS ElementTree"""
+
+    def register_namespace(prefix, uri):
+        """foo"""
+        ns_map = getattr(ET, '_namespace_map')
+        if  prefix in ns_map.itervalues():
+            print "duplicate: ", prefix
+        ns_map[uri] = prefix
+
+    for prefix, uri in siptools.xml.namespaces.NAMESPACES.iteritems():
+        register_namespace(prefix, uri)
+
 
     mets = _element('mets')
     mets.set('xmlns:' + 'fi', FI_NS)
@@ -61,15 +64,22 @@ def order(element):
     use for example with sort(). """
     return  ['{%s}dmdSec' % METS_NS,
             '{%s}amdSec' % METS_NS,
+            '{%s}techMD' % METS_NS,
             '{%s}digiprovMD' % METS_NS,
             '{%s}fileSec' % METS_NS,
             '{%s}structMap' % METS_NS].index(element.tag)
 
 
+def children_order(element):
+    return ['{%s}techMD' % METS_NS,
+            '{%s}digiprovMD' % METS_NS,].index(element.getchildren()[0].tag)
+
 def merge_elements(tag, elements):
     """Merge elements with given tag in elements list"""
     elements_to_merge = filter(lambda x: x.tag == tag, elements)
 
+    elements_to_merge.sort(key=children_order)
+    import pdb; pdb.set_trace()
     for element in elements_to_merge[1:]:
         elements_to_merge[0].extend(element.getchildren())
 
@@ -265,7 +275,7 @@ def div(type=None, order=None, contentids=None, label=None, orderlabel=None,
     if dmdid:
         _div.set('DMDID', ' '.join(dmdid))
     if admid:
-        _div.set('admid', ' '.join(admid))
+        _div.set('ADMID', ' '.join(admid))
 
     if div_elements:
         for element in div_elements:

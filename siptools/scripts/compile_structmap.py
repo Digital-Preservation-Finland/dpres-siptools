@@ -10,7 +10,7 @@ from urllib import quote_plus
 import lxml.etree as ET
 from siptools.xml.namespaces import NAMESPACES, METS_PROFILE
 from siptools.xml.premis_event_types import PREMIS_EVENT_TYPES
-
+from siptools.utils import encode_id
 
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
@@ -77,10 +77,12 @@ def main(arguments=None):
 def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
     """create structMap and fileSec elements from directories and files"""
     if os.path.isdir(path):
-        dmdsec_id = id_for_file(workspace, path, 'dmdsec.xml')
-        amdids = id_for_file(workspace, path, 'creation-event.xml')
-        amdids += id_for_file(workspace, path, 'creation-agent.xml')
-        #import pdb; pdb.set_trace()
+        dmdsec_id = [encode_id (id) for id in id_for_file(workspace, path, 
+            'dmdsec.xml')]
+        amdids = [encode_id(id) for id in id_for_file(workspace, path,
+            'creation-event.xml')]
+        amdids += [encode_id(id) for id in id_for_file(workspace, path,
+            'creation-agent.xml')]
         div = m.div(type=os.path.basename(path), order=None, contentids=None,
                     label=None, orderlabel=None, dmdid=dmdsec_id,
                     admid=amdids, div_elements=None, fptr_elements=None,
@@ -90,10 +92,11 @@ def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
             create_structMap(div, item.path, filegrp,
                              workspace, admids, dmdsec_id)
     else:
-        techmd_id = id_for_file(workspace, path, 'techmd.xml')
+        techmd_id = [encode_id(id) for id in id_for_file(workspace, path,
+            'techmd.xml')]
         if not techmd_id:
             return
-        fileid = str(uuid4())
+        fileid = '_' + str(uuid4())
         file = m.file(fileid, admid_elements=techmd_id, loctype='URL',
                       xlink_href='file://%s' % os.path.relpath(path, os.curdir), xlink_type='simple',
                       groupid=None)
