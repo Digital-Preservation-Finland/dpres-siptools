@@ -51,7 +51,7 @@ def main(arguments=None):
     for filename in files:
         mets = m.mets_mets()
         amdsec = m.amdsec()
-        techmd = m.techmd(encode_path(filename, suffix="-techmd.xml"))
+        techmd = m.techmd(encode_id(encode_path(filename, suffix="-techmd.xml")))
         mdwrap = m.mdwrap()
         xmldata = m.xmldata()
         create_premis_object(xmldata, filename, args.skip_inspection, args.format_name, args.format_version,
