@@ -282,7 +282,7 @@ def premis_environment(object_or_identifier=None):
 
 def premis_object(
         identifier,
-        original_name,
+        original_name=None,
         child_elements=None,
         representation=False):
 
@@ -313,9 +313,12 @@ def premis_object(
 
     if representation:
         _object.set(xsi_ns('type'), 'premis:representation')
+    else:
+        _object.set(xsi_ns('type'), 'premis:file')
 
-    _original_name = _subelement(_object, 'originalName')
-    _original_name.text = original_name
+    if original_name:
+        _original_name = _subelement(_object, 'originalName')
+        _original_name.text = original_name
 
     if child_elements:
         for element in child_elements:

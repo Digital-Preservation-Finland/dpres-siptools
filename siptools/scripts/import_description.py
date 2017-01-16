@@ -7,7 +7,7 @@ import lxml.etree
 import siptools.xml.mets as m
 from urllib import quote_plus
 
-from siptools.utils import encode_path
+from siptools.utils import encode_path, encode_id
 
 def main(arguments=None):
     """The main method for argparser"""
@@ -26,7 +26,7 @@ def main(arguments=None):
     tree = lxml.etree.fromstring(content)
 
     childNodeList = tree.findall('*')
-    dmdsec = m.dmdSec(element_id=url_t_path, child_elements=childNodeList)
+    dmdsec = m.dmdSec(element_id=encode_id(url_t_path), child_elements=childNodeList)
     mets.append(dmdsec)
 
     if args.stdout:

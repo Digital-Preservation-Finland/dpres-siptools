@@ -10,7 +10,7 @@ import magic
 import argparse
 
 from ipt.validator import validate
-from siptools.utils import encode_path
+from siptools.utils import encode_path, encode_id
 import siptools.xml.premis as p
 import siptools.xml.mets as m
 
@@ -50,7 +50,9 @@ def main(arguments=None):
     for filename in files:
         mets = m.mets_mets()
         amdsec = m.amdsec()
-        techmd = m.techmd(encode_path(filename, suffix="-techmd.xml"))
+        techmd = m.techmd(encode_id(encode_path(filename,
+            suffix="-techmd.xml")))
+        #import pdb; pdb.set_trace()
         mdwrap = m.mdwrap()
         xmldata = m.xmldata()
         create_premis_object(xmldata, filename, args.skip_inspection, args.format_name, args.format_version,
@@ -94,6 +96,9 @@ def create_premis_object(tree, fname, skip_inspection=None,
     # Create objectCharacteristics element
     el_objectCharacteristics = p._element('objectCharacteristics')
 
+    el_composition_level = p._subelement(el_objectCharacteristics, 'compositionLevel')
+    el_composition_level.text = '0'
+
     # Create fixity element
     el_fixity = p._subelement(el_objectCharacteristics, 'fixity')
     el_fixity_algorithm = p._subelement(
@@ -114,6 +119,9 @@ def create_premis_object(tree, fname, skip_inspection=None,
         el_format_version.text = format_version if format_version else techmd[
             'format']['version']
 
+    if techmd['format']['charset']:
+        el_format_name.text += '; charset=' + techmd['format']['charset']
+
     # Create creatingApplication element
     el_creatingApplication = p._subelement(el_objectCharacteristics,
                                            'creatingApplication')
@@ -129,7 +137,7 @@ def create_premis_object(tree, fname, skip_inspection=None,
         identifier_value=unique)
 
     el_premis_object = p.premis_object(
-        object_identifier, fname, child_elements=[el_objectCharacteristics])
+        object_identifier, child_elements=[el_objectCharacteristics])
     tree.append(el_premis_object)
 
     return tree

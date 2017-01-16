@@ -8,7 +8,7 @@ import os
 from uuid import uuid4
 from siptools.xml.premis_event_types import PREMIS_EVENT_TYPES
 from siptools.xml.premis_event_types import PREMIS_EVENT_OUTCOME_TYPES
-from siptools.utils import encode_path
+from siptools.utils import encode_path, encode_id
 
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
@@ -48,15 +48,16 @@ def main(arguments=None):
     amdsec = m.amdsec()
     mets.append(amdsec)
 
-    agent_id = encode_path('%s-%s-agent.xml' % (args.digital_object,
-        args.event_type))
+    agent_id = encode_id(encode_path('%s-%s-agent.xml' % (args.digital_object,
+        args.event_type)))
     linking_agent_identifier = create_premis_agent(amdsec, agent_id, args.agent_name,
                                                    args.agent_type)
 
     if args.stdout:
         print m.serialize(mets)
 
-    output_file = os.path.join(args.workspace, agent_id)
+    output_file = os.path.join(args.workspace, encode_path('%s-%s-agent.xml' %
+        (args.digital_object, args.event_type)))
 
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
@@ -72,8 +73,8 @@ def main(arguments=None):
     mets.append(amdsec)
 
 
-    event_id = encode_path('%s-%s-event.xml' % (args.digital_object,
-        args.event_type))
+    event_id = encode_id(encode_path('%s-%s-event.xml' % (args.digital_object,
+        args.event_type)))
 
     create_premis_event(amdsec, args.event_type, args.event_datetime,
                         args.event_detail, args.event_outcome, args.event_outcome_detail,
@@ -82,7 +83,8 @@ def main(arguments=None):
     if args.stdout:
         print m.serialize(mets)
 
-    output_file = os.path.join(args.workspace, event_id)
+    output_file = os.path.join(args.workspace, encode_path('%s-%s-event.xml' %
+        (args.digital_object, args.event_type)))
 
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
@@ -122,13 +124,14 @@ def create_premis_event(tree, event_type, event_datetime, event_detail,
                         event_outcome, event_outcome_detail,
                         linking_agent_identifier, event_id):
     digiprovmd = m.digiprovmd(event_id)
-    mdwrap = m.mdwrap(mdtype='PREMIS:AGENT')
+    mdwrap = m.mdwrap(mdtype='PREMIS:EVENT')
     xmldata = m.xmldata()
 
     unique = str(uuid4())
     event_identifier = p.premis_identifier(
-        identifier_type='premis-event-id',
-        identifier_value=unique)
+            identifier_type='premis-event-id',
+            identifier_value=unique,
+            prefix='event')
 
     premis_event_outcome = p.premis_event_outcome(event_outcome,
                                                   event_outcome_detail)
