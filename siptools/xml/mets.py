@@ -79,7 +79,6 @@ def merge_elements(tag, elements):
     elements_to_merge = filter(lambda x: x.tag == tag, elements)
 
     elements_to_merge.sort(key=children_order)
-    import pdb; pdb.set_trace()
     for element in elements_to_merge[1:]:
         elements_to_merge[0].extend(element.getchildren())
 
