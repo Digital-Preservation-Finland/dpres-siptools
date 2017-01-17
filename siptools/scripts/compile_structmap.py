@@ -98,8 +98,8 @@ def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
             return
         fileid = '_' + str(uuid4())
         file = m.file(fileid, admid_elements=techmd_id, loctype='URL',
-                      xlink_href='file://%s' % os.path.relpath(path, os.curdir), xlink_type='simple',
-                      groupid=None)
+                   xlink_href='file://%s' % os.path.relpath(path, os.curdir), xlink_type='simple',
+                   groupid=None)
         filegrp.append(file)
         fptr = m.fptr(fileid)
         tree.append(fptr)
