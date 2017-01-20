@@ -35,7 +35,6 @@ def mets_mets(profile=siptools.xml.namespaces.METS_PROFILE['kdk'],
     def register_namespace(prefix, uri):
         """foo"""
         ns_map = getattr(ET, '_namespace_map')
-        if  prefix in ns_map.itervalues():
         ns_map[uri] = prefix
 
     for prefix, uri in siptools.xml.namespaces.NAMESPACES.iteritems():
