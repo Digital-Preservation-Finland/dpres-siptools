@@ -36,7 +36,6 @@ def mets_mets(profile=siptools.xml.namespaces.METS_PROFILE['kdk'],
         """foo"""
         ns_map = getattr(ET, '_namespace_map')
         if  prefix in ns_map.itervalues():
-            print "duplicate: ", prefix
         ns_map[uri] = prefix
 
     for prefix, uri in siptools.xml.namespaces.NAMESPACES.iteritems():
@@ -214,7 +213,7 @@ def mets_agent(organisation_name, agent_role='CREATOR',
     metsagent.set('ROLE', agent_role)
     metsagent.set('TYPE', agent_type)
     _orgname = _element('name')
-    _orgname.text = organisation_name 
+    _orgname.text = organisation_name
     metsagent.append(_orgname)
 
     return metsagent
