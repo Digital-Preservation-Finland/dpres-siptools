@@ -9,10 +9,6 @@ def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
 
-
-    if not os.path.exists(os.path.dirname(args.tar_filename)):
-        os.makedirs(os.path.dirname(args.tar_filename))
-
     command = ['tar', '-cvvf', args.tar_filename, args.dir_to_tar]
     subprocess.Popen(command)
 

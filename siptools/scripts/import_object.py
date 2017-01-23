@@ -30,6 +30,8 @@ def parse_arguments(arguments):
                         help='Skip file inspection and give technical metadata as parameters')
     parser.add_argument('--format_name', dest='format_name', type=str,
                         help='Mimetype of a file')
+    parser.add_argument('--charset', dest='charset', type=str,
+                        help='Charset of a file')
     parser.add_argument('--format_version', dest='format_version', type=str,
                         help='Version of fileformat')
     parser.add_argument('--digest_algorithm', dest='digest_algorithm', type=str,
@@ -55,7 +57,8 @@ def main(arguments=None):
         mdwrap = m.mdwrap()
         xmldata = m.xmldata()
         create_premis_object(xmldata, filename, args.skip_inspection, args.format_name, args.format_version,
-                args.digest_algorithm, args.message_digest, args.date_created)
+                args.digest_algorithm, args.message_digest, args.date_created,
+                args.charset)
 
         mdwrap.append(xmldata)
         techmd.append(mdwrap)
@@ -79,7 +82,7 @@ def main(arguments=None):
 
 def create_premis_object(tree, fname, skip_inspection=None,
                          format_name=None, format_version=None, digest_algorithm=None,
-                         message_digest=None, date_created=None):
+                         message_digest=None, date_created=None, charset=None):
     """Create Premis object for given file."""
 
     techmd = {}
@@ -118,8 +121,8 @@ def create_premis_object(tree, fname, skip_inspection=None,
         el_format_version.text = format_version if format_version else techmd[
             'format']['version']
 
-    if techmd['format']['charset']:
-        el_format_name.text += '; charset=' + techmd['format']['charset']
+    if charset or (techmd and 'charset' in techmd['format']):
+        el_format_name.text += '; charset=' + charset if charset else techmd['format']['charset']
 
     # Create creatingApplication element
     el_creatingApplication = p._subelement(el_objectCharacteristics,
