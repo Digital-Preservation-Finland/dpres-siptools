@@ -10,7 +10,7 @@ from urllib import quote_plus
 import lxml.etree as ET
 from siptools.xml.namespaces import NAMESPACES, METS_PROFILE
 from siptools.xml.premis_event_types import PREMIS_EVENT_TYPES
-
+from siptools.utils import encode_id
 
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
@@ -38,7 +38,6 @@ def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
 
-    source_path = os.path.abspath(args.input_directory)
     mets_structmap = m.mets_mets()
     mets_filesec = m.mets_mets()
 
@@ -50,7 +49,7 @@ def main(arguments=None):
     mets_structmap.append(structmap)
     admids = []
     admids = get_digiprovmd_id(admids, args.workspace)
-    create_structMap(structmap, source_path, filegrp, args.workspace, admids)
+    create_structMap(structmap, args.workspace, filegrp, args.workspace, admids)
 
     if args.stdout:
         print m.serialize(mets)
@@ -78,53 +77,44 @@ def main(arguments=None):
 def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
     """create structMap and fileSec elements from directories and files"""
     if os.path.isdir(path):
-        dmdsec_id = get_md_id(path, workspace, '/mets:mets/mets:dmdSec/@ID',
-                              '-dmdsec.xml', dmdsec_id)
-        techmd_mix_id = get_md_id(path, workspace,
-                                  '/mets:mets/mets:techMD/@ID', '-mix-techmd.xml')
-        if techmd_mix_id:
-            admids.append(techmd_mix_id)
+        dmdsec_id = [encode_id (id) for id in id_for_file(workspace, path, 
+            'dmdsec.xml')]
+        amdids = [encode_id(id) for id in id_for_file(workspace, path,
+            'creation-event.xml')]
+        amdids += [encode_id(id) for id in id_for_file(workspace, path,
+            'creation-agent.xml')]
         div = m.div(type=os.path.basename(path), order=None, contentids=None,
                     label=None, orderlabel=None, dmdid=dmdsec_id,
-                    amdid=None, div_elements=None, fptr_elements=None,
+                    admid=amdids, div_elements=None, fptr_elements=None,
                     mptr_elements=None)
         tree.append(div)
         for item in scandir.scandir(path):
             create_structMap(div, item.path, filegrp,
                              workspace, admids, dmdsec_id)
-        if techmd_mix_id:
-            admids = admids[-1]
     else:
-        techmd_id = get_md_id(
-            path, workspace, '/mets:mets/mets:techMD/@ID', '-techmd.xml')
-        techmd_mix_id = get_md_id(path, workspace,
-                                  '/mets:mets/mets:techMD/@ID', '-mix-techmd.xml')
-        admids.append(techmd_id)
-        if techmd_mix_id:
-            admids.append(techmd_mix_id)
-        fileid = str(uuid4())
-        file = m.file(fileid, admid_elements=admids, loctype='URL',
-                      xlink_href='file://%s' % os.path.relpath(path, os.curdir), xlink_type='simple',
-                      groupid=None)
-        admids = admids[-1]
-        if techmd_mix_id:
-            admids = admids[-1]
+        techmd_id = [encode_id(id) for id in id_for_file(workspace, path,
+            'techmd.xml')]
+        if not techmd_id:
+            return
+        fileid = '_' + str(uuid4())
+        file = m.file(fileid, admid_elements=techmd_id, loctype='URL',
+                   xlink_href='file://%s' % os.path.relpath(path, os.curdir), xlink_type='simple',
+                   groupid=None)
         filegrp.append(file)
         fptr = m.fptr(fileid)
         tree.append(fptr)
 
 
-def get_md_id(path, workspace, xpos, suffix='', md_id=None):
+def id_for_file(workspace, path, idtype):
+    import scandir
+    from siptools.utils import encode_path
 
-    relpath = os.path.relpath(path, os.curdir)
-    url_path = quote_plus(os.path.splitext(relpath)[0]) + suffix
-    md_path = os.path.join(workspace, url_path)
-    if os.path.isfile(md_path):
-        md_tree = ET.parse(md_path)
-        md_root = md_tree.getroot()
-        md_id = md_root.xpath(xpos,
-                              namespaces=NAMESPACES)[0]
-    return md_id
+    workspace_files = [fname.name for fname in scandir.scandir(workspace)]
+    techmd_files = filter(lambda x: idtype in x, workspace_files)
+    path = path.strip(workspace)
+    ids = [id for id in techmd_files if path in id]
+
+    return ids
 
 
 def get_digiprovmd_id(admids, workspace):

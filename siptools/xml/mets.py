@@ -21,39 +21,67 @@ def serialize(root_element):
 
     """
 
-    def register_namespace(prefix, uri):
-        """foo"""
-        ns_map = getattr(ET, '_namespace_map')
-        ns_map[uri] = prefix
-
-    for ns in siptools.xml.namespaces.NAMESPACES:
-        register_namespace(ns[0], ns[1])
-
     siptools.xml.xmlutil.indent(root_element)
 
     return ET.tostring(root_element)
 
 
 def mets_mets(profile=siptools.xml.namespaces.METS_PROFILE['kdk'],
-        objid=str(uuid.uuid4()), label=None, catalog='1.5.0',
-        specification='1.5.0', contentid=None):
+        objid=str(uuid.uuid4()), label=None,
+        catalog=siptools.xml.namespaces.METS_CATALOG,
+        specification=siptools.xml.namespaces.METS_SPECIFICATION, contentid=None):
     """Create METS ElementTree"""
+
+    def register_namespace(prefix, uri):
+        """foo"""
+        ns_map = getattr(ET, '_namespace_map')
+        ns_map[uri] = prefix
+
+    for prefix, uri in siptools.xml.namespaces.NAMESPACES.iteritems():
+        register_namespace(prefix, uri)
+
 
     mets = _element('mets')
     mets.set('xmlns:' + 'fi', FI_NS)
     mets.set('xmlns:' + 'xlink', XLINK)
     mets.set('PROFILE', profile)
     mets.set('OBJID', objid)
+    mets.set('fi:CATALOG', catalog)
+    mets.set('fi:SPECIFICATION', specification)
     if label:
         mets.set('LABEL', label)
-    if catalog:
-        mets.set('fi:CATALOG', catalog)
-    if specification:
-        mets.set('fi:SPECIFICATION', specification)
     if contentid:
         mets.set('fi:CONTENTID', contentid)
 
     return mets
+
+
+
+def order(element):
+    """Return order number for given element in METS schema. This can be
+    use for example with sort(). """
+    return  ['{%s}dmdSec' % METS_NS,
+            '{%s}amdSec' % METS_NS,
+            '{%s}techMD' % METS_NS,
+            '{%s}digiprovMD' % METS_NS,
+            '{%s}fileSec' % METS_NS,
+            '{%s}structMap' % METS_NS].index(element.tag)
+
+
+def children_order(element):
+    return ['{%s}techMD' % METS_NS,
+            '{%s}digiprovMD' % METS_NS,].index(element.getchildren()[0].tag)
+
+def merge_elements(tag, elements):
+    """Merge elements with given tag in elements list"""
+    elements_to_merge = filter(lambda x: x.tag == tag, elements)
+
+    elements_to_merge.sort(key=children_order)
+    for element in elements_to_merge[1:]:
+        elements_to_merge[0].extend(element.getchildren())
+
+    elements = list(set(elements) - set(elements_to_merge))
+    return elements + [elements_to_merge[0]]
 
 
 def mets_ns(tag, prefix=""):
@@ -115,6 +143,8 @@ def dmdSec(child_elements=None, element_id=str(uuid.uuid4()),
             ns = namespace(element)[1:-1]
             if ns in siptools.xml.namespaces.METS_NS.keys():
                 mdWrap.set("MDTYPE", siptools.xml.namespaces.METS_NS[ns]['mdtype'])
+                mdWrap.set('MDTYPEVERSION',
+                        siptools.xml.namespaces.METS_NS[ns]['version'])
             else:
                 raise TypeError("Invalid namespace: %s" % ns)
     mdWrap.append(xmlData)
@@ -131,17 +161,21 @@ def techmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
     techmd.set('ID', element_id)
     techmd.set('CREATED', created_date)
 
-    mdwrap = _element('mdWrap')
-    mdwrap.set('MDTYPE', 'PREMIS:OBJECT')
-    xmldata = _element('xmlData')
-
     if child_elements:
         for element in child_elements:
-            xmldata.append(element)
-
-    techmd.append(xmldata)
+            techmd.append(element)
 
     return techmd
+
+
+def mdwrap(mdtype='PREMIS:OBJECT', mdtypeversion="2.3"):
+    element = _element('mdWrap')
+    element.set('MDTYPE', mdtype)
+    element.set('MDTYPEVERSION', mdtypeversion)
+    return element
+
+def xmldata():
+    return _element('xmlData')
 
 
 def digiprovmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
@@ -178,7 +212,7 @@ def mets_agent(organisation_name, agent_role='CREATOR',
     metsagent.set('ROLE', agent_role)
     metsagent.set('TYPE', agent_type)
     _orgname = _element('name')
-    _orgname.text = organisation_name 
+    _orgname.text = organisation_name
     metsagent.append(_orgname)
 
     return metsagent
@@ -220,7 +254,8 @@ def fptr(fileid=None):
     return _fptr
 
 
-def div(type=None, order=None, contentids=None, label=None, orderlabel=None, dmdid=None, amdid=None,
+def div(type=None, order=None, contentids=None, label=None, orderlabel=None,
+        dmdid=None, admid=None,
         div_elements=None, fptr_elements=None, mptr_elements=None):
     """Return the div element"""
 
@@ -235,9 +270,9 @@ def div(type=None, order=None, contentids=None, label=None, orderlabel=None, dmd
     if orderlabel:
         _div.set('ORDERLABEL', orderlabel)
     if dmdid:
-        _div.set('DMDID', dmdid)
-    if amdid:
-        _div.set('AMDID', amdid)
+        _div.set('DMDID', ' '.join(dmdid))
+    if admid:
+        _div.set('ADMID', ' '.join(admid))
 
     if div_elements:
         for element in div_elements:

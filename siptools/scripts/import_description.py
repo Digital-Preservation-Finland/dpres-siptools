@@ -7,13 +7,14 @@ import lxml.etree
 import siptools.xml.mets as m
 from urllib import quote_plus
 
+from siptools.utils import encode_path, encode_id
 
 def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
 
     path = os.path.join(args.workspace, args.dmdsec_target)
-    url_t_path = quote_plus(args.dmdsec_target, safe='') + '-dmdsec.xml'
+    url_t_path = encode_path(args.dmdsec_target, suffix='-dmdsec.xml')
 
     with open(args.dmdsec_location, 'r') as content_file:
         content = content_file.read()
@@ -25,7 +26,7 @@ def main(arguments=None):
     tree = lxml.etree.fromstring(content)
 
     childNodeList = tree.findall('*')
-    dmdsec = m.dmdSec(child_elements=childNodeList)
+    dmdsec = m.dmdSec(element_id=encode_id(url_t_path), child_elements=childNodeList)
     mets.append(dmdsec)
 
     if args.stdout:
@@ -41,7 +42,7 @@ def main(arguments=None):
     print "import_description created file: %s" % output_file
 
     return 0
- 
+
 
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
