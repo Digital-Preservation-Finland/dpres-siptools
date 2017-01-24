@@ -6,7 +6,7 @@ import argparse
 from scandir import scandir
 import lxml.etree
 import siptools.xml.mets as m
-from siptools.xml.namespaces import NAMESPACES, METS_PROFILE
+from siptools.xml.namespaces import NAMESPACES, METS_PROFILE, METS_CATALOG, METS_SPECIFICATION
 from siptools.xml.mets_record_status_types import RECORD_STATUS_TYPES
 import datetime
 import uuid
@@ -26,9 +26,11 @@ def parse_arguments(arguments):
     parser.add_argument('--label', dest='label',
                         type=str, help='Short description of the information package')
     parser.add_argument('--catalog', dest='catalog',
+                        default=METS_CATALOG,
                         type=str, help='Version number of the NDL schema catalog used')
     parser.add_argument('--specification', dest='specification',
-            type=str,
+                        default=METS_SPECIFICATION,
+                        type=str,
                         help='Version number of packaging specification used in creation of data package')
     parser.add_argument('--contentid', dest='contentid',
                         type=str, help='Identifier for SIP Content')
@@ -44,6 +46,8 @@ def parse_arguments(arguments):
     parser.add_argument('--workspace', dest='workspace', type=str,
                         default='./',
                         help="Workspace directory")
+    parser.add_argument('--clean', dest='clean', action='store_true',
+                        help='Workspace cleanup')
     parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)
@@ -60,34 +64,18 @@ def main(arguments=None):
                         args.last_moddate, args.record_status)
     mets.append(metshdr)
 
-    # Create mets amdSec
-    amdsec = m.amdsec()
-
-    # Append parts
-    trees = []
+    # Collect elements from workspace XML files
+    elements = []
     for entry in scandir(args.workspace):
         if not entry.name.startswith('mets.xml') and entry.is_file():
             element = lxml.etree.parse(entry.path).getroot()[0]
+            elements.append(element)
 
-            if element.tag == '{%s}dmdSec' % NAMESPACES['mets']:
-                mets.append(element)
+    elements = m.merge_elements('{%s}amdSec' % NAMESPACES['mets'], elements)
+    elements.sort(key=m.order)
 
-            if element.tag == '{%s}techMD' % NAMESPACES['mets']:
-                amdsec.append(element)
-
-            if element.tag == '{%s}amdSec' % NAMESPACES['mets']:
-                amdsec.append(element[0])
-
-            if element.tag == '{%s}digiprovMD' % NAMESPACES['mets']:
-                amdsec.append(element)
-
-            if element.tag == '{%s}fileSec' % NAMESPACES['mets']:
-                mets.append(element)
-
-            if element.tag == '{%s}structMap' % NAMESPACES['mets']:
-                mets.append(element)
-
-    mets.append(amdsec)
+    for element in elements:
+        mets.append(element)
 
     if args.stdout:
         print m.serialize(mets)
@@ -100,9 +88,20 @@ def main(arguments=None):
     with open(output_file, 'w+') as outfile:
         outfile.write(m.serialize(mets))
 
+    if (args.clean):
+        clean_up(args.workspace, 'mets.xml')
+
     print "compile_mets created file: %s" % output_file
 
     return 0
+
+def clean_up(path, except_file):
+    for root, dirs, files in os.walk(path, topdown=False):
+        for name in files:
+            if name != except_file:
+                os.remove(os.path.join(root, name))
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
 
 if __name__ == '__main__':
     RETVAL = main()

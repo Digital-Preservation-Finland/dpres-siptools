@@ -10,10 +10,13 @@ import magic
 import argparse
 
 from ipt.validator import validate
+from siptools.utils import encode_path, encode_id
 import siptools.xml.premis as p
 import siptools.xml.mets as m
+
 import xml.etree.ElementTree as ET
 import datetime
+import platform
 
 
 def parse_arguments(arguments):
@@ -23,10 +26,12 @@ def parse_arguments(arguments):
     parser.add_argument('files', nargs='+', help="Files to be imported")
     parser.add_argument('--output', type=str, default='./workspace/',
                         help="Destination file")
-    parser.add_argument('--skip_inspection', dest='skip_inspection', type=str,
+    parser.add_argument('--skip_inspection', action='store_true',
                         help='Skip file inspection and give technical metadata as parameters')
     parser.add_argument('--format_name', dest='format_name', type=str,
                         help='Mimetype of a file')
+    parser.add_argument('--charset', dest='charset', type=str,
+                        help='Charset of a file')
     parser.add_argument('--format_version', dest='format_version', type=str,
                         help='Version of fileformat')
     parser.add_argument('--digest_algorithm', dest='digest_algorithm', type=str,
@@ -47,11 +52,18 @@ def main(arguments=None):
     files = collect_filepaths(args.files)
     for filename in files:
         mets = m.mets_mets()
-        techmd = m.techmd('techmd-%s' % filename)
-        mets.append(techmd)
-        digital_object = create_premis_object(techmd, filename,
-                                              args.skip_inspection, args.format_name, args.format_version,
-                                              args.digest_algorithm, args.message_digest, args.date_created)
+        amdsec = m.amdsec()
+        techmd = m.techmd(encode_id(encode_path(filename, suffix="-techmd.xml")))
+        mdwrap = m.mdwrap()
+        xmldata = m.xmldata()
+        create_premis_object(xmldata, filename, args.skip_inspection, args.format_name, args.format_version,
+                args.digest_algorithm, args.message_digest, args.date_created,
+                args.charset)
+
+        mdwrap.append(xmldata)
+        techmd.append(mdwrap)
+        amdsec.append(techmd)
+        mets.append(amdsec)
 
         if args.stdout:
             print m.serialize(mets)
@@ -59,7 +71,7 @@ def main(arguments=None):
         if not os.path.exists(args.output):
             os.makedirs(args.output)
 
-        filename = quote_plus(os.path.splitext(filename)[0]) + '-techmd.xml'
+        filename = encode_path(filename, suffix="-techmd.xml")
 
         with open(os.path.join(args.output, filename), 'w+') as outfile:
             outfile.write(m.serialize(mets))
@@ -70,7 +82,7 @@ def main(arguments=None):
 
 def create_premis_object(tree, fname, skip_inspection=None,
                          format_name=None, format_version=None, digest_algorithm=None,
-                         message_digest=None, date_created=None):
+                         message_digest=None, date_created=None, charset=None):
     """Create Premis object for given file."""
 
     techmd = {}
@@ -82,10 +94,12 @@ def create_premis_object(tree, fname, skip_inspection=None,
                             validation_result['errors'])
 
         techmd = validation_result['result']
-    print "techmd:%s" % techmd
 
     # Create objectCharacteristics element
     el_objectCharacteristics = p._element('objectCharacteristics')
+
+    el_composition_level = p._subelement(el_objectCharacteristics, 'compositionLevel')
+    el_composition_level.text = '0'
 
     # Create fixity element
     el_fixity = p._subelement(el_objectCharacteristics, 'fixity')
@@ -107,13 +121,15 @@ def create_premis_object(tree, fname, skip_inspection=None,
         el_format_version.text = format_version if format_version else techmd[
             'format']['version']
 
+    if charset or (techmd and 'charset' in techmd['format']):
+        el_format_name.text += '; charset=' + charset if charset else techmd['format']['charset']
+
     # Create creatingApplication element
     el_creatingApplication = p._subelement(el_objectCharacteristics,
                                            'creatingApplication')
     el_dateCreatedByApplication = p._subelement(el_creatingApplication,
                                                 'dateCreatedByApplication')
-    el_dateCreatedByApplication.text = date_created or datetime.datetime.utcnow().isoformat()
-    # or techmd['format']['mimetype']
+    el_dateCreatedByApplication.text = date_created or creation_date(fname)
 
     # Create object element
     unique = str(uuid4())
@@ -122,7 +138,7 @@ def create_premis_object(tree, fname, skip_inspection=None,
         identifier_value=unique)
 
     el_premis_object = p.premis_object(
-        object_identifier, fname, child_elements=[el_objectCharacteristics])
+        object_identifier, child_elements=[el_objectCharacteristics])
     tree.append(el_premis_object)
 
     return tree
@@ -131,8 +147,6 @@ def create_premis_object(tree, fname, skip_inspection=None,
 def fileinfo(fname):
     """Return fileinfo dict for given file."""
     fm = magic.Magic(mime=True)
-#    fm = magic.open(magic.MAGIC_MIME_TYPE)
-#    fm.load()
     mimetype = fm.from_file(fname)
 
     fm = fm = magic.Magic(mime=False)
@@ -179,6 +193,23 @@ def collect_filepaths(dirs=['.'], pattern='*'):
             raise IOError
 
     return files
+
+def creation_date(path_to_file):
+    """
+    Try to get the date that a file was created, falling back to when it was
+    last modified if that isn't possible.
+    See http://stackoverflow.com/a/39501288/1709587 for explanation.
+    """
+    if platform.system() == 'Windows':
+        return datetime.datetime.fromtimestamp(os.path.getctime(path_to_file)).isoformat()
+    else:
+        stat = os.stat(path_to_file)
+        try:
+            return datetime.datetime.fromtimestamp(stat.st_birthtime).isoformat()
+        except AttributeError:
+            # We're probably on Linux. No easy way to get creation dates here,
+            # so we'll settle for when its content was last modified.
+            return datetime.datetime.fromtimestamp(stat.st_mtime).isoformat() 
 
 if __name__ == '__main__':
     RETVAL = main()
