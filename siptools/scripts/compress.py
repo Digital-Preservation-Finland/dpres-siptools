@@ -4,10 +4,16 @@ import sys
 import os
 import argparse
 import subprocess
+from siptools.utils import decode_path
+from scandir import scandir
+from shutil import copyfile
 
 def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
+
+    if args.copy_files:
+        copy_files(args.dir_to_tar)
 
     command = ['tar', '-cvvf', args.tar_filename, args.dir_to_tar]
     subprocess.Popen(command)
@@ -15,6 +21,15 @@ def main(arguments=None):
     print "created tar file: %s" % args.tar_filename
 
     return 0
+
+def copy_files(workspace):
+    for entry in scandir(workspace):
+        if entry.name.endswith('-techmd.xml') and entry.is_file():
+            source = decode_path(entry.name, '-techmd.xml')
+            target = os.path.join(workspace, source)
+            if not os.path.exists(os.path.dirname(target)):
+                os.makedirs(os.path.dirname(target))
+            copyfile(source, target)
 
 
 def parse_arguments(arguments):
@@ -25,6 +40,9 @@ def parse_arguments(arguments):
     parser.add_argument("dir_to_tar", help="SIP directory to be tarred.")
     parser.add_argument("--tar_filename", default="sip.tar", 
             help="Filename for tar. Default is sip.tar")
+    parser.add_argument("--copy_files", action='store_true',
+        help="Copy files based on techmd-urlpaths")
+
 
     return parser.parse_args(arguments)
 
