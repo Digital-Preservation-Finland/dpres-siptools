@@ -11,6 +11,7 @@ import lxml.etree as ET
 from siptools.xml.namespaces import NAMESPACES, METS_PROFILE
 from siptools.xml.premis_event_types import PREMIS_EVENT_TYPES
 from siptools.utils import encode_id
+from siptools.utils import decode_path
 
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
@@ -97,8 +98,13 @@ def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
         if not techmd_id:
             return
         fileid = '_' + str(uuid4())
+	
+	filepath = decode_path(os.path.relpath(path, os.curdir))
+	# remove workspace and techmd.xml from path
+	filepath =filepath[len(workspace)-1:-11]
+	
         file = m.file(fileid, admid_elements=techmd_id, loctype='URL',
-                   xlink_href='file://%s' % os.path.relpath(path, os.curdir), xlink_type='simple',
+                   xlink_href='file://%s' % filepath, xlink_type='simple',
                    groupid=None)
         filegrp.append(file)
         fptr = m.fptr(fileid)
