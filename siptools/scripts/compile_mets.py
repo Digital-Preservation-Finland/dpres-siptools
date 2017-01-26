@@ -10,7 +10,8 @@ from siptools.xml.namespaces import NAMESPACES, METS_PROFILE, METS_CATALOG, METS
 from siptools.xml.mets_record_status_types import RECORD_STATUS_TYPES
 import datetime
 import uuid
-
+from siptools.utils import decode_path
+from shutil import copyfile
 
 def parse_arguments(arguments):
     parser = argparse.ArgumentParser(description="Tool for "
@@ -47,6 +48,9 @@ def parse_arguments(arguments):
                         help="Workspace directory")
     parser.add_argument('--clean', dest='clean', action='store_true',
                         help='Workspace cleanup')
+    parser.add_argument('--copy_files', dest='copy_files', action='store_true',
+                        help='Copy files to workspace')
+
     parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)
@@ -86,13 +90,23 @@ def main(arguments=None):
 
     with open(output_file, 'w+') as outfile:
         outfile.write(m.serialize(mets))
+    
+    if args.copy_files:
+        copy_files(args.workspace)
 
     if (args.clean):
-        clean_up(args.workspace, 'mets.xml')
+	clean_metsparts(args.workspace)
+        #clean_up(args.workspace, 'mets.xml')
 
     print "compile_mets created file: %s" % output_file
 
     return 0
+
+def clean_metsparts(path):
+    for root, dirs, files in os.walk(path, topdown=False):
+        for name in files:
+	    if (name.endswith('-techmd.xml')) or (name.endswith('creation-agent.xml')) or (name.endswith('creation-event.xml')) or (name.endswith('dmdsec.xml')) or (name.endswith('structmap.xml')) or (name.endswith('filesec.xml')):
+                os.remove(os.path.join(root, name))
 
 def clean_up(path, except_file):
     for root, dirs, files in os.walk(path, topdown=False):
@@ -101,6 +115,16 @@ def clean_up(path, except_file):
                 os.remove(os.path.join(root, name))
         for name in dirs:
             os.rmdir(os.path.join(root, name))
+
+def copy_files(workspace):
+    for entry in scandir(workspace):
+        if entry.name.endswith('-techmd.xml') and entry.is_file():
+            source = decode_path(entry.name, '-techmd.xml')
+            target = os.path.join(workspace, source)
+            if not os.path.exists(os.path.dirname(target)):
+                os.makedirs(os.path.dirname(target))
+            copyfile(source, target)
+
 
 if __name__ == '__main__':
     RETVAL = main()
