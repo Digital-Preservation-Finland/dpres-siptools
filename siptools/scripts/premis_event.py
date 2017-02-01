@@ -129,7 +129,7 @@ def create_premis_event(tree, event_type, event_datetime, event_detail,
 
     unique = str(uuid4())
     event_identifier = p.premis_identifier(
-            identifier_type='premis-event-id',
+            identifier_type='UUID',
             identifier_value=unique,
             prefix='event')
 

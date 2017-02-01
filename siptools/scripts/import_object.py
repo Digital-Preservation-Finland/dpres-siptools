@@ -134,7 +134,7 @@ def create_premis_object(tree, fname, skip_inspection=None,
     # Create object element
     unique = str(uuid4())
     object_identifier = p.premis_identifier(
-        identifier_type='digital-object-id',
+        identifier_type='UUID',
         identifier_value=unique)
 
     el_premis_object = p.premis_object(

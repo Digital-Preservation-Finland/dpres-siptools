@@ -5,7 +5,7 @@ import subprocess
 
 def test_end_to_end(testpath):
 
-    #testpath = './workspace'
+    testpath = './workspace'
     objects = 'tests/data/single/text-file.txt'
     dmd_file = 'tests/data/import_description/metadata/dc_description.xml'
     dmd_target = 'tests/data/single'
@@ -49,7 +49,6 @@ def test_end_to_end(testpath):
 
     command = ['python', 'siptools/scripts/compile_mets.py',
             '--workspace', testpath, 'kdk', 'CSC', '--create_date',
-            '2017-01-11T10:14:13', '--last_moddate',
             '2017-01-11T10:14:13']
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]

@@ -38,8 +38,7 @@ def parse_arguments(arguments):
                         type=str, default=datetime.datetime.utcnow().isoformat(),
                         help='SIP create datetime yyyy-mm-ddThh:mm:ss')
     parser.add_argument('--last_moddate', dest='last_moddate',
-                        type=str, default=datetime.datetime.utcnow().isoformat(),
-                        help='Last modification datetime yyyy-mm-ddThh:mm:ss')
+                        type=str, help='Last modification datetime yyyy-mm-ddThh:mm:ss')
     parser.add_argument('--record_status', dest='record_status',
                         choices=RECORD_STATUS_TYPES,
                         type=str, default='submission', help='list of record status types:%s' % RECORD_STATUS_TYPES)
