@@ -17,7 +17,6 @@ def test_premis_event_ok(testpath):
     output_file = os.path.join(testpath, event_type + '.xml')
     tree = ET.parse(output_file)
     root = tree.getroot()
-    # print "root: %s" % ET.tostring(root, encoding='UTF-8', method='xml')
 
     assert len(root.findall('{http://www.loc.gov/METS/}amdSec')) == 1
     assert root.findall(

@@ -40,7 +40,6 @@ def mets_mets(profile=siptools.xml.namespaces.METS_PROFILE['kdk'],
     for prefix, uri in siptools.xml.namespaces.NAMESPACES.iteritems():
         register_namespace(prefix, uri)
 
-
     mets = _element('mets')
     mets.set('xmlns:' + 'fi', FI_NS)
     mets.set('xmlns:' + 'xlink', XLINK)
@@ -224,7 +223,8 @@ def metshdr(organisation_name, create_date=datetime.datetime.utcnow().isoformat(
 
     _metshdr = _element('metsHdr')
     _metshdr.set('CREATEDATE', create_date)
-    _metshdr.set('LASTMODDATE', last_mod_date)
+    if last_mod_date:
+        _metshdr.set('LASTMODDATE', last_mod_date)
     _metshdr.set('RECORDSTATUS', record_status)
 
     _metsagent = mets_agent(organisation_name)
