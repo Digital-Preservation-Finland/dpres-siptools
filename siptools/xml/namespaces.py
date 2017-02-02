@@ -5,7 +5,7 @@ NAMESPACES = {
     'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
     'premis': 'info:lc/xmlns/premis-v2',
     'fi': 'http://www.kdk.fi/standards/mets/kdk-extensions',
-#    'xlink': 'http://www.w3.org/1999/xlink',
+    'w3_xlink': 'http://www.w3.org/1999/xlink',
     'mix': 'http://www.loc.gov/mix/v20'
 }
 
