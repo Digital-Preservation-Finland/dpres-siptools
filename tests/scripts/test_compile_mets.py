@@ -19,7 +19,7 @@ def create_test_data(workspace):
 
     # create provenance metadata
     premis_event.main(['creation', '2016-10-13T12:30:55',
-        '--event_detail', 'Testing', '--event_outcome', 'success',
+        'tests/data/structured', '--event_detail', 'Testing', '--event_outcome', 'success',
         '--event_outcome_detail', 'Outcome detail', '--workspace',
         workspace, '--agent_name', 'Demo Application', '--agent_type', 'software'])
 

@@ -10,6 +10,16 @@ XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
 FI_NS = 'http://www.kdk.fi/standards/mets/kdk-extensions'
 XLINK = 'http://www.w3.org/1999/xlink'
 
+DIV_TYPES = ['Documentation files',
+    'Configuration files',
+    'Other files',
+    'Method files',
+    'Notebook',
+    'Publication files',
+    'Access and use rights files',
+    'Software files',
+    'Machine-readable metadata']
+
 def serialize(root_element):
     """Serialize ElementTree structure with PREMIS namespace mapping.
 

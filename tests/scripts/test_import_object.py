@@ -9,7 +9,8 @@ import scandir
 import datetime
 
 
-@pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
+@pytest.mark.parametrize('input_file', ['tests/data/structured/Documentation '
+    'files/readme.txt'])
 def test_import_object_ok(input_file, testpath):
 
     arguments = ['--output', testpath, input_file]
