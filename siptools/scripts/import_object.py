@@ -94,7 +94,7 @@ def create_premis_object(tree, fname, skip_inspection=None,
                             validation_result['errors'])
 
         techmd = validation_result['result']
-   
+
     # Create objectCharacteristics element
     el_objectCharacteristics = p._element('objectCharacteristics')
 
@@ -114,16 +114,16 @@ def create_premis_object(tree, fname, skip_inspection=None,
     el_formatDesignation = p._subelement(el_format, 'formatDesignation')
     el_format_name = p._subelement(el_formatDesignation, 'name', 'format')
     el_format_name.text = format_name or techmd['format']['mimetype']
-    
+
     if format_version or (techmd and 'version' in techmd['format']):
         el_format_version = p._subelement(
             el_formatDesignation, 'version', 'format')
         el_format_version.text = format_version if format_version else techmd[
             'format']['version']
-    
+
     if charset or (techmd and 'charset' in techmd['format']):
         el_format_name.text += '; charset=' + charset if charset else '; charset=' + techmd['format']['charset']
-   
+
     # Create creatingApplication element
     el_creatingApplication = p._subelement(el_objectCharacteristics,
                                            'creatingApplication')
