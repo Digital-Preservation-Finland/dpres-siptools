@@ -47,8 +47,6 @@ def main(arguments=None):
     filesec.append(filegrp)
     mets_filesec.append(filesec)
     mets_structmap.append(structmap)
-#    admids = []
-#    admids = get_digiprovmd_id(admids, args.workspace)
     container_div = m.div(type='directory')
     structmap.append(container_div)
 
@@ -99,7 +97,7 @@ def create_structmap(workspace, divs, structmap, filegrp):
             techmd_id = [encode_id(id) for id in techmd_files]
             fileid = '_' + str(uuid4())
             filepath = decode_path(os.path.relpath(div, os.curdir))
-            
+
             amdids = [encode_id(id) for id in id_for_file(workspace, div,
                 'creation-event.xml')]
             amdids += [encode_id(id) for id in id_for_file(workspace, div,
@@ -119,7 +117,6 @@ def create_structmap(workspace, divs, structmap, filegrp):
         else:
             dmdsec_id = [encode_id (id) for id in id_for_file(workspace, div,
                 'dmdsec.xml')]
-            #amdids += get_digiprovmd_id(amdids, workspace)
             div_el = m.div(type=div, dmdid=dmdsec_id)
             structmap.append(div_el)
 
@@ -133,20 +130,6 @@ def id_for_file(workspace, path, idtype):
     ids = [id for id in techmd_files if path in id]
 
     return ids
-
-
-def get_digiprovmd_id(admids, workspace):
-    for ETYPE in PREMIS_EVENT_TYPES:
-        md_file = os.path.join(workspace, ETYPE + ".xml")
-        if os.path.isfile(md_file):
-            md_tree = ET.parse(md_file)
-            md_root = md_tree.getroot()
-            digiprovid = md_root.xpath(
-                '/mets:mets/mets:amdSec/mets:digiprovMD[2]/@ID', namespaces=NAMESPACES)[0]
-            admids.append(digiprovid)
-    print "digiprov amdids: ", admids
-    return admids
-
 
 if __name__ == '__main__':
     RETVAL = main()
