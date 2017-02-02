@@ -1,12 +1,12 @@
 import os.path
 from urllib import quote_plus
-import xml.etree.ElementTree as ET
-
-from siptools.scripts import import_object
-
+import lxml.etree as ET
 import pytest
 import scandir
 import datetime
+from siptools.scripts import import_object
+from siptools.utils import encode_path
+from siptools.xml.namespaces import NAMESPACES
 
 
 @pytest.mark.parametrize('input_file', ['tests/data/structured/Documentation '
@@ -16,14 +16,14 @@ def test_import_object_ok(input_file, testpath):
     arguments = ['--output', testpath, input_file]
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath,
-                          quote_plus(os.path.splitext(input_file)[0]) +
-                          '-techmd.xml')
+    output = os.path.join(testpath, encode_path(input_file,
+        suffix='-techmd.xml'))
 
     tree = ET.parse(output)
     root = tree.getroot()
 
-    assert len(root.findall('{http://www.loc.gov/METS/}techMD')) == 1
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD', namespaces=NAMESPACES)) == 1
+
     assert return_code == 0
 
 
@@ -37,14 +37,14 @@ def test_import_object_skip_inspection_ok(input_file, testpath):
                  '--date_created', datetime.datetime.utcnow().isoformat()]
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath,
-                          quote_plus(os.path.splitext(input_file)[0]) +
-                          '-techmd.xml')
+    output = os.path.join(testpath, encode_path(input_file,
+        suffix='-techmd.xml'))
 
     tree = ET.parse(output)
     root = tree.getroot()
 
-    assert len(root.findall('{http://www.loc.gov/METS/}techMD')) == 1
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD', namespaces=NAMESPACES)) == 1
+
     assert return_code == 0
 
 
@@ -57,14 +57,14 @@ def test_import_object_skip_inspection_nodate_ok(input_file, testpath):
                  '1qw87geiewgwe9']
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath,
-                          quote_plus(os.path.splitext(input_file)[0]) +
-                          '-techmd.xml')
+    output = os.path.join(testpath, encode_path(input_file,
+        suffix='-techmd.xml'))
 
     tree = ET.parse(output)
     root = tree.getroot()
 
-    assert len(root.findall('{http://www.loc.gov/METS/}techMD')) == 1
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+         namespaces=NAMESPACES)) == 1
     assert return_code == 0
 
 def test_import_object_structured_ok(testpath):
@@ -78,14 +78,14 @@ def test_import_object_structured_ok(testpath):
         return_code = import_object.main(arguments)
         test_file = os.path.relpath(element, os.curdir)
 
-    output = os.path.join(output,
-                          quote_plus(os.path.splitext(test_file)[0]) +
-                          '-techmd.xml')
+    output = os.path.join(testpath, encode_path(test_file,
+                suffix='-techmd.xml'))
 
     tree = ET.parse(output)
     root = tree.getroot()
 
-    assert len(root.findall('{http://www.loc.gov/METS/}techMD')) == 1
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+                  namespaces=NAMESPACES)) == 1
     assert return_code == 0
 
 

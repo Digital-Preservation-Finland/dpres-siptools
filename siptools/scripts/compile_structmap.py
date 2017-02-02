@@ -47,11 +47,13 @@ def main(arguments=None):
     filesec.append(filegrp)
     mets_filesec.append(filesec)
     mets_structmap.append(structmap)
-    admids = []
-    admids = get_digiprovmd_id(admids, args.workspace)
+#    admids = []
+#    admids = get_digiprovmd_id(admids, args.workspace)
+    container_div = m.div(type='directory')
+    structmap.append(container_div)
 
     divs = div_structure(args.workspace)
-    create_structmap(args.workspace, divs, structmap, filegrp)
+    create_structmap(args.workspace, divs, container_div, filegrp)
 
     if args.stdout:
         print m.serialize(mets)
@@ -82,7 +84,7 @@ def div_structure(workspace):
 
     divs = tree()
     for techmd_file in techmd_files:
-        last = add(divs, decode_path(techmd_file, '-techmd.xml').split('/'),
+        add(divs, decode_path(techmd_file, '-techmd.xml').split('/'),
                 decode_path(techmd_file, '-techmd.xml'))
     return divs
 
@@ -97,8 +99,12 @@ def create_structmap(workspace, divs, structmap, filegrp):
             techmd_id = [encode_id(id) for id in techmd_files]
             fileid = '_' + str(uuid4())
             filepath = decode_path(os.path.relpath(div, os.curdir))
-
-            file = m.file(fileid, admid_elements=techmd_id, loctype='URL',
+            
+            amdids = [encode_id(id) for id in id_for_file(workspace, div,
+                'creation-event.xml')]
+            amdids += [encode_id(id) for id in id_for_file(workspace, div,
+                'creation-agent.xml')]
+            file = m.file(fileid, admid_elements=techmd_id+amdids, loctype='URL',
                        xlink_href='file://%s' % decode_path(techmd_files[0],
                            '-techmd.xml'), xlink_type='simple',
                        groupid=None)
@@ -107,17 +113,14 @@ def create_structmap(workspace, divs, structmap, filegrp):
             structmap.append(fptr)
 
         # Skip divs with invalid type
-        elif div not in m.DIV_TYPES:
-            create_structmap(workspace, divs[div], structmap, filegrp)
+        #elif div not in m.DIV_TYPES:
+        #    create_structmap(workspace, divs[div], structmap, filegrp)
         # It's not a file, lets create a div element
         else:
             dmdsec_id = [encode_id (id) for id in id_for_file(workspace, div,
                 'dmdsec.xml')]
-            amdids = [encode_id(id) for id in id_for_file(workspace, div,
-                'creation-event.xml')]
-            amdids += [encode_id(id) for id in id_for_file(workspace, div,
-                'creation-agent.xml')]
-            div_el = m.div(type=div, dmdid=dmdsec_id, admid=amdids)
+            #amdids += get_digiprovmd_id(amdids, workspace)
+            div_el = m.div(type=div, dmdid=dmdsec_id)
             structmap.append(div_el)
 
             create_structmap(workspace, divs[div], div_el, filegrp)
@@ -141,6 +144,7 @@ def get_digiprovmd_id(admids, workspace):
             digiprovid = md_root.xpath(
                 '/mets:mets/mets:amdSec/mets:digiprovMD[2]/@ID', namespaces=NAMESPACES)[0]
             admids.append(digiprovid)
+    print "digiprov amdids: ", admids
     return admids
 
 
