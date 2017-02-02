@@ -98,11 +98,10 @@ def create_structMap(tree, path, filegrp, workspace, admids, dmdsec_id=None):
         if not techmd_id:
             return
         fileid = '_' + str(uuid4())
-	
-	filepath = decode_path(os.path.relpath(path, os.curdir))
-	# remove workspace and techmd.xml from path
-	filepath =filepath[len(workspace)-1:-11]
-	
+        filepath = decode_path(os.path.relpath(path, os.curdir))
+	    # remove workspace and techmd.xml from path
+        filepath =filepath[len(workspace)-1:-11]
+
         file = m.file(fileid, admid_elements=techmd_id, loctype='URL',
                    xlink_href='file://%s' % filepath, xlink_type='simple',
                    groupid=None)

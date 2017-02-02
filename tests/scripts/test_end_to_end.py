@@ -49,7 +49,7 @@ def test_end_to_end(testpath):
 
     command = ['python', 'siptools/scripts/compile_mets.py',
             '--workspace', testpath, 'kdk', 'CSC', '--create_date',
-            '2017-01-11T10:14:13']
+            '2017-01-11T10:14:13', '--clean', '--copy_files']
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]
     assert child.returncode == 0

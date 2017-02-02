@@ -51,7 +51,7 @@ def test_import_object_skip_inspection_ok(input_file, testpath):
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_skip_inspection_nodate_ok(input_file, testpath):
 
-    arguments = ['--output', testpath, input_file, '--skip_inspection', '1',
+    arguments = ['--output', testpath, input_file, '--skip_inspection',
                  '--format_name', 'image/dpx', '--format_version', '1.0',
                  '--digest_algorithm', 'MD5', '--message_digest',
                  '1qw87geiewgwe9']
