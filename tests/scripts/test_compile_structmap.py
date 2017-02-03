@@ -14,7 +14,6 @@ def create_test_data(workspace):
 
 
 def test_compile_structmap_ok(testpath):
-    testpath = './workspace'
     create_test_data(testpath)
     return_code = compile_structmap.main(['tests/data/structured/Software files', '--workspace',
                                           testpath])

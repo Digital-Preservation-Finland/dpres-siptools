@@ -28,7 +28,6 @@ def test_import_object_ok(input_file, testpath):
 
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_skip_inspection_ok(input_file, testpath):
-    testpath = './'
 
     arguments = ['--output', testpath, input_file, '--skip_inspection',
                  '--format_name', 'image/dpx', '--format_version', '1.0',
