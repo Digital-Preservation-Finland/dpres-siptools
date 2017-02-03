@@ -54,7 +54,7 @@ def parse_arguments(arguments):
             default='./', help='Digital object (or file) which is the target of descriptive'
             'metadata. Default is the root of digital objects')
     parser.add_argument('--workspace', dest='workspace', type=str,
-            default='./', help="Workspace directory")
+            default='./workspace', help="Workspace directory")
     parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)

@@ -44,7 +44,7 @@ def parse_arguments(arguments):
                         choices=RECORD_STATUS_TYPES,
                         type=str, default='submission', help='list of record status types:%s' % RECORD_STATUS_TYPES)
     parser.add_argument('--workspace', dest='workspace', type=str,
-                        default='./',
+                        default='./workspace',
                         help="Workspace directory")
     parser.add_argument('--clean', dest='clean', action='store_true',
                         help='Workspace cleanup')

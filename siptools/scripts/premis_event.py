@@ -27,7 +27,7 @@ def parse_arguments(arguments):
     parser.add_argument('--event_outcome_detail', dest='event_outcome_detail',
                         type=str, help='Event outcome_detail')
     parser.add_argument('--workspace', dest='workspace', type=str,
-                        default='./',
+                        default='./workspace',
                         help="Workspace directory")
     parser.add_argument('--agent_name', dest='agent_name',
                         type=str, help='Agent name')
