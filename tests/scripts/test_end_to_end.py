@@ -10,7 +10,7 @@ def test_end_to_end(testpath):
     dmd_target = 'tests/data/single'
     structmap_dir = 'tests/data/single'
     file_to_sign = testpath + '/mets.xml'
-    signature_filename = testpath + 'signature.sig'
+    signature_filename = os.path.join (os.path.abspath(testpath), 'signature.sig')
     private_key = 'tests/data/rsa-keys.crt'
 
 
@@ -48,7 +48,7 @@ def test_end_to_end(testpath):
 
     command = ['python', 'siptools/scripts/compile_mets.py',
             '--workspace', testpath, 'kdk', 'CSC', '--create_date',
-            '2017-01-11T10:14:13', '--copy_files']
+            '2017-01-11T10:14:13', '--copy_files', '--clean']
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
