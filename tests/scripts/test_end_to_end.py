@@ -5,7 +5,6 @@ import subprocess
 
 def test_end_to_end(testpath):
 
-    testpath = './workspace'
     objects = 'tests/data/single/text-file.txt'
     dmd_file = 'tests/data/import_description/metadata/dc_description.xml'
     dmd_target = 'tests/data/single'
