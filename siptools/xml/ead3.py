@@ -348,32 +348,3 @@ def ead_wrapper(tag=None, contents=None, head=None, **attributes):
 
     return _wrapper
 
-def ead_repository(encodinganalog=None, label=None, address=None, names=None):
-
-    _repository = _element('repository')
-
-    if address:
-        _repository.append(address)
-
-    for name in names:
-        _repository.append(name)
-
-    return _repository
-
-def ead_names_corps(encodinganalog=None, label=None, nametype=None, parts=None):
-
-    nametypes = ['corpname', 'famname', 'name', 'persname']
-
-    if nametype in nametypes:
-        namewrap = nametype
-        _namewrap = _element(namewrap)
-        if encodinganalog:
-            _namewrap.set('encodinganalog', encodinganalog)
-        if label:
-            _namewrap.set('label', label)
-        for part in parts:
-            _namewrap.append(part)
-
-    return _namewrap
-
-
