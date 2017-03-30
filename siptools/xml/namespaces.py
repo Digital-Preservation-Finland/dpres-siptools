@@ -6,7 +6,8 @@ NAMESPACES = {
     'premis': 'info:lc/xmlns/premis-v2',
     'fi': 'http://www.kdk.fi/standards/mets/kdk-extensions',
     'w3_xlink': 'http://www.w3.org/1999/xlink',
-    'mix': 'http://www.loc.gov/mix/v20'
+    'mix': 'http://www.loc.gov/mix/v20',
+    'ead3': 'http://ead3.archivists.org/schema/'
 }
 
 METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'DC', 'version' :
