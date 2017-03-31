@@ -246,7 +246,7 @@ def ead3_archdesc(level, did, desc_elements=None, dsc=None, **attributes):
             if lxml.etree.QName(element.tag).localname in allowed_desc_elements:
                 _archdesc.append(element)
 
-    if dsc:
+    if dsc is not None:
         _archdesc.append(dsc)
 
     return _archdesc
