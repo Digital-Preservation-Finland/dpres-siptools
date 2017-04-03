@@ -103,7 +103,7 @@ def _subelement(parent, tag, prefix=""):
     return ET.SubElement(parent, ead3_ns(tag, prefix))
 
 
-def ead3_ead(archdesc=None, control=None, **attributes):
+def ead_ead(archdesc=None, control=None, **attributes):
     """Create Encoded Archival Description root element."""
 
     allowed_attributes = ['altrender', 'audience', 'base', 'id', 'lang',
@@ -127,8 +127,8 @@ def ead3_ead(archdesc=None, control=None, **attributes):
 
     return _ead
 
-def ead3_control(recordid, title, otherrecordids=None, representations=None,
-         manstatus=None, pubstatus=None, managencys=None,
+def ead_control(recordid, title, otherrecordids=None, representations=None,
+        manstatus=None, pubstatus=None, managencys=None,
         lang=None, convention=None, loctype=None, locctrl=None,
         manevents=None, sources=None, **attributes):
 
@@ -189,7 +189,7 @@ def ead3_control(recordid, title, otherrecordids=None, representations=None,
 
     return _control
 
-def ead3_maintenanceevent(eventtype=None, eventdatetime=None, agenttype=None,
+def ead_maintenanceevent(eventtype=None, eventdatetime=None, agenttype=None,
         agent=None, eventdescriptions=None):
 
     _maintenanceevent = _element('maintenanceevent')
@@ -217,7 +217,7 @@ def ead3_maintenanceevent(eventtype=None, eventdatetime=None, agenttype=None,
 
     return _maintenanceevent
 
-def ead3_archdesc(level, did, desc_elements=None, dsc=None, **attributes):
+def ead_archdesc(level, did, desc_elements=None, dsc=None, **attributes):
 
     allowed_attributes = ['altrender', 'audience', 'base', 'encodinganalog',
             'id', 'lang', 'localtype', 'otherlevel', 'relatedencoding',
@@ -251,7 +251,7 @@ def ead3_archdesc(level, did, desc_elements=None, dsc=None, **attributes):
 
     return _archdesc
 
-def ead3_did(head=None, desc_elements=None, **attributes):
+def ead_did(head=None, desc_elements=None, **attributes):
 
     allowed_attributes = ['altrender', 'audience', 'encodinganalog', 'id',
             'lang', 'script']
@@ -278,7 +278,7 @@ def ead3_did(head=None, desc_elements=None, **attributes):
 
     return _did
 
-def ead3_c(did, cnum=None, csubs=None, head=None, desc_elements=None,
+def ead_c(did, cnum=None, csubs=None, head=None, desc_elements=None,
         thead=None, **attributes):
 
     allowed_attributes = ['altrender', 'audience', 'base', 'encodinganalog',
