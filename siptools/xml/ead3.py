@@ -131,7 +131,13 @@ def ead_control(recordid, title, otherrecordids=None, representations=None,
         manstatus=None, pubstatus=None, managencys=None,
         lang=None, convention=None, loctype=None, locctrl=None,
         manevents=None, sources=None, **attributes):
+    """Creates the EAD3 control element.
 
+    The control element is a mandatory element that includes several
+    subelements in a defined order. The subelements contents are
+    included in the arguments and created in this function.
+
+    """
     allowed_attributes = ['altrender', 'audience', 'base', 'countryencoding'
             'dateencoding', 'encodinganalog', 'id', 'lang', 'langencoding',
             'relatedencoding', 'repositoryencoding', 'script',
@@ -191,7 +197,14 @@ def ead_control(recordid, title, otherrecordids=None, representations=None,
 
 def ead_maintenanceevent(eventtype=None, eventdatetime=None, agenttype=None,
         agent=None, eventdescriptions=None):
+    """Creates the EAD3 maintenanceevent element.
 
+    The element maintenancevent is a mandatory element within control.
+    It consists of several subelements of which some are empty elements,
+    like the eventtype and agenttype. All included subelements contents
+    are included as arguments and created in this function.
+
+    """
     _maintenanceevent = _element('maintenanceevent')
 
     if eventtype:
@@ -218,7 +231,14 @@ def ead_maintenanceevent(eventtype=None, eventdatetime=None, agenttype=None,
     return _maintenanceevent
 
 def ead_archdesc(level, did, desc_elements=None, dsc=None, **attributes):
+    """Creates the EAD3 archdesc element.
 
+    The subelements of the archdesc element are defined in the list
+    allowed_desc_elements and included in the argument desc_elements.
+    If the EAD finding aid file contains c elements they are included
+    within the dsc element defined here.
+
+    """
     allowed_attributes = ['altrender', 'audience', 'base', 'encodinganalog',
             'id', 'lang', 'localtype', 'otherlevel', 'relatedencoding',
             'script']
@@ -252,7 +272,14 @@ def ead_archdesc(level, did, desc_elements=None, dsc=None, **attributes):
     return _archdesc
 
 def ead_did(head=None, desc_elements=None, **attributes):
+    """Creates the EAD3 did element.
 
+    The did element is a mandatory element containing basic descriptive
+    metadata within archdesc and all c elements. Its subelements are
+    defined in the list allowed_desc_elements and included in the
+    argument desc_elements.
+
+    """
     allowed_attributes = ['altrender', 'audience', 'encodinganalog', 'id',
             'lang', 'script']
 
@@ -280,7 +307,14 @@ def ead_did(head=None, desc_elements=None, **attributes):
 
 def ead_c(did, cnum=None, csubs=None, head=None, desc_elements=None,
         thead=None, **attributes):
+    """Creates the EAD3 c element.
 
+    The c element created can either be unnumbered, c, or
+    numbered, c01, c02 etc. defined by the argument cnum. Other
+    hierarchically lower c elements that are part of this c element
+    are included as a list in the csubs argument.
+
+    """
     allowed_attributes = ['altrender', 'audience', 'base', 'encodinganalog',
             'id', 'lang', 'level', 'otherlevel', 'script']
 
@@ -321,7 +355,11 @@ def ead_c(did, cnum=None, csubs=None, head=None, desc_elements=None,
     return _c
 
 def ead_element(tag, contents, **attributes):
+    """Creates EAD3 element.
 
+    Creates an EAD3 element that contains text. 
+
+    """
     _new_element = _element(tag)
 
     if attributes is not None:
@@ -333,7 +371,12 @@ def ead_element(tag, contents, **attributes):
     return _new_element
 
 def ead_wrapper(tag=None, contents=None, head=None, **attributes):
+    """Creates EAD3 element that wraps other elements.
 
+    Creates an EAD3 wrapper element that contains other elements, but no
+    text. The elements contents is a list of other elements. 
+
+    """
     _wrapper = _element(tag)
 
     if attributes is not None:
