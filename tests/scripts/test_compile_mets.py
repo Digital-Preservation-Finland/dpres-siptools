@@ -15,7 +15,8 @@ def create_test_data(workspace):
     dmdsec_location = 'tests/data/import_description/metadata/dc_description.xml'
     dmdsec_target = 'tests/data/structured/Software files'
 
-    main([dmdsec_location, '--dmdsec_target', dmdsec_target, '--workspace', workspace])
+    main([dmdsec_location, '--dmdsec_target', dmdsec_target, '--workspace',
+            workspace, '--desc_root', 'remove'])
 
     # create provenance metadata
     premis_event.main(['creation', '2016-10-13T12:30:55',

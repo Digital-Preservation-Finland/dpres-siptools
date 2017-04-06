@@ -14,7 +14,7 @@ def test_import_description_valid_file(testpath):
     url_location = quote_plus(dmdsec_target, safe='') + '-dmdsec.xml'
 
     main([dmdsec_location, '--dmdsec_target', dmdsec_target, '--workspace',
-        testpath])
+        testpath, '--desc_root', 'remove'])
 
     output_file = os.path.join(testpath, url_location)
     tree = ET.parse(output_file)
