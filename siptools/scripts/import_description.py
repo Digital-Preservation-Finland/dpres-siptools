@@ -26,7 +26,13 @@ def main(arguments=None):
     tree = lxml.etree.fromstring(content)
 
     childNodeList = tree.findall('*')
-    dmdsec = m.dmdSec(element_id=encode_id(url_t_path), child_elements=childNodeList)
+
+    if args.desc_root == 'remove':
+        dmdsec = m.dmdSec(element_id=encode_id(url_t_path), child_elements=childNodeList)
+    else:
+        dmdsec = m.dmdSec(element_id=encode_id(url_t_path),
+                child_elements=[tree])
+
     mets.append(dmdsec)
 
     if args.stdout:
@@ -55,6 +61,8 @@ def parse_arguments(arguments):
             'metadata. Default is the root of digital objects')
     parser.add_argument('--workspace', dest='workspace', type=str,
             default='./workspace', help="Workspace directory")
+    parser.add_argument('--desc_root', type=str,
+            help='Preserve or remove root element of descriptive metadata file')
     parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)
