@@ -12,6 +12,14 @@ from siptools.xml.namespaces import NAMESPACES, METS_PROFILE
 from siptools.xml.premis_event_types import PREMIS_EVENT_TYPES
 from siptools.utils import encode_id, decode_path, tree, add
 
+def ead3_ns(tag):
+
+    EAD3_NS = 'http://ead3.archivists.org/schema/'
+
+    path = '{%s}%s' % (EAD3_NS, tag)
+
+    return path
+
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
 
@@ -20,6 +28,11 @@ def parse_arguments(arguments):
     parser.add_argument('input_directory',
                         help="Input directory to create a structMap",
                         type=lambda x: is_valid_dir(parser, x))
+    parser.add_argument('--dmdsec_struct', dest='dmdsec_struct',type=str,
+                        help=("Use structured descriptive metadata for "
+						"creating structMap divs"))
+    parser.add_argument('--dmdsec_loc', dest='dmdsec_loc',type=str,
+                        help="Location of  structured descriptive metadata")
     parser.add_argument('--workspace', type=str, default='./workspace/',
                         help="Destination file")
     parser.add_argument('--stdout', help='Print output to stdout')
@@ -50,8 +63,11 @@ def main(arguments=None):
     container_div = m.div(type='directory')
     structmap.append(container_div)
 
-    divs = div_structure(args.workspace)
-    create_structmap(args.workspace, divs, container_div, filegrp)
+    if args.dmdsec_struct == 'ead3':
+        divs = div_ead_structure(args.dmdsec_loc, container_div)
+    else:
+        divs = div_structure(args.workspace)
+        create_structmap(args.workspace, divs, container_div, filegrp)
 
     if args.stdout:
         print m.serialize(mets)
@@ -85,6 +101,45 @@ def div_structure(workspace):
         add(divs, decode_path(techmd_file, '-techmd.xml').split('/'),
                 decode_path(techmd_file, '-techmd.xml'))
     return divs
+
+def div_ead_structure(descfile, structmap):
+
+    import_xml = ET.parse(descfile)
+    root = import_xml.getroot()
+
+    div_ead = m.div(type=root.xpath("//ead3:archdesc/@otherlevel",
+		namespaces=NAMESPACES)[0], label=ET.QName(root.xpath("//ead3:archdesc",
+		namespaces=NAMESPACES)[0].tag).localname)
+
+    if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:
+        for c01 in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
+            ead3_c = ead3_c_div(c01, div_ead, cnum='01')
+            #print c01
+
+    structmap.append(div_ead)
+
+def ead3_c_div(parent, structmap, cnum=None):
+
+    if cnum:
+        c = 'c' + str(cnum)
+        cpath = './ead3:'+ c
+        print cpath
+    else:
+        c = 'c'
+
+    c_div = m.div(type=c, label='c')
+
+    if parent.xpath("./ead3:c02", namespaces=NAMESPACES) is not None:
+        #print parent
+        for elem in parent.xpath('./ead3:c02', namespaces=NAMESPACES):
+            print elem
+            #if cnum:
+            #    cnum = int(cnum) + 1
+            #    ead3_c_div(parent, c_div, cnum=cnum)
+            #else:
+            ead3_c_div(elem, c_div)
+
+    structmap.append(c_div)
 
 def create_structmap(workspace, divs, structmap, filegrp):
 
