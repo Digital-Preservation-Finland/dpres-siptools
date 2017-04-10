@@ -107,37 +107,58 @@ def div_ead_structure(descfile, structmap):
     import_xml = ET.parse(descfile)
     root = import_xml.getroot()
 
-    div_ead = m.div(type=root.xpath("//ead3:archdesc/@otherlevel",
-		namespaces=NAMESPACES)[0], label=ET.QName(root.xpath("//ead3:archdesc",
-		namespaces=NAMESPACES)[0].tag).localname)
+    if root.xpath("//ead3:archdesc/@otherlevel", namespaces=NAMESPACES):
+        level = root.xpath("//ead3:archdesc/@otherlevel",
+                namespaces=NAMESPACES)[0]
+    else:
+        level = root.xpath("//ead3:archdesc/@level",
+                namespaces=NAMESPACES)[0]
+
+    div_ead = m.div(type='archdesc', label=level)
 
     if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:
-        for c01 in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
-            ead3_c = ead3_c_div(c01, div_ead, cnum='01')
-            #print c01
+        for c in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
+            if len(ET.QName(c.tag).localname) > 1:
+				cnum = str(ET.QName(c.tag).localname)[-2:]
+            else:
+                cnum = None
+            ead3_c = ead3_c_div(c, div_ead, cnum=cnum)
 
     structmap.append(div_ead)
 
 def ead3_c_div(parent, structmap, cnum=None):
 
+    allowed_c_subs = ['c', 'c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07',
+            'c08', 'c09', 'c10', 'c11', 'c12']
+
     if cnum:
         c = 'c' + str(cnum)
-        cpath = './ead3:'+ c
-        print cpath
     else:
         c = 'c'
 
-    c_div = m.div(type=c, label='c')
+    if parent.xpath("./@otherlevel"):
+        level = parent.xpath("./@otherlevel")[0]
+    else:
+        level = parent.xpath("./@level")[0]
 
-    if parent.xpath("./ead3:c02", namespaces=NAMESPACES) is not None:
-        #print parent
-        for elem in parent.xpath('./ead3:c02', namespaces=NAMESPACES):
-            print elem
-            #if cnum:
-            #    cnum = int(cnum) + 1
-            #    ead3_c_div(parent, c_div, cnum=cnum)
-            #else:
-            ead3_c_div(elem, c_div)
+    c_div = m.div(type=c, label=level)
+
+    if cnum:
+        cnum_sub = str('0') + str(int(cnum) + 1)
+
+    for elem in parent.findall("./*"):
+        tag = ET.QName(elem.tag).localname
+        if tag in allowed_c_subs:
+            if cnum:
+                ead3_c_div(elem, c_div, cnum=cnum_sub)
+            else:
+                ead3_c_div(elem, c_div)
+
+    for files in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
+        tag = ET.QName(files.tag).localname
+        if tag == 'dao' or tag == 'daoset':
+            dao = m.fptr(fileid='test')
+            c_div.append(dao)
 
     structmap.append(c_div)
 
