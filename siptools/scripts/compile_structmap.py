@@ -63,10 +63,11 @@ def main(arguments=None):
     container_div = m.div(type='directory')
     structmap.append(container_div)
 
+    divs = div_structure(args.workspace)
+
     if args.dmdsec_struct == 'ead3':
-        divs = div_ead_structure(args.dmdsec_loc, container_div)
+        create_ead_structmap(args.dmdsec_loc, args.workspace, container_div, filegrp)
     else:
-        divs = div_structure(args.workspace)
         create_structmap(args.workspace, divs, container_div, filegrp)
 
     if args.stdout:
@@ -102,7 +103,7 @@ def div_structure(workspace):
                 decode_path(techmd_file, '-techmd.xml'))
     return divs
 
-def div_ead_structure(descfile, structmap):
+def create_ead_structmap(descfile, workspace, structmap, filegrp):
 
     import_xml = ET.parse(descfile)
     root = import_xml.getroot()
@@ -122,11 +123,11 @@ def div_ead_structure(descfile, structmap):
 				cnum = str(ET.QName(c.tag).localname)[-2:]
             else:
                 cnum = None
-            ead3_c = ead3_c_div(c, div_ead, cnum=cnum)
+            ead3_c = ead3_c_div(c, div_ead, filegrp, workspace, cnum=cnum)
 
     structmap.append(div_ead)
 
-def ead3_c_div(parent, structmap, cnum=None):
+def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
 
     allowed_c_subs = ['c', 'c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07',
             'c08', 'c09', 'c10', 'c11', 'c12']
@@ -145,19 +146,32 @@ def ead3_c_div(parent, structmap, cnum=None):
 
     if cnum:
         cnum_sub = str('0') + str(int(cnum) + 1)
+    else:
+        cnum_sub = None
 
     for elem in parent.findall("./*"):
         tag = ET.QName(elem.tag).localname
         if tag in allowed_c_subs:
-            if cnum:
-                ead3_c_div(elem, c_div, cnum=cnum_sub)
-            else:
-                ead3_c_div(elem, c_div)
+            ead3_c_div(elem, c_div, filegrp, workspace, cnum=cnum_sub)
 
     for files in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
         tag = ET.QName(files.tag).localname
         if tag == 'dao' or tag == 'daoset':
-            dao = m.fptr(fileid='test')
+            tech_file = files.xpath("./@href")[0].split('/')[-1] 
+            techmd_files = id_for_file(workspace, tech_file, 'techmd.xml')
+            techmd_id = [encode_id(id) for id in techmd_files]
+            fileid = '_' + str(uuid4())
+            filepath = decode_path(os.path.relpath(tech_file, os.curdir))
+
+            amdids = [encode_id(id) for id in id_for_file(workspace, tech_file,
+                    'creation-event.xml')]
+            amdids += [encode_id(id) for id in id_for_file(workspace, tech_file,
+                    'creation-agent.xml')]
+            file = m.file(fileid, admid_elements=techmd_id+amdids, loctype='URL',
+                    xlink_href='file://%s' % decode_path(techmd_files[0],
+					'-techmd.xml'), xlink_type='simple', groupid=None)
+            filegrp.append(file)
+            dao = m.fptr(fileid=fileid)
             c_div.append(dao)
 
     structmap.append(c_div)
