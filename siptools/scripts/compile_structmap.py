@@ -60,14 +60,16 @@ def main(arguments=None):
     filesec.append(filegrp)
     mets_filesec.append(filesec)
     mets_structmap.append(structmap)
-    container_div = m.div(type='directory')
-    structmap.append(container_div)
-
-    divs = div_structure(args.workspace)
+    
 
     if args.dmdsec_struct == 'ead3':
-        create_ead_structmap(args.dmdsec_loc, args.workspace, container_div, filegrp)
+        container_div = m.div(type='arhival_description')
+        structmap.append(container_div)
+        create_ead3_structmap(args.dmdsec_loc, args.workspace, container_div, filegrp)
     else:
+        container_div = m.div(type='directory')
+        structmap.append(container_div)
+        divs = div_structure(args.workspace)
         create_structmap(args.workspace, divs, container_div, filegrp)
 
     if args.stdout:
@@ -103,8 +105,9 @@ def div_structure(workspace):
                 decode_path(techmd_file, '-techmd.xml'))
     return divs
 
-def create_ead_structmap(descfile, workspace, structmap, filegrp):
-
+def create_ead3_structmap(descfile, workspace, structmap, filegrp):
+    """Create structmap based on ead3 descriptive metadata structure.
+	"""
     import_xml = ET.parse(descfile)
     root = import_xml.getroot()
 
@@ -128,7 +131,11 @@ def create_ead_structmap(descfile, workspace, structmap, filegrp):
     structmap.append(div_ead)
 
 def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
-
+    """Create div elements based on ead3 c elements. Fptr elements are
+    created based on ead dao elements. The Ead3 elements tags are put
+    into @type and the @level or @otherlevel attributes from ead3 will
+    be put into @label.
+    """
     allowed_c_subs = ['c', 'c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07',
             'c08', 'c09', 'c10', 'c11', 'c12']
 
@@ -157,7 +164,11 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
     for files in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
         tag = ET.QName(files.tag).localname
         if tag == 'dao' or tag == 'daoset':
-            tech_file = files.xpath("./@href")[0].split('/')[-1] 
+            if tag == 'daoset':
+                tech_file = files.xpath("./ead3:dao/@href",
+                        namespaces=NAMESPACES)[0].split('/')[-1]
+            else:
+                tech_file = files.xpath("./@href")[0].split('/')[-1] 
             techmd_files = id_for_file(workspace, tech_file, 'techmd.xml')
             techmd_id = [encode_id(id) for id in techmd_files]
             fileid = '_' + str(uuid4())
@@ -169,7 +180,7 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
                     'creation-agent.xml')]
             file = m.file(fileid, admid_elements=techmd_id+amdids, loctype='URL',
                     xlink_href='file://%s' % decode_path(techmd_files[0],
-					'-techmd.xml'), xlink_type='simple', groupid=None)
+                    '-techmd.xml'), xlink_type='simple', groupid=None)
             filegrp.append(file)
             dao = m.fptr(fileid=fileid)
             c_div.append(dao)
