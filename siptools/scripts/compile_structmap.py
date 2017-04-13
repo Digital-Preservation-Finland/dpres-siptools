@@ -10,7 +10,7 @@ from urllib import quote_plus
 import lxml.etree as ET
 from siptools.xml.namespaces import NAMESPACES, METS_PROFILE
 from siptools.xml.premis_event_types import PREMIS_EVENT_TYPES
-from siptools.utils import encode_id, decode_path, tree, add
+from siptools.utils import encode_id, encode_path, decode_path, tree, add
 
 def ead3_ns(tag):
 
@@ -130,6 +130,7 @@ def create_ead3_structmap(descfile, workspace, structmap, filegrp):
 
     structmap.append(div_ead)
 
+
 def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
     """Create div elements based on ead3 c elements. Fptr elements are
     created based on ead dao elements. The Ead3 elements tags are put
@@ -165,49 +166,46 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
         tag = ET.QName(files.tag).localname
         if tag == 'dao' or tag == 'daoset':
             if tag == 'daoset':
-                tech_file = files.xpath("./ead3:dao/@href",
-                        namespaces=NAMESPACES)[0].split('/')[-1]
+                tech_file = encode_path(files.xpath("./ead3:dao/@href",
+                        namespaces=NAMESPACES)[0])
             else:
-                tech_file = files.xpath("./@href")[0].split('/')[-1] 
-            techmd_files = id_for_file(workspace, tech_file, 'techmd.xml')
-            techmd_id = [encode_id(id) for id in techmd_files]
-            fileid = '_' + str(uuid4())
-            filepath = decode_path(os.path.relpath(tech_file, os.curdir))
-
-            amdids = [encode_id(id) for id in id_for_file(workspace, tech_file,
-                    'creation-event.xml')]
-            amdids += [encode_id(id) for id in id_for_file(workspace, tech_file,
-                    'creation-agent.xml')]
-            file = m.file(fileid, admid_elements=techmd_id+amdids, loctype='URL',
-                    xlink_href='file://%s' % decode_path(techmd_files[0],
-                    '-techmd.xml'), xlink_type='simple', groupid=None)
-            filegrp.append(file)
+                tech_file = encode_path(files.xpath("./@href")[0])
+            amdids = get_links_event_agent(workspace, tech_file)
+            fileid = add_file_to_filesec(workspace, tech_file, filegrp, amdids)
             dao = m.fptr(fileid=fileid)
             c_div.append(dao)
 
     structmap.append(c_div)
 
-def create_structmap(workspace, divs, structmap, filegrp):
+
+def add_file_to_filesec(workspace, path, filegrp, amdids):
+    techmd_files = id_for_file(workspace, path, 'techmd.xml')
+    techmd_id = [encode_id(id) for id in techmd_files]
+    fileid = '_' + str(uuid4())
+    file = m.file(fileid, admid_elements=techmd_id+amdids, loctype='URL',
+                  xlink_href='file://%s' % decode_path(techmd_files[0],
+                      '-techmd.xml'), xlink_type='simple', groupid=None)
+    filegrp.append(file)
+    return fileid
+
+
+def get_links_event_agent(workspace, path):
+    links = [encode_id(id) for id in id_for_file(workspace, path,
+        'event.xml')]
+    links += [encode_id(id) for id in id_for_file(workspace, path,
+        'agent.xml')]
+    return links
+
+
+def create_structmap(workspace, divs, structmap, filegrp, path=''):
 
     for div in divs.keys():
+        div_path = encode_path(os.path.join(decode_path(path), div))
+        amdids = get_links_event_agent(workspace, div_path)
         # It's a file if there is file extension, lets create file+fptr
         # elements
         if os.path.splitext(div)[1]:
-
-            techmd_files = id_for_file(workspace, div, 'techmd.xml')
-            techmd_id = [encode_id(id) for id in techmd_files]
-            fileid = '_' + str(uuid4())
-            filepath = decode_path(os.path.relpath(div, os.curdir))
-
-            amdids = [encode_id(id) for id in id_for_file(workspace, div,
-                'creation-event.xml')]
-            amdids += [encode_id(id) for id in id_for_file(workspace, div,
-                'creation-agent.xml')]
-            file = m.file(fileid, admid_elements=techmd_id+amdids, loctype='URL',
-                       xlink_href='file://%s' % decode_path(techmd_files[0],
-                           '-techmd.xml'), xlink_type='simple',
-                       groupid=None)
-            filegrp.append(file)
+            fileid = add_file_to_filesec(workspace, div_path, filegrp, amdids)
             fptr = m.fptr(fileid)
             structmap.append(fptr)
 
@@ -216,21 +214,20 @@ def create_structmap(workspace, divs, structmap, filegrp):
         #    create_structmap(workspace, divs[div], structmap, filegrp)
         # It's not a file, lets create a div element
         else:
-            dmdsec_id = [encode_id (id) for id in id_for_file(workspace, div,
+            dmdsec_id = [encode_id (id) for id in id_for_file(workspace, div_path,
                 'dmdsec.xml')]
-            div_el = m.div(type=div, dmdid=dmdsec_id)
+            div_el = m.div(type=div, dmdid=dmdsec_id, admid=amdids)
             structmap.append(div_el)
 
-            create_structmap(workspace, divs[div], div_el, filegrp)
+            create_structmap(workspace, divs[div], div_el, filegrp, div_path)
+
 
 def id_for_file(workspace, path, idtype):
-
     workspace_files = [fname.name for fname in scandir.scandir(workspace)]
-    techmd_files = filter(lambda x: idtype in x, workspace_files)
-    path = path.strip(workspace)
-    ids = [id for id in techmd_files if path in id]
-
+    md_files = filter(lambda x: idtype in x, workspace_files)
+    ids = [id for id in md_files if path in id and (path+'%2F') not in id]
     return ids
+
 
 if __name__ == '__main__':
     RETVAL = main()
