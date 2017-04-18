@@ -25,7 +25,7 @@ METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'DC', 'version' :
 
 METS_PROFILE = {'kdk': 'http://www.kdk.fi/kdk-mets-profile', 'tpas': 'http://www.avointiede.fi/att-mets-profile', 'tpas-midterm': 'http://www.avointiede.fi/att-midterm-mets-profile?dissemination_service=no', 'tpas-dissemination': 'http://www.avointiede.fi/att-midterm-mets-profile?dissemination_service=yes' }
 
-METS_CATALOG = "1.5.0"
+METS_CATALOG = "1.6.0"
 
-METS_SPECIFICATION = "1.5.0"
+METS_SPECIFICATION = "1.6.1"
 

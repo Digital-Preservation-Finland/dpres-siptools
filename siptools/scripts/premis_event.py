@@ -34,8 +34,9 @@ def parse_arguments(arguments):
     parser.add_argument('--agent_type', dest='agent_type',
                         type=str, help='Agent type')
     parser.add_argument('--stdout', help='Print output to stdout')
-    parser.add_argument('digital_object', type=str, help='Target for create '
-            'event')
+    parser.add_argument('--event_target', dest='event_target',
+                        type=str, help='Target for the event. Default '
+                        'is the root of digital objects')
 
     return parser.parse_args(arguments)
 
@@ -43,29 +44,38 @@ def parse_arguments(arguments):
 def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
+    
+    if args.agent_name:
 
-    mets = m.mets_mets()
-    amdsec = m.amdsec()
-    mets.append(amdsec)
+        mets = m.mets_mets()
+        amdsec = m.amdsec()
+        mets.append(amdsec)
 
-    agent_id = encode_id(encode_path('%s-%s-agent.xml' % (args.digital_object,
-        args.event_type)))
-    linking_agent_identifier = create_premis_agent(amdsec, agent_id, args.agent_name,
-                                                   args.agent_type)
+        if args.event_target:
+            agent_id = encode_id(encode_path('%s-%s-agent.xml' % (args.event_target,
+                args.event_type)))
+            output_file = os.path.join(args.workspace, encode_path('%s-%s-agent.xml' %
+                (args.event_target, args.event_type)))
+        else:
+            agent_id = encode_id(encode_path('%s-agent.xml' % (args.event_type)))
+            output_file = os.path.join(args.workspace, encode_path('%s-agent.xml' %
+                (args.event_type)))
+        linking_agent_identifier = create_premis_agent(
+            amdsec, agent_id, args.agent_name, args.agent_type)
 
-    if args.stdout:
-        print m.serialize(mets)
+        if args.stdout:
+            print m.serialize(mets)
 
-    output_file = os.path.join(args.workspace, encode_path('%s-%s-agent.xml' %
-        (args.digital_object, args.event_type)))
+        if not os.path.exists(os.path.dirname(output_file)):
+            os.makedirs(os.path.dirname(output_file))
 
-    if not os.path.exists(os.path.dirname(output_file)):
-        os.makedirs(os.path.dirname(output_file))
+        with open(output_file, 'w+') as outfile:
+            outfile.write(m.serialize(mets))
 
-    with open(output_file, 'w+') as outfile:
-        outfile.write(m.serialize(mets))
-
-    print "premis_event created file: %s" % output_file
+        print "premis_event created file: %s" % output_file
+    
+    else:
+        linking_agent_identifier = None
 
     # Create event
     mets = m.mets_mets()
@@ -73,8 +83,15 @@ def main(arguments=None):
     mets.append(amdsec)
 
 
-    event_id = encode_id(encode_path('%s-%s-event.xml' % (args.digital_object,
-        args.event_type)))
+    if args.event_target:
+        event_id = encode_id(encode_path('%s-%s-event.xml' % (args.event_target,
+            args.event_type)))
+        output_file = os.path.join(args.workspace, encode_path('%s-%s-event.xml' %
+            (args.event_target, args.event_type)))
+    else:
+        event_id = encode_id(encode_path('%s-event.xml' % (args.event_type)))
+        output_file = os.path.join(args.workspace, encode_path('%s-event.xml' %
+            (args.event_type)))
 
     create_premis_event(amdsec, args.event_type, args.event_datetime,
                         args.event_detail, args.event_outcome, args.event_outcome_detail,
@@ -136,9 +153,13 @@ def create_premis_event(tree, event_type, event_datetime, event_detail,
     premis_event_outcome = p.premis_event_outcome(event_outcome,
                                                   event_outcome_detail)
 
+    if linking_agent_identifier:
+        child_elements=[premis_event_outcome, linking_agent_identifier]
+    else:
+        child_elements=[premis_event_outcome]    
     premisevent = p.premis_event(event_identifier, event_type,
                                  event_datetime, event_detail,
-                                 child_elements=[premis_event_outcome, linking_agent_identifier])
+                                 child_elements=child_elements)
 
     xmldata.append(premisevent)
     mdwrap.append(xmldata)

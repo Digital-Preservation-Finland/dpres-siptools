@@ -14,7 +14,10 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     path = os.path.join(args.workspace, args.dmdsec_target)
-    url_t_path = encode_path(args.dmdsec_target, suffix='-dmdsec.xml')
+    if args.dmdsec_target:
+        url_t_path = encode_path(args.dmdsec_target, suffix='-dmdsec.xml')
+    else:
+        url_t_path = 'dmdsec.xml'
 
     with open(args.dmdsec_location, 'r') as content_file:
         content = content_file.read()
@@ -57,8 +60,8 @@ def parse_arguments(arguments):
     parser.add_argument('dmdsec_location', type=str,
             help='Location of descriptive metadata')
     parser.add_argument('--dmdsec_target', dest='dmdsec_target', type=str,
-            default='./', help='Digital object (or file) which is the target of descriptive'
-            'metadata. Default is the root of digital objects')
+            help='Target of descriptive metadata.'
+            'Default is the root of digital objects')
     parser.add_argument('--workspace', dest='workspace', type=str,
             default='./workspace', help="Workspace directory")
     parser.add_argument('--desc_root', type=str,
