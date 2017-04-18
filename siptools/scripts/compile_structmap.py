@@ -67,7 +67,10 @@ def main(arguments=None):
         structmap.append(container_div)
         create_ead3_structmap(args.dmdsec_loc, args.workspace, container_div, filegrp)
     else:
-        container_div = m.div(type='directory')
+        dmdsec_id = [encode_id (id) for id in id_for_file(args.workspace, None,
+            'dmdsec.xml', dash_count=0)]
+        amdids = get_links_event_agent(args.workspace, None)
+        container_div = m.div(type='directory', dmdid=dmdsec_id, admid=amdids)
         structmap.append(container_div)
         divs = div_structure(args.workspace)
         create_structmap(args.workspace, divs, container_div, filegrp)
@@ -191,9 +194,9 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
 
 def get_links_event_agent(workspace, path):
     links = [encode_id(id) for id in id_for_file(workspace, path,
-        'event.xml')]
+        'event.xml', dash_count=1)]
     links += [encode_id(id) for id in id_for_file(workspace, path,
-        'agent.xml')]
+        'agent.xml', dash_count=1)]
     return links
 
 
@@ -222,10 +225,13 @@ def create_structmap(workspace, divs, structmap, filegrp, path=''):
             create_structmap(workspace, divs[div], div_el, filegrp, div_path)
 
 
-def id_for_file(workspace, path, idtype):
+def id_for_file(workspace, path, idtype, dash_count=0):
     workspace_files = [fname.name for fname in scandir.scandir(workspace)]
     md_files = filter(lambda x: idtype in x, workspace_files)
-    ids = [id for id in md_files if path in id and (path+'%2F') not in id]
+    if path:
+        ids = [id for id in md_files if path in id and (path+'%2F') not in id]
+    else:
+        ids = [id for id in md_files if id.count('-') == dash_count]
     return ids
 
 

@@ -9,7 +9,7 @@ def test_premis_event_ok(testpath):
 
     event_type = 'creation'
 
-    return_code = premis_event.main([event_type, '2016-10-13T12:30:55', 'tests/data/structured',
+    return_code = premis_event.main([event_type, '2016-10-13T12:30:55', '--event_target', 'tests/data/structured',
                                      '--event_detail', 'Testing', '--event_outcome', 'success',
                                      '--event_outcome_detail', 'Outcome detail', '--workspace',
                                      testpath, '--agent_name', 'Demo Application', '--agent_type', 'software'])
