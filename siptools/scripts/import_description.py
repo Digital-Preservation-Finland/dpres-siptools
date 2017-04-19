@@ -13,7 +13,6 @@ def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
 
-    path = os.path.join(args.workspace, args.dmdsec_target)
     if args.dmdsec_target:
         url_t_path = encode_path(args.dmdsec_target, suffix='-dmdsec.xml')
     else:

@@ -100,9 +100,6 @@ def main(arguments=None):
     if args.stdout:
         print m.serialize(mets)
 
-    output_file = os.path.join(args.workspace, encode_path('%s-%s-event.xml' %
-        (args.digital_object, args.event_type)))
-
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
 
@@ -153,7 +150,7 @@ def create_premis_event(tree, event_type, event_datetime, event_detail,
     premis_event_outcome = p.premis_event_outcome(event_outcome,
                                                   event_outcome_detail)
 
-    if linking_agent_identifier:
+    if linking_agent_identifier is not None:
         child_elements=[premis_event_outcome, linking_agent_identifier]
     else:
         child_elements=[premis_event_outcome]    
