@@ -63,9 +63,12 @@ def main(arguments=None):
     
 
     if args.dmdsec_struct == 'ead3':
-        container_div = m.div(type='arhival_description')
+        dmdsec_id = [encode_id (id) for id in id_for_file(args.workspace,
+                None, 'dmdsec.xml', dash_count=1)]
+        container_div = m.div(type='logical')
         structmap.append(container_div)
-        create_ead3_structmap(args.dmdsec_loc, args.workspace, container_div, filegrp)
+        create_ead3_structmap(args.dmdsec_loc, args.workspace, container_div,
+                filegrp, dmdsec_id)
     else:
         dmdsec_id = [encode_id (id) for id in id_for_file(args.workspace, None,
             'dmdsec.xml', dash_count=0)]
@@ -108,7 +111,7 @@ def div_structure(workspace):
                 decode_path(techmd_file, '-techmd.xml'))
     return divs
 
-def create_ead3_structmap(descfile, workspace, structmap, filegrp):
+def create_ead3_structmap(descfile, workspace, structmap, filegrp, dmdsec_id):
     """Create structmap based on ead3 descriptive metadata structure.
 	"""
     import_xml = ET.parse(descfile)
@@ -120,8 +123,8 @@ def create_ead3_structmap(descfile, workspace, structmap, filegrp):
     else:
         level = root.xpath("//ead3:archdesc/@level",
                 namespaces=NAMESPACES)[0]
-
-    div_ead = m.div(type='archdesc', label=level)
+    amdids = get_links_event_agent(workspace, None)
+    div_ead = m.div(type='archdesc', label=level, dmdid=dmdsec_id, admid=amdids)
 
     if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:
         for c in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
