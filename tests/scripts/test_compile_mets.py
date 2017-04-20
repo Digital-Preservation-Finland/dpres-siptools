@@ -29,8 +29,7 @@ def create_test_data(workspace):
         'tests/data/structured/Software files/koodi.java'])
 
     #create structural metadata
-    compile_structmap.main(['tests/data/structured/Software files',
-        '--workspace', workspace])
+    compile_structmap.main(['--workspace', workspace])
 
 
 def test_compile_mets_ok(testpath):

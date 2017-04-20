@@ -43,7 +43,7 @@ def test_end_to_end(testpath):
     assert child.returncode == 0
 
     command = ['python', 'siptools/scripts/compile_structmap.py',
-            structmap_dir, '--workspace', testpath]
+               '--workspace', testpath]
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
