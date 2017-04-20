@@ -15,8 +15,7 @@ def create_test_data(workspace):
 
 def test_compile_structmap_ok(testpath):
     create_test_data(testpath)
-    return_code = compile_structmap.main(['tests/data/structured/Software files', '--workspace',
-                                          testpath])
+    return_code = compile_structmap.main(['--workspace', testpath])
 
     output_structmap = os.path.join(testpath, 'structmap.xml')
     sm_tree = ET.parse(output_structmap)
