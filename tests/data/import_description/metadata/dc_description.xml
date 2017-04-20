@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 
 <metadata
-	xmlns="http://example.org/myapp/"
+	xmlns="http://purl.org/dc/elements/1.1/"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://example.org/myapp/ http://example.org/myapp/schema.xsd"
+	xsi:schemaLocation="http://purl.org/dc/elements/1.1/"
 	xmlns:dc="http://purl.org/dc/elements/1.1/">
 
 	<dc:title>
