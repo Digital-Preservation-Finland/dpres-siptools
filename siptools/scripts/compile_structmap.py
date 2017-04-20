@@ -61,17 +61,15 @@ def main(arguments=None):
     mets_filesec.append(filesec)
     mets_structmap.append(structmap)
     
+    dmdsec_id = [encode_id (id) for id in id_for_file(args.workspace, None,
+            'dmdsec.xml', dash_count=0)]
 
     if args.dmdsec_struct == 'ead3':
-        dmdsec_id = [encode_id (id) for id in id_for_file(args.workspace,
-                None, 'dmdsec.xml', dash_count=1)]
         container_div = m.div(type='logical')
         structmap.append(container_div)
         create_ead3_structmap(args.dmdsec_loc, args.workspace, container_div,
                 filegrp, dmdsec_id)
     else:
-        dmdsec_id = [encode_id (id) for id in id_for_file(args.workspace, None,
-            'dmdsec.xml', dash_count=0)]
         amdids = get_links_event_agent(args.workspace, None)
         container_div = m.div(type='directory', dmdid=dmdsec_id, admid=amdids)
         structmap.append(container_div)
