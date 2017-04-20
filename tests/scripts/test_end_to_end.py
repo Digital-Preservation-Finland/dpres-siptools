@@ -29,7 +29,8 @@ def test_end_to_end(testpath):
             '2017-01-11T10:14:13', '--event_detail', 'Testing',
             '--event_outcome', 'success', '--event_outcome_detail',
             'Outcome detail', '--workspace', testpath, '--agent_name',
-            'Demo Application', '--agent_type', 'software', objects]
+            'Demo Application', '--agent_type', 'software', '--event_target',
+            objects]
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
