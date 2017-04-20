@@ -1,83 +1,98 @@
-General
+Introduction
 --------------------
-This tool is intended to be used for generating an OAIS SIP for digital preservation. It produces mets.xml containing metadata required by Finnish National Digital Library and Open Science and Research digital preservation. Tool contains code for extracting technical metadata, creating and digitally signing the mets.xml. 
-This tool is created by CSC Oy for National Digital Library and Open Science and Research projects. The aim is to provide digital preservation services for culture and research to ensure the access and use of materials long in the future. Documentation and specifications for the digital preservation service can be found in http://www.kdk.fi/en/digital-preservation/specifications.
+
+This tool is intended to be used for generating an OAIS SIP for digital preservation.
+It produces METS document (mets.xml) containing metadata required by Finnish National
+Digital Library and Open Science and Research digital preservation. Tool contains code
+for extracting technical metadata, creating and digitally signing the METS document. 
+
+The aim is to provide digital preservation services for culture and research to ensure
+the access and use of materials long in the future. Documentation and specifications
+for the digital preservation service can be found
+in http://www.kdk.fi/en/digital-preservation/specifications.
+
 
 Scripts
-----------------------
+--------------------
 
 import_description
-    Used for creating a file containing descriptive metadata element of mets.xml.
+    for creating a file containing descriptive metadata element of mets.xml.
 
 premis_event
-    for creating digital provenance elements of mets.xml    
+    for creating digital provenance elements of mets.xml.
 
 import_object
-    for adding all digital objects to mets.xml
+    for adding all digital objects to mets.xml.
 
 compile_structmap
-    for creating structural map in mets.xml
+    for creating structural map in mets.xml.
 
 compile_mets
-    compiles all previously created files in a mets.xml file
+    for compiling all previously created files in a mets.xml file.
 
 sign_mets
-    Digitally signs the mets.xml file
+    for digitally signing the mets.xml file.
+
 
 Usage
----------------------
-In order to build a SIP for digital preservation use the scripts in the following order. These scripts produce a digitally signed mets.xml file in the parametrized folder 'workspace'.
+--------------------
+
+In order to build a SIP for digital preservation, use the scripts in the following order.
+These scripts produce a digitally signed mets.xml file in the parametrized folder 'workspace'.
 
 You can create technical metadata elements of mets.xml from files located in the folder
 tests/data/structured followingly::
+
     python siptools/scripts/import_object.py --output ./workspace 'tests/data/structured'
 
-An example how to create digital provenance in mets.xml. Values for the parameter event type is a predefined list::
+An example how to create digital provenance metadata for mets.xml.
+Values for the parameters --event_outcome and --event_type are predefined lists::
 
-   python siptools/scripts/premis_event.py creation  '2016-10-13T12:30:55'
+   python siptools/scripts/premis_event.py creation '2016-10-13T12:30:55'
     --event_detail Testing --event_outcome success --event_outcome_detail
     'Outcome detail' --workspace ./workspace --agent_name 'Demo Application'
-    --agent_type software
+    --agent_type software --event_target 'tests/data/structured'
 
-Script creates an xml file containing the descriptive
-metadata. Metadata must be in accepted format::
+The argument --event_target is the object (file or directory) where the event applies.
+If the argument is not given, the target is the whole dataset. Do not use argument
+--event_target for directories, if the structural map is created based on EAD3 structure
+with compile_structmap.py. If argument --agent_name is not given, agent metadata is
+not created.
+
+Script creates an xml file containing the descriptive metadata. Metadata must be in accepted format::
 
     python siptools/scripts/import_description.py
-    'tests/data/import_description/metadata/dc_description.xml'  --workspace
-    ./workspace
+    'tests/data/import_description/metadata/dc_description.xml' --workspace
+    ./workspace --desc_root remove --dmdsec_target 'tests/data/structured'
+
+Argument '--desc_root remove' removes the root element from the given descriptive metadata.
+This may be needed, if the metadata is given in a container element belonging to another metadata format.
+If the argument is not given, the descriptive metadata is fully included. The argument
+'--dmdsec_target  <target>' is the directory where the descriptive metadata applies.
+If the argument is not given, the target is the whole dataset. Do not use argument --dmdsec_target,
+if the structural map is created based on EAD3 structure with compile_structmap.py.
 
 The folder structure of a dataset is turned into a file containing the structmap element of mets.xml::
 
-    python siptools/scripts/compile_structmap.py tests/data/structured --workspace ./workspace
+    python siptools/scripts/compile_structmap.py --workspace ./workspace
 
-Compiles a mets.xml file from the previous results::
+Optionally, the structural map can be created based on given EAD3 structure instead of folder structure,
+and here a valid EAD3 file is given with --dmdsec_loc argument::
+
+    python siptools/scripts/compile_structmap.py --workspace ./workspace
+    --dmdsec_struct ead3 --dmdsec_loc tests/data/import_description/metadata/ead3_test.xml
+
+Compile a mets.xml file from the previous results::
 
     python siptools/scripts/compile_mets.py --workspace workspace/ kdk 'CSC'
 
 Digitally sign the mets.xml::
 
    python siptools/scripts/sign_mets.py workspace/mets.xml
-    /home/vagrant/siptools/workspace/signature.sig tests/data/rsa-keys.crt
+    /home/vagrant/dpres-siptools/workspace/signature.sig tests/data/rsa-keys.crt
 
-Building Documentation
+
+Copyright    
 ----------------------
 
-Documentation is available in HTML and PDF formats. You may build the
-documentation with commands::
-
-    cd doc
-    make html
-    make pdf
-
-Alternatively you may view the documentation with the `docserver` command::
-
-    cd doc
-    make docserver
-
-Now point your browser to http://10.0.10.10:8000/html
-After finishing the documentation you may stop the `docserver` with command::
-
-    cd doc
-    make killdocserver
-
-
+All rights reserved to CSC - IT Center for Science Ltd.

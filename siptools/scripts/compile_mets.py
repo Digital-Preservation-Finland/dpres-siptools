@@ -3,66 +3,75 @@
 import os
 import sys
 import argparse
+import datetime
+import uuid
+from shutil import copyfile
 from scandir import scandir
 import lxml.etree
 import siptools.xml.mets as m
-from siptools.xml.namespaces import NAMESPACES, METS_PROFILE, METS_CATALOG, METS_SPECIFICATION
+from siptools.xml.namespaces import NAMESPACES, METS_PROFILE, METS_CATALOG, \
+    METS_SPECIFICATION
 from siptools.xml.mets_record_status_types import RECORD_STATUS_TYPES
-import datetime
-import uuid
 from siptools.utils import decode_path
-from shutil import copyfile
+
 
 def parse_arguments(arguments):
-    parser = argparse.ArgumentParser(description="Tool for "
-                                     "creating mets")
-    parser.add_argument('mets_profile', type=str, choices=METS_PROFILE,
-            help='list of METS-profiles:%s' % METS_PROFILE)
-
-    parser.add_argument('organization_name', type=str,
-                        help='Creator name (organization)')
-    parser.add_argument('--objid', dest='objid',
-                        type=str, default= str(uuid.uuid4()),
-                        help='Organizations unique identifier for the package')
-    parser.add_argument('--label', dest='label',
-                        type=str, help='Short description of the information package')
-    parser.add_argument('--catalog', dest='catalog',
-                        default=METS_CATALOG,
-                        type=str, help='Version number of the NDL schema catalog used')
-    parser.add_argument('--specification', dest='specification',
-                        default=METS_SPECIFICATION,
-                        type=str,
-                        help='Version number of packaging specification used in creation of data package')
-    parser.add_argument('--contentid', dest='contentid',
-                        type=str, help='Identifier for SIP Content')
-    parser.add_argument('--create_date', dest='create_date',
-                        type=str, default=datetime.datetime.utcnow().isoformat(),
-                        help='SIP create datetime yyyy-mm-ddThh:mm:ss')
-    parser.add_argument('--last_moddate', dest='last_moddate',
-                        type=str, help='Last modification datetime yyyy-mm-ddThh:mm:ss')
-    parser.add_argument('--record_status', dest='record_status',
-                        choices=RECORD_STATUS_TYPES,
-                        type=str, default='submission', help='list of record status types:%s' % RECORD_STATUS_TYPES)
-    parser.add_argument('--workspace', dest='workspace', type=str,
-                        default='./workspace',
-                        help="Workspace directory")
-    parser.add_argument('--clean', dest='clean', action='store_true',
-                        help='Workspace cleanup')
-    parser.add_argument('--copy_files', dest='copy_files', action='store_true',
-                        help='Copy files to workspace')
-
+    """Parse arguments
+    """
+    parser = argparse.ArgumentParser(description="Tool for creating mets")
+    parser.add_argument(
+        'mets_profile', type=str, choices=METS_PROFILE,
+        help='list of METS-profiles:%s' % METS_PROFILE)
+    parser.add_argument(
+        'organization_name', type=str, help='Creator name (organization)')
+    parser.add_argument(
+        '--objid', dest='objid', type=str, default=str(uuid.uuid4()),
+        help='Organizations unique identifier for the package')
+    parser.add_argument(
+        '--label', dest='label', type=str,
+        help='Short description of the information package')
+    parser.add_argument(
+        '--catalog', dest='catalog', default=METS_CATALOG, type=str,
+        help='Version number of the NDL schema catalog used')
+    parser.add_argument(
+        '--specification', dest='specification', default=METS_SPECIFICATION,
+        type=str, help='Version number of packaging specification used in '
+                       'creation of data package')
+    parser.add_argument(
+        '--contentid', dest='contentid', type=str,
+        help='Identifier for SIP Content')
+    parser.add_argument(
+        '--create_date', dest='create_date', type=str,
+        default=datetime.datetime.utcnow().isoformat(),
+        help='SIP create datetime yyyy-mm-ddThh:mm:ss')
+    parser.add_argument(
+        '--last_moddate', dest='last_moddate', type=str,
+        help='Last modification datetime yyyy-mm-ddThh:mm:ss')
+    parser.add_argument(
+        '--record_status', dest='record_status', choices=RECORD_STATUS_TYPES,
+        type=str, default='submission',
+        help='list of record status types:%s' % RECORD_STATUS_TYPES)
+    parser.add_argument(
+        '--workspace', dest='workspace', type=str, default='./workspace',
+        help="Workspace directory")
+    parser.add_argument(
+        '--clean', dest='clean', action='store_true', help='Workspace cleanup')
+    parser.add_argument(
+        '--copy_files', dest='copy_files', action='store_true',
+        help='Copy files to workspace')
     parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)
 
 
 def main(arguments=None):
-    """The main method for argparser"""
+    """The main method
+    """
     args = parse_arguments(arguments)
 
     # Create mets header
     mets = m.mets_mets(METS_PROFILE[args.mets_profile], args.objid, args.label,
-            args.catalog, args.specification, args.contentid)
+                       args.catalog, args.specification, args.contentid)
     metshdr = m.metshdr(args.organization_name, args.create_date,
                         args.last_moddate, args.record_status)
     mets.append(metshdr)
@@ -90,33 +99,41 @@ def main(arguments=None):
 
     with open(output_file, 'w+') as outfile:
         outfile.write(m.serialize(mets))
-    
+
     if args.copy_files:
         copy_files(args.workspace)
 
-    if (args.clean):
-	clean_metsparts(args.workspace)
-        #clean_up(args.workspace, 'mets.xml')
+    if args.clean:
+        clean_metsparts(args.workspace)
+    # clean_up(args.workspace, 'mets.xml')
 
     print "compile_mets created file: %s" % output_file
 
     return 0
 
+
 def clean_metsparts(path):
-    for root, dirs, files in os.walk(path, topdown=False):
+    """Clean mets parts from workspace
+    """
+    for root, _, files in os.walk(path, topdown=False):
         for name in files:
-	    if (name.endswith('-techmd.xml')) or (name.endswith('creation-agent.xml')) or (name.endswith('creation-event.xml')) or (name.endswith('dmdsec.xml')) or (name.endswith('structmap.xml')) or (name.endswith('filesec.xml')):
+            if (name.endswith(('techmd.xml', 'agent.xml', 'event.xml',
+                               'dmdsec.xml', 'structmap.xml', 'filesec.xml'))):
                 os.remove(os.path.join(root, name))
 
-def clean_up(path, except_file):
-    for root, dirs, files in os.walk(path, topdown=False):
-        for name in files:
-            if name != except_file:
-                os.remove(os.path.join(root, name))
-        for name in dirs:
-            os.rmdir(os.path.join(root, name))
+
+# def clean_up(path, except_file):
+#     for root, dirs, files in os.walk(path, topdown=False):
+#         for name in files:
+#             if name != except_file:
+#                 os.remove(os.path.join(root, name))
+#         for name in dirs:
+#             os.rmdir(os.path.join(root, name))
+
 
 def copy_files(workspace):
+    """Copy digital objects to workspace
+    """
     for entry in scandir(workspace):
         if entry.name.endswith('-techmd.xml') and entry.is_file():
             source = decode_path(entry.name, '-techmd.xml')

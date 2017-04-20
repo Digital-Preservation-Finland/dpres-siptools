@@ -5,41 +5,45 @@ import sys
 import hashlib
 import fnmatch
 from uuid import uuid4
-from urllib import quote_plus
-import magic
+import datetime
+import platform
 import argparse
+import magic
 
 from ipt.validator import validate
 from siptools.utils import encode_path, encode_id
 import siptools.xml.premis as p
 import siptools.xml.mets as m
 
-import xml.etree.ElementTree as ET
-import datetime
-import platform
 
 
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
-    parser = argparse.ArgumentParser(description="Tool for importing files "
-                                     "which generates digital objects")
+    parser = argparse.ArgumentParser(
+        description="Tool for importing files to generate digital objects")
     parser.add_argument('files', nargs='+', help="Files to be imported")
-    parser.add_argument('--output', type=str, default='./workspace/',
-                        help="Destination file")
-    parser.add_argument('--skip_inspection', action='store_true',
-                        help='Skip file inspection and give technical metadata as parameters')
-    parser.add_argument('--format_name', dest='format_name', type=str,
-                        help='Mimetype of a file')
-    parser.add_argument('--charset', dest='charset', type=str,
-                        help='Charset of a file')
-    parser.add_argument('--format_version', dest='format_version', type=str,
-                        help='Version of fileformat')
-    parser.add_argument('--digest_algorithm', dest='digest_algorithm', type=str,
-                        help='Message digest algorithm')
-    parser.add_argument('--message_digest', dest='message_digest', type=str,
-                        help='Message digest of a file')
-    parser.add_argument('--date_created', dest='date_created', type=str,
-                        help='The actual or approximate date and time the object was created')
+    parser.add_argument(
+        '--output', type=str, default='./workspace/', help="Destination file")
+    parser.add_argument(
+        '--skip_inspection', action='store_true',
+        help='Skip file inspection and give technical metadata as parameters')
+    parser.add_argument(
+        '--format_name', dest='format_name', type=str,
+        help='Mimetype of a file')
+    parser.add_argument(
+        '--charset', dest='charset', type=str, help='Charset of a file')
+    parser.add_argument(
+        '--format_version', dest='format_version', type=str,
+        help='Version of fileformat')
+    parser.add_argument(
+        '--digest_algorithm', dest='digest_algorithm', type=str,
+        help='Message digest algorithm')
+    parser.add_argument(
+        '--message_digest', dest='message_digest', type=str,
+        help='Message digest of a file')
+    parser.add_argument(
+        '--date_created', dest='date_created', type=str,
+        help='The actual or approximate date and time the object was created')
     parser.add_argument('--stdout', help='Print output to stdout')
     return parser.parse_args(arguments)
 
@@ -53,12 +57,14 @@ def main(arguments=None):
     for filename in files:
         mets = m.mets_mets()
         amdsec = m.amdsec()
-        techmd = m.techmd(encode_id(encode_path(filename, suffix="-techmd.xml")))
+        techmd = m.techmd(
+            encode_id(encode_path(filename, suffix="-techmd.xml")))
         mdwrap = m.mdwrap()
         xmldata = m.xmldata()
-        create_premis_object(xmldata, filename, args.skip_inspection, args.format_name, args.format_version,
-                args.digest_algorithm, args.message_digest, args.date_created,
-                args.charset)
+        create_premis_object(
+            xmldata, filename, args.skip_inspection, args.format_name,
+            args.format_version, args.digest_algorithm, args.message_digest,
+            args.date_created, args.charset)
 
         mdwrap.append(xmldata)
         techmd.append(mdwrap)
@@ -80,8 +86,8 @@ def main(arguments=None):
     return 0
 
 
-def create_premis_object(tree, fname, skip_inspection=None,
-                         format_name=None, format_version=None, digest_algorithm=None,
+def create_premis_object(tree, fname, skip_inspection=None, format_name=None,
+                         format_version=None, digest_algorithm=None,
                          message_digest=None, date_created=None, charset=None):
     """Create Premis object for given file."""
 
@@ -98,7 +104,8 @@ def create_premis_object(tree, fname, skip_inspection=None,
     # Create objectCharacteristics element
     el_objectCharacteristics = p._element('objectCharacteristics')
 
-    el_composition_level = p._subelement(el_objectCharacteristics, 'compositionLevel')
+    el_composition_level = p._subelement(
+        el_objectCharacteristics, 'compositionLevel')
     el_composition_level.text = '0'
 
     # Create fixity element
@@ -122,7 +129,8 @@ def create_premis_object(tree, fname, skip_inspection=None,
             'format']['version']
 
     if charset or (techmd and 'charset' in techmd['format']):
-        el_format_name.text += '; charset=' + charset if charset else '; charset=' + techmd['format']['charset']
+        el_format_name.text += '; charset=' + charset \
+            if charset else '; charset=' + techmd['format']['charset']
 
     # Create creatingApplication element
     el_creatingApplication = p._subelement(el_objectCharacteristics,
@@ -194,6 +202,7 @@ def collect_filepaths(dirs=['.'], pattern='*'):
 
     return files
 
+
 def creation_date(path_to_file):
     """
     Try to get the date that a file was created, falling back to when it was
@@ -201,15 +210,17 @@ def creation_date(path_to_file):
     See http://stackoverflow.com/a/39501288/1709587 for explanation.
     """
     if platform.system() == 'Windows':
-        return datetime.datetime.fromtimestamp(os.path.getctime(path_to_file)).isoformat()
+        return datetime.datetime.fromtimestamp(
+            os.path.getctime(path_to_file)).isoformat()
     else:
         stat = os.stat(path_to_file)
         try:
-            return datetime.datetime.fromtimestamp(stat.st_birthtime).isoformat()
+            return datetime.datetime.fromtimestamp(
+                stat.st_birthtime).isoformat()
         except AttributeError:
             # We're probably on Linux. No easy way to get creation dates here,
             # so we'll settle for when its content was last modified.
-            return datetime.datetime.fromtimestamp(stat.st_mtime).isoformat() 
+            return datetime.datetime.fromtimestamp(stat.st_mtime).isoformat()
 
 if __name__ == '__main__':
     RETVAL = main()

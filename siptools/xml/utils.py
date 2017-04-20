@@ -2,7 +2,7 @@
 structures"""
 
 import xml.etree.ElementTree as ET
-import siptools.xml.namespaces
+from siptools.xml.namespaces import METS_NS
 
 
 def indent(elem, level=0):
@@ -79,6 +79,7 @@ def serialize(root_element):
         ns_map = getattr(ET, '_namespace_map')
         ns_map[uri] = prefix
 
+    # FIXME: No iter_ns() in siptools.xml.namespaces
     namespaces =  siptools.xml.namespaces.iter_ns()
 
     for namespace in namespaces:
