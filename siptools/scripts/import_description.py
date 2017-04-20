@@ -5,12 +5,12 @@ import argparse
 import os
 import lxml.etree
 import siptools.xml.mets as m
-from urllib import quote_plus
 
 from siptools.utils import encode_path, encode_id
 
+
 def main(arguments=None):
-    """The main method for argparser"""
+    """The main method for import_description"""
     args = parse_arguments(arguments)
 
     if args.dmdsec_target:
@@ -23,17 +23,14 @@ def main(arguments=None):
 
     mets = m.mets_mets()
 
-    parser = lxml.etree.XMLParser(
-            dtd_validation=False, no_network=True)
     tree = lxml.etree.fromstring(content)
 
-    childNodeList = tree.findall('*')
-
     if args.desc_root == 'remove':
-        dmdsec = m.dmdSec(element_id=encode_id(url_t_path), child_elements=childNodeList)
+        dmdsec = m.dmdSec(element_id=encode_id(url_t_path),
+                          child_elements=tree.findall('*'))
     else:
         dmdsec = m.dmdSec(element_id=encode_id(url_t_path),
-                child_elements=[tree])
+                          child_elements=[tree])
 
     mets.append(dmdsec)
 
@@ -54,17 +51,18 @@ def main(arguments=None):
 
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
-    parser = argparse.ArgumentParser(description="A short description of this "
-                                     "program")
+    parser = argparse.ArgumentParser(
+        description="Create descriptive metadata")
     parser.add_argument('dmdsec_location', type=str,
-            help='Location of descriptive metadata')
+                        help='Location of descriptive metadata')
     parser.add_argument('--dmdsec_target', dest='dmdsec_target', type=str,
-            help='Target of descriptive metadata.'
-            'Default is the root of digital objects')
+                        help='Target of descriptive metadata.'
+                             'Default is the root of dataset')
     parser.add_argument('--workspace', dest='workspace', type=str,
-            default='./workspace', help="Workspace directory")
+                        default='./workspace', help="Workspace directory")
     parser.add_argument('--desc_root', type=str,
-            help='Preserve or remove root element of descriptive metadata file')
+                        help='Preserve or remove root element of descriptive '
+                             'metadata')
     parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)

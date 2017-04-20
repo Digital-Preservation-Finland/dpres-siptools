@@ -497,7 +497,7 @@ def mix_ImageCaptureMetadata(sourceType=None, SourceID_elements=None,
                              DigitalCameraModelName=None, DigitalCameraModelNumber=None,
                              DigitalCameraModelSerialNo=None, cameraSensor=None, fNumber=None,
                              exposureTime=None, exposureProgram=None, spectralSensitivity_elements=None,
-                             isoSpeedRatings=None, rationalType=None, exifVersion=None,
+                             isoSpeedRatings=None, oECF=None, rationalType=None, exifVersion=None,
                              shutterSpeedValue=None, apertureValue=None, brightnessValue=None,
                              exposureBiasValue=None, maxApertureValue=None, distance=None,
                              minDistance=None, maxDistance=None, meteringMode=None,
@@ -509,8 +509,8 @@ def mix_ImageCaptureMetadata(sourceType=None, SourceID_elements=None,
                              GPSLongitude_element=None, gpsAltitudeRef=None, gpsAltitude=None,
                              gpsTimeStamp=None, gpsSatellites=None, gpsStatus=None,
                              gpsMeasureMode=None, gpsDOP=None, gpsSpeedRef=None, gpsSpeed=None,
-                             gpsTrackRef=None, gpsImgDirectionRef=None, gpsImgDirection=None,
-                             gpsMapDatum=None, gpsDestLatitudeRef=None,
+                             gpsTrackRef=None, gpsTrack=None, gpsImgDirectionRef=None,
+                             gpsImgDirection=None, gpsMapDatum=None, gpsDestLatitudeRef=None,
                              GPSDestLatitude_element=None, gpsDestLongitudeRef=None,
                              GPSDestLongitude_element=None, gpsDestBearingRef=None,
                              gpsDestBearing=None, gpsDestDistanceRef=None, gpsDestDistance=None,
@@ -755,15 +755,15 @@ def mix_ImageCaptureMetadata(sourceType=None, SourceID_elements=None,
 
     mix_DigitalCameraModel = _subelement(mix_DigitalCameraCapture,
                                          'DigitalCameraModel')
-    mix_DigitalCameraModelName = _subelement(mix_DigitalCameraModel,
+    mix_digitalCameraModelName = _subelement(mix_DigitalCameraModel,
                                              'DigitalCameraModelName')
     mix_digitalCameraModelName.text = digitalCameraModelName
 
-    mix_DigitalCameraModelNumber = _subelement(mix_DigitalCameraModel,
+    mix_digitalCameraModelNumber = _subelement(mix_DigitalCameraModel,
                                                'DigitalCameraModelNumber')
     mix_digitalCameraModelNumber.text = digitalCameraModelNumber
 
-    mix_DigitalCameraModelSerialNo = _subelement(mix_DigitalCameraModel,
+    mix_digitalCameraModelSerialNo = _subelement(mix_DigitalCameraModel,
                                                  'DigitalCameraModelSerialNo')
     mix_digitalCameraModelSerialNo.text = digitalCameraModelSerialNo
 
@@ -865,14 +865,14 @@ def mix_ImageCaptureMetadata(sourceType=None, SourceID_elements=None,
     mix_gpsLatitudeRef = _subelement(mix_GPSData, 'gpsLatitudeRef')
     mix_gpsLatitudeRef.text = gpsLatitudeRef
 
-    if GPSLatitude_elements:
-        mix_GPSData.append(GPSLatitude_elements)
+    if GPSLatitude_element:
+        mix_GPSData.append(GPSLatitude_element)
 
     mix_gpsLongitudeRef = _subelement(mix_GPSData, 'gpsLongitudeRef')
     mix_gpsLongitudeRef.text = gpsLongitudeRef
 
-    if GPSLongitude_elements:
-        mix_GPSData.append(GPSLongitude_elements)
+    if GPSLongitude_element:
+        mix_GPSData.append(GPSLongitude_element)
 
     mix_gpsAltitudeRef = _subelement(mix_GPSData, 'gpsAltitudeRef')
     mix_gpsAltitudeRef.text = gpsAltitudeRef
@@ -919,14 +919,14 @@ def mix_ImageCaptureMetadata(sourceType=None, SourceID_elements=None,
     mix_gpsDestLatitudeRef = _subelement(mix_GPSData, 'gpsDestLatitudeRef')
     mix_gpsDestLatitudeRef.text = gpsDestLatitudeRef
 
-    if GPSDestLatitude_elements:
-        mix_GPSData.append(GPSDestLatitude_elements)
+    if GPSDestLatitude_element:
+        mix_GPSData.append(GPSDestLatitude_element)
 
     mix_gpsDestLongitudeRef = _subelement(mix_GPSData, 'gpsDestLongitudeRef')
     mix_gpsDestLongitudeRef.text = gpsDestLongitudeRef
 
-    if gpsDestLongitude_elements:
-        mix_GPSData.append(gpsDestLongitude_elements)
+    if gpsDestLongitude_element:
+        mix_GPSData.append(gpsDestLongitude_element)
 
     mix_gpsDestBearingRef = _subelement(mix_GPSData, 'gpsDestBearingRef')
     mix_gpsDestBearingRef.text = gpsDestBearingRef
@@ -1253,16 +1253,16 @@ def mix_TargetID(targetManufacturer=None, targetName=None, targetNo=None,
 
     """
     mix_TargetID = _element('TargetID')
-    mix_targetManufacturer = _subelement(TargetID, 'targetManufacturer')
+    mix_targetManufacturer = _subelement(mix_TargetID, 'targetManufacturer')
     mix_targetManufacturer.text = targetManufacturer
 
-    mix_targetName = _subelement(TargetID, 'targetName')
+    mix_targetName = _subelement(mix_TargetID, 'targetName')
     mix_targetName.text = targetName
 
-    mix_targetNo = _subelement(TargetID, 'targetNo')
+    mix_targetNo = _subelement(mix_TargetID, 'targetNo')
     mix_targetNo.text = targetNo
 
-    mix_targetMedia = _subelement(TargetID, 'targetMedia')
+    mix_targetMedia = _subelement(mix_TargetID, 'targetMedia')
     mix_targetMedia.text = targetMedia
 
     return mix_TargetID

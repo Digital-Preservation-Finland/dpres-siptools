@@ -197,7 +197,7 @@ def digiprovmd(element_id, created_date=datetime.datetime.utcnow().isoformat(),
 
     if child_elements:
         for element in child_elements:
-            _techmd.append(element)
+            _digiprovmd.append(element)
 
     return _digiprovmd
 
@@ -252,7 +252,7 @@ def mptr(loctype=None, xlink_href=None, xlink_type=None):
     _mptr.set('xlink:href', xlink_href)
     _mptr.set('xlink:type', xlink_type)
 
-    return _fptr
+    return _mptr
 
 
 def fptr(fileid=None):
@@ -288,10 +288,10 @@ def div(type=None, order=None, contentids=None, label=None, orderlabel=None,
         for element in div_elements:
             _div.append(element)
     if fptr_elements:
-        for element in fprt_elements:
+        for element in fptr_elements:
             _div.append(element)
     if mptr_elements:
-        for element in mprt_elements:
+        for element in mptr_elements:
             _div.append(element)
 
     return _div
@@ -323,7 +323,7 @@ def filegrp(use=None, file_elements=None):
         _filegrp.set('USE', use)
     if file_elements:
         for element in file_elements:
-            _filegroup.append(elements)
+            _filegrp.append(element)
 
     return _filegrp
 
