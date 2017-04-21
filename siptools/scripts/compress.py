@@ -10,11 +10,10 @@ def main(arguments=None):
     """The main method for compress"""
     args = parse_arguments(arguments)
 
-    destination_tar = os.path.join(args.destination, args.tar_filename)
-    command = ['tar', '-cvvf', destination_tar, args.dir_to_tar]
-    subprocess.Popen(command, cwd=args.dir_to_tar)
+    command = ['tar', '-cvvf', args.tar_filename, '-C', args.dir_to_tar, '.']
+    subprocess.Popen(command)
 
-    print "created tar file: %s" % destination_tar
+    print "created tar file: %s" % tar_filename
 
     return 0
 
@@ -26,9 +25,6 @@ def parse_arguments(arguments):
     parser.add_argument(
         '--tar_filename', dest='tar_filename', type=str, default='sip.tar',
         help="Filename for tar. Default is sip.tar")
-    parser.add_argument(
-        '--destination', dest='destination', type=str, default='./',
-        help="Destination path of tar file. Default is the current directory.")
 
     return parser.parse_args(arguments)
 
