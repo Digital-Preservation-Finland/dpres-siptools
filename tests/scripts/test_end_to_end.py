@@ -58,8 +58,8 @@ def test_end_to_end(testpath):
     streamdata = child.communicate()[0]
     assert child.returncode == 0
 
-    command = ['python', 'siptools/scripts/compress.py',
-            testpath, '--destination', testpath]
+    command = ['python', 'siptools/scripts/compress.py', 
+        os.path.join(testpath, 'sip.tar'), testpath]
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
