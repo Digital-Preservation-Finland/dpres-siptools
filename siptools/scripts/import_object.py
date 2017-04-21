@@ -23,7 +23,7 @@ def parse_arguments(arguments):
     parser.add_argument('files', nargs='+',
         help="Digital objects to be imported")
     parser.add_argument(
-        '--base_path', type=str, default='./',
+        '--base_path', type=str, default='',
         help="Source base path of digital objects. Default is the current "
         "directory.")
     parser.add_argument(
@@ -58,17 +58,20 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     # Loop files and create premis objects
-    files = collect_filepaths(args.files)
+    files = collect_filepaths(dirs=args.files, base=args.base_path)
     for filename in files:
-        filelocation = os.path.join(args.base_path, filename)
+        if args.base_path != '':
+            filerel = os.path.relpath(filename, args.base_path)
+        else:
+            filerel = filename
         mets = m.mets_mets()
         amdsec = m.amdsec()
         techmd = m.techmd(
-            encode_id(encode_path(filename, suffix="-techmd.xml")))
+            encode_id(encode_path(filerel, suffix="-techmd.xml")))
         mdwrap = m.mdwrap()
         xmldata = m.xmldata()
         create_premis_object(
-            xmldata, filelocation, args.skip_inspection,
+            xmldata, filename, args.skip_inspection,
             args.format_name, args.format_version, args.digest_algorithm,
             args.message_digest, args.date_created, args.charset)
 
@@ -83,7 +86,7 @@ def main(arguments=None):
         if not os.path.exists(args.workspace):
             os.makedirs(args.workspace)
 
-        filename = encode_path(filename, suffix="-techmd.xml")
+        filename = encode_path(filerel, suffix="-techmd.xml")
 
         with open(os.path.join(args.workspace, filename), 'w+') as outfile:
             outfile.write(m.serialize(mets))
@@ -192,11 +195,12 @@ def md5(fname):
     return hash_md5.hexdigest()
 
 
-def collect_filepaths(dirs=['.'], pattern='*'):
+def collect_filepaths(dirs=['.'], pattern='*', base=''):
     """Collect file paths recursively from given directory. Raises IOError
     if given path does not exist."""
     files = []
     for directory in dirs:
+        directory = os.path.normpath(os.path.join(base, directory))
         if os.path.isdir(directory):
             files += [os.path.join(looproot, filename)
                       for looproot, _, filenames in os.walk(directory)
