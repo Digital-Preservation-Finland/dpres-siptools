@@ -104,7 +104,7 @@ def main(arguments=None):
 
     print "compile_mets created file: %s" % output_file
 
-    if args.copy_files != DEFAULT:
+    if args.copy_files:
         copy_files(args.workspace, args.base_path)
         print "compile_mets copied objects from %s to workspace" % \
             args.base_path
