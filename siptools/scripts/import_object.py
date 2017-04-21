@@ -24,8 +24,8 @@ def parse_arguments(arguments):
         help="Digital objects to be imported")
     parser.add_argument(
         '--base_path', type=str, default='',
-        help="Source base path of digital objects. Default is the current "
-        "directory.")
+        help="Source base path of digital objects. If used, give objects in"
+        "relation to this base path.")
     parser.add_argument(
         '--workspace', type=str, default='./workspace/',
         help="Workspace directory for the metadata files.")
