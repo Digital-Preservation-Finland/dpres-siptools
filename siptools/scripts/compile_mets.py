@@ -14,7 +14,6 @@ from siptools.xml.namespaces import NAMESPACES, METS_PROFILE, METS_CATALOG, \
 from siptools.xml.mets_record_status_types import RECORD_STATUS_TYPES
 from siptools.utils import decode_path
 
-
 def parse_arguments(arguments):
     """Parse arguments
     """
@@ -57,8 +56,11 @@ def parse_arguments(arguments):
     parser.add_argument(
         '--clean', dest='clean', action='store_true', help='Workspace cleanup')
     parser.add_argument(
-        '--copy_files', dest='copy_files', action='store_true',
-        help='Copy files to workspace')
+        '--copy_files', dest='copy_files', action='store_true', 
+        help='Copy digital objects from base path to workspace')
+    parser.add_argument(
+        '--base_path', dest='base_path', type=str, default='./'
+        help='Base path of the digital objects')    
     parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)
@@ -100,14 +102,17 @@ def main(arguments=None):
     with open(output_file, 'w+') as outfile:
         outfile.write(m.serialize(mets))
 
-    if args.copy_files:
-        copy_files(args.workspace)
+    print "compile_mets created file: %s" % output_file
+
+    if args.copy_files != DEFAULT:
+        copy_files(args.workspace, args.base_path)
+        print "compile_mets copied objects from %s to workspace" % \
+            args.base_path
 
     if args.clean:
         clean_metsparts(args.workspace)
-    # clean_up(args.workspace, 'mets.xml')
+        print "compile_mets cleaned work files from workspace"
 
-    print "compile_mets created file: %s" % output_file
 
     return 0
 
@@ -117,21 +122,12 @@ def clean_metsparts(path):
     """
     for root, _, files in os.walk(path, topdown=False):
         for name in files:
-            if (name.endswith(('techmd.xml', 'agent.xml', 'event.xml',
+            if (name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
                                'dmdsec.xml', 'structmap.xml', 'filesec.xml'))):
                 os.remove(os.path.join(root, name))
 
 
-# def clean_up(path, except_file):
-#     for root, dirs, files in os.walk(path, topdown=False):
-#         for name in files:
-#             if name != except_file:
-#                 os.remove(os.path.join(root, name))
-#         for name in dirs:
-#             os.rmdir(os.path.join(root, name))
-
-
-def copy_files(workspace):
+def copy_files(workspace, data_dir):
     """Copy digital objects to workspace
     """
     for entry in scandir(workspace):
@@ -140,7 +136,7 @@ def copy_files(workspace):
             target = os.path.join(workspace, source)
             if not os.path.exists(os.path.dirname(target)):
                 os.makedirs(os.path.dirname(target))
-            copyfile(source, target)
+            copyfile(os.path.join(data_dir, source), target)
 
 
 if __name__ == '__main__':

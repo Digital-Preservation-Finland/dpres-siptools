@@ -21,8 +21,8 @@ def ead3_ns(tag):
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
 
-    parser = argparse.ArgumentParser(description="Tool for importing files"
-                                     "which generates digital objects")
+    parser = argparse.ArgumentParser(
+        description="Tool for generating fileSec and structMap")
     parser.add_argument('--dmdsec_struct', dest='dmdsec_struct', type=str,
                         help=("Use structured descriptive metadata for "
                               "creating structMap divs"))

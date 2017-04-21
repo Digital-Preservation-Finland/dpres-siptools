@@ -128,15 +128,16 @@ def create_premis_agent(tree, agent_id, agent_name, agent_type):
     mdwrap = m.mdwrap(mdtype='PREMIS:AGENT')
     xmldata = m.xmldata()
 
+    uuid = str(uuid4())
     agent_identifier = p.premis_identifier(
-        identifier_type='local',
-        identifier_value=agent_name, prefix='agent')
+        identifier_type='UUID',
+        identifier_value=uuid, prefix='agent')
     premis_agent = p.premis_agent(agent_identifier, agent_name,
                                   agent_type)
 
     linking_agent_identifier = p.premis_identifier(
-        identifier_type='local',
-        identifier_value=agent_name, prefix='linkingAgent')
+        identifier_type='UUID',
+        identifier_value=uuid, prefix='linkingAgent')
 
     xmldata.append(premis_agent)
     mdwrap.append(xmldata)
