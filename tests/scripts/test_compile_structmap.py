@@ -9,7 +9,7 @@ from urllib import quote_plus
 
 def create_test_data(workspace):
     # create technical metadata
-    import_object.main(['--output', workspace,
+    import_object.main(['--workspace', workspace,
                         'tests/data/structured/Software files/koodi.java'])
 
 
