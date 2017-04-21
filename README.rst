@@ -43,7 +43,7 @@ These scripts produce a digitally signed mets.xml file in the parametrized folde
 You can create technical metadata elements of mets.xml from files located in the folder
 tests/data/structured followingly::
 
-    python siptools/scripts/import_object.py --output ./workspace 'tests/data/structured'
+    python siptools/scripts/import_object.py --workspace ./workspace 'tests/data/structured'
 
 An example how to create digital provenance metadata for mets.xml.
 Values for the parameters --event_outcome and --event_type are predefined lists::
@@ -84,12 +84,20 @@ and here a valid EAD3 file is given with --dmdsec_loc argument::
 
 Compile a mets.xml file from the previous results::
 
-    python siptools/scripts/compile_mets.py --workspace workspace/ kdk 'CSC'
+    python siptools/scripts/compile_mets.py --workspace ./workspace kdk 'CSC'
+    --copy_files --clean
+
+The argument --copy_files copies the files to the workspace.
+The argument --clean cleans the workspace from the METS parts created in previous scripts.
 
 Digitally sign the mets.xml::
 
    python siptools/scripts/sign_mets.py workspace/mets.xml
     /home/vagrant/dpres-siptools/workspace/signature.sig tests/data/rsa-keys.crt
+
+Create a TAR file::
+
+    python siptools/scripts/compress.py --filename sip.tar --destination ./workspace
 
 
 Copyright    

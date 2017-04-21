@@ -16,14 +16,19 @@ import siptools.xml.premis as p
 import siptools.xml.mets as m
 
 
-
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
     parser = argparse.ArgumentParser(
         description="Tool for importing files to generate digital objects")
-    parser.add_argument('files', nargs='+', help="Files to be imported")
+    parser.add_argument('files', nargs='+',
+        help="Digital objects to be imported")
     parser.add_argument(
-        '--output', type=str, default='./workspace/', help="Destination file")
+        '--base_path', type=str, default='./',
+        help="Source base path of digital objects. Default is the current "
+        "directory.")
+    parser.add_argument(
+        '--workspace', type=str, default='./workspace/',
+        help="Workspace directory for the metadata files.")
     parser.add_argument(
         '--skip_inspection', action='store_true',
         help='Skip file inspection and give technical metadata as parameters')
@@ -55,6 +60,7 @@ def main(arguments=None):
     # Loop files and create premis objects
     files = collect_filepaths(args.files)
     for filename in files:
+        filelocation = os.path.join(args.base_path, filename)
         mets = m.mets_mets()
         amdsec = m.amdsec()
         techmd = m.techmd(
@@ -62,9 +68,9 @@ def main(arguments=None):
         mdwrap = m.mdwrap()
         xmldata = m.xmldata()
         create_premis_object(
-            xmldata, filename, args.skip_inspection, args.format_name,
-            args.format_version, args.digest_algorithm, args.message_digest,
-            args.date_created, args.charset)
+            xmldata, filelocation, args.skip_inspection,
+            args.format_name, args.format_version, args.digest_algorithm,
+            args.message_digest, args.date_created, args.charset)
 
         mdwrap.append(xmldata)
         techmd.append(mdwrap)
@@ -74,21 +80,22 @@ def main(arguments=None):
         if args.stdout:
             print m.serialize(mets)
 
-        if not os.path.exists(args.output):
-            os.makedirs(args.output)
+        if not os.path.exists(args.workspace):
+            os.makedirs(args.workspace)
 
         filename = encode_path(filename, suffix="-techmd.xml")
 
-        with open(os.path.join(args.output, filename), 'w+') as outfile:
+        with open(os.path.join(args.workspace, filename), 'w+') as outfile:
             outfile.write(m.serialize(mets))
             print "Wrote METS technical metadata to file %s" % outfile.name
 
     return 0
 
 
-def create_premis_object(tree, fname, skip_inspection=None, format_name=None,
-                         format_version=None, digest_algorithm=None,
-                         message_digest=None, date_created=None, charset=None):
+def create_premis_object(tree, fname, skip_inspection=None,
+                         format_name=None, format_version=None,
+                         digest_algorithm=None, message_digest=None,
+                         date_created=None, charset=None):
     """Create Premis object for given file."""
 
     techmd = {}

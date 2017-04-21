@@ -13,7 +13,7 @@ from siptools.xml.namespaces import NAMESPACES
     'files/readme.txt'])
 def test_import_object_ok(input_file, testpath):
 
-    arguments = ['--output', testpath, input_file]
+    arguments = ['--workspace', testpath, input_file]
     return_code = import_object.main(arguments)
 
     output = os.path.join(testpath, encode_path(input_file,
@@ -30,7 +30,7 @@ def test_import_object_ok(input_file, testpath):
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_skip_inspection_ok(input_file, testpath):
 
-    arguments = ['--output', testpath, input_file, '--skip_inspection',
+    arguments = ['--workspace', testpath, input_file, '--skip_inspection',
                  '--format_name', 'image/dpx', '--format_version', '1.0',
                  '--digest_algorithm', 'MD5', '--message_digest',
                  '1qw87geiewgwe9',
@@ -51,7 +51,7 @@ def test_import_object_skip_inspection_ok(input_file, testpath):
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_skip_inspection_nodate_ok(input_file, testpath):
 
-    arguments = ['--output', testpath, input_file, '--skip_inspection',
+    arguments = ['--workspace', testpath, input_file, '--skip_inspection',
                  '--format_name', 'image/dpx', '--format_version', '1.0',
                  '--digest_algorithm', 'MD5', '--message_digest',
                  '1qw87geiewgwe9']
@@ -74,19 +74,19 @@ def test_import_object_structured_ok(testpath):
                                       'tests/data/structured'))
     test_file = ""
     for element in iterate_files(do):
-        arguments = ['--output', output, os.path.relpath(element, os.curdir)]
+        arguments = ['--workspace', output,
+                     os.path.relpath(element, os.curdir)]
         return_code = import_object.main(arguments)
         test_file = os.path.relpath(element, os.curdir)
-
-    output = os.path.join(testpath, encode_path(test_file,
+        output = os.path.join(testpath, encode_path(test_file,
                 suffix='-techmd.xml'))
 
-    tree = ET.parse(output)
-    root = tree.getroot()
+        tree = ET.parse(output)
+        root = tree.getroot()
 
-    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+        assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                   namespaces=NAMESPACES)) == 1
-    assert return_code == 0
+        assert return_code == 0
 
 
 def iterate_files(path):
