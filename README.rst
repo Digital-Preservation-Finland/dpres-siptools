@@ -97,7 +97,7 @@ Digitally sign the mets.xml::
 
 Create a TAR file::
 
-    python siptools/scripts/compress.py --filename /home/vagrant/dpres-siptools/sip.tar ./workspace
+    python siptools/scripts/compress.py --tar_filename sip.tar ./workspace
 
 
 Copyright    

@@ -13,7 +13,7 @@ def main(arguments=None):
     command = ['tar', '-cvvf', args.tar_filename, '-C', args.dir_to_tar, '.']
     subprocess.Popen(command)
 
-    print "created tar file: %s" % tar_filename
+    print "created tar file: %s" % args.tar_filename
 
     return 0
 
