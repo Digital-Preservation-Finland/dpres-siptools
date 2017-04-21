@@ -6,7 +6,7 @@ import subprocess
 def test_end_to_end(testpath):
 
     objects = 'tests/data/single/text-file.txt'
-    dmd_file = 'data/import_description/metadata/dc_description.xml'
+    dmd_file = 'tests/data/import_description/metadata/dc_description.xml'
     dmd_target = 'tests/data/single'
     file_to_sign = testpath + '/mets.xml'
     signature_filename = os.path.join (os.path.abspath(testpath), 'signature.sig')
