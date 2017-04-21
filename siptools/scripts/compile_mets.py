@@ -59,7 +59,7 @@ def parse_arguments(arguments):
         '--copy_files', dest='copy_files', action='store_true', 
         help='Copy digital objects from base path to workspace')
     parser.add_argument(
-        '--base_path', dest='base_path', type=str, default='./'
+        '--base_path', dest='base_path', type=str, default='./',
         help='Base path of the digital objects')    
     parser.add_argument('--stdout', help='Print output to stdout')
 
