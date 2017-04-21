@@ -25,7 +25,7 @@ def create_test_data(workspace):
         workspace, '--agent_name', 'Demo Application', '--agent_type', 'software'])
 
     #create technical metadata
-    import_object.main(['--output', workspace,
+    import_object.main(['--workspace', workspace,
         'tests/data/structured/Software files/koodi.java'])
 
     #create structural metadata

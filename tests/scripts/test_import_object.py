@@ -69,12 +69,12 @@ def test_import_object_skip_inspection_nodate_ok(input_file, testpath):
 
 def test_import_object_structured_ok(testpath):
 
-    output = os.path.abspath(testpath)
+    workspace = os.path.abspath(testpath)
     do = os.path.abspath(os.path.join(os.curdir,
                                       'tests/data/structured'))
     test_file = ""
     for element in iterate_files(do):
-        arguments = ['--workspace', output,
+        arguments = ['--workspace', workspace,
                      os.path.relpath(element, os.curdir)]
         return_code = import_object.main(arguments)
         test_file = os.path.relpath(element, os.curdir)
