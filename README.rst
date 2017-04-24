@@ -101,8 +101,4 @@ Create a TAR file::
 
 Copyright    
 ----------------------
-<<<<<<< 944d1f0119f43af1a822b8a7fabbd0248cacd219
-
-=======
->>>>>>> Fix typos in README.rst
 All rights reserved to CSC - IT Center for Science Ltd.
