@@ -152,6 +152,9 @@ def dmdSec(child_elements=None, element_id=str(uuid.uuid4()),
             ns = namespace(element)[1:-1]
             if ns in siptools.xml.namespaces.METS_NS.keys():
                 mdWrap.set("MDTYPE", siptools.xml.namespaces.METS_NS[ns]['mdtype'])
+                if siptools.xml.namespaces.METS_NS[ns]['mdtype'] == 'OTHER':
+                    mdWrap.set('OTHERMDTYPE',
+                            siptools.xml.namespaces.METS_NS[ns]['othermdtype'])
                 mdWrap.set('MDTYPEVERSION',
                         siptools.xml.namespaces.METS_NS[ns]['version'])
             else:
