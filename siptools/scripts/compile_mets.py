@@ -56,11 +56,11 @@ def parse_arguments(arguments):
     parser.add_argument(
         '--clean', dest='clean', action='store_true', help='Workspace cleanup')
     parser.add_argument(
-        '--copy_files', dest='copy_files', action='store_true', 
+        '--copy_files', dest='copy_files', action='store_true',
         help='Copy digital objects from base path to workspace')
     parser.add_argument(
         '--base_path', dest='base_path', type=str, default='./',
-        help='Base path of the digital objects')    
+        help='Base path of the digital objects')
     parser.add_argument('--stdout', help='Print output to stdout')
 
     return parser.parse_args(arguments)
@@ -81,7 +81,9 @@ def main(arguments=None):
     # Collect elements from workspace XML files
     elements = []
     for entry in scandir(args.workspace):
-        if not entry.name.startswith('mets.xml') and entry.is_file():
+        if entry.name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
+                               'dmdsec.xml', 'structmap.xml', 'filesec.xml',
+                               'rightsmd.xml')) and entry.is_file():
             element = lxml.etree.parse(entry.path).getroot()[0]
             elements.append(element)
 
@@ -123,7 +125,8 @@ def clean_metsparts(path):
     for root, _, files in os.walk(path, topdown=False):
         for name in files:
             if (name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
-                               'dmdsec.xml', 'structmap.xml', 'filesec.xml'))):
+                               'dmdsec.xml', 'structmap.xml', 'filesec.xml',
+                               'rightsmd.xml'))):
                 os.remove(os.path.join(root, name))
 
 
