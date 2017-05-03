@@ -42,7 +42,7 @@ def serialize(root_element):
 
     siptools.xml.xmlutil.indent(root_element)
 
-    return ET.tostring(root_element)
+    return ET.tostring(root_element, encoding='utf8')
 
 
 def ead3_ns(tag, prefix=""):
