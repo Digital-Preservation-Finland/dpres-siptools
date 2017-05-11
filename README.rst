@@ -55,6 +55,17 @@ compile_mets
 sign_mets
     for digitally signing the mets.xml file.
 
+Dependencies
+---------------------
+
+You need to install other components having dependencies to the tool. See
+requirements_dev.txt.
+Below are the commands to install and use the tool in a virtual environent.::
+    sudo pip install virtualenv
+    virtualenv .venv
+    source ./venv/bin/activate
+    pip install -r requirements_dev.tx
+
 
 Usage
 -----
