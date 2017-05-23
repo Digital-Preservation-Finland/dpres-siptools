@@ -171,11 +171,8 @@ def fileinfo(fname):
     version = fm.from_file(fname).split("version ")[-1]
 
     charset = None
-    if mimetype == 'text/plain':
-        charset = 'UTF-8' if 'UTF-8' in version else 'ISO-8859-15'
-        version = None
 
-    return {
+    fileinfo = {
         'filename': fname,
         'format': {
             'mimetype': mimetype,
@@ -184,6 +181,15 @@ def fileinfo(fname):
         }
     }
 
+    if mimetype == 'text/plain':
+        fileinfo['format']['charset'] = 'UTF-8' if 'UTF-8' in version else 'ISO-8859-15'
+        fileinfo['format']['version'] = ''
+
+    if mimetype == 'image/tiff':
+        fileinfo['format']['version'] = '6.0'
+        del fileinfo['format']['charset']
+
+    return fileinfo
 
 def md5(fname):
     """Calculate md5 checksum for given file."""
