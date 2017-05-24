@@ -9,7 +9,7 @@
 %define file_build_number M4_FILE_BUILD_NUMBER
 %define file_commit_ref M4_FILE_COMMIT_REF
 
-Name:           siptools
+Name:           dpres-siptools
 Version:        %{file_version}
 Release:        %{file_release_number}%{file_release_tag}.%{file_build_number}.git%{file_commit_ref}%{?dist}
 Summary:        Command line tools for creating Submission Information Packages (SIP) for preservation workflow  
@@ -21,7 +21,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
 Requires:       python python-setuptools 
-BuildRequires:  python-setuptools information-package-tools
+BuildRequires:  python-setuptools dpres-ipt dpres-signature
 
 %description
 Command line tools for creating Submission information packages (SIP) for preservation workflow.

@@ -2,21 +2,18 @@
 
 import sys
 import argparse
-import ipt.sip.signature
+from dpres_signature.signature import signature_write
 
 
 def main(arguments=None):
     """The main method for sign_mets"""
     args = parse_arguments(arguments)
 
-    signature = ipt.sip.signature.ManifestSMIME(
-        signature_filename=args.signature_filename,
-        private_key=args.private_key,
-        public_key=args.private_key,
-        target_path=args.file_to_sign
-    )
-
-    signature.write_signature_file()
+    signature_write(
+        signature_path=args.signature_filename,
+        key_path=args.private_key,
+        cert_path=None,
+        include_patterns=[args.file_to_sign])
 
     print "sign_mets created file: %s" % args.signature_filename
 

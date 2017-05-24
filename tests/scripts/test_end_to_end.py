@@ -8,7 +8,7 @@ def test_end_to_end(testpath):
     objects = 'tests/data/single/text-file.txt'
     dmd_file = 'tests/data/import_description/metadata/dc_description.xml'
     dmd_target = 'tests/data/single'
-    file_to_sign = testpath + '/mets.xml'
+    file_to_sign = 'mets.xml'
     signature_filename = os.path.join (os.path.abspath(testpath), 'signature.sig')
     private_key = 'tests/data/rsa-keys.crt'
 
@@ -65,22 +65,22 @@ def test_end_to_end(testpath):
     assert child.returncode == 0
 
     command = ['check-xml-schematron-features', '-s',
-            '/usr/share/information-package-tools/kdk-schematron/mets_internal.sch',
-            file_to_sign]
+            '/usr/share/dpres-xml-schemas/xml_schematron/mets_internal.sch',
+            os.path.join(testpath, file_to_sign)]
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
 
     command = ['check-xml-schematron-features', '-s',
-            '/usr/share/information-package-tools/kdk-schematron/mets_premis.sch',
-            file_to_sign]
+            '/usr/share/dpres-xml-schemas/xml_schematron/mets_premis.sch',
+            os.path.join(testpath, file_to_sign)]
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
 
     command = ['check-xml-schematron-features', '-s',
-            '/usr/share/information-package-tools/kdk-schematron/mets_mdtype.sch',
-            file_to_sign]
+            '/usr/share/dpres-xml-schemas/xml_schematron/mets_mdtype.sch',
+            os.path.join(testpath, file_to_sign)]
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]
     assert child.returncode == 0

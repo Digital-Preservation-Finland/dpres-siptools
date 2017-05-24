@@ -1,7 +1,8 @@
 pytest
 coverage
 pytest-cov
-git+https://github.com/Digital-Preservation-Finland/dpres-ipt.git#egg=ipt
 lxml
 scandir
 python-magic
+git+https://source.csc.fi/scm/git/pas/dpres-ipt@KDKPAS-1441#egg=ipt
+git+https://source.csc.fi/scm/git/pas/dpres-signature@develop#egg=dpres_signature
