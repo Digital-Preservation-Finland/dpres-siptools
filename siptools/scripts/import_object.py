@@ -10,7 +10,7 @@ import platform
 import argparse
 import magic
 
-from ipt.validator import validate
+from ipt.validator.validators import iter_validators
 from siptools.utils import encode_path, encode_id
 import siptools.xml.premis as p
 import siptools.xml.mets as m
@@ -103,11 +103,11 @@ def create_premis_object(tree, fname, skip_inspection=None,
 
     techmd = {}
     if not skip_inspection:
-        validation_result = validate(fileinfo(fname))
-
-        if not validation_result['is_valid']:
-            raise Exception('File %s is not valid: %s', fname,
-                            validation_result['errors'])
+        for validator in iter_validators(fileinfo(fname)):
+            validation_result = validator.result()
+            if not validation_result['is_valid']:
+                raise Exception('File %s is not valid: %s', fname,
+                                validation_result['errors'])
 
         techmd = validation_result['result']
 
