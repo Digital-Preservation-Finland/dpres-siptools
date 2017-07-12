@@ -14,10 +14,10 @@ test:
 	py.test tests
 
 coverage:
-	coverage -e
-	coverage -x test.py
-	coverage -r -m
-	coverage -b -d coverage-html
+	py.test tests --cov=siptools --cov-report=html
+	coverage report -m
+	coverage html
+	coverage xml
 
 clean: clean-rpm
 	find . -iname '*.pyc' -type f -delete
