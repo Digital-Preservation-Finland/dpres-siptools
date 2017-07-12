@@ -4,5 +4,7 @@ pytest-cov
 lxml
 scandir
 python-magic
-git+https://source.csc.fi/scm/git/pas/dpres-ipt@KDKPAS-1441#egg=ipt
+wand
+M2Crypto
+git+https://source.csc.fi/scm/git/pas/dpres-ipt@develop#egg=ipt
 git+https://source.csc.fi/scm/git/pas/dpres-signature@develop#egg=dpres_signature
