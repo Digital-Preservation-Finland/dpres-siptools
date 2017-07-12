@@ -65,21 +65,21 @@ def test_end_to_end(testpath):
     assert child.returncode == 0
 
     command = ['check-xml-schematron-features', '-s',
-            '/usr/share/dpres-xml-schemas/xml_schematron/mets_internal.sch',
+            '/usr/share/dpres-xml-schemas/schematron/mets_internal.sch',
             os.path.join(testpath, file_to_sign)]
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
 
     command = ['check-xml-schematron-features', '-s',
-            '/usr/share/dpres-xml-schemas/xml_schematron/mets_premis.sch',
+            '/usr/share/dpres-xml-schemas/schematron/mets_premis.sch',
             os.path.join(testpath, file_to_sign)]
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
 
     command = ['check-xml-schematron-features', '-s',
-            '/usr/share/dpres-xml-schemas/xml_schematron/mets_mdtype.sch',
+            '/usr/share/dpres-xml-schemas/schematron/mets_mdtype.sch',
             os.path.join(testpath, file_to_sign)]
     child = subprocess.Popen(command)
     streamdata = child.communicate()[0]
