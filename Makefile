@@ -11,7 +11,7 @@ install:
 	cat INSTALLED_FILES | sed 's/^/\//g' >> INSTALLED_FILES
 
 test:
-	py.test tests
+	py.test -svvvv --junitprefix=dpres-siptools --junitxml=junit.xml tests
 
 coverage:
 	py.test tests --cov=siptools --cov-report=html
