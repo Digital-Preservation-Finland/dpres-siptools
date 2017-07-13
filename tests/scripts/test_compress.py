@@ -6,7 +6,8 @@ import subprocess
 
 def test_compress(testpath):
 
-    dir_to_tar='tests/data/structured'
+    dir_to_tar = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', 'data', 'structured'))
     arguments=[dir_to_tar, '--tar_filename', os.path.join(testpath, 'sip.tar')]
 
     assert siptools.scripts.compress.main(arguments) == 0
