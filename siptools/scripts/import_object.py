@@ -164,10 +164,20 @@ def create_premis_object(tree, fname, skip_inspection=None,
 
 def fileinfo(fname):
     """Return fileinfo dict for given file."""
-    detected = magic.detect_from_filename(fname)
-    mimetype = detected.mime_type
-    charset = detected.encoding
-    version = detected.name.split("version ")[-1]
+    m = magic.open(magic.MAGIC_MIME_TYPE)
+    m.load()
+    mimetype = m.file(fname)
+    m.close()
+
+    m = magic.open(magic.MAGIC_MIME_ENCODING)
+    m.load()
+    charset = m.file(fname)
+    m.close()
+
+    m = magic.open(magic.MAGIC_NONE)
+    m.load()
+    version = m.file(fname).split("version ")[-1]
+    m.close()
 
     fileinfo = {
         'filename': fname,
