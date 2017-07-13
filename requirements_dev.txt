@@ -3,7 +3,7 @@ coverage
 pytest-cov
 lxml
 scandir
-python-magic
+filemagic
 wand
 M2Crypto
 git+https://source.csc.fi/scm/git/pas/dpres-ipt@develop#egg=ipt
