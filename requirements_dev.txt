@@ -6,5 +6,3 @@ scandir
 file-magic
 wand
 M2Crypto
-git+https://source.csc.fi/scm/git/pas/dpres-ipt@develop#egg=ipt
-git+https://source.csc.fi/scm/git/pas/dpres-signature@develop#egg=dpres_signature

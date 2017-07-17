@@ -1,5 +1,5 @@
 Introduction
---------------------
+------------
 
 This tool is intended to be used for generating an OAIS SIP for digital preservation.
 It produces METS document (mets.xml) containing metadata required by Finnish National
@@ -10,6 +10,30 @@ The aim is to provide digital preservation services for culture and research to 
 the access and use of materials long in the future. Documentation and specifications
 for the digital preservation service can be found
 in http://www.kdk.fi/en/digital-preservation/specifications.
+
+Installation
+------------
+
+Get python-virtuelenv software::
+
+    pip install virtualenv
+
+Run the following to activate the virtual environment::
+
+    virtualenv .venv
+    source ./.venv/bin/activate
+
+Run the following to install required digital preservation tools::
+
+   pip install git+https://github.com/Digital-Preservation-Finland/dpres-signature.git#egg=dpres_signature
+   pip install git+https://github.com/Digital-Preservation-Finland/dpres-ipt.git#egg=ipt
+
+Install other required software with command::
+
+    pip install -r requirements_dev.txt
+
+Optional: To make validation possible, install the validation software listed in dpres-ipt README file,
+see: https://github.com/Digital-Preservation-Finland/dpres-ipt
 
 Scripts
 --------------------
