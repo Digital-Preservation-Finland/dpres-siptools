@@ -1,0 +1,10 @@
+pytest
+coverage
+pytest-cov
+lxml
+scandir
+file-magic
+wand
+M2Crypto
+https://github.com/Digital-Preservation-Finland/dpres-signature.git#egg=dpres_signature
+https://github.com/Digital-Preservation-Finland/dpres-ipt.git#egg=ipt

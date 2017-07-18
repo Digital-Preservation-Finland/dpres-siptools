@@ -23,17 +23,13 @@ Run the following to activate the virtual environment::
     virtualenv .venv
     source ./.venv/bin/activate
 
-Run the following to install required digital preservation tools::
+Install the required software with command::
 
-   pip install git+https://github.com/Digital-Preservation-Finland/dpres-signature.git#egg=dpres_signature
-   pip install git+https://github.com/Digital-Preservation-Finland/dpres-ipt.git#egg=ipt
+    pip install -r requirements_github.txt
 
-Install other required software with command::
-
-    pip install -r requirements_dev.txt
-
-Optional: To make validation possible, install the validation software listed in dpres-ipt README file,
+Optional: To make digital object validation possible, install the validation software listed in dpres-ipt README file,
 see: https://github.com/Digital-Preservation-Finland/dpres-ipt
+Otherwise, use argument --skip_inspection in import_object script.
 
 Scripts
 --------------------
