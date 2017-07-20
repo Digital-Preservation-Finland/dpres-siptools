@@ -1,10 +1,10 @@
-Introduction
-------------
+Pre-Ingest Tool
+===============
 
 This tool is intended to be used for generating an OAIS SIP for digital preservation.
-It produces METS document (mets.xml) containing metadata required by Finnish National
-Digital Library and Open Science and Research digital preservation. Tool contains code
-for extracting technical metadata, creating and digitally signing the METS document. 
+It produces METS document (mets.xml) that contains metadata for digital preservation
+required by the Finnish National Digital Library and Open Science and Research Initiative. The
+tool contains code for extracting metadata, creating and digitally signing the METS document.
 
 The aim is to provide digital preservation services for culture and research to ensure
 the access and use of materials long in the future. Documentation and specifications
@@ -13,6 +13,9 @@ in http://www.kdk.fi/en/digital-preservation/specifications.
 
 Installation
 ------------
+
+Installation and usage require Python 2.7.
+The software is tested with Python 2.7 with Centos 7.x / RHEL 7.x releases.
 
 Get python-virtuelenv software::
 
@@ -32,7 +35,7 @@ see: https://github.com/Digital-Preservation-Finland/dpres-ipt
 Otherwise, use argument --skip_inspection in import_object script.
 
 Scripts
---------------------
+-------
 
 import_description
     for creating a file containing descriptive metadata element of mets.xml.
@@ -54,7 +57,7 @@ sign_mets
 
 
 Usage
---------------------
+-----
 
 In order to build a SIP for digital preservation, use the scripts in the following order.
 These scripts produce a digitally signed mets.xml file in the parametrized folder 'workspace'.
@@ -67,7 +70,7 @@ tests/data/structured followingly::
 An example how to create digital provenance metadata for mets.xml.
 Values for the parameters --event_outcome and --event_type are predefined lists::
 
-   python siptools/scripts/premis_event.py creation '2016-10-13T12:30:55'
+    python siptools/scripts/premis_event.py creation '2016-10-13T12:30:55'
     --event_detail Testing --event_outcome success --event_outcome_detail
     'Outcome detail' --workspace ./workspace --agent_name 'Demo Application'
     --agent_type software --event_target 'tests/data/structured'
@@ -120,5 +123,6 @@ Create a TAR file::
 
 
 Copyright    
-----------------------
+---------
 All rights reserved to CSC - IT Center for Science Ltd.
+
