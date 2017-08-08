@@ -31,17 +31,3 @@ rpm: clean-rpm
 	preprocess-spec-m4-macros.sh include/rhel7
 	build-rpm.sh ${MOCK_CONFIG}
 
-e2e-localhost-cleanup: .e2e/ansible-fetch
-	cd .e2e/ansible ; ansible-playbook -i inventory/localhost e2e-pre-test-cleanup.yml
-
-.e2e/ansible:
-	git clone https://source.csc.fi/scm/git/pas/ansible-preservation-system .e2e/ansible
-
-.e2e/ansible-fetch: .e2e/ansible
-	cd .e2e/ansible ; \
-		git fetch ; \
-		git checkout master ; \
-		git reset --hard origin/master ; \
-		git clean -fdx ; \
-		git status
-
