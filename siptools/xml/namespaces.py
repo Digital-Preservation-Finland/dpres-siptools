@@ -7,7 +7,8 @@ NAMESPACES = {
     'fi': 'http://www.kdk.fi/standards/mets/kdk-extensions',
     'w3_xlink': 'http://www.w3.org/1999/xlink',
     'mix': 'http://www.loc.gov/mix/v20',
-    'ead3': 'http://ead3.archivists.org/schema/'
+    'ead3': 'http://ead3.archivists.org/schema/',
+    'addml': 'http://www.arkivverket.no/standarder/addml'
 }
 
 METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'DC', 'version' :
@@ -22,7 +23,9 @@ METS_NS = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'DC', 'version' :
 'ddi:instance:3_1' : {'mdtype' : 'DDI', 'version' : '3.1'},
 'ddi:codebook:2_5' : {'mdtype' : 'DDI', 'version' : '2.5'},
 'http://www.icpsr.umich.edu/DDI' : {'mdtype' : 'DDI', 'version' : '2.1'},
-'http://www.vraweb.org/vracore4.htm' : {'mdtype' : 'VRA', 'version' : ''}}
+'http://www.vraweb.org/vracore4.htm' : {'mdtype' : 'VRA', 'version' : ''},
+'http://www.arkivverket.no/standarder/addml' : {'mdtype' : 'OTHER',
+        'othermdtype' : 'ADDML', 'version' : '8.3'}}
 
 METS_PROFILE = {'kdk': 'http://www.kdk.fi/kdk-mets-profile', 'tpas': 'http://www.avointiede.fi/att-mets-profile', 'tpas-midterm': 'http://www.avointiede.fi/att-midterm-mets-profile?dissemination_service=no', 'tpas-dissemination': 'http://www.avointiede.fi/att-midterm-mets-profile?dissemination_service=yes' }
 
