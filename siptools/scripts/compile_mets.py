@@ -83,7 +83,8 @@ def main(arguments=None):
     for entry in scandir(args.workspace):
         if entry.name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
                                'dmdsec.xml', 'structmap.xml', 'filesec.xml',
-                               'rightsmd.xml')) and entry.is_file():
+                               'rightsmd.xml',
+                               '-othermd.xml')) and entry.is_file():
             element = lxml.etree.parse(entry.path).getroot()[0]
             elements.append(element)
 
@@ -126,7 +127,10 @@ def clean_metsparts(path):
         for name in files:
             if (name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
                                'dmdsec.xml', 'structmap.xml', 'filesec.xml',
-                               'rightsmd.xml'))):
+                               'rightsmd.xml', '-othermd.xml',
+                               'addmlfile.xml', 'mixfile.xml',
+                               'textmdfile.xml', 'audiomdfile.xml',
+                               'videomdfile.xml'))):
                 os.remove(os.path.join(root, name))
 
 

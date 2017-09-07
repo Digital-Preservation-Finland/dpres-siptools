@@ -169,14 +169,37 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
 def add_file_to_filesec(workspace, path, filegrp, amdids):
     """Add file element to fileSec.
     """
+    othermd_types = ['addml', 'mix', 'videomd', 'audiomd', 'textmd']
     techmd_files, techmd_ids = ids_for_files(workspace, path, 'techmd.xml')
     fileid = '_' + str(uuid4())
+    filepath = decode_path(techmd_files[0], '-techmd.xml')
+    othermd_ids = []
+    for mdtype in othermd_types:
+        othermd_ids = read_temp_othermdfile(workspace, mdtype, filepath,
+                othermd_ids)
     file_el = m.file(
-        fileid, admid_elements=techmd_ids+amdids, loctype='URL',
-        xlink_href='file://%s' % decode_path(techmd_files[0], '-techmd.xml'),
+        fileid, admid_elements=techmd_ids+amdids+othermd_ids, loctype='URL',
+        xlink_href='file://%s' % filepath,
         xlink_type='simple', groupid=None)
     filegrp.append(file_el)
     return fileid
+
+
+def read_temp_othermdfile(workspace, mdtype, path, othermd_ids):
+    """Append id to othermd_ids if file exists in temporary
+    othermd_types file.
+    """
+    mdfile = os.path.join(workspace, '%sfile.xml' % mdtype)
+
+    if os.path.isfile(mdfile):
+        import_mdfile= ET.parse(mdfile)
+        root = import_mdfile.getroot()
+
+        for fileid in root.findall('.//fileid'):
+            if fileid.get('path') == path:
+                othermd_ids.append(fileid.text)
+
+    return othermd_ids
 
 
 def get_links_event_agent(workspace, path):
