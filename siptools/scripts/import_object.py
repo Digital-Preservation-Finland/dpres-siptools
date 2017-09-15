@@ -12,8 +12,9 @@ import magic
 
 from ipt.validator.validators import iter_validators
 from siptools.utils import encode_path, encode_id
-import siptools.xml.premis as p
-import siptools.xml.mets as m
+import premis.premis as p
+import premis.object
+import mets
 
 
 def parse_arguments(arguments):
@@ -64,12 +65,12 @@ def main(arguments=None):
             filerel = os.path.relpath(filename, args.base_path)
         else:
             filerel = filename
-        mets = m.mets_mets()
-        amdsec = m.amdsec()
-        techmd = m.techmd(
+        mets = mets.mets.mets_mets()
+        amdsec = mets.amdsec.amdsec()
+        techmd = mets.amdsec.techmd(
             encode_id(encode_path(filerel, suffix="-techmd.xml")))
-        mdwrap = m.mdwrap()
-        xmldata = m.xmldata()
+        mdwrap = mets.mdwrap.mdwrap()
+        xmldata = mets.mdwrap.xmldata()
         create_premis_object(
             xmldata, filename, args.skip_inspection,
             args.format_name, args.format_version, args.digest_algorithm,
@@ -81,7 +82,7 @@ def main(arguments=None):
         mets.append(amdsec)
 
         if args.stdout:
-            print m.serialize(mets)
+            print h.serialize(mets)
 
         if not os.path.exists(args.workspace):
             os.makedirs(args.workspace)
@@ -89,7 +90,7 @@ def main(arguments=None):
         filename = encode_path(filerel, suffix="-techmd.xml")
 
         with open(os.path.join(args.workspace, filename), 'w+') as outfile:
-            outfile.write(m.serialize(mets))
+            outfile.write(h.serialize(mets))
             print "Wrote METS technical metadata to file %s" % outfile.name
 
     return 0
@@ -155,7 +156,7 @@ def create_premis_object(tree, fname, skip_inspection=None,
         identifier_type='UUID',
         identifier_value=unique)
 
-    el_premis_object = p.premis_object(
+    el_premis_object = premis.object.premis_object(
         object_identifier, child_elements=[el_objectCharacteristics])
     tree.append(el_premis_object)
 
