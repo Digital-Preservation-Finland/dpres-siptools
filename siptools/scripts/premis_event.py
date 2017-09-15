@@ -4,8 +4,9 @@ import sys
 import os
 from uuid import uuid4
 import argparse
-import siptools.xml.premis as p
-import siptools.xml.mets as m
+import premis
+import mets
+import xml_helpers.utils as h
 from siptools.xml.premis_event_types import PREMIS_EVENT_TYPES
 from siptools.xml.premis_event_types import PREMIS_EVENT_OUTCOME_TYPES
 from siptools.utils import encode_path, encode_id
@@ -51,8 +52,8 @@ def main(arguments=None):
 
     if args.agent_name:
 
-        mets = m.mets_mets()
-        amdsec = m.amdsec()
+        mets = mmets.mets.mets_mets()
+        amdsec = mets.amdsec.amdsec()
         mets.append(amdsec)
 
         if args.event_target:
@@ -72,13 +73,13 @@ def main(arguments=None):
             amdsec, agent_id, args.agent_name, args.agent_type)
 
         if args.stdout:
-            print m.serialize(mets)
+            print h.serialize(mets)
 
         if not os.path.exists(os.path.dirname(output_file)):
             os.makedirs(os.path.dirname(output_file))
 
         with open(output_file, 'w+') as outfile:
-            outfile.write(m.serialize(mets))
+            outfile.write(h.serialize(mets))
 
         print "premis_event created file: %s" % output_file
 
@@ -86,8 +87,8 @@ def main(arguments=None):
         linking_agent_identifier = None
 
     # Create event
-    mets = m.mets_mets()
-    amdsec = m.amdsec()
+    mets = mets.mets.mets_mets()
+    amdsec = mets.amdsec.amdsec()
     mets.append(amdsec)
 
     if args.event_target:
@@ -108,13 +109,13 @@ def main(arguments=None):
         linking_agent_identifier, event_id)
 
     if args.stdout:
-        print m.serialize(mets)
+        print h.serialize(mets)
 
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
 
     with open(output_file, 'w+') as outfile:
-        outfile.write(m.serialize(mets))
+        outfile.write(h.serialize(mets))
 
     print "premis_event created file: %s" % output_file
 
@@ -124,18 +125,18 @@ def main(arguments=None):
 def create_premis_agent(tree, agent_id, agent_name, agent_type):
     """Create agent
     """
-    digiprovmd = m.digiprovmd(agent_id)
-    mdwrap = m.mdwrap(mdtype='PREMIS:AGENT')
-    xmldata = m.xmldata()
+    digiprovmd = mets.amdsec.digiprovmd(agent_id)
+    mdwrap = mets.mdwrap.mdwrap(mdtype='PREMIS:AGENT')
+    xmldata = mets.mdwrap.xmldata()
 
     uuid = str(uuid4())
-    agent_identifier = p.premis_identifier(
+    agent_identifier = premis.premis.premis_identifier(
         identifier_type='UUID',
         identifier_value=uuid, prefix='agent')
-    premis_agent = p.premis_agent(agent_identifier, agent_name,
+    premis_agent = piremis.agent.premis_agent(agent_identifier, agent_name,
                                   agent_type)
 
-    linking_agent_identifier = p.premis_identifier(
+    linking_agent_identifier = premis.premis.premis_identifier(
         identifier_type='UUID',
         identifier_value=uuid, prefix='linkingAgent')
 
@@ -152,24 +153,24 @@ def create_premis_event(tree, event_type, event_datetime, event_detail,
                         linking_agent_identifier, event_id):
     """Create event
     """
-    digiprovmd = m.digiprovmd(event_id)
-    mdwrap = m.mdwrap(mdtype='PREMIS:EVENT')
-    xmldata = m.xmldata()
+    digiprovmd = mets.gigiprovmd.digiprovmd(event_id)
+    mdwrap = mets.mdwrap.mdwrap(mdtype='PREMIS:EVENT')
+    xmldata = mets.mdwrap.xmldata()
 
-    event_identifier = p.premis_identifier(
+    event_identifier = premis.premis.premis_identifier(
         identifier_type='UUID', identifier_value=str(uuid4()),
         prefix='event')
 
-    premis_event_outcome = p.premis_event_outcome(event_outcome,
+    premis_event_outcome = premis.event.premis_event_outcome(event_outcome,
                                                   event_outcome_detail)
 
     if linking_agent_identifier is not None:
         child_elements = [premis_event_outcome, linking_agent_identifier]
     else:
         child_elements = [premis_event_outcome]
-    premisevent = p.premis_event(event_identifier, event_type,
-                                 event_datetime, event_detail,
-                                 child_elements=child_elements)
+    premisevent = premis_event.premis_event(event_identifier, event_type,
+                                            event_datetime, event_detail,
+                                            child_elements=child_elements)
 
     xmldata.append(premisevent)
     mdwrap.append(xmldata)

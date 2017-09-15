@@ -8,7 +8,8 @@ import uuid
 from shutil import copyfile
 from scandir import scandir
 import lxml.etree
-import siptools.xml.mets as m
+import mets
+import xml_helpers.utils as h
 from siptools.xml.namespaces import NAMESPACES, METS_PROFILE, METS_CATALOG, \
     METS_SPECIFICATION
 from siptools.xml.mets_record_status_types import RECORD_STATUS_TYPES
@@ -72,9 +73,9 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     # Create mets header
-    mets = m.mets_mets(METS_PROFILE[args.mets_profile], args.objid, args.label,
+    mets = mets.mets.mets_mets(METS_PROFILE[args.mets_profile], args.objid, args.label,
                        args.catalog, args.specification, args.contentid)
-    metshdr = m.metshdr(args.organization_name, args.create_date,
+    metshdr = mets.metshdr.metshdr(args.organization_name, args.create_date,
                         args.last_moddate, args.record_status)
     mets.append(metshdr)
 
@@ -88,14 +89,14 @@ def main(arguments=None):
             element = lxml.etree.parse(entry.path).getroot()[0]
             elements.append(element)
 
-    elements = m.merge_elements('{%s}amdSec' % NAMESPACES['mets'], elements)
-    elements.sort(key=m.order)
+    elements = mets.mets.merge_elements('{%s}amdSec' % NAMESPACES['mets'], elements)
+    elements.sort(key=mets.mets.order)
 
     for element in elements:
         mets.append(element)
 
     if args.stdout:
-        print m.serialize(mets)
+        print h.serialize(mets)
 
     output_file = os.path.join(args.workspace, 'mets.xml')
 
@@ -103,7 +104,7 @@ def main(arguments=None):
         os.makedirs(os.path.dirname(output_file))
 
     with open(output_file, 'w+') as outfile:
-        outfile.write(m.serialize(mets))
+        outfile.write(h.serialize(mets))
 
     print "compile_mets created file: %s" % output_file
 

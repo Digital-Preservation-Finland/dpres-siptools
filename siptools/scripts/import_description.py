@@ -4,7 +4,9 @@ import sys
 import argparse
 import os
 import lxml.etree
-import siptools.xml.mets as m
+import mets
+import xml_helpers.utils as h
+import siptools.xml
 
 from siptools.utils import encode_path, encode_id
 
@@ -21,28 +23,39 @@ def main(arguments=None):
     with open(args.dmdsec_location, 'r') as content_file:
         content = content_file.read()
 
-    mets = m.mets_mets()
+    mets = mets.mets.mets_mets()
 
     tree = lxml.etree.fromstring(content)
 
     if args.desc_root == 'remove':
-        dmdsec = m.dmdSec(element_id=encode_id(url_t_path),
-                          child_elements=tree.findall('*'))
+        childs = tree.findall('*')
     else:
-        dmdsec = m.dmdSec(element_id=encode_id(url_t_path),
-                          child_elements=[tree])
+        childs = [tree]
+    xmldata_e = mets.mdwrap.xmldata(child_elements=childs)
+    ns = xml_helpers.get_namespace(childs[0])
 
-    mets.append(dmdsec)
+    if ns in siptools.xml.NAMESPACES.keys():
+        mdt = siptools.xml.NAMESPACES[ns]['mdtype']
+        mdo = siptools.xml.NAMESPACES[ns]['othermdtype']
+        mdv = siptools.xml.NAMESPACES[ns]['mdtypeversion']
+    else:
+        raise TypeError("Invalid namespace: %s" % ns)
+
+    mdwrap_e = mets.mdwrap.mdwrap(mdtype=mdt, othermdtype=mdo, mdtypeversion=mdv,
+                      child_elements=[xmldata_e])
+    dmdsec_e = mets.dmdsec.dmdsec(encode_id(url_t_path), child_elements=[mdwrap_e])
+
+    mets.append(dmdsec_e)
 
     if args.stdout:
-        print m.serialize(mets)
+        print h.serialize(mets)
 
     output_file = os.path.join(args.workspace, url_t_path)
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
 
     with open(output_file, 'w+') as outfile:
-        outfile.write(m.serialize(mets))
+        outfile.write(h.serialize(mets))
 
     print "import_description created file: %s" % output_file
 
