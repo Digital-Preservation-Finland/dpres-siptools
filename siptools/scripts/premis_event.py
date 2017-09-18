@@ -52,7 +52,7 @@ def main(arguments=None):
 
     if args.agent_name:
 
-        mets = mmets.mets.mets_mets()
+        mets = mets.mets.mets()
         amdsec = mets.amdsec.amdsec()
         mets.append(amdsec)
 
@@ -87,7 +87,7 @@ def main(arguments=None):
         linking_agent_identifier = None
 
     # Create event
-    mets = mets.mets.mets_mets()
+    mets = mets.mets.mets()
     amdsec = mets.amdsec.amdsec()
     mets.append(amdsec)
 
@@ -125,10 +125,6 @@ def main(arguments=None):
 def create_premis_agent(tree, agent_id, agent_name, agent_type):
     """Create agent
     """
-    digiprovmd = mets.amdsec.digiprovmd(agent_id)
-    mdwrap = mets.mdwrap.mdwrap(mdtype='PREMIS:AGENT')
-    xmldata = mets.mdwrap.xmldata()
-
     uuid = str(uuid4())
     agent_identifier = premis.premis.premis_identifier(
         identifier_type='UUID',
@@ -140,9 +136,9 @@ def create_premis_agent(tree, agent_id, agent_name, agent_type):
         identifier_type='UUID',
         identifier_value=uuid, prefix='linkingAgent')
 
-    xmldata.append(premis_agent)
-    mdwrap.append(xmldata)
-    digiprovmd.append(mdwrap)
+    xmldata = mets.mdwrap.xmldata(child_elements=[premis_agent])
+    mdwrap = mets.mdwrap.mdwrap(mdtype='PREMIS:AGENT', child_elements=[xmldata])
+    digiprovmd = mets.amdsec.digiprovmd(agent_id, child_elements=[mdwrap])
     tree.append(digiprovmd)
 
     return linking_agent_identifier
@@ -153,10 +149,6 @@ def create_premis_event(tree, event_type, event_datetime, event_detail,
                         linking_agent_identifier, event_id):
     """Create event
     """
-    digiprovmd = mets.gigiprovmd.digiprovmd(event_id)
-    mdwrap = mets.mdwrap.mdwrap(mdtype='PREMIS:EVENT')
-    xmldata = mets.mdwrap.xmldata()
-
     event_identifier = premis.premis.premis_identifier(
         identifier_type='UUID', identifier_value=str(uuid4()),
         prefix='event')
@@ -168,13 +160,13 @@ def create_premis_event(tree, event_type, event_datetime, event_detail,
         child_elements = [premis_event_outcome, linking_agent_identifier]
     else:
         child_elements = [premis_event_outcome]
-    premisevent = premis_event.premis_event(event_identifier, event_type,
-                                            event_datetime, event_detail,
-                                            child_elements=child_elements)
+    premis_event = p.premis_event(event_identifier, event_type,
+                                  event_datetime, event_detail,
+                                  child_elements=child_elements)
 
-    xmldata.append(premisevent)
-    mdwrap.append(xmldata)
-    digiprovmd.append(mdwrap)
+    xmldata = mets.mdwrap.xmldata(child_elements=[premis_event])
+    mdwrap = mets.mdwrap.mdwrap(mdtype='PREMIS:EVENT', child_elements=[xmldata])
+    digiprovmd = mets.amdsec.digiprovmd(event_id, child_elements=[mdwrap])    
     tree.append(digiprovmd)
 
 

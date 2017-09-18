@@ -10,9 +10,8 @@ from scandir import scandir
 import lxml.etree
 import mets
 import xml_helpers.utils as h
-from siptools.xml.namespaces import NAMESPACES, METS_PROFILE, METS_CATALOG, \
-    METS_SPECIFICATION
-from siptools.xml.mets_record_status_types import RECORD_STATUS_TYPES
+from siptools.xml.mets import NAMESPACES, METS_PROFILE, METS_CATALOG, \
+    METS_SPECIFICATION, RECORD_STATUS_TYPES, mets_extend
 from siptools.utils import decode_path
 
 def parse_arguments(arguments):
@@ -73,8 +72,8 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     # Create mets header
-    mets = mets.mets.mets_mets(METS_PROFILE[args.mets_profile], args.objid, args.label,
-                       args.catalog, args.specification, args.contentid)
+    mets = mets.mets.mets(METS_PROFILE[args.mets_profile], args.objid, args.label)
+    mets = mets_extend(mets, args.catalog, args.specification, args.contentid)
     metshdr = mets.metshdr.metshdr(args.organization_name, args.create_date,
                         args.last_moddate, args.record_status)
     mets.append(metshdr)

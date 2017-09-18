@@ -65,21 +65,18 @@ def main(arguments=None):
             filerel = os.path.relpath(filename, args.base_path)
         else:
             filerel = filename
-        mets = mets.mets.mets_mets()
-        amdsec = mets.amdsec.amdsec()
-        techmd = mets.amdsec.techmd(
-            encode_id(encode_path(filerel, suffix="-techmd.xml")))
-        mdwrap = mets.mdwrap.mdwrap()
-        xmldata = mets.mdwrap.xmldata()
-        create_premis_object(
+        premis_object = create_premis_object(
             xmldata, filename, args.skip_inspection,
             args.format_name, args.format_version, args.digest_algorithm,
             args.message_digest, args.date_created, args.charset)
 
-        mdwrap.append(xmldata)
-        techmd.append(mdwrap)
-        amdsec.append(techmd)
-        mets.append(amdsec)
+        xmldata = mets.mdwrap.xmldata(child_elements=[premis_object])
+        mdwrap = mets.mdwrap.mdwrap(child_elements=[xmldata])
+        techmd = mets.amdsec.techmd(
+            encode_id(encode_path(filerel, suffix="-techmd.xml")),
+            child_elements=[mdwrap])        
+        amdsec = mets.amdsec.amdsec(child_elements=[techmd])
+        mets = mets.mets.mets(child_elements=[amdsec])
 
         if args.stdout:
             print h.serialize(mets)
@@ -98,7 +95,7 @@ def main(arguments=None):
 
 def create_premis_object(tree, fname, skip_inspection=None,
                          format_name=None, format_version=None,
-                         digest_algorithm=None, message_digest=None,
+                         digest_algorithm='MD5', message_digest=None,
                          date_created=None, charset=None):
     """Create Premis object for given file."""
 
@@ -112,52 +109,34 @@ def create_premis_object(tree, fname, skip_inspection=None,
 
         techmd = validation_result['result']
 
-    # Create objectCharacteristics element
-    el_objectCharacteristics = p._element('objectCharacteristics')
-
-    el_composition_level = p._subelement(
-        el_objectCharacteristics, 'compositionLevel')
-    el_composition_level.text = '0'
-
-    # Create fixity element
-    el_fixity = p._subelement(el_objectCharacteristics, 'fixity')
-    el_fixity_algorithm = p._subelement(
-        el_fixity, 'digestAlgorithm', 'message')
-    el_fixity_algorithm.text = digest_algorithm or 'MD5'
-    el_fixity_checksum = p._subelement(el_fixity, 'digest', 'message')
-    el_fixity_checksum.text = message_digest or md5(fname)
-
-    # Create format element
-    el_format = p._subelement(el_objectCharacteristics, 'format')
-    el_formatDesignation = p._subelement(el_format, 'formatDesignation')
-    el_format_name = p._subelement(el_formatDesignation, 'name', 'format')
-    el_format_name.text = format_name or techmd['format']['mimetype']
-
-    if format_version or (techmd and 'version' in techmd['format']):
-        el_format_version = p._subelement(
-            el_formatDesignation, 'version', 'format')
-        el_format_version.text = format_version if format_version else techmd[
-            'format']['version']
-
+    
+    if message_digest is None:
+        message_digest = md5(fname)
+    if format_name is None:
+        format_name = techmd['format']['mimetype']
+    if format_version is None or (techmd and 'version' in techmd['format']):
+        format_version = techmd['format']['version']
     if charset or (techmd and 'charset' in techmd['format']):
-        el_format_name.text += '; charset=' + charset \
+        format_name += '; charset=' + charset \
             if charset else '; charset=' + techmd['format']['charset']
+    if date_created is None:
+        date_created = creation_date(fname)
 
-    # Create creatingApplication element
-    el_creatingApplication = p._subelement(el_objectCharacteristics,
-                                           'creatingApplication')
-    el_dateCreatedByApplication = p._subelement(el_creatingApplication,
-                                                'dateCreatedByApplication')
-    el_dateCreatedByApplication.text = date_created or creation_date(fname)
+    premis_fixity = premis.object.fixity(message_digest, digest_algorithm)
+    premis_format_des = premis.object.format_designation(format_name, format_version)
+    premis_format = premis.object.format(child_elements=[format_des])
+    premis_date_created = premis.object.date_created(date_created)
+    premis_create = premis.object.creating_application(child_elements=[premis_date_created])
+    premis_objchar = premis.object.object_characteristics(
+        child_elements=[premi_fixity, premis_format, premis_create])
 
     # Create object element
-    unique = str(uuid4())
     object_identifier = p.premis_identifier(
         identifier_type='UUID',
-        identifier_value=unique)
+        identifier_value=str(uuid4()))
 
-    el_premis_object = premis.object.premis_object(
-        object_identifier, child_elements=[el_objectCharacteristics])
+    el_premis_object = premis.premis_object.premis_object(
+        object_identifier, child_elements=[premis_objchar])
     tree.append(el_premis_object)
 
     return tree
