@@ -6,7 +6,7 @@ import scandir
 import datetime
 from siptools.scripts import import_object
 from siptools.utils import encode_path
-from siptools.xml.namespaces import NAMESPACES
+from siptools.xml.mets import NAMESPACES
 
 
 @pytest.mark.parametrize('input_file', ['tests/data/structured/Documentation '

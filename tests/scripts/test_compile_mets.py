@@ -2,7 +2,7 @@ import lxml.etree as ET
 from siptools.scripts import compile_mets
 import pytest
 import os
-from siptools.xml.namespaces import NAMESPACES
+from siptools.xml.mets import NAMESPACES
 from siptools.scripts.import_description import main
 from siptools.scripts import premis_event
 from siptools.scripts import import_object

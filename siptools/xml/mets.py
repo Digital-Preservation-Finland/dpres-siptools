@@ -17,26 +17,27 @@ NAMESPACES = {
     'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
     'premis': 'info:lc/xmlns/premis-v2',
     'fi': 'http://www.kdk.fi/standards/mets/kdk-extensions',
-    'w3_xlink': 'http://www.w3.org/1999/xlink',
+    'xlink': 'http://www.w3.org/1999/xlink',
     'mix': 'http://www.loc.gov/mix/v20',
     'ead3': 'http://ead3.archivists.org/schema/',
     'addml': 'http://www.arkivverket.no/standarder/addml'
 }
 
-METS_MDTYPES = {'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'DC', 'version' :
-'1.1'}, 'http://www.loc.gov/MARC21/slim' : {'mdtype' : 'MARC', 'version' : ''},
-'http://www.loc.gov/mods/v3' : {'mdtype' : 'MODS', 'version' : ''},
-'urn:isbn:1-931666-22-9': {'mdtype' : 'EAD', 'version' : ''},
-'http://ead3.archivists.org/schema/': {'mdtype' : 'OTHER', 'othermdtype' : 'EAD3',
+METS_MDTYPES = {
+    'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'DC', 'version' :'1.1'},
+    'http://www.loc.gov/MARC21/slim' : {'mdtype' : 'MARC', 'version' : ''},
+    'http://www.loc.gov/mods/v3' : {'mdtype' : 'MODS', 'version' : ''},
+    'urn:isbn:1-931666-22-9': {'mdtype' : 'EAD', 'version' : ''},
+    'http://ead3.archivists.org/schema/': {'mdtype' : 'OTHER', 'othermdtype' : 'EAD3',
         'version' : '1.0.0'},
-'urn:isbn:1-931666-33-4' : {'mdtype' : 'EAC', 'version' : ''},
-'http://www.lido-schema.org' : {'mdtype' : 'LIDO', 'version' : ''},
-'ddi:instance:3_2' : {'mdtype' : 'DDI', 'version' : '3.2'},
-'ddi:instance:3_1' : {'mdtype' : 'DDI', 'version' : '3.1'},
-'ddi:codebook:2_5' : {'mdtype' : 'DDI', 'version' : '2.5'},
-'http://www.icpsr.umich.edu/DDI' : {'mdtype' : 'DDI', 'version' : '2.1'},
-'http://www.vraweb.org/vracore4.htm' : {'mdtype' : 'VRA', 'version' : ''},
-'http://www.arkivverket.no/standarder/addml' : {'mdtype' : 'OTHER',
+    'urn:isbn:1-931666-33-4' : {'mdtype' : 'EAC', 'version' : ''},
+    'http://www.lido-schema.org' : {'mdtype' : 'LIDO', 'version' : ''},
+    'ddi:instance:3_2' : {'mdtype' : 'DDI', 'version' : '3.2'},
+    'ddi:instance:3_1' : {'mdtype' : 'DDI', 'version' : '3.1'},
+    'ddi:codebook:2_5' : {'mdtype' : 'DDI', 'version' : '2.5'},
+    'http://www.icpsr.umich.edu/DDI' : {'mdtype' : 'DDI', 'version' : '2.1'},
+    'http://www.vraweb.org/vracore4.htm' : {'mdtype' : 'VRA', 'version' : '4.0'},
+    'http://www.arkivverket.no/standarder/addml' : {'mdtype' : 'OTHER',
         'othermdtype' : 'ADDML', 'version' : '8.3'}}
 
 METS_PROFILE = {'kdk': 'http://www.kdk.fi/kdk-mets-profile', 'tpas': 'http://www.avointiede.fi/att-mets-profile', 'tpas-midterm': 'http://www.avointiede.fi/att-midterm-mets-profile?dissemination_service=no', 'tpas-dissemination': 'http://www.avointiede.fi/att-midterm-mets-profile?dissemination_service=yes' }
@@ -51,27 +52,15 @@ RECORD_STATUS_TYPES = [
     'dissemination'
 ]
 
-def mets_extend(mets, catalog=siptools.xml.namespaces.METS_CATALOG,
-                specification=siptools.xml.namespaces.METS_SPECIFICATION, contentid=None):
+def mets_extend(mets_root, catalog=METS_CATALOG,
+                specification=METS_SPECIFICATION, contentid=None):
     """Create METS ElementTree"""
 
-    
-    mets.set('fi:CATALOG', catalog)
-    mets.set('fi:SPECIFICATION', specification)
+    mets_root.set('xmlns:' + 'fi', FI_NS)    
+    mets_root.set('fi:CATALOG', catalog)
+    mets_root.set('fi:SPECIFICATION', specification)
     if contentid:
-        mets.set('fi:CONTENTID', contentid)
+        mets_root.set('fi:CONTENTID', contentid)
 
-    return mets
-
-
-def structmap_extend(structmap, pid=None, pidtype=None):
-    """Return the structmap element"""
-
-    if pid:
-        structmap.set('PID', pid)
-    if pidtype:
-        structmap.set('PIDTYPE', pidtype)
-
-    return structmap
-
+    return mets_root
 
