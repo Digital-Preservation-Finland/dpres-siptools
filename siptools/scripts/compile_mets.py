@@ -72,11 +72,11 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     # Create mets header
-    mets = mets.mets.mets(METS_PROFILE[args.mets_profile], args.objid, args.label)
-    mets = mets_extend(mets, args.catalog, args.specification, args.contentid)
-    metshdr = mets.metshdr.metshdr(args.organization_name, args.create_date,
+    _mets = mets.mets(METS_PROFILE[args.mets_profile], objid=args.objid, label=args.label)
+    _mets = mets_extend(_mets, args.catalog, args.specification, args.contentid)
+    _metshdr = mets.metshdr(args.organization_name, args.create_date,
                         args.last_moddate, args.record_status)
-    mets.append(metshdr)
+    _mets.append(_metshdr)
 
     # Collect elements from workspace XML files
     elements = []
@@ -88,14 +88,14 @@ def main(arguments=None):
             element = lxml.etree.parse(entry.path).getroot()[0]
             elements.append(element)
 
-    elements = mets.mets.merge_elements('{%s}amdSec' % NAMESPACES['mets'], elements)
-    elements.sort(key=mets.mets.order)
+    elements = mets.merge_elements('{%s}amdSec' % NAMESPACES['mets'], elements)
+    elements.sort(key=mets.order)
 
     for element in elements:
-        mets.append(element)
+        _mets.append(element)
 
     if args.stdout:
-        print h.serialize(mets)
+        print h.serialize(_mets, NAMESPACES)
 
     output_file = os.path.join(args.workspace, 'mets.xml')
 
@@ -103,7 +103,7 @@ def main(arguments=None):
         os.makedirs(os.path.dirname(output_file))
 
     with open(output_file, 'w+') as outfile:
-        outfile.write(h.serialize(mets))
+        outfile.write(h.serialize(_mets, NAMESPACES))
 
     print "compile_mets created file: %s" % output_file
 

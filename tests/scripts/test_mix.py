@@ -1,8 +1,9 @@
 from tempfile import NamedTemporaryFile
 import lxml.etree as ET
-import siptools.xml.mix as miks
-import siptools.xml.mets as m
-from siptools.xml.namespaces import NAMESPACES
+import nisomix.mix as miks
+import mets as m
+from siptools.xml.mets import NAMESPACES
+import xml_helpers.utils as h
 import pytest
 import os
 from urllib import quote_plus
@@ -11,7 +12,7 @@ from urllib import quote_plus
 def test_mix_ok(testpath):
 
     target_filename = 'tests/data/structured'
-    mets = m.mets_mets()
+    mets = m.mets()
     techmd = m.techmd('techmd-mix-%s' % target_filename)
     mets.append(techmd)
     mix = miks.mix_mix()
@@ -45,7 +46,7 @@ def test_mix_ok(testpath):
         os.makedirs(os.path.dirname(output_file))
 
     with open(output_file, 'w+') as outfile:
-        outfile.write(m.serialize(mets))
+        outfile.write(h.serialize(mets, NAMESPACES))
 
     tree = ET.parse(output_file)
     root = tree.getroot()

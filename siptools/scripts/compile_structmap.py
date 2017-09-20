@@ -8,7 +8,7 @@ import scandir
 import lxml.etree as ET
 import mets
 import xml_helpers.utils as h
-from siptools.xml.namespaces import NAMESPACES
+from siptools.xml.mets import NAMESPACES
 from siptools.utils import encode_id, encode_path, decode_path, tree, add
 
 
@@ -39,34 +39,31 @@ def main(arguments=None):
     """The main method for compile_sturctmap"""
     args = parse_arguments(arguments)
 
-    mets_structmap = mets.mets.mets_mets()
-    mets_filesec = mets.mets.mets_mets()
+    structmap = mets.structmap()
+    mets_structmap = mets.mets(child_elements=[structmap])
 
-    structmap = mets.structmap.structmap()
-    filesec = mets.filesec.filesec()
-    filegrp = mets.filesec.filegrp()
-    filesec.append(filegrp)
-    mets_filesec.append(filesec)
-    mets_structmap.append(structmap)
+    filegrp = mets.filegrp()
+    filesec = mets.filesec(child_elements=[filegrp])
+    mets_filesec = mets.mets(child_elements=[filesec])
 
     _, dmdsec_id = ids_for_files(args.workspace, None, 'dmdsec.xml',
                                  dash_count=0)
 
     if args.dmdsec_struct == 'ead3':
-        container_div = mets.structmap.div(type='logical')
+        container_div = mets.div(type_attr='logical')
         structmap.append(container_div)
         create_ead3_structmap(args.dmdsec_loc, args.workspace, container_div,
                               filegrp, dmdsec_id)
     else:
         amdids = get_links_event_agent(args.workspace, None)
-        container_div = mets.structmap.div(type='directory', dmdid=dmdsec_id, admid=amdids)
+        container_div = mets.div(type_attr='directory', dmdid=dmdsec_id, admid=amdids)
         structmap.append(container_div)
         divs = div_structure(args.workspace)
         create_structmap(args.workspace, divs, container_div, filegrp)
 
-    if args.stdout:
-        print h.serialize(mets_filesec)
-        print h.serialize(mets_structmap)
+    # if args.stdout:
+    print h.serialize(mets_filesec, NAMESPACES)
+    # print h.serialize(mets_structmap, NAMESPACES)
 
     output_sm_file = os.path.join(args.workspace, 'structmap.xml')
     output_fs_file = os.path.join(args.workspace, 'filesec.xml')
@@ -78,10 +75,10 @@ def main(arguments=None):
         os.makedirs(os.path.dirname(output_fs_file))
 
     with open(output_sm_file, 'w+') as outfile:
-        outfile.write(h.serialize(mets_structmap))
+        outfile.write(h.serialize(mets_structmap, NAMESPACES))
 
     with open(output_fs_file, 'w+') as outfile:
-        outfile.write(h.serialize(mets_filesec))
+        outfile.write(h.serialize(mets_filesec, NAMESPACES))
 
     print "compile_structmap created files: %s %s" % (output_sm_file,
                                                       output_fs_file)
@@ -113,7 +110,7 @@ def create_ead3_structmap(descfile, workspace, structmap, filegrp, dmdsec_id):
         level = root.xpath("//ead3:archdesc/@level",
                            namespaces=NAMESPACES)[0]
     amdids = get_links_event_agent(workspace, None)
-    div_ead = mets.structmap.div(type='archdesc', label=level, dmdid=dmdsec_id,
+    div_ead = mets.div(type_attr='archdesc', label=level, dmdid=dmdsec_id,
                     admid=amdids)
 
     if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:
@@ -142,10 +139,10 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
         level = parent.xpath("./@level")[0]
 
     if cnum:
-        c_div = mets.structmap.div(type=('c' + str(cnum)), label=level)
+        c_div = mets.div(type_attr=('c' + str(cnum)), label=level)
         cnum_sub = str('0') + str(int(cnum) + 1)
     else:
-        c_div = mets.structmap.div(type='c', label=level)
+        c_div = mets.div(type_attr='c', label=level)
         cnum_sub = None
 
     for elem in parent.findall("./*"):
@@ -161,7 +158,7 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
                 tech_file = encode_path(files.xpath("./@href")[0])
             amdids = get_links_event_agent(workspace, tech_file)
             fileid = add_file_to_filesec(workspace, tech_file, filegrp, amdids)
-            dao = mets.structmap.fptr(fileid=fileid)
+            dao = mets.fptr(fileid=fileid)
             c_div.append(dao)
 
     structmap.append(c_div)
@@ -178,7 +175,7 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     for mdtype in othermd_types:
         othermd_ids = read_temp_othermdfile(workspace, mdtype, filepath,
                 othermd_ids)
-    file_el = mets.filesec.file_elem(
+    file_el = mets.file_elem(
         fileid, admid_elements=techmd_ids+amdids+othermd_ids, loctype='URL',
         xlink_href='file://%s' % filepath,
         xlink_type='simple', groupid=None)
@@ -221,12 +218,12 @@ def create_structmap(workspace, divs, structmap, filegrp, path=''):
         # elements
         if os.path.splitext(div)[1]:
             fileid = add_file_to_filesec(workspace, div_path, filegrp, amdids)
-            fptr = mets.structmap.fptr(fileid)
+            fptr = mets.fptr(fileid)
             structmap.append(fptr)
         # It's not a file, lets create a div element
         else:
             _, dmdsec_id = ids_for_files(workspace, div_path, 'dmdsec.xml')
-            div_el = mets.structmap.div(type=div, dmdid=dmdsec_id, admid=amdids)
+            div_el = mets.div(type_attr=div, dmdid=dmdsec_id, admid=amdids)
             structmap.append(div_el)
 
             create_structmap(workspace, divs[div], div_el, filegrp, div_path)

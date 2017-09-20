@@ -6,7 +6,7 @@ import os
 import lxml.etree
 import mets
 import xml_helpers.utils as h
-import siptools.xml
+from siptools.xml.mets import NAMESPACES, METS_MDTYPES
 
 from siptools.utils import encode_path, encode_id
 
@@ -23,7 +23,7 @@ def main(arguments=None):
     with open(args.dmdsec_location, 'r') as content_file:
         content = content_file.read()
 
-    mets = mets.mets.mets_mets()
+    _mets = mets.mets()
 
     tree = lxml.etree.fromstring(content)
 
@@ -31,31 +31,34 @@ def main(arguments=None):
         childs = tree.findall('*')
     else:
         childs = [tree]
-    xmldata_e = mets.mdwrap.xmldata(child_elements=childs)
-    ns = xml_helpers.get_namespace(childs[0])
+    xmldata_e = mets.xmldata(child_elements=childs)
+    ns = h.get_namespace(childs[0])
 
-    if ns in siptools.xml.NAMESPACES.keys():
-        mdt = siptools.xml.NAMESPACES[ns]['mdtype']
-        mdo = siptools.xml.NAMESPACES[ns]['othermdtype']
-        mdv = siptools.xml.NAMESPACES[ns]['mdtypeversion']
+    if ns in METS_MDTYPES.keys():
+        mdt = METS_MDTYPES[ns]['mdtype']
+        if 'othermdtype' in METS_MDTYPES[ns]:
+            mdo = METS_MDTYPES[ns]['othermdtype']
+        else:
+            mdo = None
+        mdv = METS_MDTYPES[ns]['version']
     else:
         raise TypeError("Invalid namespace: %s" % ns)
 
-    mdwrap_e = mets.mdwrap.mdwrap(mdtype=mdt, othermdtype=mdo, mdtypeversion=mdv,
+    mdwrap_e = mets.mdwrap(mdtype=mdt, othermdtype=mdo, mdtypeversion=mdv,
                       child_elements=[xmldata_e])
-    dmdsec_e = mets.dmdsec.dmdsec(encode_id(url_t_path), child_elements=[mdwrap_e])
+    dmdsec_e = mets.dmdsec(encode_id(url_t_path), child_elements=[mdwrap_e])
 
-    mets.append(dmdsec_e)
+    _mets.append(dmdsec_e)
 
     if args.stdout:
-        print h.serialize(mets)
+        print h.serialize(_mets, NAMESPACES)
 
     output_file = os.path.join(args.workspace, url_t_path)
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
 
     with open(output_file, 'w+') as outfile:
-        outfile.write(h.serialize(mets))
+        outfile.write(h.serialize(_mets, NAMESPACES))
 
     print "import_description created file: %s" % output_file
 

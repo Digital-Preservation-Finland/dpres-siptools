@@ -12,9 +12,10 @@ import magic
 
 from ipt.validator.validators import iter_validators
 from siptools.utils import encode_path, encode_id
-import premis.premis as p
-import premis.object
+from siptools.xml.mets import NAMESPACES
+import premis
 import mets
+import xml_helpers.utils as h
 
 
 def parse_arguments(arguments):
@@ -65,21 +66,22 @@ def main(arguments=None):
             filerel = os.path.relpath(filename, args.base_path)
         else:
             filerel = filename
+
+        xmldata = mets.xmldata()
         premis_object = create_premis_object(
             xmldata, filename, args.skip_inspection,
             args.format_name, args.format_version, args.digest_algorithm,
             args.message_digest, args.date_created, args.charset)
 
-        xmldata = mets.mdwrap.xmldata(child_elements=[premis_object])
-        mdwrap = mets.mdwrap.mdwrap(child_elements=[xmldata])
-        techmd = mets.amdsec.techmd(
+        mdwrap = mets.mdwrap(child_elements=[xmldata])
+        techmd = mets.techmd(
             encode_id(encode_path(filerel, suffix="-techmd.xml")),
             child_elements=[mdwrap])        
-        amdsec = mets.amdsec.amdsec(child_elements=[techmd])
-        mets = mets.mets.mets(child_elements=[amdsec])
+        amdsec = mets.amdsec(child_elements=[techmd])
+        _mets = mets.mets(child_elements=[amdsec])
 
         if args.stdout:
-            print h.serialize(mets)
+            print h.serialize(_mets, NAMESPACES)
 
         if not os.path.exists(args.workspace):
             os.makedirs(args.workspace)
@@ -87,7 +89,7 @@ def main(arguments=None):
         filename = encode_path(filerel, suffix="-techmd.xml")
 
         with open(os.path.join(args.workspace, filename), 'w+') as outfile:
-            outfile.write(h.serialize(mets))
+            outfile.write(h.serialize(_mets, NAMESPACES))
             print "Wrote METS technical metadata to file %s" % outfile.name
 
     return 0
@@ -114,28 +116,28 @@ def create_premis_object(tree, fname, skip_inspection=None,
         message_digest = md5(fname)
     if format_name is None:
         format_name = techmd['format']['mimetype']
-    if format_version is None or (techmd and 'version' in techmd['format']):
+    if format_version is None and (techmd and 'version' in techmd['format']):
         format_version = techmd['format']['version']
-    if charset or (techmd and 'charset' in techmd['format']):
+    if charset and (techmd and 'charset' in techmd['format']):
         format_name += '; charset=' + charset \
             if charset else '; charset=' + techmd['format']['charset']
     if date_created is None:
         date_created = creation_date(fname)
 
-    premis_fixity = premis.object.fixity(message_digest, digest_algorithm)
-    premis_format_des = premis.object.format_designation(format_name, format_version)
-    premis_format = premis.object.format(child_elements=[format_des])
-    premis_date_created = premis.object.date_created(date_created)
-    premis_create = premis.object.creating_application(child_elements=[premis_date_created])
-    premis_objchar = premis.object.object_characteristics(
-        child_elements=[premi_fixity, premis_format, premis_create])
+    premis_fixity = premis.fixity(message_digest, digest_algorithm)
+    premis_format_des = premis.format_designation(format_name, format_version)
+    premis_format = premis.format(child_elements=[premis_format_des])
+    premis_date_created = premis.date_created(date_created)
+    premis_create = premis.creating_application(child_elements=[premis_date_created])
+    premis_objchar = premis.object_characteristics(
+        child_elements=[premis_fixity, premis_format, premis_create])
 
     # Create object element
-    object_identifier = p.premis_identifier(
+    object_identifier = premis.identifier(
         identifier_type='UUID',
         identifier_value=str(uuid4()))
 
-    el_premis_object = premis.premis_object.premis_object(
+    el_premis_object = premis.object(
         object_identifier, child_elements=[premis_objchar])
     tree.append(el_premis_object)
 
