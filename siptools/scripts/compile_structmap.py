@@ -61,9 +61,9 @@ def main(arguments=None):
         divs = div_structure(args.workspace)
         create_structmap(args.workspace, divs, container_div, filegrp)
 
-    # if args.stdout:
-    print h.serialize(mets_filesec, NAMESPACES)
-    # print h.serialize(mets_structmap, NAMESPACES)
+    if args.stdout:
+        print h.serialize(mets_filesec, NAMESPACES)
+        print h.serialize(mets_structmap, NAMESPACES)
 
     output_sm_file = os.path.join(args.workspace, 'structmap.xml')
     output_fs_file = os.path.join(args.workspace, 'filesec.xml')
