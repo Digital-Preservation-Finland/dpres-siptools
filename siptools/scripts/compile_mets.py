@@ -72,7 +72,7 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     # Create mets header
-    _mets = mets.mets(METS_PROFILE[args.mets_profile], objid=args.objid, label=args.label)
+    _mets = mets.mets(METS_PROFILE[args.mets_profile], objid=args.objid, label=args.label, namespaces=NAMESPACES)
     _mets = mets_extend(_mets, args.catalog, args.specification, args.contentid)
     _metshdr = mets.metshdr(args.organization_name, args.create_date,
                         args.last_moddate, args.record_status)
