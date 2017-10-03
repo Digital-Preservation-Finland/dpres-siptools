@@ -8,6 +8,7 @@ wand
 M2Crypto
 python-mimeparse
 dateutils
+python-mimeparse
 git+https://source.csc.fi/scm/git/pas/xml-helpers@develop#egg=xml_helpers
 git+https://source.csc.fi/scm/git/pas/mets@develop#egg=mets
 git+https://source.csc.fi/scm/git/pas/premis@develop#egg=premis
