@@ -118,7 +118,7 @@ def create_premis_object(tree, fname, skip_inspection=None,
         format_name = techmd['format']['mimetype']
     if format_version is None and (techmd and 'version' in techmd['format']):
         format_version = techmd['format']['version']
-    if charset and (techmd and 'charset' in techmd['format']):
+    if charset or (techmd and 'charset' in techmd['format']):
         format_name += '; charset=' + charset \
             if charset else '; charset=' + techmd['format']['charset']
     if date_created is None:
