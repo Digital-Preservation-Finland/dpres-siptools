@@ -67,6 +67,7 @@ def test_import_object_skip_inspection_nodate_ok(input_file, testpath):
          namespaces=NAMESPACES)) == 1
     assert return_code == 0
 
+
 def test_import_object_structured_ok(testpath):
 
     workspace = os.path.abspath(testpath)
@@ -87,6 +88,27 @@ def test_import_object_structured_ok(testpath):
         assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                   namespaces=NAMESPACES)) == 1
         assert return_code == 0
+
+
+@pytest.mark.parametrize('input_file', ['tests/data/test_import.pdf'])
+def test_import_object_validate_pdf_ok(input_file, testpath):
+    arguments = ['--workspace', testpath, 'tests/data/test_import.pdf']
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(input_file,
+        suffix='-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+        namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName/text()',
+        namespaces=NAMESPACES)[0] == 'application/pdf'
+    assert root.xpath('//premis:formatVersion/text()',
+        namespaces=NAMESPACES)[0] == '1.4'
+
+    assert return_code == 0
 
 
 def iterate_files(path):
