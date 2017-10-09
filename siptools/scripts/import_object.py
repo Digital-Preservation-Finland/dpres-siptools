@@ -188,13 +188,18 @@ def fileinfo(fname):
         }
     }
 
-    if mimetype == 'text/plain':
+    if mimetype in ['text/plain', 'text/csv', 'application/xhtml+xml',
+                    'text/xml', 'text/html', 'application/gml+xml',
+                    'application/vnd.google-earth.kml+xml']:
         fileinfo['format']['charset'] = 'UTF-8' if 'UTF-8' in charset else 'ISO-8859-15'
+    else:
+        del fileinfo['format']['charset']
+
+    if mimetype in ['text/plain', 'text/csv']:
         fileinfo['format']['version'] = ''
 
     if mimetype == 'image/tiff':
         fileinfo['format']['version'] = '6.0'
-        del fileinfo['format']['charset']
 
     return fileinfo
 
