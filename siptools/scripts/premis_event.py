@@ -73,13 +73,13 @@ def main(arguments=None):
             amdsec, agent_id, args.agent_name, args.agent_type)
 
         if args.stdout:
-            print h.serialize(_mets, NAMESPACES)
+            print h.serialize(_mets)
 
         if not os.path.exists(os.path.dirname(output_file)):
             os.makedirs(os.path.dirname(output_file))
 
         with open(output_file, 'w+') as outfile:
-            outfile.write(h.serialize(_mets, NAMESPACES))
+            outfile.write(h.serialize(_mets))
 
         print "premis_event created file: %s" % output_file
 
@@ -109,13 +109,13 @@ def main(arguments=None):
         linking_agent_identifier, event_id)
 
     if args.stdout:
-        print h.serialize(_mets, NAMESPACES)
+        print h.serialize(_mets)
 
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
 
     with open(output_file, 'w+') as outfile:
-        outfile.write(h.serialize(_mets, NAMESPACES))
+        outfile.write(h.serialize(_mets))
 
     print "premis_event created file: %s" % output_file
 
@@ -137,7 +137,7 @@ def create_premis_agent(tree, agent_id, agent_name, agent_type):
         identifier_value=uuid, prefix='linkingAgent')
 
     xmldata = mets.xmldata(child_elements=[premis_agent])
-    mdwrap = mets.mdwrap(mdtype='PREMIS:AGENT', child_elements=[xmldata])
+    mdwrap = mets.mdwrap('PREMIS:AGENT', '2.3', child_elements=[xmldata])
     digiprovmd = mets.digiprovmd(agent_id, child_elements=[mdwrap])
     tree.append(digiprovmd)
 
@@ -165,7 +165,7 @@ def create_premis_event(tree, event_type, event_datetime, event_detail,
                                   child_elements=child_elements)
 
     xmldata = mets.xmldata(child_elements=[premis_event])
-    mdwrap = mets.mdwrap(mdtype='PREMIS:EVENT', child_elements=[xmldata])
+    mdwrap = mets.mdwrap('PREMIS:EVENT', '2.3', child_elements=[xmldata])
     digiprovmd = mets.digiprovmd(event_id, child_elements=[mdwrap])    
     tree.append(digiprovmd)
 

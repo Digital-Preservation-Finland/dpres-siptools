@@ -1,4 +1,4 @@
-import xml.etree.ElementTree as ET
+import lxml.etree as ET
 
 FI_NS = 'http://www.kdk.fi/standards/mets/kdk-extensions'
 
@@ -56,11 +56,10 @@ def mets_extend(mets_root, catalog=METS_CATALOG,
                 specification=METS_SPECIFICATION, contentid=None):
     """Create METS ElementTree"""
 
-    mets_root.set('xmlns:' + 'fi', FI_NS)    
-    mets_root.set('fi:CATALOG', catalog)
-    mets_root.set('fi:SPECIFICATION', specification)
+    mets_root.set('{%s}CATALOG' % FI_NS, catalog)
+    mets_root.set('{%s}SPECIFICATION' % FI_NS, specification)
     if contentid:
-        mets_root.set('fi:CONTENTID', contentid)
+        mets_root.set('{%s}CONTENTID' % FI_NS, contentid)
 
     return mets_root
 

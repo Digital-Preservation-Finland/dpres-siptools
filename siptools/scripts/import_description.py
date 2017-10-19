@@ -51,14 +51,14 @@ def main(arguments=None):
     _mets.append(dmdsec_e)
 
     if args.stdout:
-        print h.serialize(_mets, NAMESPACES)
+        print h.serialize(_mets)
 
     output_file = os.path.join(args.workspace, url_t_path)
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
 
     with open(output_file, 'w+') as outfile:
-        outfile.write(h.serialize(_mets, NAMESPACES))
+        outfile.write(h.serialize(_mets))
 
     print "import_description created file: %s" % output_file
 

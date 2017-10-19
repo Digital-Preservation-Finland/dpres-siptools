@@ -95,7 +95,7 @@ def main(arguments=None):
         _mets.append(element)
 
     if args.stdout:
-        print h.serialize(_mets, NAMESPACES)
+        print h.serialize(_mets)
 
     output_file = os.path.join(args.workspace, 'mets.xml')
 
@@ -103,7 +103,7 @@ def main(arguments=None):
         os.makedirs(os.path.dirname(output_file))
 
     with open(output_file, 'w+') as outfile:
-        outfile.write(h.serialize(_mets, NAMESPACES))
+        outfile.write(h.serialize(_mets))
 
     print "compile_mets created file: %s" % output_file
 
