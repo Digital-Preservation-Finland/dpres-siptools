@@ -73,7 +73,7 @@ def main(arguments=None):
             args.format_name, args.format_version, args.digest_algorithm,
             args.message_digest, args.date_created, args.charset)
 
-        mdwrap = mets.mdwrap(child_elements=[xmldata])
+        mdwrap = mets.mdwrap('PREMIS:OBJECT', '2.3', child_elements=[xmldata])
         techmd = mets.techmd(
             encode_id(encode_path(filerel, suffix="-techmd.xml")),
             child_elements=[mdwrap])        
@@ -81,7 +81,7 @@ def main(arguments=None):
         _mets = mets.mets(child_elements=[amdsec])
 
         if args.stdout:
-            print h.serialize(_mets, NAMESPACES)
+            print h.serialize(_mets)
 
         if not os.path.exists(args.workspace):
             os.makedirs(args.workspace)
@@ -89,7 +89,7 @@ def main(arguments=None):
         filename = encode_path(filerel, suffix="-techmd.xml")
 
         with open(os.path.join(args.workspace, filename), 'w+') as outfile:
-            outfile.write(h.serialize(_mets, NAMESPACES))
+            outfile.write(h.serialize(_mets))
             print "Wrote METS technical metadata to file %s" % outfile.name
 
     return 0
@@ -114,6 +114,8 @@ def create_premis_object(tree, fname, skip_inspection=None,
     
     if message_digest is None:
         message_digest = md5(fname)
+    if digest_algorithm is None:
+        digest_algorithm = 'MD5'
     if format_name is None:
         format_name = techmd['format']['mimetype']
     if format_version is None and (techmd and 'version' in techmd['format']):

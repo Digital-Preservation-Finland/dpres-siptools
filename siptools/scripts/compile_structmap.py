@@ -62,8 +62,8 @@ def main(arguments=None):
         create_structmap(args.workspace, divs, container_div, filegrp)
 
     if args.stdout:
-        print h.serialize(mets_filesec, NAMESPACES)
-        print h.serialize(mets_structmap, NAMESPACES)
+        print h.serialize(mets_filesec)
+        print h.serialize(mets_structmap)
 
     output_sm_file = os.path.join(args.workspace, 'structmap.xml')
     output_fs_file = os.path.join(args.workspace, 'filesec.xml')
@@ -75,10 +75,10 @@ def main(arguments=None):
         os.makedirs(os.path.dirname(output_fs_file))
 
     with open(output_sm_file, 'w+') as outfile:
-        outfile.write(h.serialize(mets_structmap, NAMESPACES))
+        outfile.write(h.serialize(mets_structmap))
 
     with open(output_fs_file, 'w+') as outfile:
-        outfile.write(h.serialize(mets_filesec, NAMESPACES))
+        outfile.write(h.serialize(mets_filesec))
 
     print "compile_structmap created files: %s %s" % (output_sm_file,
                                                       output_fs_file)

@@ -46,7 +46,7 @@ def test_mix_ok(testpath):
         os.makedirs(os.path.dirname(output_file))
 
     with open(output_file, 'w+') as outfile:
-        outfile.write(h.serialize(mets, NAMESPACES))
+        outfile.write(h.serialize(mets))
 
     tree = ET.parse(output_file)
     root = tree.getroot()
