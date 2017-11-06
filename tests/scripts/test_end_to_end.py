@@ -13,7 +13,7 @@ def test_end_to_end(testpath):
     private_key = 'tests/data/rsa-keys.crt'
 
     environment = os.environ.copy()
-    # environment['PYTHONPATH'] = '.'
+    environment['PYTHONPATH'] = '.'
 
     command = ['python', 'siptools/scripts/import_object.py',
         '--workspace', testpath, objects, '--skip_inspection', '--format_name',
