@@ -153,8 +153,8 @@ def create_premis_event(tree, event_type, event_datetime, event_detail,
         identifier_type='UUID', identifier_value=str(uuid4()),
         prefix='event')
 
-    premis_event_outcome = premis.event_outcome(event_outcome,
-                                                event_outcome_detail)
+    premis_event_outcome = premis.outcome(event_outcome,
+                                          event_outcome_detail)
 
     if linking_agent_identifier is not None:
         child_elements = [premis_event_outcome, linking_agent_identifier]
