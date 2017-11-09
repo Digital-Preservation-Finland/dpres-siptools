@@ -38,7 +38,9 @@ METS_MDTYPES = {
     'http://www.icpsr.umich.edu/DDI' : {'mdtype' : 'DDI', 'version' : '2.1'},
     'http://www.vraweb.org/vracore4.htm' : {'mdtype' : 'VRA', 'version' : '4.0'},
     'http://www.arkivverket.no/standarder/addml' : {'mdtype' : 'OTHER',
-        'othermdtype' : 'ADDML', 'version' : '8.3'}}
+        'othermdtype' : 'ADDML', 'version' : '8.3'},
+    'http://datacite.org/schema/kernel-3' : {'mdtype' : '', 'version' : ''}
+}
 
 METS_PROFILE = {'kdk': 'http://www.kdk.fi/kdk-mets-profile', 'tpas': 'http://www.avointiede.fi/att-mets-profile', 'tpas-midterm': 'http://www.avointiede.fi/att-midterm-mets-profile?dissemination_service=no', 'tpas-dissemination': 'http://www.avointiede.fi/att-midterm-mets-profile?dissemination_service=yes' }
 
