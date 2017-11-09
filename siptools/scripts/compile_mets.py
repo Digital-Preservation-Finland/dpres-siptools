@@ -62,6 +62,8 @@ def parse_arguments(arguments):
         '--base_path', dest='base_path', type=str, default='./',
         help='Base path of the digital objects')
     parser.add_argument('--stdout', help='Print output to stdout')
+    parser.add_argument('--contract_id', type=str,
+                        help='Digital Preservation Contract id')
 
     return parser.parse_args(arguments)
 
