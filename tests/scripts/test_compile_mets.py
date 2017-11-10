@@ -39,11 +39,13 @@ def test_compile_mets_ok(testpath):
                                      '--label', 'Test SIP',
                                      '--catalog', '1.5.0',
                                      '--specification', '1.5.0',
+                                     '--contract_id', '1234',
                                      '--contentid', 'Aineisto-123',
                                      '--create_date', '2016-10-28T09:30:55',
                                      '--last_moddate', '2016-10-28T09:30:55',
-                                     '--record_status', 'submission', '--workspace',
-                                     testpath])
+                                     '--record_status', 'submission',
+                                     '--packagingservice', 'Pekka Paketoija',
+                                     '--workspace', testpath])
 
     output_file = os.path.join(testpath, 'mets.xml')
     tree = ET.parse(output_file)
@@ -61,6 +63,8 @@ def test_compile_mets_ok(testpath):
     assert len(root.xpath(
         '/mets:mets[@fi:SPECIFICATION="1.5.0"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
+        '/mets:mets[@fi:CONTRACTID="1234"]', namespaces=NAMESPACES)) == 1
+    assert len(root.xpath(
         '/mets:mets[@fi:CONTENTID="Aineisto-123"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath('/mets:mets/mets:metsHdr',
                           namespaces=NAMESPACES)) == 1
@@ -72,6 +76,8 @@ def test_compile_mets_ok(testpath):
         '/mets:mets/mets:metsHdr[@RECORDSTATUS="submission"]', namespaces=NAMESPACES)) == 1
     assert root.xpath("/mets:mets/mets:metsHdr/mets:agent/mets:name",
                       namespaces=NAMESPACES)[0].text == 'CSC'
+    assert root.xpath("/mets:mets/mets:metsHdr/mets:agent/mets:name",
+                      namespaces=NAMESPACES)[2].text == 'Pekka Paketoija'
 
     assert return_code == 0
 
