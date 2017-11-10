@@ -42,7 +42,15 @@ METS_MDTYPES = {
     'http://datacite.org/schema/kernel-3' : {'mdtype' : '', 'version' : ''}
 }
 
-METS_PROFILE = {'kdk': 'http://www.kdk.fi/kdk-mets-profile', 'tpas': 'http://www.avointiede.fi/att-mets-profile', 'tpas-midterm': 'http://www.avointiede.fi/att-midterm-mets-profile?dissemination_service=no', 'tpas-dissemination': 'http://www.avointiede.fi/att-midterm-mets-profile?dissemination_service=yes' }
+METS_PROFILE = {
+    'kdk': 'http://www.kdk.fi/kdk-mets-profile',
+    'tpas': 'http://www.digitalpreservation.fi/mets-profile-for-research-data',
+    'tpas-midterm': 'http://www.digitalpreservation.fi/mets-profile-for'\
+                    '-medium-term-research-data?dissemination_service=no',
+    'tpas-dissemination': 'http://www.digitalpreservation.fi/mets-profile-for'\
+                          '-medium-term-research-data??dissemination_service'\
+                          '=yes'
+}
 
 METS_CATALOG = "1.6.0"
 
@@ -55,13 +63,17 @@ RECORD_STATUS_TYPES = [
 ]
 
 def mets_extend(mets_root, catalog=METS_CATALOG,
-                specification=METS_SPECIFICATION, contentid=None):
+                specification=METS_SPECIFICATION, contentid=None,
+                contractid=None):
     """Create METS ElementTree"""
 
     mets_root.set('{%s}CATALOG' % FI_NS, catalog)
     mets_root.set('{%s}SPECIFICATION' % FI_NS, specification)
     if contentid:
         mets_root.set('{%s}CONTENTID' % FI_NS, contentid)
+    if contractid:
+        contractstr = contractid +""
+        mets_root.set('{%s}CONTRACTID' % FI_NS, contractstr)
 
     return mets_root
 

@@ -62,9 +62,10 @@ def parse_arguments(arguments):
         '--base_path', dest='base_path', type=str, default='./',
         help='Base path of the digital objects')
     parser.add_argument('--stdout', help='Print output to stdout')
-    parser.add_argument('--contract_id', type=str,
+    parser.add_argument('--contract_id', dest='contractid', type=str,
                         help='Digital Preservation Contract id')
-
+    parser.add_argument('--packagingservice', dest='packagingservice',
+                        type=str, help='Service using siptool')
     return parser.parse_args(arguments)
 
 
@@ -74,10 +75,13 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     # Create mets header
-    _mets = mets.mets(METS_PROFILE[args.mets_profile], objid=args.objid, label=args.label, namespaces=NAMESPACES)
-    _mets = mets_extend(_mets, args.catalog, args.specification, args.contentid)
+    _mets = mets.mets(METS_PROFILE[args.mets_profile], objid=args.objid,
+                      label=args.label, namespaces=NAMESPACES)
+    _mets = mets_extend(_mets, args.catalog, args.specification,
+                        args.contentid, args.contractid)
     _metshdr = mets.metshdr(args.organization_name, args.create_date,
-                        args.last_moddate, args.record_status)
+                            args.last_moddate, args.record_status,
+                            args.packagingservice)
     _mets.append(_metshdr)
 
     # Collect elements from workspace XML files
