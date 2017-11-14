@@ -46,7 +46,7 @@ METS_PROFILE = {
     'kdk': 'http://www.kdk.fi/kdk-mets-profile',
     'tpas': 'http://www.digitalpreservation.fi/mets-profiles/research-data',
     'tpas-medium-term': 'http://www.digitalpreservation.fi/mets-profiles/' \
-                        'medium-research-data',
+                        'mediumterm-research-data',
 }
 
 METS_CATALOG = "1.6.0"
