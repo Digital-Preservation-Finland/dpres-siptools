@@ -93,7 +93,7 @@ def div_structure(workspace):
     techmd_files = [x for x in workspace_files if 'techmd' in x]
     divs = tree()
     for techmd_file in techmd_files:
-        add(divs, decode_path(techmd_file, '-techmd.xml').split('/'))
+        add(divs, decode_path(techmd_file).split('/'))
     return divs
 
 
@@ -214,22 +214,26 @@ def create_structmap(workspace, divs, structmap, filegrp, path=''):
     fptr_list = []
     div_list = []
     for div in divs.keys():
-        div_path = encode_path(os.path.join(decode_path(path), div))
-        amdids = get_links_event_agent(workspace, div_path)
-        # It's a file if there is file extension, lets create file+fptr
+        # It's a file if there is "-techmd.xml", lets create file+fptr
         # elements
-        if os.path.splitext(div)[1]:
+        if div.endswith('-techmd.xml'):
+            div = div[:-len('-techmd.xml')]
+            div_path = encode_path(os.path.join(decode_path(path), div))
+            amdids = get_links_event_agent(workspace, div_path)
             fileid = add_file_to_filesec(workspace, div_path, filegrp, amdids)
             fptr = mets.fptr(fileid)
             fptr_list.append(fptr)
         # It's not a file, lets create a div element
         else:
+            div_path = encode_path(os.path.join(decode_path(path), div))
+            amdids = get_links_event_agent(workspace, div_path)
             _, dmdsec_id = ids_for_files(workspace, div_path, 'dmdsec.xml')
             div_el = mets.div(type_attr=div, dmdid=dmdsec_id, admid=amdids)
             div_list.append(div_el)
 
             create_structmap(workspace, divs[div], div_el, filegrp, div_path)
 
+    # Add fptr list first, then div list
     for fptr_elem in fptr_list:
         structmap.append(fptr_elem)
     for div_elem in div_list:
