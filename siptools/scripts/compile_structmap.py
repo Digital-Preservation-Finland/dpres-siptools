@@ -211,6 +211,8 @@ def get_links_event_agent(workspace, path):
 def create_structmap(workspace, divs, structmap, filegrp, path=''):
     """Create structmap based on directory structure
     """
+    fptr_list = []
+    div_list = []
     for div in divs.keys():
         div_path = encode_path(os.path.join(decode_path(path), div))
         amdids = get_links_event_agent(workspace, div_path)
@@ -219,14 +221,19 @@ def create_structmap(workspace, divs, structmap, filegrp, path=''):
         if os.path.splitext(div)[1]:
             fileid = add_file_to_filesec(workspace, div_path, filegrp, amdids)
             fptr = mets.fptr(fileid)
-            structmap.append(fptr)
+            fptr_list.append(fptr)
         # It's not a file, lets create a div element
         else:
             _, dmdsec_id = ids_for_files(workspace, div_path, 'dmdsec.xml')
             div_el = mets.div(type_attr=div, dmdid=dmdsec_id, admid=amdids)
-            structmap.append(div_el)
+            div_list.append(div_el)
 
             create_structmap(workspace, divs[div], div_el, filegrp, div_path)
+
+    for fptr_elem in fptr_list:
+        structmap.append(fptr_elem)
+    for div_elem in div_list:
+        structmap.append(div_elem)
 
 
 def ids_for_files(workspace, path, idtype, dash_count=0):

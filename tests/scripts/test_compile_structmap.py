@@ -37,3 +37,17 @@ def test_compile_structmap_not_ok(testpath):
     with pytest.raises(SystemExit):
         return_code = compile_structmap.main(['tests/data/notfound', '--workspace',
                                               testpath])
+
+
+def test_file_and_dir(testpath):
+    import_object.main(['--workspace', testpath,
+                        'tests/data/file_and_dir'])
+    return_code = compile_structmap.main(['--workspace', testpath])
+    output_structmap = os.path.join(testpath, 'structmap.xml')
+    sm_tree = ET.parse(output_structmap)
+    sm_root = sm_tree.getroot()
+    elementlist = sm_root.xpath(
+        '/mets:mets/mets:structMap/mets:div/mets:div/mets:div/mets:div/*', namespaces=NAMESPACES)
+    assert elementlist[0].tag == '{%s}fptr' % NAMESPACES['mets']
+    assert elementlist[1].tag == '{%s}div' % NAMESPACES['mets']
+    assert return_code == 0
