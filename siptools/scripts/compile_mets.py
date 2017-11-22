@@ -80,18 +80,14 @@ def main(arguments=None):
     _mets = mets_extend(_mets, args.catalog, args.specification,
                         args.contentid, args.contractid)
     # Create list of additional agent elements if packagingservice is defined
+    _agents = [mets.agent(args.organization_name)]
     if args.packagingservice:
-        _mets_agents = [
-            mets.agent(organisation_name=args.organization_name,
-                       agent_role='ARCHIVIST'),
-            mets.agent(args.packagingservice, agent_type='OTHER',
-                       agent_role='CREATOR', othertype='SOFTWARE')
-        ]
-    else:
-        _mets_agents = None
-    _metshdr = mets.metshdr(args.organization_name, args.create_date,
-                            args.last_moddate, args.record_status,
-                            _mets_agents)
+        _agents.append(mets.agent(args.organization_name,
+                                  agent_role='ARCHIVIST'))
+        _agents.append(mets.agent(args.packagingservice, agent_type='OTHER',
+                                  agent_role='CREATOR', othertype='SOFTWARE'))
+    _metshdr = mets.metshdr(args.create_date, args.last_moddate,
+                            args.record_status, _agents)
     _mets.append(_metshdr)
 
     # Collect elements from workspace XML files
