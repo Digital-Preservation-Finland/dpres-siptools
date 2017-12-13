@@ -39,7 +39,8 @@ METS_MDTYPES = {
     'http://www.vraweb.org/vracore4.htm' : {'mdtype' : 'VRA', 'version' : '4.0'},
     'http://www.arkivverket.no/standarder/addml' : {'mdtype' : 'OTHER',
         'othermdtype' : 'ADDML', 'version' : '8.3'},
-    'http://datacite.org/schema/kernel-3' : {'mdtype' : '', 'version' : ''}
+    'http://datacite.org/schema/kernel-3' : {'mdtype' : 'OTHER',
+        'othermdtype' : 'DataCite', 'version' : '4.0'},
 }
 
 METS_PROFILE = {
