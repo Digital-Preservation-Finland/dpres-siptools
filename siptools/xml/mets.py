@@ -1,4 +1,5 @@
 import lxml.etree as ET
+from xml_helpers.utils import XSI_NS
 
 FI_NS = 'http://www.kdk.fi/standards/mets/kdk-extensions'
 
@@ -50,6 +51,8 @@ METS_PROFILE = {
                         'mediumterm-research-data',
 }
 
+METS_SCHEMA = 'http://www.kdk.fi/standards/mets/mets.xsd'
+
 METS_CATALOG = "1.6.0"
 
 METS_SPECIFICATION = "1.6.1"
@@ -65,6 +68,9 @@ def mets_extend(mets_root, catalog=METS_CATALOG,
                 contractid=None):
     """Create METS ElementTree"""
 
+    del mets_root.attrib['{%s}schemaLocation' % XSI_NS]
+    mets_root.set('{%s}schemaLocation' % XSI_NS,
+                  NAMESPACES['mets'] + ' ' + METS_SCHEMA)
     mets_root.set('{%s}CATALOG' % FI_NS, catalog)
     mets_root.set('{%s}SPECIFICATION' % FI_NS, specification)
     if contentid:
