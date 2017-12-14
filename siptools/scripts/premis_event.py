@@ -18,7 +18,7 @@ def parse_arguments(arguments):
         description="Tool for creating premis events")
 
     parser.add_argument(
-        'event_type', type=str, choices=PREMIS_EVENT_TYPES,
+        'event_type', type=str,
         help='list of event types:%s' % PREMIS_EVENT_TYPES)
     parser.add_argument(
         'event_datetime', type=str, help='Event datetime yyyy-mm-ddThh:mm:ss')
