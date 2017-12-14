@@ -39,9 +39,10 @@ def test_premis_event_ok(testpath):
 
 def test_premis_event_fail(testpath):
 
-    event_type = 'nonsense'
+    event_outcome = 'nonsense'
 
     with pytest.raises(SystemExit):
-        return_code = premis_event.main([event_type, '2016-10-13T12:30:55',
-                                         '--event_detail', 'Testing', '--event_outcome', 'success',
+        return_code = premis_event.main(['creation', '2016-10-13T12:30:55',
+                                         '--event_detail', 'Testing',
+                                         '--event_outcome', event_outcome,
                                          '--event_outcome_detail', 'Outcome detail', '--workspace', testpath])
