@@ -41,7 +41,7 @@ METS_MDTYPES = {
     'http://www.arkivverket.no/standarder/addml' : {'mdtype' : 'OTHER',
         'othermdtype' : 'ADDML', 'version' : '8.3'},
     'http://datacite.org/schema/kernel-3' : {'mdtype' : 'OTHER',
-        'othermdtype' : 'DataCite', 'version' : '4.0'},
+        'othermdtype' : 'DATACITE', 'version' : '4.0'},
 }
 
 METS_PROFILE = {
