@@ -29,6 +29,8 @@ def parse_arguments(arguments):
                               "creating structMap divs"))
     parser.add_argument('--dmdsec_loc', dest='dmdsec_loc', type=str,
                         help="Location of  structured descriptive metadata")
+    parser.add_argument('--type_attr', dest='type_attr', type=str,
+                        help="Type of structmap e.g. 'Fairdata-physical'")
     parser.add_argument('--workspace', type=str, default='./workspace/',
                         help="Destination file")
     parser.add_argument('--stdout', help='Print output to stdout')
@@ -39,7 +41,7 @@ def main(arguments=None):
     """The main method for compile_sturctmap"""
     args = parse_arguments(arguments)
 
-    structmap = mets.structmap()
+    structmap = mets.structmap(type_attr=args.type_attr)
     mets_structmap = mets.mets(child_elements=[structmap])
 
     filegrp = mets.filegrp()
