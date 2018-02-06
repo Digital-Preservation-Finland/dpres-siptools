@@ -21,7 +21,9 @@ NAMESPACES = {
     'xlink': 'http://www.w3.org/1999/xlink',
     'mix': 'http://www.loc.gov/mix/v20',
     'ead3': 'http://ead3.archivists.org/schema/',
-    'addml': 'http://www.arkivverket.no/standarder/addml'
+    'addml': 'http://www.arkivverket.no/standarder/addml',
+    'audiomd': 'http://www.loc.gov/audioMD/',
+    'videomd': 'http://www.loc.gov/videoMD/'
 }
 
 METS_MDTYPES = {
@@ -40,8 +42,14 @@ METS_MDTYPES = {
     'http://www.vraweb.org/vracore4.htm' : {'mdtype' : 'VRA', 'version' : '4.0'},
     'http://www.arkivverket.no/standarder/addml' : {'mdtype' : 'OTHER',
         'othermdtype' : 'ADDML', 'version' : '8.3'},
-    'http://datacite.org/schema/kernel-3' : {'mdtype' : 'OTHER',
-        'othermdtype' : 'DATACITE', 'version' : '4.0'},
+    'http://datacite.org/schema/kernel-3': {'mdtype' : 'OTHER',
+        'othermdtype': 'DATACITE', 'version': '4.0'},
+    'http://www.loc.gov/audioMD/': {'mdtype': 'OTHER',
+                                    'othermdtype': 'AudioMD',
+                                    'version': '2.0'},
+    'http://www.loc.gov/videoMD/': {'mdtype': 'OTHER',
+                                    'othermdtype': 'VideoMD',
+                                    'version': '2.0'}
 }
 
 METS_PROFILE = {
