@@ -20,7 +20,7 @@ def test_end_to_end(testpath):
         'text/plain', '--format_version', '1.0', '--digest_algorithm', 'MD5',
         '--message_digest', '1qw87geiewgwe9', '--date_created',
         '2017-01-11T10:14:13', '--charset', 'ISO-8859-15']
-    #subprocess.Popen(command)
+    #child=subprocess.Popen(command)
     child = subprocess.Popen(command, env=environment)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
@@ -49,8 +49,9 @@ def test_end_to_end(testpath):
     assert child.returncode == 0
 
     command = ['python', 'siptools/scripts/compile_mets.py',
-            '--workspace', testpath, 'kdk', 'CSC', '--create_date',
-            '2017-01-11T10:14:13', '--copy_files', '--clean']
+            '--workspace', testpath, 'ch', 'CSC', 
+            'contract-id-1234', '--create_date', '2017-01-11T10:14:13',
+            '--copy_files', '--clean']
     child = subprocess.Popen(command, env=environment)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
