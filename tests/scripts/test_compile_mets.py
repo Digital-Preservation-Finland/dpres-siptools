@@ -34,12 +34,11 @@ def create_test_data(workspace):
 
 def test_compile_mets_ok(testpath):
     create_test_data(testpath)
-    return_code = compile_mets.main(['kdk',
-                                     'CSC', '--objid', 'ABC-123',
+    return_code = compile_mets.main(['ch',
+                                     'CSC',
+                                     'contract-id-1234',
+                                     '--objid', 'ABC-123',
                                      '--label', 'Test SIP',
-                                     '--catalog', '1.5.0',
-                                     '--specification', '1.5.0',
-                                     '--contract_id', '1234',
                                      '--contentid', 'Aineisto-123',
                                      '--create_date', '2016-10-28T09:30:55',
                                      '--last_moddate', '2016-10-28T09:30:55',
@@ -53,17 +52,17 @@ def test_compile_mets_ok(testpath):
     root = tree.getroot()
 
     assert len(root.xpath(
-        '/mets:mets[@PROFILE="http://www.kdk.fi/kdk-mets-profile"]', namespaces=NAMESPACES)) == 1
+        '/mets:mets[@PROFILE="http://digitalpreservation.fi/mets-profiles/cultural-heritage"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
         '/mets:mets[@OBJID="ABC-123"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
         '/mets:mets[@LABEL="Test SIP"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
-        '/mets:mets[@fi:CATALOG="1.5.0"]', namespaces=NAMESPACES)) == 1
+        '/mets:mets[@fi:CATALOG="1.7.0"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
-        '/mets:mets[@fi:SPECIFICATION="1.5.0"]', namespaces=NAMESPACES)) == 1
+        '/mets:mets[@fi:SPECIFICATION="1.7.0"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
-        '/mets:mets[@fi:CONTRACTID="1234"]', namespaces=NAMESPACES)) == 1
+        '/mets:mets[@fi:CONTRACTID="contract-id-1234"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
         '/mets:mets[@fi:CONTENTID="Aineisto-123"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath('/mets:mets/mets:metsHdr',
@@ -84,11 +83,11 @@ def test_compile_mets_ok(testpath):
 
 def test_compile_mets_cleanup_ok(testpath):
     create_test_data(testpath)
-    return_code = compile_mets.main(['kdk',
-                                     'CSC', '--objid', 'ABC-123',
+    return_code = compile_mets.main(['ch',
+                                     'CSC',
+                                     'contract-id-1234',
+                                     '--objid', 'ABC-123',
                                      '--label', 'Test SIP',
-                                     '--catalog', '1.5.0',
-                                     '--specification', '1.5.0',
                                      '--contentid', 'Aineisto-123',
                                      '--create_date', '2016-10-28T09:30:55',
                                      '--last_moddate', '2016-10-28T09:30:55',
@@ -101,15 +100,15 @@ def test_compile_mets_cleanup_ok(testpath):
     root = tree.getroot()
 
     assert len(root.xpath(
-        '/mets:mets[@PROFILE="http://www.kdk.fi/kdk-mets-profile"]', namespaces=NAMESPACES)) == 1
+        '/mets:mets[@PROFILE="http://digitalpreservation.fi/mets-profiles/cultural-heritage"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
         '/mets:mets[@OBJID="ABC-123"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
         '/mets:mets[@LABEL="Test SIP"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
-        '/mets:mets[@fi:CATALOG="1.5.0"]', namespaces=NAMESPACES)) == 1
+        '/mets:mets[@fi:CATALOG="1.7.0"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
-        '/mets:mets[@fi:SPECIFICATION="1.5.0"]', namespaces=NAMESPACES)) == 1
+        '/mets:mets[@fi:SPECIFICATION="1.7.0"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
         '/mets:mets[@fi:CONTENTID="Aineisto-123"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath('/mets:mets/mets:metsHdr',
@@ -128,11 +127,11 @@ def test_compile_mets_cleanup_ok(testpath):
 def test_compile_mets_fail(testpath):
 
     with pytest.raises(SystemExit):
-        return_code = compile_mets.main(['kdk',
-                                         'CSC', '--objid', 'ABC-123',
+        return_code = compile_mets.main(['ch',
+                                         'CSC',
+                                         'contract-id-1234',
+                                         '--objid', 'ABC-123',
                                          '--label', 'Test SIP',
-                                         '--catalog', '1.5.0',
-                                         '--specification', '1.5.0',
                                          '--contentid', 'Aineisto-123',
                                          '--create_date', '2016-10-28T09:30:55',
                                          '--last_moddate', '2016-10-28T09:30:55',

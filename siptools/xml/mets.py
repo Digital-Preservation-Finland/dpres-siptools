@@ -1,7 +1,7 @@
 import lxml.etree as ET
 from xml_helpers.utils import XSI_NS
 
-FI_NS = 'http://www.kdk.fi/standards/mets/kdk-extensions'
+FI_NS = 'http://digitalpreservation.fi/schemas/mets/fi-extensions'
 
 DIV_TYPES = ['Documentation files',
     'Configuration files',
@@ -17,7 +17,7 @@ NAMESPACES = {
     'mets': 'http://www.loc.gov/METS/',
     'xsi': 'http://www.w3.org/2001/XMLSchema-instance',
     'premis': 'info:lc/xmlns/premis-v2',
-    'fi': 'http://www.kdk.fi/standards/mets/kdk-extensions',
+    'fi': 'http://digitalpreservation.fi/schemas/mets/fi-extensions',
     'xlink': 'http://www.w3.org/1999/xlink',
     'mix': 'http://www.loc.gov/mix/v20',
     'ead3': 'http://ead3.archivists.org/schema/',
@@ -28,13 +28,13 @@ NAMESPACES = {
 
 METS_MDTYPES = {
     'http://purl.org/dc/elements/1.1/' : {'mdtype' : 'DC', 'version' :'1.1'},
-    'http://www.loc.gov/MARC21/slim' : {'mdtype' : 'MARC', 'version' : ''},
-    'http://www.loc.gov/mods/v3' : {'mdtype' : 'MODS', 'version' : ''},
-    'urn:isbn:1-931666-22-9': {'mdtype' : 'EAD', 'version' : ''},
+    'http://www.loc.gov/MARC21/slim' : {'mdtype' : 'MARC', 'version' : 'marcxml=1.2; marc=marc21'},
+    'http://www.loc.gov/mods/v3' : {'mdtype' : 'MODS', 'version' : '3.6'},
+    'urn:isbn:1-931666-22-9': {'mdtype' : 'EAD', 'version' : '2002'},
     'http://ead3.archivists.org/schema/': {'mdtype' : 'OTHER', 'othermdtype' : 'EAD3',
         'version' : '1.0.0'},
-    'urn:isbn:1-931666-33-4' : {'mdtype' : 'EAC', 'version' : ''},
-    'http://www.lido-schema.org' : {'mdtype' : 'LIDO', 'version' : ''},
+    'urn:isbn:1-931666-33-4' : {'mdtype' : 'EAC', 'version' : '2010'},
+    'http://www.lido-schema.org' : {'mdtype' : 'LIDO', 'version' : '1.0'},
     'ddi:instance:3_2' : {'mdtype' : 'DDI', 'version' : '3.2'},
     'ddi:instance:3_1' : {'mdtype' : 'DDI', 'version' : '3.1'},
     'ddi:codebook:2_5' : {'mdtype' : 'DDI', 'version' : '2.5'},
@@ -53,17 +53,17 @@ METS_MDTYPES = {
 }
 
 METS_PROFILE = {
-    'kdk': 'http://www.kdk.fi/kdk-mets-profile',
+    'ch': 'http://digitalpreservation.fi/mets-profiles/cultural-heritage',
     'tpas': 'http://www.digitalpreservation.fi/mets-profiles/research-data',
     'tpas-medium-term': 'http://www.digitalpreservation.fi/mets-profiles/' \
-                        'mediumterm-research-data',
+                        'mediumterm-research-data'
 }
 
-METS_SCHEMA = 'http://www.kdk.fi/standards/mets/mets.xsd'
+METS_SCHEMA = 'http://digitalpreservation.fi/schemas/mets/mets.xsd'
 
-METS_CATALOG = "1.6.0"
+METS_CATALOG = "1.7.0"
 
-METS_SPECIFICATION = "1.6.1"
+METS_SPECIFICATION = "1.7.0"
 
 RECORD_STATUS_TYPES = [
     'submission',

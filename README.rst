@@ -3,13 +3,15 @@ Pre-Ingest Tool
 
 This tool is intended to be used for generating an OAIS SIP for digital preservation.
 It produces METS document (mets.xml) that contains metadata for digital preservation
-required by the Finnish National Digital Library and Open Science and Research Initiative. The
-tool contains code for extracting metadata, creating and digitally signing the METS document.
+required by the specifications used in Finnish national digital preservation services.
+The tool contains code for extracting metadata, creating and digitally signing the
+METS document.
 
 The aim is to provide digital preservation services for culture and research to ensure
 the access and use of materials long in the future. Documentation and specifications
-for the digital preservation service can be found
-in http://www.kdk.fi/en/digital-preservation/specifications.
+for the digital preservation service can be found in: http://digitalpreservation.fi
+
+The Pre-Ingest Tool currently supports specification version 1.7.0.
 
 Installation
 ------------
@@ -29,6 +31,8 @@ Run the following to activate the virtual environment::
 Install the required software with command::
 
     pip install -r requirements_github.txt
+
+You might need "openssl-devel" package installed in your system for M2Crypto.
 
 Optional: To make digital object validation possible, install the validation software listed in dpres-ipt README file,
 see: https://github.com/Digital-Preservation-Finland/dpres-ipt
@@ -117,8 +121,8 @@ and here a valid EAD3 file is given with --dmdsec_loc argument::
 
 Compile a mets.xml file from the previous results::
 
-    python siptools/scripts/compile_mets.py --workspace ./workspace kdk 'CSC'
-    --copy_files --clean
+    python siptools/scripts/compile_mets.py --workspace ./workspace
+    ch 'CSC' 'contract-id-1234' --copy_files --clean
 
 The argument --copy_files copies the files to the workspace.
 The argument --clean cleans the workspace from the METS parts created in previous scripts.

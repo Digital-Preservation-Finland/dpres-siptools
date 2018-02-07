@@ -24,18 +24,13 @@ def parse_arguments(arguments):
     parser.add_argument(
         'organization_name', type=str, help='Creator name (organization)')
     parser.add_argument(
+        'contractid', type=str, help='Digital Preservation Contract id')
+    parser.add_argument(
         '--objid', dest='objid', type=str, default=str(uuid.uuid4()),
         help='Organizations unique identifier for the package')
     parser.add_argument(
         '--label', dest='label', type=str,
         help='Short description of the information package')
-    parser.add_argument(
-        '--catalog', dest='catalog', default=METS_CATALOG, type=str,
-        help='Version number of the NDL schema catalog used')
-    parser.add_argument(
-        '--specification', dest='specification', default=METS_SPECIFICATION,
-        type=str, help='Version number of packaging specification used in '
-                       'creation of data package')
     parser.add_argument(
         '--contentid', dest='contentid', type=str,
         help='Identifier for SIP Content')
@@ -62,8 +57,6 @@ def parse_arguments(arguments):
         '--base_path', dest='base_path', type=str, default='./',
         help='Base path of the digital objects')
     parser.add_argument('--stdout', help='Print output to stdout')
-    parser.add_argument('--contract_id', dest='contractid', type=str,
-                        help='Digital Preservation Contract id')
     parser.add_argument('--packagingservice', dest='packagingservice',
                         type=str, help='Service using siptool')
     return parser.parse_args(arguments)
@@ -77,7 +70,7 @@ def main(arguments=None):
     # Create mets header
     _mets = mets.mets(METS_PROFILE[args.mets_profile], objid=args.objid,
                       label=args.label, namespaces=NAMESPACES)
-    _mets = mets_extend(_mets, args.catalog, args.specification,
+    _mets = mets_extend(_mets, METS_CATALOG, METS_SPECIFICATION,
                         args.contentid, args.contractid)
     # Create list of additional agent elements if packagingservice is defined
     _agents = [mets.agent(args.organization_name)]
