@@ -21,7 +21,7 @@ The software is tested with Python 2.7 with Centos 7.x / RHEL 7.x releases.
 
 Get python-virtuelenv software::
 
-    pip install virtualenv
+    sudo pip install virtualenv
 
 Run the following to activate the virtual environment::
 
@@ -58,18 +58,6 @@ compile_mets
 
 sign_mets
     for digitally signing the mets.xml file.
-
-Dependencies
----------------------
-
-You need to install other components having dependencies to the tool. See
-requirements_dev.txt.
-Below are the commands to install and use the tool in a virtual environent.::
-    sudo pip install virtualenv
-    virtualenv .venv
-    source ./venv/bin/activate
-    pip install -r requirements_dev.tx
-
 
 Usage
 -----
