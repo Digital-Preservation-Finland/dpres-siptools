@@ -20,7 +20,7 @@ Source0:        %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
-Requires:       python python-setuptools python-magic dpres-ipt dpres-signature xml-helpers mets premis nisomix
+Requires:       python python-setuptools python-magic dpres-ipt dpres-signature xml-helpers mets premis
 
 %description
 Command line tools for creating Submission information packages (SIP) for preservation workflow.
