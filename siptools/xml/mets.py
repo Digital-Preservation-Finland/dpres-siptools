@@ -54,8 +54,8 @@ METS_MDTYPES = {
 
 METS_PROFILE = {
     'ch': 'http://digitalpreservation.fi/mets-profiles/cultural-heritage',
-    'tpas': 'http://www.digitalpreservation.fi/mets-profiles/research-data',
-    'tpas-medium-term': 'http://www.digitalpreservation.fi/mets-profiles/' \
+    'tpas': 'http://digitalpreservation.fi/mets-profiles/research-data',
+    'tpas-medium-term': 'http://digitalpreservation.fi/mets-profiles/' \
                         'mediumterm-research-data'
 }
 
