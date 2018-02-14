@@ -5,6 +5,7 @@ lxml
 scandir
 file-magic
 wand
+Pillow
 M2Crypto
 python-mimeparse
 dateutils
@@ -13,3 +14,4 @@ git+https://source.csc.fi/scm/git/pas/mets@develop#egg=mets
 git+https://source.csc.fi/scm/git/pas/premis@develop#egg=premis
 git+https://source.csc.fi/scm/git/pas/dpres-signature@develop#egg=dpres_signature
 git+https://source.csc.fi/scm/git/pas/dpres-ipt@develop#egg=ipt
+git+https://source.csc.fi/scm/git/pas/nisomix@develop#egg=nisomix
