@@ -101,28 +101,28 @@ def create_premis_object(tree, fname, skip_inspection=None,
                          date_created=None, charset=None):
     """Create Premis object for given file."""
 
-    techmd = {}
+    validator_info = {}
     if not skip_inspection:
-        for validator in iter_validators(fileinfo(fname)):
+        for validator in iter_validators(metadata_info(fname)):
             validation_result = validator.result()
             if not validation_result['is_valid']:
                 raise Exception('File %s is not valid: %s', fname,
                                 validation_result['errors'])
 
-        techmd = validation_result['result']
+        validator_info = validation_result['result']
 
-    
     if message_digest is None:
         message_digest = md5(fname)
     if digest_algorithm is None:
         digest_algorithm = 'MD5'
     if format_name is None:
-        format_name = techmd['format']['mimetype']
-    if format_version is None and (techmd and 'version' in techmd['format']):
-        format_version = techmd['format']['version']
-    if charset or (techmd and 'charset' in techmd['format']):
+        format_name = validator_info['format']['mimetype']
+    if format_version is None and (validator_info and 'version' in validator_info['format']):
+        format_version = validator_info['format']['version']
+    if charset or (validator_info and 'charset' in validator_info['format']):
         format_name += '; charset=' + charset \
-            if charset else '; charset=' + techmd['format']['charset']
+            if charset else '; charset=' + validator_info['format']['charset']
+
     if date_created is None:
         date_created = creation_date(fname)
 
@@ -146,8 +146,8 @@ def create_premis_object(tree, fname, skip_inspection=None,
     return tree
 
 
-def fileinfo(fname):
-    """Return fileinfo dict for given file."""
+def metadata_info(fname):
+    """Return metadata_info dict for given file."""
     m = magic.open(magic.MAGIC_MIME_TYPE)
     m.load()
     mimetype = m.file(fname)
@@ -163,8 +163,9 @@ def fileinfo(fname):
     version = m.file(fname).split("version ")[-1]
     m.close()
 
-    fileinfo = {
+    metadata_info = {
         'filename': fname,
+        'type': 'file',
         'format': {
             'mimetype': mimetype,
             'version': version,
@@ -175,17 +176,17 @@ def fileinfo(fname):
     if mimetype in ['text/plain', 'text/csv', 'application/xhtml+xml',
                     'text/xml', 'text/html', 'application/gml+xml',
                     'application/vnd.google-earth.kml+xml']:
-        fileinfo['format']['charset'] = 'UTF-8' if 'UTF-8' in charset else 'ISO-8859-15'
+        metadata_info['format']['charset'] = 'UTF-8' if 'UTF-8' in charset else 'ISO-8859-15'
     else:
-        del fileinfo['format']['charset']
+        del metadata_info['format']['charset']
 
     if mimetype in ['text/plain', 'text/csv']:
-        fileinfo['format']['version'] = ''
+        metadata_info['format']['version'] = ''
 
     if mimetype == 'image/tiff':
-        fileinfo['format']['version'] = '6.0'
+        metadata_info['format']['version'] = '6.0'
 
-    return fileinfo
+    return metadata_info
 
 def md5(fname):
     """Calculate md5 checksum for given file."""
