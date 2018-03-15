@@ -32,6 +32,10 @@ Install the required software with command::
 
     pip install -r requirements_github.txt
 
+Run setup.py with command::
+
+    python setup.py install
+
 Package "openssl-devel" might be needed in your system for M2Crypto.
 
 Optional: To make digital object validation possible, install the validation software listed in dpres-ipt README file,
