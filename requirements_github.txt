@@ -9,9 +9,9 @@ Pillow
 M2Crypto
 python-mimeparse
 dateutils
-https://github.com/Digital-Preservation-Finland/xml-helpers.git#egg=xml_helpers
-https://github.com/Digital-Preservation-Finland/mets.git#egg=mets
-https://github.com/Digital-Preservation-Finland/premis.git#egg=premis
-https://github.com/Digital-Preservation-Finland/dpres-signature.git#egg=dpres_signature
-https://github.com/Digital-Preservation-Finland/dpres-ipt.git#egg=ipt
+git+https://github.com/Digital-Preservation-Finland/xml-helpers.git#egg=xml_helpers
+git+https://github.com/Digital-Preservation-Finland/mets.git#egg=mets
+git+https://github.com/Digital-Preservation-Finland/premis.git#egg=premis
+git+https://github.com/Digital-Preservation-Finland/dpres-signature.git#egg=dpres_signature
+git+https://github.com/Digital-Preservation-Finland/dpres-ipt.git#egg=ipt
 git+https://source.csc.fi/scm/git/pas/nisomix@develop#egg=nisomix
