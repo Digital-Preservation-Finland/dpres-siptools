@@ -12,8 +12,13 @@ def main(arguments=None):
 
     command = 'cd %s' % args.dir_to_tar
     command2 = 'tar -cvvf %s *' % args.tar_filename
-    subprocess.Popen('{}; {}'.format(command,command2), shell=True,
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+    proc = subprocess.Popen(
+        '{}; {}'.format(command,command2), shell=True,
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT, close_fds=True)
+
+    (out, err) = proc.communicate()
+    returncode = proc.returncode
 
     print "created tar file: %s" % args.tar_filename
 
