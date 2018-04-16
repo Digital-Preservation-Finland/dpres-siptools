@@ -76,7 +76,7 @@ def main(arguments=None):
         mdwrap = mets.mdwrap('PREMIS:OBJECT', '2.3', child_elements=[xmldata])
         techmd = mets.techmd(
             encode_id(encode_path(filerel, suffix="-techmd.xml")),
-            child_elements=[mdwrap])        
+            child_elements=[mdwrap])
         amdsec = mets.amdsec(child_elements=[techmd])
         _mets = mets.mets(child_elements=[amdsec])
 
@@ -183,8 +183,26 @@ def metadata_info(fname):
     if mimetype in ['text/plain', 'text/csv']:
         metadata_info['format']['version'] = ''
 
-    if mimetype == 'image/tiff':
+    elif mimetype == 'image/tiff':
         metadata_info['format']['version'] = '6.0'
+
+    # If it's an XML-file, return fixed mimetype with charset and version
+    elif mimetype == 'text/xml' or mimetype == 'application/xml':
+        metadata_info['format']['version'] = '1.0'
+
+    # If it's a PDF-file, return version
+    #elif formatname == 'application/pdf':
+    #    formatversion = version_command.rsplit(None, 1)[-1]
+
+    # If it's an Open Office document return fixed version
+    elif mimetype.startswith('application/vnd.oasis.opendocument'):
+        metadata_info['format']['version'] = '1.0'
+
+    # I it's a jpeg file, return version
+    elif mimetype == 'image/jpeg':
+        if not metadata_info['format']['version'] in ['1.0', '1.01', '1.02']:
+            del metadata_info['format']['version']
+
 
     return metadata_info
 
