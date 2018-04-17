@@ -32,7 +32,7 @@ Install the required software with command::
 
     pip install -r requirements_github.txt
 
-Package "openssl-devel" might be needed in your system for M2Crypto.
+Package "openssl-devel" and gcc might be needed in your system for M2Crypto.
 
 Optional: To make digital object validation possible, install the validation software listed in dpres-ipt README file,
 see: https://github.com/Digital-Preservation-Finland/dpres-ipt
