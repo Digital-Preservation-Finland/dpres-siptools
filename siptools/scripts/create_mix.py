@@ -31,9 +31,21 @@ def main(arguments=None):
     """The main method for argparser"""
     args = parse_arguments(arguments)
 
-    mddata = write_mix(os.path.join(args.workspace, args.filename))
+    #mddata = write_mix(os.path.join(args.workspace, args.filename))
     filename = encode_path(args.filename, prefix='MIX', suffix="-othermd.xml")
     fileid = encode_id(filename)
+    mets = create_mix_techmd(args.filename, fileid)
+
+    with open(os.path.join(args.workspace, filename), 'w+') as outfile:
+        outfile.write(h.serialize(mets))
+    print "Wrote METS MIX technical metadata to file %s" % outfile.name
+
+
+def create_mix_techmd(filename, fileid=None):
+    mddata = write_mix(os.path.join(filename))
+    if fileid is None:
+      filename = encode_path(filename, prefix='MIX', suffix="-othermd.xml")
+      fileid = encode_id(filename)
     mets = m.mets()
     amdsec = m.amdsec()
     techmd = m.techmd(fileid)
@@ -46,10 +58,7 @@ def main(arguments=None):
     amdsec.append(techmd)
     mets.append(amdsec)
 
-    with open(os.path.join(args.workspace, filename), 'w+') as outfile:
-        outfile.write(h.serialize(mets))
-    print "Wrote METS MIX technical metadata to file %s" % outfile.name
-
+    return mets
 
 
 def write_mix(img):
