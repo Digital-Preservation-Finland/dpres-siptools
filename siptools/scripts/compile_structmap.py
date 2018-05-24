@@ -58,7 +58,8 @@ def main(arguments=None):
                               filegrp, dmdsec_id)
     else:
         amdids = get_links_event_agent(args.workspace, None)
-        container_div = mets.div(type_attr='directory', dmdid=dmdsec_id, admid=amdids)
+        container_div = mets.div(type_attr='directory', dmdid=dmdsec_id,
+                                 admid=amdids)
         structmap.append(container_div)
         divs = div_structure(args.workspace)
         create_structmap(args.workspace, divs, container_div, filegrp)
@@ -113,7 +114,7 @@ def create_ead3_structmap(descfile, workspace, structmap, filegrp, dmdsec_id):
                            namespaces=NAMESPACES)[0]
     amdids = get_links_event_agent(workspace, None)
     div_ead = mets.div(type_attr='archdesc', label=level, dmdid=dmdsec_id,
-                    admid=amdids)
+                       admid=amdids)
 
     if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:
         for ead3_c in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
@@ -154,10 +155,13 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
     for files in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
         if ET.QName(files.tag).localname in ['dao', 'daoset']:
             if ET.QName(files.tag).localname == 'daoset':
-                tech_file = encode_path(
-                    files.xpath("./ead3:dao/@href", namespaces=NAMESPACES)[0])
+                ead3_file = files.xpath(
+                    "./ead3:dao/@href", namespaces=NAMESPACES)[0]
             else:
-                tech_file = encode_path(files.xpath("./@href")[0])
+                ead3_file = files.xpath("./@href")[0]
+            if ead3_file.startswith('/'):
+                ead3_file = ead3_file[1:]
+            tech_file = encode_path(ead3_file)
             amdids = get_links_event_agent(workspace, tech_file)
             fileid = add_file_to_filesec(workspace, tech_file, filegrp, amdids)
             dao = mets.fptr(fileid=fileid)
@@ -175,8 +179,8 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     filepath = decode_path(techmd_files[0], '-techmd.xml')
     othermd_ids = []
     for mdtype in othermd_types:
-        othermd_ids = read_temp_othermdfile(workspace, mdtype, filepath,
-                othermd_ids)
+        othermd_ids = read_temp_othermdfile(
+            workspace, mdtype, filepath, othermd_ids)
     file_el = mets.file_elem(
         fileid, admid_elements=techmd_ids+amdids+othermd_ids, loctype='URL',
         xlink_href='file://%s' % filepath,
@@ -192,7 +196,7 @@ def read_temp_othermdfile(workspace, mdtype, path, othermd_ids):
     mdfile = os.path.join(workspace, '%sfile.xml' % mdtype)
 
     if os.path.isfile(mdfile):
-        import_mdfile= ET.parse(mdfile)
+        import_mdfile = ET.parse(mdfile)
         root = import_mdfile.getroot()
 
         for fileid in root.findall('.//fileid'):
