@@ -12,7 +12,7 @@
 Name:           dpres-siptools
 Version:        %{file_version}
 Release:        %{file_release_number}%{file_release_tag}.%{file_build_number}.git%{file_commit_ref}%{?dist}
-Summary:        Command line tools for creating Submission Information Packages (SIP) for preservation workflow  
+Summary:        Command line tools for creating Submission Information Packages (SIP) for preservation workflow
 Group:          Applications/Archiving
 License:        LGPLv3+
 URL:            http://www.csc.fi
@@ -20,7 +20,7 @@ Source0:        %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
-Requires:       python python-pillow python-setuptools python-magic dpres-ipt dpres-signature xml-helpers mets premis
+Requires:       python python-pillow python-setuptools python-magic dpres-ipt dpres-signature xml-helpers mets premis nisomix
 
 %description
 Command line tools for creating Submission information packages (SIP) for preservation workflow.
