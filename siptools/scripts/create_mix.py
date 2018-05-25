@@ -49,7 +49,7 @@ def create_mix_techmd(filename, fileid=None):
     mets = m.mets()
     amdsec = m.amdsec()
     techmd = m.techmd(fileid)
-    mdwrap = m.mdwrap('OTHER', "2.0", othermdtype="MIX")
+    mdwrap = m.mdwrap('NISOIMG', "2.0")
     xmldata = m.xmldata()
 
     xmldata.append(mddata)
