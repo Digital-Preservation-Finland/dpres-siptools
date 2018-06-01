@@ -24,5 +24,13 @@ PREMIS_EVENT_TYPES = [
 PREMIS_EVENT_OUTCOME_TYPES = [
         'success',
         'failure',
-        'unknown'
+        '(:unac)',
+        '(:unal)',
+        '(:unap)',
+        '(:unav)',
+        '(:unkn)',
+        '(:none)',
+        '(:null)',
+        '(:tba)',
+        '(:etal)'
         ]
