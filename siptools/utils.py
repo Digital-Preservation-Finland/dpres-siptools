@@ -10,7 +10,7 @@ from hashlib import md5
 def encode_path(path, suffix='', prefix=''):
     """Encode given path to URL encoding with given perfix and suffix
     """
-    return prefix + quote_plus(path) + suffix
+    return prefix + quote_plus(path.encode('utf8')) + suffix
 
 
 def decode_path(path, suffix=''):
@@ -19,7 +19,7 @@ def decode_path(path, suffix=''):
     path = unquote_plus(path)
     if path.endswith(suffix):
         path = path.replace(suffix, '', 1)
-    return path
+    return path.decode('utf8')
 
 
 def encode_id(text):
