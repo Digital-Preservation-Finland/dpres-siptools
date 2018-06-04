@@ -50,6 +50,9 @@ premis_event
 import_object
     for adding all digital objects to mets.xml.
 
+create_mix
+    for creating MIX metadata for image files.
+
 compile_structmap
     for creating structural map in mets.xml.
 
@@ -69,6 +72,10 @@ You can create technical metadata elements of mets.xml from files located in the
 tests/data/structured followingly::
 
     python siptools/scripts/import_object.py --workspace ./workspace 'tests/data/structured'
+
+If your dataset contains image data, create also MIX metadata for each of the image files::
+
+    python siptools/scripts/create_mix.py path/to/images/image.tif --workspace ./workspace
 
 An example how to create digital provenance metadata for mets.xml.
 Values for the parameters --event_outcome and --event_type are predefined lists::
