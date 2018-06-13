@@ -76,7 +76,7 @@ def test_compile_mets_ok(testpath):
     assert root.xpath("/mets:mets/mets:metsHdr/mets:agent/mets:name",
                       namespaces=NAMESPACES)[0].text == 'CSC'
     assert root.xpath("/mets:mets/mets:metsHdr/mets:agent/mets:name",
-                      namespaces=NAMESPACES)[2].text == 'Pekka Paketoija'
+                      namespaces=NAMESPACES)[1].text == 'Pekka Paketoija'
 
     assert return_code == 0
 

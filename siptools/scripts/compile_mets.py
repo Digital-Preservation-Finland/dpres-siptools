@@ -73,12 +73,13 @@ def main(arguments=None):
     _mets = mets_extend(_mets, METS_CATALOG, METS_SPECIFICATION,
                         args.contentid, args.contractid)
     # Create list of additional agent elements if packagingservice is defined
-    _agents = [mets.agent(args.organization_name)]
     if args.packagingservice:
-        _agents.append(mets.agent(args.organization_name,
-                                  agent_role='ARCHIVIST'))
+        _agents = [mets.agent(args.organization_name,
+                                  agent_role='ARCHIVIST')]
         _agents.append(mets.agent(args.packagingservice, agent_type='OTHER',
                                   agent_role='CREATOR', othertype='SOFTWARE'))
+    else:
+        _agents = [mets.agent(args.organization_name)]
     _metshdr = mets.metshdr(args.create_date, args.last_moddate,
                             args.record_status, _agents)
     _mets.append(_metshdr)
