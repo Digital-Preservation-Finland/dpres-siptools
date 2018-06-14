@@ -29,8 +29,8 @@ def test_compile_structmap_ok(testpath):
 
     assert len(fs_root.xpath(
         '/mets:mets/mets:fileSec/mets:fileGrp/mets:file/'
-        'mets:FLocat[@xlink:href="file://tests%2Fdata%2Fstructured%2F'
-        'Software+files%2Fkoodi.java"]', namespaces=NAMESPACES)) == 1
+        'mets:FLocat[@xlink:href="file://tests/data/structured/'
+        'Software+files/koodi.java"]', namespaces=NAMESPACES)) == 1
     assert len(sm_root.xpath(
         '//mets:div[@TYPE="Software files"]', namespaces=NAMESPACES)) == 1
 

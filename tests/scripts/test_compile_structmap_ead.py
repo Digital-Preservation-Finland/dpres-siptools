@@ -42,12 +42,12 @@ def test_compile_structmap_ok(testpath):
         namespaces=NAMESPACES)) == 2
     assert len(fs_root.xpath(
         ('/mets:mets/mets:fileSec/mets:fileGrp/mets:file/mets:FLocat'
-         '[@xlink:href="file://tests%2Fdata%2Fstructured%2FSoftware+'
-         'files%2Fkoodi.java"]'), namespaces=NAMESPACES)) == 1
+         '[@xlink:href="file://tests/data/structured/Software+'
+         'files/koodi.java"]'), namespaces=NAMESPACES)) == 1
     assert len(fs_root.xpath(
         ('/mets:mets/mets:fileSec/mets:fileGrp/mets:file/mets:FLocat'
-         '[@xlink:href="file://tests%2Fdata%2Fstructured%2FPublication+'
-         'files%2Fpublication.txt"]'), namespaces=NAMESPACES)) == 1
+         '[@xlink:href="file://tests/data/structured/Publication+'
+         'files/publication.txt"]'), namespaces=NAMESPACES)) == 1
     assert len(sm_root.xpath(
         '//mets:div[@LABEL="fonds"]', namespaces=NAMESPACES)) == 1
 
