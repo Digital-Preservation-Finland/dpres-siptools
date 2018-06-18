@@ -35,17 +35,18 @@ def test_compile_structmap_ok(testpath):
     output_filesec = os.path.join(testpath, 'filesec.xml')
     fs_tree = ET.parse(output_filesec)
     fs_root = fs_tree.getroot()
+    print ET.tostring(fs_root)
 
     assert len(fs_root.xpath(
         ('/mets:mets/mets:fileSec/mets:fileGrp/*'),
         namespaces=NAMESPACES)) == 2
     assert len(fs_root.xpath(
         ('/mets:mets/mets:fileSec/mets:fileGrp/mets:file/mets:FLocat'
-         '[@xlink:href="file://tests/data/structured/Software '
+         '[@xlink:href="file://tests/data/structured/Software+'
          'files/koodi.java"]'), namespaces=NAMESPACES)) == 1
     assert len(fs_root.xpath(
         ('/mets:mets/mets:fileSec/mets:fileGrp/mets:file/mets:FLocat'
-         '[@xlink:href="file://tests/data/structured/Publication '
+         '[@xlink:href="file://tests/data/structured/Publication+'
          'files/publication.txt"]'), namespaces=NAMESPACES)) == 1
     assert len(sm_root.xpath(
         '//mets:div[@LABEL="fonds"]', namespaces=NAMESPACES)) == 1

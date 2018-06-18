@@ -7,9 +7,11 @@ from urllib import quote_plus, unquote_plus
 from hashlib import md5
 
 
-def encode_path(path, suffix='', prefix=''):
+def encode_path(path, suffix='', prefix='', safe=None):
     """Encode given path to URL encoding with given perfix and suffix
     """
+    if safe:
+        return prefix + quote_plus(path.encode('utf8'), safe=safe) + suffix
     return prefix + quote_plus(path.encode('utf8')) + suffix
 
 

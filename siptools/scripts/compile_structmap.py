@@ -176,7 +176,8 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     othermd_types = ['addml', 'mix', 'videomd', 'audiomd', 'textmd']
     techmd_files, techmd_ids = ids_for_files(workspace, path, 'techmd.xml')
     fileid = '_' + str(uuid4())
-    filepath = decode_path(techmd_files[0], '-techmd.xml')
+    filepath = encode_path(decode_path(techmd_files[0], '-techmd.xml'),
+                           safe='/')
     othermd_ids = []
     for mdtype in othermd_types:
         othermd_ids = read_temp_othermdfile(
