@@ -12,7 +12,6 @@ import magic
 
 from ipt.validator.validators import iter_validators
 from siptools.utils import encode_path, encode_id
-from siptools.xml.mets import NAMESPACES
 import premis
 import mets
 import xml_helpers.utils as h
@@ -23,7 +22,7 @@ def parse_arguments(arguments):
     parser = argparse.ArgumentParser(
         description="Tool for importing files to generate digital objects")
     parser.add_argument('files', nargs='+',
-        help="Digital objects to be imported")
+                        help="Digital objects to be imported")
     parser.add_argument(
         '--base_path', type=str, default='',
         help="Source base path of digital objects. If used, give objects in"
@@ -68,10 +67,10 @@ def main(arguments=None):
             filerel = filename
 
         xmldata = mets.xmldata()
-        premis_object = create_premis_object(
-            xmldata, filename, args.skip_inspection,
-            args.format_name, args.format_version, args.digest_algorithm,
-            args.message_digest, args.date_created, args.charset)
+        create_premis_object(xmldata, filename, args.skip_inspection,
+                             args.format_name, args.format_version,
+                             args.digest_algorithm, args.message_digest,
+                             args.date_created, args.charset)
 
         mdwrap = mets.mdwrap('PREMIS:OBJECT', '2.3', child_elements=[xmldata])
         techmd = mets.techmd(
@@ -120,7 +119,8 @@ def create_premis_object(tree, fname, skip_inspection=None,
         digest_algorithm = 'MD5'
     if format_name is None:
         format_name = validator_info['format']['mimetype']
-    if format_version is None and (validator_info and 'version' in validator_info['format']):
+    if format_version is None and \
+            (validator_info and 'version' in validator_info['format']):
         format_version = validator_info['format']['version']
     if charset or (validator_info and 'charset' in validator_info['format']):
         format_name += '; charset=' + charset \
@@ -133,7 +133,8 @@ def create_premis_object(tree, fname, skip_inspection=None,
     premis_format_des = premis.format_designation(format_name, format_version)
     premis_format = premis.format(child_elements=[premis_format_des])
     premis_date_created = premis.date_created(date_created)
-    premis_create = premis.creating_application(child_elements=[premis_date_created])
+    premis_create = \
+        premis.creating_application(child_elements=[premis_date_created])
     premis_objchar = premis.object_characteristics(
         child_elements=[premis_fixity, premis_format, premis_create])
 
@@ -151,22 +152,22 @@ def create_premis_object(tree, fname, skip_inspection=None,
 
 def metadata_info(fname):
     """Return metadata_info dict for given file."""
-    m = magic.open(magic.MAGIC_MIME_TYPE)
-    m.load()
-    mimetype = m.file(fname)
-    m.close()
+    magic_ = magic.open(magic.MAGIC_MIME_TYPE)
+    magic_.load()
+    mimetype = magic_.file(fname)
+    magic_.close()
 
-    m = magic.open(magic.MAGIC_MIME_ENCODING)
-    m.load()
-    charset = m.file(fname)
-    m.close()
+    magic_ = magic.open(magic.MAGIC_MIME_ENCODING)
+    magic_.load()
+    charset = magic_.file(fname)
+    magic_.close()
 
-    m = magic.open(magic.MAGIC_NONE)
-    m.load()
-    version = m.file(fname).split("version ")[-1]
-    m.close()
+    magic_ = magic.open(magic.MAGIC_NONE)
+    magic_.load()
+    version = magic_.file(fname).split("version ")[-1]
+    magic_.close()
 
-    metadata_info = {
+    metadata_info_ = {
         'filename': fname,
         'type': 'file',
         'format': {
@@ -179,19 +180,22 @@ def metadata_info(fname):
     if mimetype in ['text/plain', 'text/csv', 'application/xhtml+xml',
                     'text/xml', 'text/html', 'application/gml+xml',
                     'application/vnd.google-earth.kml+xml']:
-        metadata_info['format']['charset'] = 'UTF-8' if 'UTF-8' in charset else 'ISO-8859-15'
+        if 'UTF-8' in charset:
+            metadata_info_['format']['charset'] = 'UTF-8'
+        else:
+            metadata_info_['format']['charset'] = 'ISO-8859-15'
     else:
-        del metadata_info['format']['charset']
+        del metadata_info_['format']['charset']
 
     if mimetype in ['text/plain', 'text/csv']:
-        metadata_info['format']['version'] = ''
+        metadata_info_['format']['version'] = ''
 
     elif mimetype == 'image/tiff':
-        metadata_info['format']['version'] = '6.0'
+        metadata_info_['format']['version'] = '6.0'
 
     # If it's an XML-file, return fixed mimetype with charset and version
     elif mimetype == 'text/xml' or mimetype == 'application/xml':
-        metadata_info['format']['version'] = '1.0'
+        metadata_info_['format']['version'] = '1.0'
 
     # If it's a PDF-file, return version
     #elif formatname == 'application/pdf':
@@ -199,30 +203,34 @@ def metadata_info(fname):
 
     # If it's an Open Office document return fixed version
     elif mimetype.startswith('application/vnd.oasis.opendocument'):
-        metadata_info['format']['version'] = '1.0'
+        metadata_info_['format']['version'] = '1.0'
 
     # I it's a jpeg file, return version
     elif mimetype == 'image/jpeg':
-        if not metadata_info['format']['version'] in ['1.0', '1.01', '1.02']:
-            del metadata_info['format']['version']
+        if not metadata_info_['format']['version'] in ['1.0', '1.01', '1.02']:
+            del metadata_info_['format']['version']
 
 
-    return metadata_info
+    return metadata_info_
 
 def md5(fname):
     """Calculate md5 checksum for given file."""
     hash_md5 = hashlib.md5()
-    with open(fname, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
+    with open(fname, "rb") as file_:
+        for chunk in iter(lambda: file_.read(4096), b""):
             hash_md5.update(chunk)
 
     return hash_md5.hexdigest()
 
 
-def collect_filepaths(dirs=['.'], pattern='*', base=''):
+def collect_filepaths(dirs=None, pattern='*', base=''):
     """Collect file paths recursively from given directory. Raises IOError
     if given path does not exist."""
+
+    if dirs is None:
+        dirs = ['.']
     files = []
+
     for directory in dirs:
         directory = os.path.normpath(os.path.join(base, directory))
         if os.path.isdir(directory):
@@ -239,10 +247,9 @@ def collect_filepaths(dirs=['.'], pattern='*', base=''):
 
 
 def creation_date(path_to_file):
-    """
-    Try to get the date that a file was created, falling back to when it was
-    last modified if that isn't possible.
-    See http://stackoverflow.com/a/39501288/1709587 for explanation.
+    """Try to get the date that a file was created, falling back to when it
+    was last modified if that isn't possible.  See
+    http://stackoverflow.com/a/39501288/1709587 for explanation.
     """
     if platform.system() == 'Windows':
         return datetime.datetime.fromtimestamp(

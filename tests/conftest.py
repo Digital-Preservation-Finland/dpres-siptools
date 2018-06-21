@@ -2,9 +2,7 @@
 
 import os
 import sys
-import logging
 import tempfile
-import subprocess
 import shutil
 
 import pytest
@@ -28,6 +26,3 @@ def testpath(request):
 
     request.addfinalizer(fin)
     return temp_path
-
-
-
