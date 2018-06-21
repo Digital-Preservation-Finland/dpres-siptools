@@ -1,3 +1,4 @@
+# encoding: utf-8
 import os.path
 from urllib import quote_plus
 import lxml.etree as ET
@@ -111,10 +112,30 @@ def test_import_object_validate_pdf_ok(input_file, testpath):
     assert return_code == 0
 
 
-def iterate_files(path):
-    for root, dirs, files in os.walk(path, topdown=False):
-        for name in files:
-            yield os.path.join(root, name)
+def test_import_object_utf8dir(testpath):
+    """Test import_object.main funtion with directory names and filenames that
+    contain utf-8 characters. TechMD-file with utf8-encoded filename should be
+    created.
+    """
+
+    # Create directory that contains one file
+    utf8_directory = os.path.join(testpath, 'directory Ä')
+    os.mkdir(utf8_directory)
+    utf8_file = os.path.join(utf8_directory, 'testfile Ö')
+    with open(utf8_file, 'w') as file_:
+        file_.write('Voi änkeröinen.')
+
+    # Run function
+    assert import_object.main(['--workspace', testpath, utf8_file]) == 0
+
+    # Check output
+    output = os.path.join(testpath, encode_path(utf8_file.decode('utf-8'),
+                                                suffix='-techmd.xml'))
+    tree = ET.parse(output)
+    root = tree.getroot()
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+                          namespaces=NAMESPACES)) == 1
+
 
 
 @pytest.mark.parametrize('input_file', ['tests/data/missing-file'])
@@ -122,3 +143,10 @@ def test_import_object_fail(input_file):
     with pytest.raises(IOError):
         arguments = [input_file]
         import_object.main(arguments)
+
+
+def iterate_files(path):
+    """Iterate through all files inside a directory."""
+    for root, _, files in os.walk(path, topdown=False):
+        for name in files:
+            yield os.path.join(root, name)

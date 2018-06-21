@@ -75,7 +75,8 @@ def main(arguments=None):
 
         mdwrap = mets.mdwrap('PREMIS:OBJECT', '2.3', child_elements=[xmldata])
         techmd = mets.techmd(
-            encode_id(encode_path(filerel, suffix="-techmd.xml")),
+            encode_id(encode_path(filerel.decode(sys.getfilesystemencoding()),
+                                  suffix="-techmd.xml")),
             child_elements=[mdwrap])
         amdsec = mets.amdsec(child_elements=[techmd])
         _mets = mets.mets(child_elements=[amdsec])
@@ -86,7 +87,9 @@ def main(arguments=None):
         if not os.path.exists(args.workspace):
             os.makedirs(args.workspace)
 
-        filename = encode_path(filerel, suffix="-techmd.xml")
+        filename = encode_path(filerel.decode(sys.getfilesystemencoding()),
+                               suffix="-techmd.xml")
+
 
         with open(os.path.join(args.workspace, filename), 'w+') as outfile:
             outfile.write(h.serialize(_mets))
