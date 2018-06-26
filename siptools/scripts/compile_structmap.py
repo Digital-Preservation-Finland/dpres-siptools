@@ -221,23 +221,24 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
 
 def read_temp_othermdfile(workspace, othermd_type, path):
     """Search othermd-file of given type, associated with a file given as
-    parameter. If file is found, read the file IDs.
+    parameter. If file is found, read the ID of techMD element.
 
     :workspace (str): path to directory from which othermd
     :othermd_type (str): othermd file prefix string
     :path (str): path of the file that is described by othermd
     :returns (list): list of IDs
     """
-    mdfile = os.path.join(workspace, '%sfile.xml' % othermd_type)
+
+    mdfile_name = '%s-%s-othermd.xml' % (othermd_type, encode_path(path))
+    mdfile_path = os.path.join(workspace, mdfile_name)
     othermd_ids = []
 
-    if os.path.isfile(mdfile):
-        import_mdfile = ET.parse(mdfile)
-        root = import_mdfile.getroot()
-
-        for fileid in root.findall('.//fileid'):
-            if fileid.get('path') == path:
-                othermd_ids.append(fileid.text)
+    if os.path.isfile(mdfile_path):
+        # Read the ID of techMD element in the othermd file
+        mdfile = ET.parse(mdfile_path)
+        root = mdfile.getroot()
+        for techmd in root.xpath('//mets:techMD', namespaces=NAMESPACES):
+                othermd_ids.append(techmd.get('ID'))
 
     return othermd_ids
 
