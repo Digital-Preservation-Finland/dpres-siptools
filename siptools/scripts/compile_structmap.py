@@ -1,4 +1,5 @@
-""""Command line tool for compile structmap"""
+""""Command line tool for creating structure map and file metadata for a METS
+document."""
 
 import sys
 import argparse
@@ -11,6 +12,7 @@ import xml_helpers.utils as h
 from siptools.xml.mets import NAMESPACES
 from siptools.utils import encode_id, encode_path, decode_path, tree, add
 
+OTHERMD_TYPES = ['addml', 'mix', 'videomd', 'audiomd', 'textmd']
 
 def ead3_ns(tag):
     """Get tag with EAD3 namespace
@@ -20,10 +22,15 @@ def ead3_ns(tag):
 
 
 def parse_arguments(arguments):
-    """ Create arguments parser and return parsed command line argumets"""
+    """Create arguments parser and return parsed command line argumets"""
 
     parser = argparse.ArgumentParser(
-        description="Tool for generating fileSec and structMap")
+        description="Tool for generating METS fileSec and structMap based on "
+                    "technical metada files (-techmd.xml -suffix) and "
+                    "descriptive metadata files (-dmdsec.xml -suffix) found "
+                    "in workspace directory. Outputs two XML files: "
+                    "filesec.xml and structmap.xml"
+    )
     parser.add_argument('--dmdsec_struct', dest='dmdsec_struct', type=str,
                         help=("Use structured descriptive metadata for "
                               "creating structMap divs"))
@@ -32,13 +39,13 @@ def parse_arguments(arguments):
     parser.add_argument('--type_attr', dest='type_attr', type=str,
                         help="Type of structmap e.g. 'Fairdata-physical'")
     parser.add_argument('--workspace', type=str, default='./workspace/',
-                        help="Destination file")
-    parser.add_argument('--stdout', help='Print output to stdout')
+                        help="Destination directory for output files.")
+    parser.add_argument('--stdout', help='Print output also to stdout.')
     return parser.parse_args(arguments)
 
 
 def main(arguments=None):
-    """The main method for compile_sturctmap"""
+    """The main method for compile_structmap"""
     args = parse_arguments(arguments)
 
     structmap = mets.structmap(type_attr=args.type_attr)
@@ -91,6 +98,9 @@ def main(arguments=None):
 
 def div_structure(workspace):
     """Create div structure for directory-based structmap
+
+    :workspace (str): Path to directory
+    :returns (defaultdict): Directory tree as a dict like object
     """
     workspace_files = [fname.name for fname in scandir.scandir(workspace)]
     techmd_files = [x for x in workspace_files if 'techmd' in x]
@@ -171,9 +181,15 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
 
 
 def add_file_to_filesec(workspace, path, filegrp, amdids):
-    """Add file element to fileSec.
+    """Add file element to fileSec element given as parameter.
+
+    :workspace: Workspace from which techmd-files and othermd-files are
+                searched.
+    :path: path of techmd-file
+    :filegrp (lxml.etree.Element): fileSec element
+    :amdids (list): list of administrative metadata associated with the file
+    :returns (str): id of file added to fileSec
     """
-    othermd_types = ['addml', 'mix', 'videomd', 'audiomd', 'textmd']
     techmd_files, techmd_ids = ids_for_files(workspace, path, 'techmd.xml')
     fileid = '_' + str(uuid4())
     # TODO When calling encode(decode(string)) you should get the original
@@ -181,23 +197,39 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     # -vvainio 26.06.2018
     filepath = encode_path(decode_path(techmd_files[0], '-techmd.xml'),
                            safe='/')
+
+    # Create list of of othermd-file IDs
     othermd_ids = []
-    for mdtype in othermd_types:
-        othermd_ids = read_temp_othermdfile(
-            workspace, mdtype, filepath, othermd_ids)
+    for othermd_type in OTHERMD_TYPES:
+        othermd_ids = othermd_ids + read_temp_othermdfile(
+            workspace, othermd_type, filepath
+        )
+
+    # Create XML element and add it to fileSec
     file_el = mets.file_elem(
-        fileid, admid_elements=techmd_ids+amdids+othermd_ids, loctype='URL',
+        fileid,
+        admid_elements=techmd_ids+amdids+othermd_ids,
+        loctype='URL',
         xlink_href='file://%s' % filepath,
-        xlink_type='simple', groupid=None)
+        xlink_type='simple',
+        groupid=None
+    )
     filegrp.append(file_el)
+
     return fileid
 
 
-def read_temp_othermdfile(workspace, mdtype, path, othermd_ids):
-    """Append id to othermd_ids if file exists in temporary
-    othermd_types file.
+def read_temp_othermdfile(workspace, othermd_type, path):
+    """Search othermd-file of given type, associated with a file given as
+    parameter. If file is found, read the file IDs.
+
+    :workspace (str): path to directory from which othermd
+    :othermd_type (str): othermd file prefix string
+    :path (str): path of the file that is described by othermd
+    :returns (list): list of IDs
     """
-    mdfile = os.path.join(workspace, '%sfile.xml' % mdtype)
+    mdfile = os.path.join(workspace, '%sfile.xml' % othermd_type)
+    othermd_ids = []
 
     if os.path.isfile(mdfile):
         import_mdfile = ET.parse(mdfile)
@@ -251,16 +283,33 @@ def create_structmap(workspace, divs, structmap, filegrp, path=''):
 
 
 def ids_for_files(workspace, path, idtype, dash_count=0):
-    """Get ids for metadata files
+    """Search files in workspace based on keywords or number of dashes in
+    filename, and create ID for each found file.
+
+    :workspace (str): Path to directory from which the files are searched
+    :path (str): If not None, False, or 0, only return filenames that contain
+                 this word
+    :idtype (str): Only return filenames that contain this word
+    :dash_count (int): If path is None, False, or 0, return filenames that have
+                       this many dashes
+    :returns (list, list): List of found files and list of Ids of files
     """
-    workspace_files = [fname.name for fname in scandir.scandir(workspace)]
-    md_files = [x for x in workspace_files if idtype in x]
+    # Find all files from workspace directory and filter out filenames that do
+    # not contain idtype
+    workspace_filenames = [fname.name for fname in scandir.scandir(workspace)]
+    md_files = [x for x in workspace_filenames if idtype in x]
+
     if path:
+        # Filter filenames based on path
         files_result = [x for x in md_files
                         if path in x and (path+'%2F') not in x]
     else:
+        # Filter filenames based on number of '-'-characters in filename
         files_result = [x for x in md_files if x.count('-') == dash_count]
+
+    # Create IDs for files
     id_result = [encode_id(x) for x in files_result]
+
     return files_result, id_result
 
 
