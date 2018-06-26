@@ -43,7 +43,7 @@ METS_MDTYPES = {
     'http://www.arkivverket.no/standarder/addml' : {'mdtype' : 'OTHER',
         'othermdtype' : 'ADDML', 'version' : '8.3'},
     'http://datacite.org/schema/kernel-4': {'mdtype' : 'OTHER',
-        'othermdtype': 'DATACITE', 'version': '4.0'},
+        'othermdtype': 'DATACITE', 'version': '4.1'},
     'http://www.loc.gov/audioMD/': {'mdtype': 'OTHER',
                                     'othermdtype': 'AudioMD',
                                     'version': '2.0'},
