@@ -176,6 +176,9 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     othermd_types = ['addml', 'mix', 'videomd', 'audiomd', 'textmd']
     techmd_files, techmd_ids = ids_for_files(workspace, path, 'techmd.xml')
     fileid = '_' + str(uuid4())
+    # TODO When calling encode(decode(string)) you should get the original
+    # string back, but this does something else (also). Should be refactored.
+    # -vvainio 26.06.2018
     filepath = encode_path(decode_path(techmd_files[0], '-techmd.xml'),
                            safe='/')
     othermd_ids = []
