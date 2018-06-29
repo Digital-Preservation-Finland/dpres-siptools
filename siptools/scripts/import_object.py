@@ -9,6 +9,7 @@ import datetime
 import platform
 import argparse
 import magic
+import subprocess
 
 from ipt.validator.validators import iter_validators
 from siptools.utils import encode_path, encode_id
@@ -110,6 +111,7 @@ def create_premis_object(tree, fname, skip_inspection=None,
             if not validation_result['is_valid']:
                 raise Exception('File %s is not valid: %s', fname,
                                 validation_result['errors'])
+        validator_info = validation_result['result']
 
     if message_digest is None:
         message_digest = md5(fname)
@@ -175,13 +177,16 @@ def metadata_info(fname):
         }
     }
 
+    # If it's an XML-file, return fixed mimetype with charset and version
+    if mimetype == 'text/xml' or mimetype == 'application/xml':
+        metadata_info_['format']['mimetype'] = 'text/xml'
+        metadata_info_['format']['version'] = '1.0'
+        mimetype = 'text/xml'
+
     if mimetype in ['text/plain', 'text/csv', 'application/xhtml+xml',
                     'text/xml', 'text/html', 'application/gml+xml',
                     'application/vnd.google-earth.kml+xml']:
-        if 'UTF-8' in charset or 'utf-8' in charset:
-            metadata_info_['format']['charset'] = 'UTF-8'
-        else:
-            metadata_info_['format']['charset'] = 'ISO-8859-15'
+        metadata_info_['format']['charset'] = return_charset(charset.upper())
     else:
         del metadata_info_['format']['charset']
 
@@ -190,10 +195,6 @@ def metadata_info(fname):
 
     elif mimetype == 'image/tiff':
         metadata_info_['format']['version'] = '6.0'
-
-    # If it's an XML-file, return fixed mimetype with charset and version
-    elif mimetype == 'text/xml' or mimetype == 'application/xml':
-        metadata_info_['format']['version'] = '1.0'
 
     # If it's a PDF-file, return version
     #elif formatname == 'application/pdf':
@@ -205,9 +206,10 @@ def metadata_info(fname):
 
     # I it's a jpeg file, return version
     elif mimetype == 'image/jpeg':
-        if not metadata_info_['format']['version'] in ['1.0', '1.01', '1.02']:
-            del metadata_info_['format']['version']
-
+        versions = ['1.10', '1.01', '1.02']
+        for ver in versions:
+            if ver in version:
+                metadata_info_['format']['version'] = ver
 
     return metadata_info_
 
@@ -262,6 +264,40 @@ def creation_date(path_to_file):
             # so we'll settle for when its content was last modified.
             return datetime.datetime.fromtimestamp(stat.st_mtime).isoformat()
 
+
+def return_charset(charset_raw):
+    """Returns the charset for text files in a correct format. Charset
+    is read from the file using the file command. The function
+    raises a CharsetError if the charset is unsupported.
+
+    :filepath: path to file
+
+    :returns: the charset as a string
+    """
+    allowed_charsets = ['ISO-8859-15', 'UTF-8',
+                        'UTF-16', 'UTF-32']
+
+    #command = ['file', '-bi', filepath]
+    #charset_raw = str(subprocess.Popen(
+    #    command,
+    #    stdout=subprocess.PIPE).stdout.read()).rsplit(
+    #        '=', 1)[-1].upper()[:-1]
+    if charset_raw == 'US-ASCII':
+        charset = 'ISO-8859-15'
+    elif charset_raw == 'ISO-8859-1':
+        charset = 'ISO-8859-15'
+    elif charset_raw == 'UTF-16LE' or charset_raw == 'UTF-16BE':
+        charset = 'UTF-16'
+    else:
+        charset = charset_raw
+
+    if charset not in allowed_charsets:
+        raise CharsetError('Invalid charset.')
+
+    return charset
+
+
 if __name__ == '__main__':
     RETVAL = main()
     sys.exit(RETVAL)
+

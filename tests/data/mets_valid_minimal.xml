@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets xmlns:mets="http://www.loc.gov/METS/"
+      xmlns:fi="http://www.kdk.fi/standards/mets/kdk-extensions"
+      fi:CATALOG="1.6.0" OBJID="xxx" PROFILE="http://www.kdk.fi/kdk-mets-profile">
+
+	<mets:metsHdr CREATEDATE="2010-10-10T10:10:10">
+		<mets:agent TYPE="ORGANIZATION" ROLE="CREATOR">
+			<mets:name/>
+		</mets:agent>
+	</mets:metsHdr>
+	<mets:dmdSec ID="dmd01" CREATED="2010-10-10T10:10:10">
+		<mets:mdWrap MDTYPE="DC" MDTYPEVERSION="1.1">
+			<mets:xmlData/>
+		</mets:mdWrap>
+	</mets:dmdSec>
+	<mets:amdSec>
+		<mets:techMD ID="tech01" CREATED="2010-10-10T10:10:10">
+			<mets:mdWrap MDTYPE="PREMIS:OBJECT" MDTYPEVERSION="2.3">
+				<mets:xmlData/>
+			</mets:mdWrap>
+		</mets:techMD>
+		<mets:digiprovMD ID="dp01" CREATED="2010-10-10T10:10:10">
+			<mets:mdWrap MDTYPE="PREMIS:EVENT" MDTYPEVERSION="2.3">
+				<mets:xmlData/>
+			</mets:mdWrap>
+		</mets:digiprovMD>
+	</mets:amdSec>
+	<mets:structMap>
+		<mets:div TYPE="" DMDID="dmd01" ADMID="tech01 dp01"/>
+	</mets:structMap>
+
+</mets:mets>

@@ -142,6 +142,132 @@ def test_import_object_utf8(testpath):
                           namespaces=NAMESPACES)) == 1
 
 
+@pytest.mark.parametrize('input_file', ['tests/data/valid_tiff.tif'])
+def test_import_object_validate_tiff_ok(input_file, testpath):
+    arguments = ['--workspace', testpath, 'tests/data/valid_tiff.tif']
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(input_file,
+        suffix='-premis-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+        namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName/text()',
+        namespaces=NAMESPACES)[0] == 'image/tiff'
+    assert root.xpath('//premis:formatVersion/text()',
+        namespaces=NAMESPACES)[0] == '6.0'
+
+    assert return_code == 0
+
+
+@pytest.mark.parametrize('input_file', ['tests/data/valid_jpeg.jpeg'])
+def test_import_object_validate_jpeg_ok(input_file, testpath):
+    arguments = ['--workspace', testpath, 'tests/data/valid_jpeg.jpeg']
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(input_file,
+        suffix='-premis-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+        namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName/text()',
+        namespaces=NAMESPACES)[0] == 'image/jpeg'
+    assert root.xpath('//premis:formatVersion/text()',
+        namespaces=NAMESPACES)[0] in ['1.0', '1.01', '1.02']
+
+    assert return_code == 0
+
+
+@pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
+def test_import_object_validate_text_ok(input_file, testpath):
+    arguments = ['--workspace', testpath, 'tests/data/text-file.txt']
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(input_file,
+        suffix='-premis-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+        namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName/text()',
+        namespaces=NAMESPACES)[0] == 'text/plain; charset=UTF-8'
+    assert len(root.xpath('//premis:formatVersion/text()',
+        namespaces=NAMESPACES)) == 0
+
+    assert return_code == 0
+
+
+@pytest.mark.parametrize('input_file', ['tests/data/csvfile.csv'])
+def test_import_object_validate_csv_ok(input_file, testpath):
+    arguments = ['--workspace', testpath, 'tests/data/csvfile.csv']
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(input_file,
+        suffix='-premis-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+        namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName/text()',
+        namespaces=NAMESPACES)[0] == 'text/plain; charset=ISO-8859-15'
+    assert len(root.xpath('//premis:formatVersion/text()',
+        namespaces=NAMESPACES)) == 0
+
+    assert return_code == 0
+
+
+@pytest.mark.parametrize('input_file', ['tests/data/mets_valid_minimal.xml'])
+def test_import_object_validate_mets_xml_ok(input_file, testpath):
+    arguments = ['--workspace', testpath, 'tests/data/mets_valid_minimal.xml']
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(input_file,
+        suffix='-premis-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+        namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName/text()',
+        namespaces=NAMESPACES)[0] == 'text/xml; charset=UTF-8'
+    assert root.xpath('//premis:formatVersion/text()',
+        namespaces=NAMESPACES)[0] == '1.0'
+
+    assert return_code == 0
+
+
+@pytest.mark.parametrize('input_file', ['tests/data/ODF_Text_Document.odt'])
+def test_import_object_validate_odt_ok(input_file, testpath):
+    arguments = ['--workspace', testpath, 'tests/data/ODF_Text_Document.odt']
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(input_file,
+        suffix='-premis-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+        namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName/text()',
+        namespaces=NAMESPACES)[0] == 'application/vnd.oasis.opendocument.text'
+    assert root.xpath('//premis:formatVersion/text()',
+        namespaces=NAMESPACES)[0] == '1.0'
+
+    assert return_code == 0
+
+
 def test_import_object_fail():
     """Test that import_object.main raises error if target file does not
     exist
