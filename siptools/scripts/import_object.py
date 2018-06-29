@@ -178,7 +178,7 @@ def metadata_info(fname):
     if mimetype in ['text/plain', 'text/csv', 'application/xhtml+xml',
                     'text/xml', 'text/html', 'application/gml+xml',
                     'application/vnd.google-earth.kml+xml']:
-        if 'UTF-8' in charset:
+        if 'UTF-8' in charset or 'utf-8' in charset:
             metadata_info_['format']['charset'] = 'UTF-8'
         else:
             metadata_info_['format']['charset'] = 'ISO-8859-15'

@@ -113,10 +113,14 @@ def test_import_object_validate_pdf_ok(testpath):
     assert return_code == 0
 
 
-def test_import_object_utf8dir(testpath):
-    """Test import_object.main funtion with directory names and filenames that
-    contain utf-8 characters. TechMD-file with utf8-encoded filename should be
-    created.
+def test_import_object_utf8(testpath):
+    """Test importing works for file that:
+
+    * is a utf-8 encoded text file
+    * has utf-8 encoded filename
+    * is in utf-8 encoded directory
+
+    import_object.main should create TechMD-file with utf8-encoded filename.
     """
 
     # Create directory that contains one file
