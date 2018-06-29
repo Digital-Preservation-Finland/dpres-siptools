@@ -111,20 +111,18 @@ def create_premis_object(tree, fname, skip_inspection=None,
                 raise Exception('File %s is not valid: %s', fname,
                                 validation_result['errors'])
 
-        validator_info = validation_result['result']
-
     if message_digest is None:
         message_digest = md5(fname)
     if digest_algorithm is None:
         digest_algorithm = 'MD5'
     if format_name is None:
-        format_name = validator_info['format']['mimetype']
+        format_name = metadata_info(fname)['format']['mimetype']
     if format_version is None and \
-            (validator_info and 'version' in validator_info['format']):
-        format_version = validator_info['format']['version']
-    if charset or (validator_info and 'charset' in validator_info['format']):
+            (metadata_info(fname) and 'version' in metadata_info(fname)['format']):
+        format_version = metadata_info(fname)['format']['version']
+    if charset or (metadata_info(fname) and 'charset' in metadata_info(fname)['format']):
         format_name += '; charset=' + charset \
-            if charset else '; charset=' + validator_info['format']['charset']
+            if charset else '; charset=' + metadata_info(fname)['format']['charset']
 
     if date_created is None:
         date_created = creation_date(fname)
