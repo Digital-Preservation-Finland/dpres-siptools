@@ -1,6 +1,7 @@
 .*.swp
 .*.swo
 .pydev*
+.pytest_cache
 .project*
 *.pyc
 .cache
