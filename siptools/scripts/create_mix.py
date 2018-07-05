@@ -32,7 +32,7 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     #mddata = write_mix(os.path.join(args.workspace, args.filename))
-    filename = encode_path(args.filename, prefix='mix-', suffix="-othermd.xml")
+    filename = encode_path(args.filename, prefix='MIX', suffix="-othermd.xml")
     fileid = encode_id(filename)
     mets = create_mix_techmd(args.filename, fileid)
 
@@ -44,7 +44,7 @@ def main(arguments=None):
 def create_mix_techmd(filename, fileid=None):
     mddata = write_mix(os.path.join(filename))
     if fileid is None:
-      filename = encode_path(filename, prefix='mix-', suffix="-othermd.xml")
+      filename = encode_path(filename, prefix='MIX', suffix="-othermd.xml")
       fileid = encode_id(filename)
     mets = m.mets()
     amdsec = m.amdsec()
