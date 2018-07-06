@@ -7,17 +7,17 @@ import wand.image
 import PIL.Image
 import nisomix.mix
 import mets
-import xml_helpers.utils
-from siptools.utils import encode_path, encode_id
+import siptools.utils
 
 
 def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
     parser = argparse.ArgumentParser(
         description="Tool for creating mix metadata for an image. The MIX "
-                    "metadata is written to "
-                    "MIX<url-encoded-file-path>-othermd.xml -file in the "
-                    "workspace directory."
+                    "metadata is written to mix-<hash>-othermd.xml METS XML"
+                    "file in the workspace directory. If similar MIX metadata"
+                    "is alredy found in workspace, the file will not be "
+                    "rewritten."
     )
     parser.add_argument('filename', type=str,
                         help="Image file to be described as mix metadata")
@@ -30,43 +30,30 @@ def parse_arguments(arguments):
 def main(arguments=None):
     """Write MIX metadata for a image file."""
     args = parse_arguments(arguments)
-
-    filename = encode_path(args.filename, prefix='MIX', suffix="-othermd.xml")
-    fileid = encode_id(filename)
-    mets_ = create_mix_techmd(args.filename, fileid)
-
-    with open(os.path.join(args.workspace, filename), 'w+') as outfile:
-        outfile.write(xml_helpers.utils.serialize(mets_))
-    print "Wrote METS MIX technical metadata to file %s" % outfile.name
+    create_mix_techmdfile(args.filename, args.workspace)
 
 
-def create_mix_techmd(filename, fileid=None):
-    """Creates METS XML element that contains techMD element with MIX metadata.
+def create_mix_techmdfile(filename, workspace):
+    """Creates  MIX metadata for a image file, and writes it into a METS techMD
+    XML file in workspace.
 
     :filename: Filename of MIX metadata file
-    :fileid: ID of MIX metadata file
     :returns: METS XML element
     """
-    mddata = create_mix(inspect_image(os.path.join(filename)))
-    if fileid is None:
-        filename = encode_path(filename, prefix='MIX', suffix="-othermd.xml")
-        fileid = encode_id(filename)
-    mets_ = mets.mets()
-    amdsec = mets.amdsec()
-    techmd = mets.techmd(fileid)
-    mdwrap = mets.mdwrap('NISOIMG', "2.0")
+    # Create MIX metadata
+    mix = _create_mix(_inspect_image(os.path.join(filename)))
+
+    # Wrap MIX metadata to xmlData and mdWrap elements
     xmldata = mets.xmldata()
-
-    xmldata.append(mddata)
+    mdwrap = mets.mdwrap('NISOIMG', "2.0")
+    xmldata.append(mix)
     mdwrap.append(xmldata)
-    techmd.append(mdwrap)
-    amdsec.append(techmd)
-    mets_.append(amdsec)
 
-    return mets_
+    # Create METS XML file that contains MIX metadata
+    siptools.utils.create_techmdfile(workspace, 'mix', mdwrap)
 
 
-def inspect_image(img):
+def _inspect_image(img):
     """Create metadata for image file. Use both Wand and Pillow modules to
     extract metadata from image file.
 
@@ -120,8 +107,9 @@ def inspect_image(img):
 
     return metadata
 
-def create_mix(metadata):
-    """Create MIX technical metadata XML element for an image file.
+
+def _create_mix(metadata):
+    """Create MIX metadata XML element for an image file.
 
     :metadata: image file metadata dictionary
     :returns: MIX XML element
