@@ -19,7 +19,7 @@ def parse_arguments(arguments):
                     "is alredy found in workspace, the file will not be "
                     "rewritten."
     )
-    parser.add_argument('filename', type=str,
+    parser.add_argument('file', type=str,
                         help="Image file to be described as mix metadata")
     parser.add_argument('--workspace', type=str, default='./workspace/',
                         help="Workspace directory for the metadata files.")
@@ -30,18 +30,18 @@ def parse_arguments(arguments):
 def main(arguments=None):
     """Write MIX metadata for a image file."""
     args = parse_arguments(arguments)
-    create_mix_techmdfile(args.filename, args.workspace)
+    create_mix_techmdfile(args.file, args.workspace)
 
 
-def create_mix_techmdfile(filename, workspace):
+def create_mix_techmdfile(image_file, workspace):
     """Creates  MIX metadata for a image file, and writes it into a METS techMD
     XML file in workspace.
 
-    :filename: Filename of MIX metadata file
+    :filename: Filename of image file
     :returns: METS XML element
     """
     # Create MIX metadata
-    mix = _create_mix(_inspect_image(os.path.join(filename)))
+    mix = _create_mix(_inspect_image(os.path.join(image_file)))
 
     # Wrap MIX metadata to xmlData and mdWrap elements
     xmldata = mets.xmldata()
@@ -50,7 +50,10 @@ def create_mix_techmdfile(filename, workspace):
     mdwrap.append(xmldata)
 
     # Create METS XML file that contains MIX metadata
-    siptools.utils.create_techmdfile(workspace, 'mix', mdwrap)
+    techmd_id = siptools.utils.create_techmdfile(workspace, 'mix', mdwrap)
+
+    # Add reference from image file to techMD
+    siptools.utils.add_techmdreference(workspace, techmd_id, image_file)
 
 
 def _inspect_image(img):

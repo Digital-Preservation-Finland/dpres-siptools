@@ -12,7 +12,6 @@ import xml_helpers.utils as h
 from siptools.xml.mets import NAMESPACES
 from siptools.utils import encode_id, encode_path, decode_path, tree, add
 
-OTHERMD_TYPES = ['addml', 'mix', 'videomd', 'audiomd', 'textmd']
 
 def ead3_ns(tag):
     """Get tag with EAD3 namespace
@@ -198,12 +197,8 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     filepath = encode_path(decode_path(techmd_files[0], '-techmd.xml'),
                            safe='/')
 
-    # Create list of of othermd-file IDs
-    othermd_ids = []
-    for othermd_type in OTHERMD_TYPES:
-        othermd_ids = othermd_ids + read_temp_othermdfile(
-            workspace, othermd_type, filepath
-        )
+    # Create list of IDs of techmD elements that contain othermd metadata
+    othermd_ids = get_techmd_references(workspace, path)
 
     # Create XML element and add it to fileSec
     file_el = mets.file_elem(
@@ -219,27 +214,25 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     return fileid
 
 
-def read_temp_othermdfile(workspace, othermd_type, path):
-    """Search othermd-file of given type, associated with a file given as
-    parameter. If file is found, read the file IDs.
+def get_techmd_references(workspace, path):
+    """If techMD reference file exists in workspace, read the techMD IDs that
+    should be referenced by a file.
 
     :workspace (str): path to directory from which othermd
-    :othermd_type (str): othermd file prefix string
-    :path (str): path of the file that is described by othermd
-    :returns (list): list of IDs
+    :path (str): path of the file for which the IDs are read
+    :returns (list): list of techMD IDs
     """
-    mdfile = os.path.join(workspace, '%sfile.xml' % othermd_type)
-    othermd_ids = []
+    reference_file = os.path.join(workspace, 'techmd-references.xml')
+    techmd_ids = []
 
-    if os.path.isfile(mdfile):
-        import_mdfile = ET.parse(mdfile)
-        root = import_mdfile.getroot()
+    if os.path.isfile(reference_file):
+        element_tree = ET.parse(reference_file)
+        reference_elements = element_tree.xpath(
+            '/techmdReferences/techmdReference[@file="%s"]' % path
+        )
+        techmd_ids = [element.text for element in reference_elements]
 
-        for fileid in root.findall('.//fileid'):
-            if fileid.get('path') == path:
-                othermd_ids.append(fileid.text)
-
-    return othermd_ids
+    return techmd_ids
 
 
 def get_links_event_agent(workspace, path):

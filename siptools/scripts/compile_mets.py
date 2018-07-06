@@ -134,9 +134,7 @@ def clean_metsparts(path):
             if (name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
                                'dmdsec.xml', 'structmap.xml', 'filesec.xml',
                                'rightsmd.xml', '-othermd.xml',
-                               'addmlfile.xml', 'mixfile.xml',
-                               'textmdfile.xml', 'audiomdfile.xml',
-                               'videomdfile.xml'))):
+                               'techmd_references.xml'))):
                 os.remove(os.path.join(root, name))
 
 

@@ -8,6 +8,7 @@ import os
 from urllib import quote_plus, unquote_plus
 import xml_helpers
 import mets
+import lxml.etree
 
 
 def encode_path(path, suffix='', prefix='', safe=None):
@@ -81,3 +82,40 @@ def create_techmdfile(workspace, metadatatype, metadata):
                   % (metadatatype, outfile.name)
 
     return techmd_id
+
+
+def add_techmdreference(workspace, techmd_id, filepath):
+    """Add techMD reference information to the reference list file:
+    "techmd-references.xml", which is read by compile-structmap script when
+    fileSec elements are created for METS XML.
+
+    :workspace: directory where linking file is written
+    :techmd_id: ID of techMD element to be referenced
+    :filepath: path of the file described in techMD element
+    :returns: None
+    """
+
+    reference_file = os.path.join(workspace, 'techmd-references.xml')
+
+    # read existing reference list file or create new file
+    if os.path.exists(reference_file):
+        with open(reference_file) as file_:
+            # Remove blank text to enable pretty printing
+            parser = lxml.etree.XMLParser(remove_blank_text=True)
+            references_tree = lxml.etree.parse(file_, parser)
+            references = references_tree.getroot()
+    else:
+        references = lxml.etree.Element('techmdReferences')
+        references_tree = lxml.etree.ElementTree(references)
+
+    # Add new reference
+    reference = lxml.etree.Element('techmdReference')
+    reference.text = techmd_id
+    reference.set('file', filepath)
+    references.append(reference)
+
+    # Write reference list file
+    references_tree.write(reference_file,
+                          pretty_print=True,
+                          xml_declaration=True,
+                          encoding="utf-8")
