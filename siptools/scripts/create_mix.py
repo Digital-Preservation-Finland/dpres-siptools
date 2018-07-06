@@ -47,7 +47,7 @@ def create_mix_techmd(filename, fileid=None):
     :fileid: ID of MIX metadata file
     :returns: METS XML element
     """
-    mddata = create_mix(os.path.join(filename))
+    mddata = create_mix(inspect_image(os.path.join(filename)))
     if fileid is None:
         filename = encode_path(filename, prefix='MIX', suffix="-othermd.xml")
         fileid = encode_id(filename)
@@ -66,80 +66,94 @@ def create_mix_techmd(filename, fileid=None):
     return mets_
 
 
-def create_mix(img):
-    """Create MIX technical metadata XML element for an image file. Use both
-    Wand and Pillow modules to extract metadata from image file.
+def inspect_image(img):
+    """Create metadata for image file. Use both Wand and Pillow modules to
+    extract metadata from image file.
 
     :img: image file path
-    :returns: MIX XML element
+    :returns: image file metadata dictionary
     """
+    metadata = {}
     with wand.image.Image(filename=img) as i:
-        byteorder = None
-        width = str(i.width)
-        height = str(i.height)
-        colorspace = str(i.colorspace)
-        bitspersample = str(i.depth)
-        compression = str(i.compression)
-        metadata = i.metadata.items()
-        for key, value in metadata:
+        metadata["byteorder"] = None
+        metadata["width"] = str(i.width)
+        metadata["height"] = str(i.height)
+        metadata["colorspace"] = str(i.colorspace)
+        metadata["bitspersample"] = str(i.depth)
+        metadata["compression"] = str(i.compression)
+        for key, value in i.metadata.items():
             if key.startswith('tiff:endian'):
                 if value == 'msb':
-                    byteorder = 'big endian'
+                    metadata["byteorder"] = 'big endian'
                 elif value == 'lsb':
-                    byteorder = 'little endian'
+                    metadata["byteorder"] = 'little endian'
 
     with PIL.Image.open(img) as image:
         mode = image.mode
         if mode == 'F':
-            bpsunit = 'floating point'
+            metadata["bpsunit"] = 'floating point'
         else:
-            bpsunit = 'integer'
+            metadata["bpsunit"] = 'integer'
 
-        samplesperpixel = None
+        metadata["samplesperpixel"] = None
 
         if image.format == 'TIFF':
             tag_info = image.tag_v2
             if tag_info:
                 for tag, value in tag_info.items():
                     if tag == 277:
-                        samplesperpixel = str(value)
+                        metadata["samplesperpixel"] = str(value)
         elif image.format == 'JPEG':
             exif_info = image._getexif()
             if exif_info:
                 for tag, value in exif_info.items():
                     if tag == 277:
-                        samplesperpixel = str(value)
+                        metadata["samplesperpixel"] = str(value)
 
-        if not samplesperpixel:
+        if not metadata["samplesperpixel"]:
             modes = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
                      'I': '1', 'F': '1'}
             for key, value in modes.items():
                 if key == mode:
-                    samplesperpixel = value
+                    metadata["samplesperpixel"] = value
 
+    return metadata
+
+def create_mix(metadata):
+    """Create MIX technical metadata XML element for an image file.
+
+    :metadata: image file metadata dictionary
+    :returns: MIX XML element
+    """
     mix_compression \
-        = nisomix.mix.mix_Compression(compressionScheme=compression)
+        = nisomix.mix.mix_Compression(
+            compressionScheme=metadata["compression"]
+        )
 
     basicdigitalobjectinformation \
         = nisomix.mix.mix_BasicDigitalObjectInformation(
-            byteOrder=byteorder,
+            byteOrder=metadata["byteorder"],
             Compression_elements=[mix_compression]
         )
 
     basicimageinformation = nisomix.mix.mix_BasicImageInformation(
-        imageWidth=width,
-        imageHeight=height,
-        colorSpace=colorspace)
+        imageWidth=metadata["width"],
+        imageHeight=metadata["height"],
+        colorSpace=metadata["colorspace"]
+    )
 
     imageassessmentmetadata = nisomix.mix.mix_ImageAssessmentMetadata(
-        bitsPerSampleValue_elements=bitspersample,
-        bitsPerSampleUnit=bpsunit, samplesPerPixel=samplesperpixel)
+        bitsPerSampleValue_elements=metadata["bitspersample"],
+        bitsPerSampleUnit=metadata["bpsunit"],
+        samplesPerPixel=metadata["samplesperpixel"]
+    )
 
     mix_root = nisomix.mix.mix_mix(
         BasicDigitalObjectInformation=basicdigitalobjectinformation,
         BasicImageInformation=basicimageinformation,
-        ImageAssessmentMetadata=imageassessmentmetadata)
+        ImageAssessmentMetadata=imageassessmentmetadata
+    )
 
     return mix_root
 
