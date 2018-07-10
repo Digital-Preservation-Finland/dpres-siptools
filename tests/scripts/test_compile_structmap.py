@@ -1,6 +1,7 @@
 """Tests for the compile_structmap script."""
 
 import os
+import shutil
 import pytest
 import lxml.etree as ET
 from siptools.xml.mets import NAMESPACES
@@ -58,3 +59,15 @@ def test_file_and_dir(testpath):
     assert elementlist[0].tag == '{%s}fptr' % NAMESPACES['mets']
     assert elementlist[1].tag == '{%s}div' % NAMESPACES['mets']
     assert return_code == 0
+
+
+def test_get_techmd_references(testpath):
+    """Test get_techmd_references function. Copies sample techMD reference file
+    to workspace and reads the techMD IDs for a file.
+    """
+    shutil.copy('tests/data/sample_techmd-references.xml',
+                os.path.join(testpath, 'techmd-references.xml'))
+
+    # The sample file contains two references for file2
+    ids = compile_structmap.get_techmd_references(testpath, 'path/to/file2')
+    assert set(ids) == set(['abcd1234', 'efgh5678'])

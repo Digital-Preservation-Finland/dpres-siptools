@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<techmdReferences>
+  <techmdReference file="path/to/file1">abcd1234</techmdReference>
+  <techmdReference file="path/to/file2">abcd1234</techmdReference>
+  <techmdReference file="path/to/file2">efgh5678</techmdReference>
+</techmdReferences>
