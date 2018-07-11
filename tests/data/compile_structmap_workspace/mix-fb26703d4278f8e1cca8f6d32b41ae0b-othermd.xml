@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<mets:mets xmlns:mets="http://www.loc.gov/METS/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd" PROFILE="local" OBJID="3f2021a4-4fa7-4300-b7e0-856367f751e0">
+  <mets:amdSec>
+    <mets:techMD ID="_c08061e439bd40407c9e5332fec6084e" CREATED="2018-07-11T13:08:15.261562">
+      <mets:mdWrap MDTYPE="NISOIMG" MDTYPEVERSION="2.0">
+        <mets:xmlData>
+          <ns0:mix xmlns:ns0="http://www.loc.gov/mix/v20" xsi:schemaLocation="http://www.loc.gov/mix/v20 http://www.loc.gov/mix/mix.xsd">
+            <ns0:BasicDigitalObjectInformation>
+              <ns0:byteOrder>little endian</ns0:byteOrder>
+              <ns0:Compression>
+                <ns0:compressionScheme>jpeg2000</ns0:compressionScheme>
+                <ns0:compressionRatio/>
+              </ns0:Compression>
+            </ns0:BasicDigitalObjectInformation>
+            <ns0:BasicImageInformation>
+              <ns0:BasicImageCharacteristics>
+                <ns0:imageWidth>2</ns0:imageWidth>
+                <ns0:imageHeight>2</ns0:imageHeight>
+                <ns0:PhotometricInterpretation>
+                  <ns0:colorSpace>srgb</ns0:colorSpace>
+                </ns0:PhotometricInterpretation>
+              </ns0:BasicImageCharacteristics>
+            </ns0:BasicImageInformation>
+            <ns0:ImageAssessmentMetadata>
+              <ns0:SpatialMetrics/>
+              <ns0:ImageColorEncoding>
+                <ns0:BitsPerSample>
+                  <ns0:bitsPerSampleValue>8</ns0:bitsPerSampleValue>
+                  <ns0:bitsPerSampleUnit>integer</ns0:bitsPerSampleUnit>
+                </ns0:BitsPerSample>
+                <ns0:samplesPerPixel>3</ns0:samplesPerPixel>
+                <ns0:Colormap/>
+              </ns0:ImageColorEncoding>
+            </ns0:ImageAssessmentMetadata>
+          </ns0:mix>
+        </mets:xmlData>
+      </mets:mdWrap>
+    </mets:techMD>
+  </mets:amdSec>
+</mets:mets>

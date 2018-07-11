@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<techmdReferences>
+  <techmdReference file="sample_images/sample_tiff1.tif">_e50655691d21e110a3c4b38da52fb91c</techmdReference>
+  <techmdReference file="sample_images/sample_tiff2.tif">_e50655691d21e110a3c4b38da52fb91c</techmdReference>
+  <techmdReference file="sample_images/sample_tiff1_compressed.tif">_c08061e439bd40407c9e5332fec6084e</techmdReference>
+</techmdReferences>
