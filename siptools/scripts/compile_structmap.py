@@ -182,9 +182,9 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
 def add_file_to_filesec(workspace, path, filegrp, amdids):
     """Add file element to fileSec element given as parameter.
 
-    :workspace: Workspace from which techmd-files and othermd-files are
-                searched.
-    :path: path of techmd-file
+    :workspace: Workspace directorye from which techMD files and techmdMD
+                reference files searched.
+    :path: url encoded path of the file
     :filegrp (lxml.etree.Element): fileSec element
     :amdids (list): list of administrative metadata associated with the file
     :returns (str): id of file added to fileSec
@@ -198,7 +198,7 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
                            safe='/')
 
     # Create list of IDs of techmD elements that contain othermd metadata
-    othermd_ids = get_techmd_references(workspace, path)
+    othermd_ids = get_techmd_references(workspace, decode_path(path))
 
     # Create XML element and add it to fileSec
     file_el = mets.file_elem(
