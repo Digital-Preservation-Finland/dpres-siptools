@@ -9,6 +9,10 @@ import nisomix.mix
 import mets
 import siptools.utils
 
+SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
+                     'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
+                     'I': '1', 'F': '1'}
+
 
 def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
@@ -68,6 +72,7 @@ def _inspect_image(img):
     :returns: image file metadata dictionary
     """
     metadata = {}
+
     with wand.image.Image(filename=img) as i:
         metadata["byteorder"] = None
         metadata["width"] = str(i.width)
@@ -93,24 +98,15 @@ def _inspect_image(img):
 
         if image.format == 'TIFF':
             tag_info = image.tag_v2
-            if tag_info:
-                for tag, value in tag_info.items():
-                    if tag == 277:
-                        metadata["samplesperpixel"] = str(value)
+            if 277 in tag_info.keys():
+                metadata["samplesperpixel"] = str(tag_info[277])
         elif image.format == 'JPEG':
             exif_info = image._getexif()
-            if exif_info:
-                for tag, value in exif_info.items():
-                    if tag == 277:
-                        metadata["samplesperpixel"] = str(value)
+            if 277 in exif_info.keys():
+                metadata["samplesperpixel"] = str(exif_info[277])
 
         if not metadata["samplesperpixel"]:
-            modes = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
-                     'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
-                     'I': '1', 'F': '1'}
-            for key, value in modes.items():
-                if key == mode:
-                    metadata["samplesperpixel"] = value
+            metadata["samplesperpixel"] = SAMPLES_PER_PIXEL[mode]
 
     return metadata
 
