@@ -1,5 +1,34 @@
 """Tests for ``siptools.scripts.create_mix`` module"""
+import os
+import shutil
+import lxml.etree
 import siptools.scripts.create_mix
+
+
+def test_create_mix_techmdfile(testpath):
+    """Test for ``create_mix_techmdfile`` function. Creates MIX techMD for
+    three different image files. Two of the image files share the same MIX
+    metadata, so only two MIX techMD files should be created in workspace.
+    References to MIX techMD should be written into techmd-references.xml file.
+    """
+    os.makedirs(os.path.join(testpath, 'data'))
+    for image in ['tiff1.tif', 'tiff2.tif', 'tiff1_compressed.tif']:
+        # copy sample image into data directory in temporary workspace
+        image_path = os.path.join(testpath, 'data/%s' % image)
+        shutil.copy('tests/data/images/%s' % image, image_path)
+
+        # create techmd file and add reference
+        siptools.scripts.create_mix.create_mix_techmdfile(image_path, testpath)
+
+    # Count the MIX techMD files, i.e. the files with "mix-" prefix. There
+    # should two of them since tiff1.tif and tiff2.tif share the same MIX
+    # metadata.
+    assert len([x for x in os.listdir(testpath) if x.startswith('mix-')]) == 2
+
+    # Count the references written to techMD reference file. There should be
+    # one reference per image file.
+    xml = lxml.etree.parse(os.path.join(testpath, 'techmd-references.xml'))
+    assert len(xml.xpath('//techmdReference')) == 3
 
 
 def test_inspect_image():
