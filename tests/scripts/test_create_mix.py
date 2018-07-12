@@ -2,6 +2,26 @@
 import siptools.scripts.create_mix
 
 
+def test_inspect_image():
+    """Test for ``_inspect_image`` function. Pass a sample image file for
+    function and check that expected metada is found.
+    """
+
+    # pylint: disable=protected-access
+    metadata = siptools.scripts.create_mix._inspect_image(
+        'tests/data/images/tiff1.tif'
+    )
+
+    assert metadata["compression"] == 'b44a'
+    assert metadata["byteorder"] == "little endian"
+    assert metadata["width"] == "2"
+    assert metadata["height"] == "2"
+    assert metadata["colorspace"] == "srgb"
+    assert metadata["bitspersample"] == "8"
+    assert metadata["bpsunit"] == "integer"
+    assert metadata["samplesperpixel"] == "3"
+
+
 def test_create_mix():
     """Test ``_create_mix`` function. Pass valid metadata dictionary to
     function and check that result XML element contains expected elements.
