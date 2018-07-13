@@ -32,7 +32,7 @@ Install the required software with command::
 
     pip install -r requirements_github.txt
 
-Package "openssl-devel" and gcc might be needed in your system for M2Crypto.
+openssl-devel and gcc packages might be required in your system to install M2Crypto.
 
 Optional: To make digital object validation possible, install the validation software listed in dpres-ipt README file,
 see: https://github.com/Digital-Preservation-Finland/dpres-ipt
@@ -80,10 +80,7 @@ If your dataset contains image data, create also MIX metadata for each of the im
 An example how to create digital provenance metadata for mets.xml.
 Values for the parameters --event_outcome and --event_type are predefined lists::
 
-    python siptools/scripts/premis_event.py creation '2016-10-13T12:30:55'
-    --event_detail Testing --event_outcome success --event_outcome_detail
-    'Outcome detail' --workspace ./workspace --agent_name 'Demo Application'
-    --agent_type software --event_target 'tests/data/structured'
+    python siptools/scripts/premis_event.py creation '2016-10-13T12:30:55' --event_detail Testing --event_outcome success --event_outcome_detail 'Outcome detail' --workspace ./workspace --agent_name 'Demo Application' --agent_type software --event_target 'tests/data/structured'
 
 The argument --event_target is the object (file or directory) where the event applies.
 If the argument is not given, the target is the whole dataset. Do not use argument
@@ -93,9 +90,7 @@ not created.
 
 Script creates an xml file containing the descriptive metadata. Metadata must be in accepted format::
 
-    python siptools/scripts/import_description.py
-    'tests/data/import_description/metadata/dc_description.xml' --workspace
-    ./workspace --desc_root remove --dmdsec_target 'tests/data/structured'
+    python siptools/scripts/import_description.py 'tests/data/import_description/metadata/dc_description.xml' --workspace ./workspace --desc_root remove --dmdsec_target 'tests/data/structured'
 
 Argument '--desc_root remove' removes the root element from the given descriptive metadata.
 This may be needed, if the metadata is given in a container element belonging to another metadata format.
@@ -111,28 +106,24 @@ The folder structure of a dataset is turned into a file containing the structmap
 Optionally, the structural map can be created based on given EAD3 structure instead of folder structure,
 and here a valid EAD3 file is given with --dmdsec_loc argument::
 
-    python siptools/scripts/compile_structmap.py --workspace ./workspace
-    --dmdsec_struct ead3 --dmdsec_loc tests/data/import_description/metadata/ead3_test.xml
+    python siptools/scripts/compile_structmap.py --workspace ./workspace --dmdsec_struct ead3 --dmdsec_loc tests/data/import_description/metadata/ead3_test.xml
 
 Compile a mets.xml file from the previous results::
 
-    python siptools/scripts/compile_mets.py --workspace ./workspace
-    ch 'CSC' 'contract-id-1234' --copy_files --clean
+    python siptools/scripts/compile_mets.py --workspace ./workspace ch 'CSC' 'contract-id-1234' --copy_files --clean
 
 The argument --copy_files copies the files to the workspace.
 The argument --clean cleans the workspace from the METS parts created in previous scripts.
 
 Digitally sign the mets.xml::
 
-   python siptools/scripts/sign_mets.py workspace/mets.xml
-    /home/vagrant/dpres-siptools/workspace/signature.sig tests/data/rsa-keys.crt
+   python siptools/scripts/sign_mets.py workspace/mets.xml /home/vagrant/dpres-siptools/workspace/signature.sig tests/data/rsa-keys.crt
 
 Create a TAR file::
 
     python siptools/scripts/compress.py --tar_filename sip.tar ./workspace
 
 
-Copyright    
+Copyright
 ---------
 All rights reserved to CSC - IT Center for Science Ltd.
-
