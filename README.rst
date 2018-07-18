@@ -117,7 +117,7 @@ The argument --clean cleans the workspace from the METS parts created in previou
 
 Digitally sign the mets.xml::
 
-   python siptools/scripts/sign_mets.py workspace/mets.xml /home/vagrant/dpres-siptools/workspace/signature.sig tests/data/rsa-keys.crt
+    python siptools/scripts/sign_mets.py --workspace ./workspace tests/data/rsa-keys.crt
 
 Create a TAR file::
 

@@ -1,39 +1,50 @@
 """Command line tool for creating digital signatures for SIP"""
 
 import sys
+import os
 import argparse
-from dpres_signature.signature import signature_write
+import dpres_signature.signature
 
 
 def main(arguments=None):
     """The main method for sign_mets"""
     args = parse_arguments(arguments)
-
-    signature_write(
-        signature_path=args.signature_filename,
-        key_path=args.private_key,
-        cert_path=None,
-        include_patterns=[args.file_to_sign])
-
-    print "sign_mets created file: %s" % args.signature_filename
+    signature = sign_mets(args.workspace, args.sign_key)
+    print "sign_mets created file: %s" % signature
 
     return 0
 
 
 def parse_arguments(arguments):
-    """ Create arguments parser and return parsed command line argumets"""
+    """Create arguments parser and return parsed command line argumets"""
     parser = argparse.ArgumentParser(
         description="Create digital signature (signature.sig) for METS file.")
 
     parser.add_argument(
-        "file_to_sign", default="mets.xml",
-        help="File to be signed. Default is mets.xml")
-    parser.add_argument(
-        "signature_filename", default="signature.sig",
-        help="Filename for signature default is signature.sig")
-    parser.add_argument("private_key", help="Path for private key")
+        "--workspace", default="workspace",
+        help="Workspace directory that contains mets.xml file and where "
+             "signature.sig is written."
+    )
+    parser.add_argument("sign_key", help="Path for private key")
 
     return parser.parse_args(arguments)
+
+
+def sign_mets(workspace, key_path):
+    """Sign mets.xml file in workspace
+
+    :workspace: directory that contains mets.xml
+    :key_path: path to signing key
+    :returns: path of created signature
+    """
+    signature_path = os.path.join(workspace, 'signature.sig')
+    dpres_signature.signature.signature_write(
+        signature_path,
+        key_path,
+        None,
+        ['mets.xml']
+    )
+    return signature_path
 
 
 if __name__ == '__main__':

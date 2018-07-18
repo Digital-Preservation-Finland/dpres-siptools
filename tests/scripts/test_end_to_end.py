@@ -62,7 +62,7 @@ def test_end_to_end(testpath):
     assert child.returncode == 0
 
     command = ['python', 'siptools/scripts/sign_mets.py',
-               file_to_sign, signature_filename, private_key]
+               '--workspace', testpath, private_key]
     child = subprocess.Popen(command, env=environment)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
