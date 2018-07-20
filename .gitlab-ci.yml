@@ -1,0 +1,48 @@
+stages:
+  - rpm-package
+  - local-test
+  - e2e-distributed
+  - rpm-stable
+
+rpm-package:
+  stage: rpm-package
+  script:
+    - 'rpm-package.sh'
+
+unit-test:
+  stage: local-test
+  script:
+    - 'unit-test.sh'
+
+e2e-localhost-preservation:
+  stage: local-test
+  script:
+    - 'e2e-localhost.sh preservation'
+  except:
+    - master
+
+e2e-localhost-access-rest-api:
+  stage: local-test
+  script:
+    - 'e2e-localhost.sh access-rest-api'
+  except:
+    - master
+
+e2e-distributed-preservation:
+  stage: e2e-distributed
+  tags:
+    - e2e-distributed
+  script:
+    - 'e2e-distributed.sh preservation'
+  after_script:
+    - 'sudo umount e2e-distributed-preservation/.sshfs'
+  only:
+    - develop
+    - master
+
+rpm-stable:
+  stage: rpm-stable
+  script:
+    - 'rpm-stable.sh'
+  only:
+    - master
