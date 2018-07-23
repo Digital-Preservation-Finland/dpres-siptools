@@ -49,7 +49,7 @@ def create_mix_techmdfile(image_file, workspace):
     :returns: METS XML element
     """
     # Create MIX metadata
-    mix = _create_mix(_inspect_image(os.path.join(image_file)))
+    mix = create_mix(os.path.join(image_file))
 
     # Wrap MIX metadata to xmlData and mdWrap elements
     xmldata = mets.xmldata()
@@ -111,12 +111,14 @@ def _inspect_image(img):
     return metadata
 
 
-def _create_mix(metadata):
+def create_mix(image):
     """Create MIX metadata XML element for an image file.
 
-    :metadata: image file metadata dictionary
+    :image: image file
     :returns: MIX XML element
     """
+    metadata = _inspect_image(image)
+
     mix_compression \
         = nisomix.mix.mix_Compression(
             compressionScheme=metadata["compression"]
