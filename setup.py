@@ -16,8 +16,10 @@ def scripts_list():
             continue
         modulename = modulename.replace('.py', '')
         scriptname = modulename.replace('_', '-')
-        scripts.append('%s = siptools.scripts.%s:main' % (scriptname, modulename))
-    print scripts
+        scripts.append(
+            '%s = siptools.scripts.%s:main' % (scriptname, modulename)
+        )
+    print(scripts)
     return scripts
 
 
@@ -27,6 +29,16 @@ def main():
         name='siptools',
         packages=find_packages(exclude=['tests', 'tests.*']),
         version='dev',
+        install_requires=[
+            "lxml",
+            "scandir",
+            "file-magic",
+            "wand",
+            "Pillow",
+            "M2Crypto",
+            "python-mimeparse",
+            "dateutils",
+        ],
         entry_points={'console_scripts': scripts_list()})
 
 

@@ -24,4 +24,5 @@ ehthumbs.db
 Thumbs.db
 rpmbuild
 .venv/
+venv/
 junit*.xml
