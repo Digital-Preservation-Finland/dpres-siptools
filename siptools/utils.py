@@ -52,23 +52,30 @@ def add(treedict, path):
     return root
 
 
-def create_techmdfile(workspace, metadatatype, metadata):
+def create_techmdfile(workspace, metadata, mdtype, mdtypeversion,
+                      othermdtype=None):
     """Wraps XML metadata into techMD element and writes it to a METS XML file
-    in the workspace. The output filename is <metadatatype>-<hash>-othermd.xml,
-    where <metadatatype> is the type of metadata given as parameter and <hash>
+    in the workspace. The output filename is <mdtype>-<hash>-othermd.xml,
+    where <mdtype> is the type of metadata given as parameter and <hash>
     is a string generated from the metadata.
 
     :workspace: directory where file is created
-    :metadatype (string): type of metadata
     :metadata (Element): metadata XML element
+    :mdtype (string): Value of mdWrap MDTYPE attribute
+    :mdtypeversion (string): Value of mdWrap MDTYPEVERSION attribute
+    :othermdtype (string): Value of mdWrap OTHERMDTYPE attribute
     :returns: ID of techMD element written into the file
     """
     digest = hashlib.md5(xml_helpers.utils.serialize(metadata)).hexdigest()
-    filename = encode_path("%s-%s-%s" % (metadatatype, digest, "othermd.xml"))
+    filename = encode_path("%s-%s-%s" % (mdtype, digest, "othermd.xml"))
     techmd_id = encode_id(filename)
 
     if not os.path.exists(filename):
 
+        xmldata = mets.xmldata()
+        xmldata.append(metadata)
+        mdwrap = mets.mdwrap(mdtype, mdtypeversion, othermdtype)
+        mdwrap.append(xmldata)
         techmd = mets.techmd(techmd_id)
         techmd.append(metadata)
         amdsec = mets.amdsec()
@@ -79,7 +86,7 @@ def create_techmdfile(workspace, metadatatype, metadata):
         with open(os.path.join(workspace, filename), 'w+') as outfile:
             outfile.write(xml_helpers.utils.serialize(mets_))
             print "Wrote METS %s technical metadata to file %s" \
-                  % (metadatatype, outfile.name)
+                  % (mdtype, outfile.name)
 
     return techmd_id
 

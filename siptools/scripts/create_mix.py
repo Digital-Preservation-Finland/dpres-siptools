@@ -6,7 +6,6 @@ import argparse
 import wand.image
 import PIL.Image
 import nisomix.mix
-import mets
 import siptools.utils
 
 SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
@@ -51,14 +50,10 @@ def create_mix_techmdfile(image_file, workspace):
     # Create MIX metadata
     mix = create_mix(os.path.join(image_file))
 
-    # Wrap MIX metadata to xmlData and mdWrap elements
-    xmldata = mets.xmldata()
-    mdwrap = mets.mdwrap('NISOIMG', "2.0")
-    xmldata.append(mix)
-    mdwrap.append(xmldata)
-
     # Create METS XML file that contains MIX metadata
-    techmd_id = siptools.utils.create_techmdfile(workspace, 'mix', mdwrap)
+    techmd_id = siptools.utils.create_techmdfile(
+        workspace, mix, 'NISOIMG', "2.0"
+    )
 
     # Add reference from image file to techMD
     siptools.utils.add_techmdreference(workspace, techmd_id, image_file)

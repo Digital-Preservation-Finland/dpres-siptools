@@ -41,12 +41,12 @@ def test_create_techmdfile(testpath):
     """
 
     sample_data = lxml.etree.Element('sampleData')
-    create_techmdfile(testpath, 'mix', sample_data)
+    create_techmdfile(testpath, sample_data, 'NISOIMG', '2.0')
 
     element_tree = lxml.etree.parse(
         os.path.join(
             testpath,
-            'mix-455752263d67f67402b0dc9e7119e5b3-othermd.xml'
+            'NISOIMG-455752263d67f67402b0dc9e7119e5b3-othermd.xml'
         )
     )
 
