@@ -37,7 +37,6 @@ def main():
             "Pillow",
             "M2Crypto",
             "python-mimeparse",
-            "dateutils",
         ],
         entry_points={'console_scripts': scripts_list()})
 
