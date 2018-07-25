@@ -17,7 +17,7 @@ def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
     parser = argparse.ArgumentParser(
         description="Tool for creating mix metadata for an image. The MIX "
-                    "metadata is written to NISOIMG-<hash>-othermd.xml METS "
+                    "metadata is written to <hash>-NISOIMG-techmd.xml METS "
                     "XML file in the workspace directory. The MIX techMD "
                     "reference is written to techmd-references.xml. If "
                     "similar MIX metadata is already found in workspace, the "

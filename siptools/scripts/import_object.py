@@ -75,7 +75,7 @@ def main(arguments=None):
         mdwrap = mets.mdwrap('PREMIS:OBJECT', '2.3', child_elements=[xmldata])
         techmd = mets.techmd(
             encode_id(encode_path(filerel.decode(sys.getfilesystemencoding()),
-                                  suffix="-techmd.xml")),
+                                  suffix="-premis-techmd.xml")),
             child_elements=[mdwrap])
         amdsec = mets.amdsec(child_elements=[techmd])
         _mets = mets.mets(child_elements=[amdsec])
@@ -87,7 +87,7 @@ def main(arguments=None):
             os.makedirs(args.workspace)
 
         filename = encode_path(filerel.decode(sys.getfilesystemencoding()),
-                               suffix="-techmd.xml")
+                               suffix="-premis-techmd.xml")
 
 
         with open(os.path.join(args.workspace, filename), 'w+') as outfile:

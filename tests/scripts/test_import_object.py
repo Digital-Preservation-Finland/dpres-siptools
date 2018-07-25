@@ -16,7 +16,7 @@ def test_import_object_ok(testpath):
     return_code = import_object.main(arguments)
 
     output = os.path.join(testpath, encode_path(input_file.decode('utf-8'),
-                                                suffix='-techmd.xml'))
+                                                suffix='-premis-techmd.xml'))
 
     tree = ET.parse(output)
     root = tree.getroot()
@@ -38,7 +38,7 @@ def test_import_object_skip_inspection_ok(testpath):
     return_code = import_object.main(arguments)
 
     output = os.path.join(testpath, encode_path(input_file,
-                                                suffix='-techmd.xml'))
+                                                suffix='-premis-techmd.xml'))
 
     tree = ET.parse(output)
     root = tree.getroot()
@@ -59,7 +59,7 @@ def test_import_object_skip_inspection_nodate_ok(testpath):
     return_code = import_object.main(arguments)
 
     output = os.path.join(testpath, encode_path(input_file,
-                                                suffix='-techmd.xml'))
+                                                suffix='-premis-techmd.xml'))
 
     tree = ET.parse(output)
     root = tree.getroot()
@@ -81,7 +81,7 @@ def test_import_object_structured_ok(testpath):
         return_code = import_object.main(arguments)
         test_file = os.path.relpath(element, os.curdir)
         output = os.path.join(testpath, encode_path(test_file,
-                                                    suffix='-techmd.xml'))
+                                                    suffix='-premis-techmd.xml'))
 
         tree = ET.parse(output)
         root = tree.getroot()
@@ -98,7 +98,7 @@ def test_import_object_validate_pdf_ok(testpath):
     return_code = import_object.main(arguments)
 
     output = os.path.join(testpath, encode_path(input_file,
-                                                suffix='-techmd.xml'))
+                                                suffix='-premis-techmd.xml'))
 
     tree = ET.parse(output)
     root = tree.getroot()
@@ -135,7 +135,7 @@ def test_import_object_utf8(testpath):
 
     # Check output
     output = os.path.join(testpath, encode_path(utf8_file.decode('utf-8'),
-                                                suffix='-techmd.xml'))
+                                                suffix='-premis-techmd.xml'))
     tree = ET.parse(output)
     root = tree.getroot()
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',

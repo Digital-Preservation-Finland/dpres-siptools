@@ -25,7 +25,7 @@ def parse_arguments(arguments):
 
     parser = argparse.ArgumentParser(
         description="Tool for generating METS fileSec and structMap based on "
-                    "technical metada files (-techmd.xml -suffix) and "
+                    "technical metada files (-premis-techmd.xml -suffix) and "
                     "descriptive metadata files (-dmdsec.xml -suffix) found "
                     "in workspace directory. Outputs two XML files: "
                     "filesec.xml and structmap.xml"
@@ -102,7 +102,7 @@ def div_structure(workspace):
     :returns (defaultdict): Directory tree as a dict like object
     """
     workspace_files = [fname.name for fname in scandir.scandir(workspace)]
-    techmd_files = [x for x in workspace_files if 'techmd' in x]
+    techmd_files = [x for x in workspace_files if '-premis-techmd.xml' in x]
     divs = tree()
     for techmd_file in techmd_files:
         add(divs, decode_path(techmd_file).split('/'))
@@ -182,19 +182,20 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
 def add_file_to_filesec(workspace, path, filegrp, amdids):
     """Add file element to fileSec element given as parameter.
 
-    :workspace: Workspace directorye from which techMD files and techmdMD
+    :workspace: Workspace directorye from which techMD files and techMD
                 reference files searched.
     :path: url encoded path of the file
     :filegrp (lxml.etree.Element): fileSec element
     :amdids (list): list of administrative metadata associated with the file
     :returns (str): id of file added to fileSec
     """
-    techmd_files, techmd_ids = ids_for_files(workspace, path, 'techmd.xml')
+    techmd_files, techmd_ids = ids_for_files(workspace, path,
+                                             '-premis-techmd.xml')
     fileid = '_' + str(uuid4())
     # TODO When calling encode(decode(string)) you should get the original
     # string back, but this does something else (also). Should be refactored.
     # -vvainio 26.06.2018
-    filepath = encode_path(decode_path(techmd_files[0], '-techmd.xml'),
+    filepath = encode_path(decode_path(techmd_files[0], '-premis-techmd.xml'),
                            safe='/')
 
     # Create list of IDs of techmD elements that contain othermd metadata
@@ -251,8 +252,8 @@ def create_structmap(workspace, divs, structmap, filegrp, path=''):
     for div in divs.keys():
         # It's a file if there is "-techmd.xml", lets create file+fptr
         # elements
-        if div.endswith('-techmd.xml'):
-            div = div[:-len('-techmd.xml')]
+        if div.endswith('-premis-techmd.xml'):
+            div = div[:-len('-premis-techmd.xml')]
             div_path = encode_path(os.path.join(decode_path(path), div))
             amdids = get_links_event_agent(workspace, div_path)
             fileid = add_file_to_filesec(workspace, div_path, filegrp, amdids)

@@ -89,8 +89,7 @@ def main(arguments=None):
     for entry in scandir(args.workspace):
         if entry.name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
                                'dmdsec.xml', 'structmap.xml', 'filesec.xml',
-                               'rightsmd.xml',
-                               '-othermd.xml')) and entry.is_file():
+                               'rightsmd.xml')) and entry.is_file():
             element = lxml.etree.parse(entry.path).getroot()[0]
             elements.append(element)
 
@@ -133,8 +132,7 @@ def clean_metsparts(path):
         for name in files:
             if (name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
                                'dmdsec.xml', 'structmap.xml', 'filesec.xml',
-                               'rightsmd.xml', '-othermd.xml',
-                               'techmd-references.xml'))):
+                               'rightsmd.xml', 'techmd-references.xml'))):
                 os.remove(os.path.join(root, name))
 
 
@@ -142,8 +140,8 @@ def copy_files(workspace, data_dir):
     """Copy digital objects to workspace
     """
     for entry in scandir(workspace):
-        if entry.name.endswith('-techmd.xml') and entry.is_file():
-            source = decode_path(entry.name, '-techmd.xml')
+        if entry.name.endswith('-premis-techmd.xml') and entry.is_file():
+            source = decode_path(entry.name, '-premis-techmd.xml')
             target = os.path.join(workspace, source)
             if not os.path.exists(os.path.dirname(target)):
                 os.makedirs(os.path.dirname(target))

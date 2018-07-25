@@ -46,7 +46,7 @@ def test_create_techmdfile(testpath):
     element_tree = lxml.etree.parse(
         os.path.join(
             testpath,
-            'NISOIMG-455752263d67f67402b0dc9e7119e5b3-othermd.xml'
+            '455752263d67f67402b0dc9e7119e5b3-NISOIMG-techmd.xml'
         )
     )
 

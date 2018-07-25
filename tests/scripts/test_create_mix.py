@@ -23,8 +23,8 @@ def test_create_mix_techmdfile(testpath):
     # Count the MIX techMD files, i.e. the files with "NISOIMG-" prefix. There
     # should two of them since tiff1.tif and tiff2.tif share the same MIX
     # metadata.
-    assert len([x for x in os.listdir(testpath) if x.startswith('NISOIMG-')]) \
-        == 2
+    files = os.listdir(testpath)
+    assert len([x for x in files if x.endswith('NISOIMG-techmd.xml')]) == 2
 
     # Count the references written to techMD reference file. There should be
     # one reference per image file.

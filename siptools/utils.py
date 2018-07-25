@@ -67,7 +67,8 @@ def create_techmdfile(workspace, metadata, mdtype, mdtypeversion,
     :returns: ID of techMD element written into the file
     """
     digest = hashlib.md5(xml_helpers.utils.serialize(metadata)).hexdigest()
-    filename = encode_path("%s-%s-%s" % (mdtype, digest, "othermd.xml"))
+    suffix = othermdtype if othermdtype else mdtype
+    filename = encode_path("%s-%s-techmd.xml" % (digest, suffix))
     techmd_id = encode_id(filename)
 
     if not os.path.exists(filename):
