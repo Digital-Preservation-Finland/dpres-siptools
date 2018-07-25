@@ -9,7 +9,8 @@ import addml
 def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
     parser = argparse.ArgumentParser(
-        description="Tool for creating ADDML metadata for an CSV file. The "
+        description="THIS SCRIPT IS UNDER DEVELOPMENT AND DOES NOT PRODUCE VALID ADDML. "
+                    "Tool for creating ADDML metadata for an CSV file. The "
                     "ADDML metadata is written to <hash>-ADDML-techmd.xml "
                     "METS XML file in the workspace directory. The ADDML "
                     "techMD reference is written to techmd-references.xml. "
@@ -53,7 +54,8 @@ def create_addml_techmdfile(csv_file, workspace):
 
 
 def create_addml(csv_file):
-    """Reads CSV file and creates ADDML metadata.
+    """NOT IMPLEMENTED
+    Reads CSV file and creates ADDML metadata.
 
     :filename: CSV file path
     :returns: ADDML metadata XML element
