@@ -45,7 +45,7 @@ def create_mix_techmdfile(image_file, workspace):
     image file.
 
     :filename: Filename of image file
-    :returns: METS XML element
+    :returns: None
     """
     # Create MIX metadata
     mix = create_mix(os.path.join(image_file))
