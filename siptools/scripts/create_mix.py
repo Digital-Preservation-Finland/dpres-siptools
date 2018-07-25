@@ -1,5 +1,5 @@
 # coding=utf-8
-"""Command line tool for creating mix metadata."""
+"""Command line tool for creating MIX metadata."""
 
 import os
 import argparse
@@ -17,11 +17,11 @@ def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
     parser = argparse.ArgumentParser(
         description="Tool for creating mix metadata for an image. The MIX "
-                    "metadata is written to mix-<hash>-othermd.xml METS XML"
-                    "file in the workspace directory. The MIX techMD reference"
-                    " is written to techmd-references.xml. If similar MIX "
-                    "metadata is alredy found in workspace, the file will not "
-                    "be rewritten."
+                    "metadata is written to NISOIMG-<hash>-othermd.xml METS "
+                    "XML file in the workspace directory. The MIX techMD "
+                    "reference is written to techmd-references.xml. If "
+                    "similar MIX metadata is already found in workspace, the "
+                    "file will not be rewritten."
     )
     parser.add_argument('file', type=str,
                         help="Image file to be described as mix metadata")
@@ -39,10 +39,10 @@ def main(arguments=None):
 
 def create_mix_techmdfile(image_file, workspace):
     """Creates  MIX metadata for a image file, and writes it into a METS XML
-    file in workspace. Adds MIX reference to techMD refence file used in
-    compile-structmap script. If similar MIX metada already exists in
-    workspace, only the techMD refernce to the MIX metada is created for image
-    file.
+    file in workspace. Adds MIX reference to techMD reference file used in
+    compile-structmap script. If similar MIX metadata already exists in
+    workspace, only the techMD reference to the MIX metadata is created for
+    image file.
 
     :filename: Filename of image file
     :returns: METS XML element
