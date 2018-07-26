@@ -14,3 +14,4 @@ git+https://github.com/Digital-Preservation-Finland/premis.git#egg=premis
 git+https://github.com/Digital-Preservation-Finland/dpres-signature.git#egg=dpres_signature
 git+https://github.com/Digital-Preservation-Finland/dpres-ipt.git#egg=ipt
 git+https://github.com/Digital-Preservation-Finland/nisomix.git#egg=nisomix
+git+https://github.com/Digital-Preservation-Finland/addml.git#egg=addml
