@@ -9,7 +9,6 @@ import datetime
 import platform
 import argparse
 import magic
-import subprocess
 
 from ipt.validator.validators import iter_validators
 from siptools.utils import encode_path, encode_id
@@ -90,7 +89,6 @@ def main(arguments=None):
         filename = encode_path(filerel.decode(sys.getfilesystemencoding()),
                                suffix="-premis-techmd.xml")
 
-
         with open(os.path.join(args.workspace, filename), 'w+') as outfile:
             outfile.write(h.serialize(_mets))
             print "Wrote METS technical metadata to file %s" % outfile.name
@@ -104,14 +102,12 @@ def create_premis_object(tree, fname, skip_inspection=None,
                          date_created=None, charset=None):
     """Create Premis object for given file."""
 
-    validator_info = {}
     if not skip_inspection:
         for validator in iter_validators(metadata_info(fname)):
             validation_result = validator.result()
             if not validation_result['is_valid']:
                 raise Exception('File %s is not valid: %s', fname,
                                 validation_result['errors'])
-        validator_info = validation_result['result']
 
     if message_digest is None:
         message_digest = md5(fname)
@@ -119,12 +115,13 @@ def create_premis_object(tree, fname, skip_inspection=None,
         digest_algorithm = 'MD5'
     if format_name is None:
         format_name = metadata_info(fname)['format']['mimetype']
-    if format_version is None and \
-            (metadata_info(fname) and 'version' in metadata_info(fname)['format']):
+    if format_version is None and (metadata_info(fname) and 'version'
+                                   in metadata_info(fname)['format']):
         format_version = metadata_info(fname)['format']['version']
-    if charset or (metadata_info(fname) and 'charset' in metadata_info(fname)['format']):
-        format_name += '; charset=' + charset \
-            if charset else '; charset=' + metadata_info(fname)['format']['charset']
+    if charset or (metadata_info(fname) and 'charset'
+                   in metadata_info(fname)['format']):
+        format_name += '; charset=' + charset if charset \
+            else '; charset=' + metadata_info(fname)['format']['charset']
 
     if date_created is None:
         date_created = creation_date(fname)
@@ -213,6 +210,7 @@ def metadata_info(fname):
 
     return metadata_info_
 
+
 def md5(fname):
     """Calculate md5 checksum for given file."""
     hash_md5 = hashlib.md5()
@@ -268,20 +266,14 @@ def creation_date(path_to_file):
 def return_charset(charset_raw):
     """Returns the charset for text files in a correct format. Charset
     is read from the file using the file command. The function
-    raises a CharsetError if the charset is unsupported.
+    raises a ValueError if the charset is unsupported.
 
-    :filepath: path to file
-
-    :returns: the charset as a string
+    :charset_raw: Original charset name
+    :returns: the charset in correct format
     """
     allowed_charsets = ['ISO-8859-15', 'UTF-8',
                         'UTF-16', 'UTF-32']
 
-    #command = ['file', '-bi', filepath]
-    #charset_raw = str(subprocess.Popen(
-    #    command,
-    #    stdout=subprocess.PIPE).stdout.read()).rsplit(
-    #        '=', 1)[-1].upper()[:-1]
     if charset_raw == 'US-ASCII':
         charset = 'ISO-8859-15'
     elif charset_raw == 'ISO-8859-1':
@@ -292,7 +284,7 @@ def return_charset(charset_raw):
         charset = charset_raw
 
     if charset not in allowed_charsets:
-        raise CharsetError('Invalid charset.')
+        raise ValueError('Invalid charset.')
 
     return charset
 

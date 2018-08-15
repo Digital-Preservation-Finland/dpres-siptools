@@ -278,6 +278,26 @@ def test_import_object_fail():
         import_object.main(arguments)
 
 
+@pytest.mark.parametrize('input_charset,output_charset',
+                         [('ISO-8859-15', 'ISO-8859-15'),
+                          ('ISO-8859-1', 'ISO-8859-15'),
+                          ('US-ASCII', 'ISO-8859-15'),
+                          ('UTF-8', 'UTF-8'),
+                          ('UTF-16', 'UTF-16'),
+                          ('UTF-16LE', 'UTF-16'),
+                          ('UTF-16BE', 'UTF-16'),
+                          ('UTF-32', 'UTF-32')])
+def test_return_charset_ok(input_charset, output_charset):
+    """Test ``return_charset`` function with valid inputs"""
+    assert import_object.return_charset(input_charset) == output_charset
+
+
+def test_return_charset_invalid():
+    """Test ``return_charset`` function with invalid charset as input."""
+    with pytest.raises(ValueError):
+        import_object.return_charset('KOI8-R')
+
+
 def iterate_files(path):
     """Iterate through all files inside a directory."""
     for root, _, files in os.walk(path, topdown=False):
