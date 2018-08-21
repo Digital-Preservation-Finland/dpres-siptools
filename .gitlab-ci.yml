@@ -8,11 +8,15 @@ rpm-package:
   stage: rpm-package
   script:
     - 'rpm-package.sh'
+  except:
+    - master
 
 unit-test:
   stage: local-test
   script:
     - 'unit-test.sh'
+  except:
+    - master
 
 e2e-localhost-preservation:
   stage: local-test
@@ -38,11 +42,11 @@ e2e-distributed-preservation:
     - 'sudo umount e2e-distributed-preservation/.sshfs'
   only:
     - develop
-    - master
+    - tags
 
 rpm-stable:
   stage: rpm-stable
   script:
     - 'rpm-stable.sh'
   only:
-    - master
+    - tags
