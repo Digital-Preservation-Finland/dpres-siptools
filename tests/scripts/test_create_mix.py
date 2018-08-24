@@ -1,5 +1,7 @@
+# encoding: utf-8
 """Tests for ``siptools.scripts.create_mix`` module"""
 import os
+import sys
 import shutil
 import lxml.etree
 import siptools.scripts.create_mix
@@ -30,6 +32,35 @@ def test_create_mix_techmdfile(testpath):
     # one reference per image file.
     xml = lxml.etree.parse(os.path.join(testpath, 'techmd-references.xml'))
     assert len(xml.xpath('//techmdReference')) == 3
+
+
+def test_main_utf8_files(testpath):
+    """Test for ``main`` function with filenames that contain non-ascii
+    characters.
+    """
+    # Create sample data directory with image that has non-ascii characters in
+    # filename
+    os.makedirs(os.path.join(testpath, 'data'))
+    image_relative_path = os.path.join('data', u'äöå.tif')
+    image_full_path = os.path.join(testpath, image_relative_path)
+    shutil.copy('tests/data/images/tiff1.tif', image_full_path)
+
+    # Run main function inside testpath. Siptools does not work if data is not
+    # in current working directory
+    last_path = os.getcwd()
+    os.chdir(testpath)
+    try:
+        # Call main function with encoded filename as parameter
+        siptools.scripts.create_mix.main(
+            ['--workspace', testpath,
+             image_relative_path.encode(sys.getfilesystemencoding())]
+        )
+    finally:
+        os.chdir(last_path)
+
+    # Check that filename is found in techMD reference file.
+    xml = lxml.etree.parse(os.path.join(testpath, 'techmd-references.xml'))
+    assert len(xml.xpath(u'//techmdReference[@file="data/äöå.tif"]')) == 1
 
 
 def test_inspect_image():

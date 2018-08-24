@@ -2,6 +2,7 @@
 """Command line tool for creating MIX metadata."""
 
 import os
+import sys
 import argparse
 import wand.image
 import PIL.Image
@@ -15,6 +16,9 @@ SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
 
 def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
+    # Convert all arguments to unicode strings
+    arguments = [x.decode(sys.getfilesystemencoding()) for x in arguments]
+
     parser = argparse.ArgumentParser(
         description="Tool for creating mix metadata for an image. The MIX "
                     "metadata is written to <hash>-NISOIMG-techmd.xml METS "
@@ -23,9 +27,9 @@ def parse_arguments(arguments):
                     "similar MIX metadata is already found in workspace, the "
                     "file will not be rewritten."
     )
-    parser.add_argument('file', type=str,
+    parser.add_argument('file', type=unicode,
                         help="Image file to be described as mix metadata")
-    parser.add_argument('--workspace', type=str, default='./workspace/',
+    parser.add_argument('--workspace', type=unicode, default='./workspace/',
                         help="Workspace directory for the metadata files.")
 
     return parser.parse_args(arguments)
@@ -147,4 +151,4 @@ def create_mix(image):
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
