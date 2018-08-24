@@ -57,8 +57,13 @@ def test_create_techmdfile(testpath):
     )
     assert len(techmd_elements) == 1
 
-    # The techMD element should contain one sampleData element
-    sample_data_elements = techmd_elements[0].xpath('//sampleData')
+    # The techMD element should contain one sampleData element wrapped in
+    # mdWrap and xmlData elements
+    sample_data_elements \
+        = techmd_elements[0].xpath(
+            '//mets:mdWrap/mets:xmlData/sampleData',
+            namespaces={"mets": "http://www.loc.gov/METS/"}
+        )
     assert len(sample_data_elements) == 1
 
 

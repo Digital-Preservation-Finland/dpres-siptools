@@ -78,7 +78,7 @@ def create_techmdfile(workspace, metadata, mdtype, mdtypeversion,
         mdwrap = mets.mdwrap(mdtype, mdtypeversion, othermdtype)
         mdwrap.append(xmldata)
         techmd = mets.techmd(techmd_id)
-        techmd.append(metadata)
+        techmd.append(mdwrap)
         amdsec = mets.amdsec()
         amdsec.append(techmd)
         mets_ = mets.mets()
