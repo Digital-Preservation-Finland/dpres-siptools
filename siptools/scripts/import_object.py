@@ -10,7 +10,12 @@ import platform
 import argparse
 import magic
 
-from ipt.validator.validators import iter_validators
+try:
+    from ipt.validator.validators import iter_validators
+except ImportError:
+    IPT_INSTALLED = False
+else:
+    IPT_INSTALLED = True
 from siptools.utils import encode_path, encode_id
 import premis
 import mets
@@ -103,11 +108,17 @@ def create_premis_object(tree, fname, skip_inspection=None,
     """Create Premis object for given file."""
 
     if not skip_inspection:
+        if not IPT_INSTALLED:
+            raise Exception('ipt module is required for file validation. '
+                            'Please install dpres-ipt or skip file validation '
+                            'with --skip_inspection parameter.')
         for validator in iter_validators(metadata_info(fname)):
             validation_result = validator.result()
             if not validation_result['is_valid']:
-                raise Exception('File %s is not valid: %s', fname,
-                                validation_result['errors'])
+                raise Exception(
+                    'File %s is not valid: %s' % (fname,
+                                                  validation_result['errors'])
+                )
 
     if message_digest is None:
         message_digest = md5(fname)
@@ -292,4 +303,3 @@ def return_charset(charset_raw):
 if __name__ == '__main__':
     RETVAL = main()
     sys.exit(RETVAL)
-
