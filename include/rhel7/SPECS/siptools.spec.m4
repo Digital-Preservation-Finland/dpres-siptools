@@ -21,7 +21,6 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
 Requires:       python python-pillow python-setuptools python-magic dpres-signature xml-helpers mets premis nisomix addml
-BuildRequires:  dpres-ipt
 
 %description
 Command line tools for creating Submission information packages (SIP) for preservation workflow.
