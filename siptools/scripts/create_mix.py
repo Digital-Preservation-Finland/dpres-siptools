@@ -41,14 +41,16 @@ def main(arguments=None):
     create_mix_techmdfile(args.file, args.workspace)
 
 
-def create_mix_techmdfile(image_file, workspace):
+def create_mix_techmdfile(image_file, workspace, file_relpath=None):
     """Creates  MIX metadata for a image file, and writes it into a METS XML
     file in workspace. Adds MIX reference to techMD reference file used in
     compile-structmap script. If similar MIX metadata already exists in
     workspace, only the techMD reference to the MIX metadata is created for
     image file.
 
-    :filename: Filename of image file
+    :image_file: path to image file
+    :workspace: workspace path
+    :file_relpath: relative path to image file to write to reference file
     :returns: None
     """
     # Create MIX metadata
@@ -59,6 +61,8 @@ def create_mix_techmdfile(image_file, workspace):
         workspace, mix, 'NISOIMG', "2.0"
     )
 
+    if file_relpath:
+        image_file = file_relpath
     # Add reference from image file to techMD
     siptools.utils.add_techmdreference(workspace, techmd_id, image_file)
 
@@ -97,11 +101,11 @@ def _inspect_image(img):
 
         if image.format == 'TIFF':
             tag_info = image.tag_v2
-            if 277 in tag_info.keys():
+            if  tag_info and 277 in tag_info.keys():
                 metadata["samplesperpixel"] = str(tag_info[277])
         elif image.format == 'JPEG':
             exif_info = image._getexif()
-            if 277 in exif_info.keys():
+            if exif_info and 277 in exif_info.keys():
                 metadata["samplesperpixel"] = str(exif_info[277])
 
         if not metadata["samplesperpixel"]:
