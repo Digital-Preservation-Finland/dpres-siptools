@@ -9,10 +9,10 @@ from siptools.xml.mets import NAMESPACES
 
 def create_test_data(workspace):
     """Create technical metadata test data."""
-    import_object.main(['--workspace', workspace,
+    import_object.main(['--workspace', workspace, '--skip_inspection',
                         'tests/data/structured/Software files/koodi.java'])
     import_object.main(
-        ['--workspace', workspace,
+        ['--workspace', workspace, '--skip_inspection',
          'tests/data/structured/Publication files/publication.txt'])
 
 

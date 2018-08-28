@@ -1,5 +1,6 @@
 # encoding: utf-8
 """Unit tests for ``siptools.scripts.import_object`` module"""
+import sys
 import os.path
 import datetime
 import lxml.etree as ET
@@ -12,7 +13,7 @@ from siptools.xml.mets import NAMESPACES
 def test_import_object_ok(testpath):
     """Test import_object.main funtion with valid test data."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, input_file]
+    arguments = ['--workspace', testpath, '--skip_inspection', input_file]
     return_code = import_object.main(arguments)
 
     output = os.path.join(testpath, encode_path(input_file.decode('utf-8'),
@@ -76,12 +77,13 @@ def test_import_object_structured_ok(testpath):
                                              'tests/data/structured'))
     test_file = ""
     for element in iterate_files(test_data):
-        arguments = ['--workspace', workspace,
+        arguments = ['--workspace', workspace, '--skip_inspection',
                      os.path.relpath(element, os.curdir)]
         return_code = import_object.main(arguments)
         test_file = os.path.relpath(element, os.curdir)
-        output = os.path.join(testpath, encode_path(test_file,
-                                                    suffix='-premis-techmd.xml'))
+        output = os.path.join(testpath,
+                              encode_path(test_file,
+                                          suffix='-premis-techmd.xml'))
 
         tree = ET.parse(output)
         root = tree.getroot()
@@ -91,6 +93,7 @@ def test_import_object_structured_ok(testpath):
         assert return_code == 0
 
 
+@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 def test_import_object_validate_pdf_ok(testpath):
     """Test PDF validation in import_object.main funciton."""
     input_file = 'tests/data/test_import.pdf'
@@ -131,7 +134,8 @@ def test_import_object_utf8(testpath):
         file_.write('Voi änkeröinen.')
 
     # Run function
-    assert import_object.main(['--workspace', testpath, utf8_file]) == 0
+    assert import_object.main(['--workspace', testpath, '--skip_inspection',
+                               utf8_file]) == 0
 
     # Check output
     output = os.path.join(testpath, encode_path(utf8_file.decode('utf-8'),
@@ -142,6 +146,7 @@ def test_import_object_utf8(testpath):
                           namespaces=NAMESPACES)) == 1
 
 
+@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/valid_tiff.tif'])
 def test_import_object_validate_tiff_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_tiff.tif']
@@ -163,6 +168,7 @@ def test_import_object_validate_tiff_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/valid_jpeg.jpeg'])
 def test_import_object_validate_jpeg_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_jpeg.jpeg']
@@ -184,6 +190,7 @@ def test_import_object_validate_jpeg_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_validate_text_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/text-file.txt']
@@ -205,6 +212,7 @@ def test_import_object_validate_text_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/csvfile.csv'])
 def test_import_object_validate_csv_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/csvfile.csv']
@@ -226,6 +234,7 @@ def test_import_object_validate_csv_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/mets_valid_minimal.xml'])
 def test_import_object_validate_mets_xml_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/mets_valid_minimal.xml']
@@ -247,6 +256,7 @@ def test_import_object_validate_mets_xml_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/ODF_Text_Document.odt'])
 def test_import_object_validate_odt_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/ODF_Text_Document.odt']

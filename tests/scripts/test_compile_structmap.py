@@ -11,7 +11,7 @@ from siptools.scripts import import_object
 
 def create_test_data(workspace):
     """Create technical metadata test data."""
-    import_object.main(['--workspace', workspace,
+    import_object.main(['--workspace', workspace, '--skip_inspection',
                         'tests/data/structured/Software files/koodi.java'])
 
 
@@ -47,7 +47,7 @@ def test_compile_structmap_not_ok(testpath):
 
 def test_file_and_dir(testpath):
     """Test the cmpile_structmap with a file and directory case."""
-    import_object.main(['--workspace', testpath,
+    import_object.main(['--workspace', testpath, '--skip_inspection',
                         'tests/data/file_and_dir'])
     return_code = compile_structmap.main(['--workspace', testpath])
     output_structmap = os.path.join(testpath, 'structmap.xml')
