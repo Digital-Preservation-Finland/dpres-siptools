@@ -35,10 +35,28 @@ def main():
             "file-magic",
             "wand",
             "Pillow",
-            "M2Crypto",
-            "python-mimeparse",
+            "xml_helpers",
+            "mets",
+            "premis",
+            "dpres_signature",
+            "nisomix",
+            "addml"
         ],
-        entry_points={'console_scripts': scripts_list()})
+        dependency_links=[
+            'git+https://gitlab.csc.fi/dpres/xml-helpers.git'
+            '@develop#egg=xml_helpers-0.0',
+            'git+https://gitlab.csc.fi/dpres/mets.git@develop#egg=mets-0.0',
+            'git+https://gitlab.csc.fi/dpres/premis.git'
+            '@develop#egg=premis-0.0',
+            'git+https://gitlab.csc.fi/dpres/dpres-signature.git'
+            '@develop#egg=dpres_signature-0.0',
+            'git+https://gitlab.csc.fi/dpres/nisomix.git'
+            '@develop#egg=nisomix-0.0',
+            'git+https://gitlab.csc.fi/dpres/addml.git@develop#egg=addml-0.0'
+        ],
+        entry_points={'console_scripts': scripts_list()}
+
+    )
 
 
 if __name__ == '__main__':

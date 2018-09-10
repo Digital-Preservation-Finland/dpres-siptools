@@ -1,17 +1,20 @@
+# Testing requirements
 pytest
 coverage
 pytest-cov
+
+# Install requirements
 lxml
 scandir
 file-magic
 wand
 Pillow
-M2Crypto
-python-mimeparse
 git+https://gitlab.csc.fi/dpres/xml-helpers.git@develop#egg=xml_helpers
 git+https://gitlab.csc.fi/dpres/mets.git@develop#egg=mets
 git+https://gitlab.csc.fi/dpres/premis.git@develop#egg=premis
 git+https://gitlab.csc.fi/dpres/dpres-signature.git@develop#egg=dpres_signature
-git+https://gitlab.csc.fi/dpres/dpres-ipt.git@develop#egg=ipt
 git+https://gitlab.csc.fi/dpres/nisomix.git@develop#egg=nisomix
 git+https://gitlab.csc.fi/dpres/addml.git@develop#egg=addml
+
+# Optional install requirements
+git+https://gitlab.csc.fi/dpres/dpres-ipt.git@develop#egg=ipt
