@@ -70,6 +70,7 @@ def create_techmdfile(workspace, metadata, mdtype, mdtypeversion,
     suffix = othermdtype if othermdtype else mdtype
     filename = encode_path("%s-%s-techmd.xml" % (digest, suffix))
     techmd_id = encode_id(filename)
+    filename = os.path.join(workspace, filename)
 
     if not os.path.exists(filename):
 
@@ -84,7 +85,7 @@ def create_techmdfile(workspace, metadata, mdtype, mdtypeversion,
         mets_ = mets.mets()
         mets_.append(amdsec)
 
-        with open(os.path.join(workspace, filename), 'w+') as outfile:
+        with open(filename, 'w+') as outfile:
             outfile.write(xml_helpers.utils.serialize(mets_))
             print "Wrote METS %s technical metadata to file %s" \
                   % (mdtype, outfile.name)

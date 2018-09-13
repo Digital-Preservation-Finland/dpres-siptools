@@ -60,21 +60,65 @@ def create_addml_techmdfile(
     csv_file = os.path.join(sip_creation_path, filename)
 
     # Create ADDML metadata
-    addml_data = create_addml_etree(
+    addml_data = create_addml(
             sip_creation_path, filename, delimiter,
             isheader, charset, recordSeparator, quotingChar)
 
     digest = hashlib.md5(xml_helpers.utils.serialize(addml_data)).hexdigest()
     techmd_fname = siptools.utils.encode_path("%s-ADDML-techmd.xml" % digest)
+    techmd_fname = os.path.join(workspace, techmd_fname)
 
     # Create METS XML file that contains ADDML metadata
     techmd_id = siptools.utils.create_techmdfile(
         workspace, addml_data, 'OTHER', "8.3", "ADDML")
 
-    # TODO: Append flatFile element to the created METS XML file
+
+    # Append flatFile element to the created METS XML file
+    new_line = flatFile_str(filename, "ref_001")
+    append_line(techmd_fname, "<addml:flatFiles>", new_line)
     
     # Add reference from image file to techMD
     siptools.utils.add_techmdreference(workspace, techmd_id, csv_file)
+
+
+def append_line(fname, xml_elem, new_line):
+    """ Appends a new line to file fname below
+    line with xml_elem.
+
+    :fname: File name
+    :xml_elem: Element below which to append
+    :new_line: Content of the appended line
+
+    :returns: None
+    """
+
+    # Read all the lines into memory
+    with open(fname, 'r') as f:
+        lines = f.readlines()
+
+    # Overwrite the file appending line_content
+    with open(fname, 'w') as f:
+        
+        for line in lines:
+            f.write(line)
+
+            if line.strip() == xml_elem:
+                indent = len(line) - len(line.lstrip()) + 2
+                f.write(" " * indent + new_line)
+            
+
+def flatFile_str(fname, def_ref):
+    """Returns addml:flatFile xml element as a string,
+    which can be appended to the xml file.
+
+    :fname: Name attribute of the flatFile element
+    :def_ref: definitionReference of the flatFile element
+    """
+
+    flatFile = '<addml:flatFile name="%s" definitionReference="%s"/>\n' % (
+            fname, def_ref)
+
+    return flatFile
 
 
 def csv_header(csv_file_path, delimiter, isheader=False, headername='header'):
@@ -95,7 +139,7 @@ def csv_header(csv_file_path, delimiter, isheader=False, headername='header'):
     return header
 
 
-def create_addml_etree(
+def create_addml(
         sip_creation_path, filename,
         delimiter, isheader, charset, 
         recordSeparator, quotingChar):
