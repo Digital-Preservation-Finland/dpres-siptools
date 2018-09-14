@@ -11,18 +11,35 @@ import lxml.etree as ET
 
 def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
+    
     parser = argparse.ArgumentParser(
-        description="THIS SCRIPT IS UNDER DEVELOPMENT AND DOES NOT PRODUCE VALID ADDML. "
-                    "Tool for creating ADDML metadata for an CSV file. The "
+        description="Tool for creating ADDML metadata for a CSV file. The "
                     "ADDML metadata is written to <hash>-ADDML-techmd.xml "
                     "METS XML file in the workspace directory. The ADDML "
                     "techMD reference is written to techmd-references.xml. "
                     "If similar ADDML metadata is already found in workspace, "
-                    "the file will not be rewritten."
+                    "just the new CSV file name is appended to the existing "
+                    "metadata."
     )
-    parser.add_argument('file', type=str,
-                        help="CSV file to be described by ADDML metadata")
-    parser.add_argument('--workspace', type=str, default='./workspace/',
+    
+    parser.add_argument('--path', type=str, required=True,
+                        help="Path to the dir of CSV file")
+    parser.add_argument('--fname', type=str, required=True,
+                        help="CSV file name")
+    parser.add_argument('--delim', type=str, required=True,
+                        help="Delimiter used in the CSV file")
+    parser.add_argument('--header', dest='header', action='store_true',
+                        help="CSV file has a header")
+    parser.add_argument('--no-header', dest='header', action='store_false',
+                        help="CSV file has not got a header")
+    parser.set_defaults(header=False)
+    parser.add_argument('--charset', type=str, required=True,
+                        help="Charset used in the CSV file")
+    parser.add_argument('--sep', type=str, required=True,
+                        help="Record separator used in the CSV file")
+    parser.add_argument('--quot', type=str, required=True,
+                        help="Quoting character used in the CSV file")
+    parser.add_argument('--work', type=str, default='./workspace/',
                         help="Workspace directory for the metadata files.")
 
     return parser.parse_args(arguments)
@@ -31,7 +48,9 @@ def parse_arguments(arguments):
 def main(arguments=None):
     """Write ADDML metadata for a CSV file."""
     args = parse_arguments(arguments)
-    create_addml_techmdfile(args.file, args.workspace)
+    create_addml_techmdfile(
+            args.path, args.fname, args.delim, args.header,
+            args.charset, args.sep, args.quot, args.work)
 
 
 def create_addml_techmdfile(
@@ -71,7 +90,6 @@ def create_addml_techmdfile(
     # Create METS XML file that contains ADDML metadata
     techmd_id = siptools.utils.create_techmdfile(
         workspace, addml_data, 'OTHER', "8.3", "ADDML")
-
 
     # Append flatFile element to the created METS XML file
     new_line = flatFile_str(filename, "ref_001")
