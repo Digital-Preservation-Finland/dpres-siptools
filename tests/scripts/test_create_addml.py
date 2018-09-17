@@ -19,7 +19,7 @@ def test_create_addml():
     """Test that ``create_addml`` returns valid addml."""
 
     addml_etree = create_addml.create_addml(
-        CSV_FILE, DELIMITER, ISHEADER, 
+        CSV_FILE, DELIMITER, ISHEADER,
         CHARSET, RECORDSEPARATOR, QUOTINGCHAR
     )
 
@@ -68,7 +68,7 @@ def test_create_addml_techmdfile(testpath):
 
     # Call create_addml_techmdfile() with different metadata
     create_addml.create_addml_techmdfile(
-        CSV_FILE, DELIMITER, ISHEADER, CHARSET, 
+        CSV_FILE, DELIMITER, ISHEADER, CHARSET,
         RECORDSEPARATOR, QUOTINGCHAR, testpath
     )
 

@@ -79,7 +79,7 @@ def create_addml_techmdfile(
 
     # Create ADDML metadata
     addml_data = create_addml(
-        csv_file, delimiter, isheader, 
+        csv_file, delimiter, isheader,
         charset, record_separator, quoting_char
     )
 
