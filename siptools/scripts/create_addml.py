@@ -23,10 +23,7 @@ def parse_arguments(arguments):
                     "metadata."
     )
 
-    parser.add_argument('--path', type=str, required=True,
-                        help="Path to the dir of CSV file")
-    parser.add_argument('--fname', type=str, required=True,
-                        help="CSV file name")
+    parser.add_argument('file', type=str, help="CSV file name")
     parser.add_argument('--delim', type=str, required=True,
                         help="Delimiter used in the CSV file")
     parser.add_argument('--header', dest='header', action='store_true',
@@ -40,7 +37,7 @@ def parse_arguments(arguments):
                         help="Record separator used in the CSV file")
     parser.add_argument('--quot', type=str, required=True,
                         help="Quoting character used in the CSV file")
-    parser.add_argument('--work', type=str, default='./workspace/',
+    parser.add_argument('--workspace', type=str, default='./workspace/',
                         help="Workspace directory for the metadata files.")
 
     return parser.parse_args(arguments)
@@ -50,14 +47,16 @@ def main(arguments=None):
     """Write ADDML metadata for a CSV file."""
     args = parse_arguments(arguments)
     create_addml_techmdfile(
-        args.path, args.fname, args.delim, args.header,
-        args.charset, args.sep, args.quot, args.work)
+        args.file, args.delim, args.header, args.charset,
+        args.sep, args.quot, args.workspace
+    )
 
 
 def create_addml_techmdfile(
-        sip_creation_path, filename, delimiter,
+        csv_file, delimiter,
         isheader, charset, record_separator,
-        quoting_char, workspace):
+        quoting_char, workspace
+):
 
     """Creates  ADDML metadata for a CSV file, and writes it into a METS XML
     file in workspace. Adds reference to techMD reference file used in
@@ -65,8 +64,7 @@ def create_addml_techmdfile(
     workspace, only the techMD reference to the ADDML metadata is created for
     the CSV file.
 
-    :sip_creation_path: Path to the dir of CSV file
-    :filename: CSV file name
+    :csv_file: CSV file name
     :delimiter: Delimiter used in the CSV file
     :isheader: True if CSV has a header else False
     :charset: Charset used in the CSV file
@@ -77,12 +75,13 @@ def create_addml_techmdfile(
     :returns: None
     """
 
-    csv_file = os.path.join(sip_creation_path, filename)
+    filename = get_filename(csv_file)
 
     # Create ADDML metadata
     addml_data = create_addml(
-        sip_creation_path, filename, delimiter,
-        isheader, charset, record_separator, quoting_char)
+        csv_file, delimiter, isheader, 
+        charset, record_separator, quoting_char
+    )
 
     digest = hashlib.md5(xml_helpers.utils.serialize(addml_data)).hexdigest()
     techmd_fname = siptools.utils.encode_path("%s-ADDML-techmd.xml" % digest)
@@ -98,6 +97,12 @@ def create_addml_techmdfile(
 
     # Add reference from image file to techMD
     siptools.utils.add_techmdreference(workspace, techmd_id, csv_file)
+
+
+def get_filename(path):
+    """Return the filename from a path
+    """
+    return path.split("/")[-1]
 
 
 def append_line(fname, xml_elem, new_line):
@@ -135,7 +140,8 @@ def flat_file_str(fname, def_ref):
     """
 
     flat_file = '<addml:flatFile name="%s" definitionReference="%s"/>\n' % (
-        fname, def_ref)
+        fname, def_ref
+    )
 
     return flat_file
 
@@ -159,9 +165,9 @@ def csv_header(csv_file_path, delimiter, isheader=False, headername='header'):
 
 
 def create_addml(
-        sip_creation_path, filename,
-        delimiter, isheader, charset,
-        record_separator, quoting_char):
+        csv_file, delimiter, isheader, charset,
+        record_separator, quoting_char
+):
 
     """Creates ADDML metadata for a csv file
     without flatFile element, which is added
@@ -170,8 +176,7 @@ def create_addml(
     hashes for the same metadata, but different
     filename.
 
-    :sip_creation_path: Path to the dir of CSV file
-    :filename: CSV file name
+    :csv_file: Path to the CSV file
     :delimiter: Delimiter used in the CSV file
     :isheader: True if CSV has a header else False
     :charset: Charset used in the CSV file
@@ -182,7 +187,8 @@ def create_addml(
     """
 
     header = csv_header(
-        os.path.join(sip_creation_path, filename), delimiter, isheader)
+        csv_file, delimiter, isheader
+    )
 
     description = ET.Element(addml.addml_ns('description'))
     reference = ET.Element(addml.addml_ns('reference'))
@@ -196,24 +202,30 @@ def create_addml(
 
     record_definition = addml.definition_elems(
         'recordDefinition', 'record',
-        'rdef001', [field_definitions])
+        'rdef001', [field_definitions]
+    )
     record_definitions = addml.wrapper_elems(
-        'recordDefinitions', [record_definition])
+        'recordDefinitions', [record_definition]
+    )
 
     flat_file_definition = addml.definition_elems(
         'flatFileDefinition', 'ref001',
-        'rec001', [record_definitions])
+        'rec001', [record_definitions]
+    )
     flat_file_definitions = addml.wrapper_elems(
-        'flatFileDefinitions', [flat_file_definition])
+        'flatFileDefinitions', [flat_file_definition]
+    )
 
     data_type = addml.addml_basic_elem('dataType', 'string')
     field_type = addml.definition_elems(
-        'fieldType', 'String', child_elements=[data_type])
+        'fieldType', 'String', child_elements=[data_type]
+    )
     field_types = addml.wrapper_elems('fieldTypes', [field_type])
 
     trimmed = ET.Element(addml.addml_ns('trimmed'))
     record_type = addml.definition_elems(
-        'recordType', 'rdef001', child_elements=[trimmed])
+        'recordType', 'rdef001', child_elements=[trimmed]
+    )
     record_types = addml.wrapper_elems('recordTypes', [record_type])
 
     delim_file_format = addml.delimfileformat(
@@ -221,13 +233,16 @@ def create_addml(
     charset_elem = addml.addml_basic_elem('charset', charset)
     flat_file_type = addml.definition_elems(
         'flatFileType', 'rec001',
-        child_elements=[charset_elem, delim_file_format])
+        child_elements=[charset_elem, delim_file_format]
+    )
     flat_file_types = addml.wrapper_elems('flatFileTypes', [flat_file_type])
 
     structure_types = addml.wrapper_elems(
-        'structureTypes', [flat_file_types, record_types, field_types])
+        'structureTypes', [flat_file_types, record_types, field_types]
+    )
     flatfiles = addml.wrapper_elems(
-        'flatFiles', [flat_file_definitions, structure_types])
+        'flatFiles', [flat_file_definitions, structure_types]
+    )
 
     addml_root = addml.addml([description, reference, flatfiles])
 

@@ -6,8 +6,7 @@ import lxml.etree as ET
 import siptools.scripts.create_addml as create_addml
 
 
-SIP_CREATION_PATH = "tests/data/"
-CSV_FILENAME = "csvfile.csv"
+CSV_FILE = "tests/data/csvfile.csv"
 DELIMITER = ";"
 ISHEADER = False
 CHARSET = "UTF-8"
@@ -20,8 +19,9 @@ def test_create_addml():
     """Test that ``create_addml`` returns valid addml."""
 
     addml_etree = create_addml.create_addml(
-        SIP_CREATION_PATH, CSV_FILENAME, DELIMITER,
-        ISHEADER, CHARSET, RECORDSEPARATOR, QUOTINGCHAR)
+        CSV_FILE, DELIMITER, ISHEADER, 
+        CHARSET, RECORDSEPARATOR, QUOTINGCHAR
+    )
 
     # Check namespace
     assert addml_etree.nsmap['addml'] == \
@@ -57,23 +57,27 @@ def test_create_addml_techmdfile(testpath):
     # Call create_addml_techmdfile() twice with
     # same metadata, but different filename
     create_addml.create_addml_techmdfile(
-        SIP_CREATION_PATH, "simple_csv.csv", ',', ISHEADER,
-        CHARSET, RECORDSEPARATOR, QUOTINGCHAR, testpath)
+        "tests/data/simple_csv.csv", ',', ISHEADER,
+        CHARSET, RECORDSEPARATOR, QUOTINGCHAR, testpath
+    )
 
     create_addml.create_addml_techmdfile(
-        SIP_CREATION_PATH, "simple_csv_2.csv", ',', ISHEADER,
-        CHARSET, RECORDSEPARATOR, QUOTINGCHAR, testpath)
+        "tests/data/simple_csv_2.csv", ',', ISHEADER,
+        CHARSET, RECORDSEPARATOR, QUOTINGCHAR, testpath
+    )
 
     # Call create_addml_techmdfile() with different metadata
     create_addml.create_addml_techmdfile(
-        SIP_CREATION_PATH, CSV_FILENAME, DELIMITER, ISHEADER,
-        CHARSET, RECORDSEPARATOR, QUOTINGCHAR, testpath)
+        CSV_FILE, DELIMITER, ISHEADER, CHARSET, 
+        RECORDSEPARATOR, QUOTINGCHAR, testpath
+    )
 
     file1 = os.path.join(
-        testpath, '710ad5d65bbb4339fe265820f9ddbf8f-ADDML-techmd.xml')
-
+        testpath, '710ad5d65bbb4339fe265820f9ddbf8f-ADDML-techmd.xml'
+    )
     file2 = os.path.join(
-        testpath, '4368cf94e94b8217f2210b0071dc5175-ADDML-techmd.xml')
+        testpath, '4368cf94e94b8217f2210b0071dc5175-ADDML-techmd.xml'
+    )
 
     # Check that techmdreference and the two ADDML-techmd files are created
     assert os.path.isfile(os.path.join(testpath, 'techmd-references.xml'))

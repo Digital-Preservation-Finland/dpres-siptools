@@ -53,6 +53,9 @@ import_object
 create_mix
     for creating MIX metadata for image files.
 
+create_addml
+    for creating ADDML metadata for csv files.
+
 compile_structmap
     for creating structural map in mets.xml.
 
@@ -76,6 +79,15 @@ tests/data/structured followingly::
 If your dataset contains image data, create also MIX metadata for each of the image files::
 
     python siptools/scripts/create_mix.py path/to/images/image.tif --workspace ./workspace
+    
+ADDML metadata for a CSV file can be created by running::
+    
+    python siptools/scripts/create_addml.py path/to/csv_file.csv --no-header --charset 'UTF8' --sep 'CR+LF' --quot '"' --delim ';' --workspace ./workspace
+    
+Flags --header and --no-header define whether or not the CSV file has headers. If neither
+is given, CSV file is assumed not to have headers. --sep flag defines the character used to 
+separate records and --delim the character used to separate fields. --quot defines the 
+quotation character used.
 
 An example how to create digital provenance metadata for mets.xml.
 Values for the parameters --event_outcome and --event_type are predefined lists::
