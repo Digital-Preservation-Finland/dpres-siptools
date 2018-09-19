@@ -56,15 +56,14 @@ def create_mix_techmdfile(image_file, workspace, file_relpath=None):
     # Create MIX metadata
     mix = create_mix(os.path.join(image_file))
 
-    # Create METS XML file that contains MIX metadata
-    techmd_id = siptools.utils.create_techmdfile(
-        workspace, mix, 'NISOIMG', "2.0"
-    )
+    creator = siptools.utils.TechmdCreator(workspace)
+    techmd_id, techmd_fname = creator.create_techmdfile(mix, 'NISOIMG', "2.0")
 
     if file_relpath:
         image_file = file_relpath
-    # Add reference from image file to techMD
-    siptools.utils.add_techmdreference(workspace, techmd_id, image_file)
+    
+    creator.add_techmdreference(techmd_id, image_file)
+    creator.write_techmdreference()
 
 
 def _inspect_image(img):

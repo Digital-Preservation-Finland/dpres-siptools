@@ -5,9 +5,13 @@ import argparse
 import hashlib
 import lxml.etree as ET
 
+# Import for benchmarking
+import time
+import subprocess as subp
+
 import addml
 import xml_helpers
-import siptools.utils
+from siptools.utils import TechmdCreator
 
 
 def parse_arguments(arguments):
@@ -46,89 +50,111 @@ def parse_arguments(arguments):
 def main(arguments=None):
     """Write ADDML metadata for a CSV file."""
     args = parse_arguments(arguments)
-    create_addml_techmdfile(
-        args.file, args.delim, args.header, args.charset,
-        args.sep, args.quot, args.workspace
+
+    creator = AddmlCreator(args.workspace)
+    creator.append_md(
+        args.file, args.delim, 
+        args.header, args.charset,
+        args.sep, args.quot
     )
 
+    creator.write()
 
-def create_addml_techmdfile(
-        csv_file, delimiter,
-        isheader, charset, record_separator,
-        quoting_char, workspace
-):
+    # benchmark(int(1e5))
 
-    """Creates  ADDML metadata for a CSV file, and writes it into a METS XML
-    file in workspace. Adds reference to techMD reference file used in
-    compile-structmap script. If similar ADDML metadata already exists in
-    workspace, only the techMD reference to the ADDML metadata is created for
-    the CSV file.
 
-    :csv_file: CSV file name
-    :delimiter: Delimiter used in the CSV file
-    :isheader: True if CSV has a header else False
-    :charset: Charset used in the CSV file
-    :record_separator: Char used for separating CSV file fields
-    :quoting_char: Quotation char used in the CSV file
-    :workspace: Output directory
-
-    :returns: None
+class AddmlCreator(TechmdCreator):
+    """ Subclass of utils.techmd_creator, which generates ADDML metadata
+    for CSV files.
     """
 
-    filename = get_filename(csv_file)
+    def __init__(self, workspace):
+        """
+        :workspace: Output path
+        :etrees: Dict of the generated root elements
+        :filenames: Dict of the filenames corresponding to root elements
+        """
+        super(AddmlCreator, self).__init__(workspace)
+        self.etrees = {}
+        self.filenames = {}
 
-    # Create ADDML metadata
-    addml_data = create_addml(
-        csv_file, delimiter, isheader,
-        charset, record_separator, quoting_char
-    )
 
-    digest = hashlib.md5(xml_helpers.utils.serialize(addml_data)).hexdigest()
-    techmd_fname = siptools.utils.encode_path("%s-ADDML-techmd.xml" % digest)
-    techmd_fname = os.path.join(workspace, techmd_fname)
+    def append_md(self, csv_file, delimiter, isheader,
+                  charset, record_separator, quoting_char):
 
-    # Create METS XML file that contains ADDML metadata
-    techmd_id = siptools.utils.create_techmdfile(
-        workspace, addml_data, 'OTHER', "8.3", "ADDML")
+        """Append metadata to etrees and filenames dicts.
+        All the metadata given as the parameters uniquely defines
+        the XML file to be written later. A tuple of the
+        metadata is thus used as the dict key, which makes it possible
+        to efficiently check if corresponding metadata element has
+        already been created. This means that the write_techmdfile()
+        function needs to be called only once for each distinct metadata types.
 
-    # Append flatFile element to the created METS XML file
-    new_line = flat_file_str(filename, "ref_001")
-    append_line(techmd_fname, "<addml:flatFiles>", new_line)
+        :csv_file: CSV file name
+        :delimiter: Delimiter used in the CSV file
+        :isheader: True if CSV has a header else False
+        :charset: Charset used in the CSV file
+        :record_separator: Char used for separating CSV file fields
+        :quoting_char: Quotation char used in the CSV file
 
-    # Add reference from image file to techMD
-    siptools.utils.add_techmdreference(workspace, techmd_id, csv_file)
+        :returns: None
+        """
+
+        header = csv_header(csv_file, delimiter)
+
+        key = (delimiter, header, charset, record_separator, quoting_char)
+        filename = get_filename(csv_file)
+
+        # If similar metadata already exists,
+        # only append filename to self.filenames
+        if key in self.etrees:
+            self.filenames[key].append(filename)
+            return
+
+        # If similar metadata does not exist, create it
+        metadata = create_addml(
+            csv_file, delimiter,
+            isheader, charset,
+            record_separator, quoting_char
+        )
+
+        self.etrees[key] = metadata
+        self.filenames[key] = [filename]
+
+
+    def write(self):
+        """ Write all the METS XML files and techmdreference file.
+
+        :returns: None
+        """
+
+        for key in self.etrees:
+            metadata = self.etrees[key]
+            filenames = self.filenames[key]
+
+            # Create METS XML file
+            techmd_id, techmd_fname = \
+                self.create_techmdfile(metadata, 'OTHER', '8,3', 'ADDML')
+
+            # Add all the files to references
+            for filename in filenames:
+                self.add_techmdreference(techmd_id, filename)
+
+            # Append all the flatFile elements to the METS XML file
+            append = [flat_file_str(filename, "ref_001") for filename in filenames]
+            append_lines(techmd_fname, "<addml:flatFiles>", append)
+
+        # Write techmdreferences
+        self.write_techmdreference()
+
+        # Clear filenames and etrees
+        self.__init__(self.workspace)
 
 
 def get_filename(path):
     """Return the filename from a path
     """
     return path.split("/")[-1]
-
-
-def append_line(fname, xml_elem, new_line):
-    """ Appends a new line to file fname below
-    line with xml_elem.
-
-    :fname: File name
-    :xml_elem: Element below which to append
-    :new_line: Content of the appended line
-
-    :returns: None
-    """
-
-    # Read all the lines into memory
-    with open(fname, 'r') as f_in:
-        lines = f_in.readlines()
-
-    # Overwrite the file appending line_content
-    with open(fname, 'w') as f_out:
-
-        for line in lines:
-            f_out.write(line)
-
-            if line.strip() == xml_elem:
-                indent = len(line) - len(line.lstrip()) + 2
-                f_out.write(" " * indent + new_line)
 
 
 def flat_file_str(fname, def_ref):
@@ -162,6 +188,25 @@ def csv_header(csv_file_path, delimiter, isheader=False, headername='header'):
             header += delimiter + headername + str(i + 2)
 
     return header
+
+
+def append_lines(fname, xml_elem, append):
+
+    # Read all the lines into memory
+    with open(fname, 'r') as f_in:
+        lines = f_in.readlines()
+
+    # Overwrite the file appending line_content
+    with open(fname, 'w') as f_out:
+
+        for line in lines:
+            f_out.write(line)
+
+            if line.strip() == xml_elem:
+                indent = len(line) - len(line.lstrip()) + 2
+
+                for new_line in append:
+                    f_out.write(" " * indent + new_line)
 
 
 def create_addml(
@@ -247,6 +292,41 @@ def create_addml(
     addml_root = addml.addml([description, reference, flatfiles])
 
     return addml_root
+
+
+def benchmark(num):
+
+    csv_file = "test/csvfile.csv"
+    delimiter = ";"
+    isheader = False
+    charset = "UTF8"
+    record_separator = "CR+LF"
+    quoting_char = '"'
+    workspace = "test/"
+
+    start = time.time()
+
+    creator = AddmlCreator(workspace)
+
+    for i in range(num):
+        creator.append_md(
+            csv_file, delimiter,
+            isheader, charset, 
+            record_separator, quoting_char
+        )
+
+    creator.write()
+
+    end = time.time()
+    clear()
+    print "%d\t%.4f" % (num, end - start)
+
+def clear():
+    subp.call([
+        "rm", 
+        "test/30cf9f14da018e4e34b54a05cc2c9ce3-ADDML-techmd.xml",
+        "test/techmd-references.xml"
+    ])
 
 
 if __name__ == '__main__':

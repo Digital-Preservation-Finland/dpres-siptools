@@ -2,8 +2,7 @@
 
 import os
 import lxml.etree
-from siptools.utils import encode_path, decode_path, create_techmdfile, \
-    add_techmdreference
+from siptools.utils import encode_path, decode_path, TechmdCreator
 
 
 def test_encode_path():
@@ -40,8 +39,10 @@ def test_create_techmdfile(testpath):
     workspace. Check that XML file contains expected elements.
     """
 
+    md_creator = TechmdCreator(testpath)
+
     sample_data = lxml.etree.Element('sampleData')
-    create_techmdfile(testpath, sample_data, 'NISOIMG', '2.0')
+    md_creator.create_techmdfile(sample_data, 'NISOIMG', '2.0')
 
     element_tree = lxml.etree.parse(
         os.path.join(
@@ -68,13 +69,16 @@ def test_create_techmdfile(testpath):
 
 
 def test_add_techmdreference(testpath):
-    """Test add_techmdreference function. Calls function two times. First call
-    should create the file, second call should only add a reference to the
-    existing file.
+    """Test add_techmdreference function. Calls function two times and
+    write the techmdreference file.
     """
 
-    add_techmdreference(testpath, 'abcd1234', 'path/to/file1')
-    add_techmdreference(testpath, 'abcd1234', 'path/to/file2')
+    md_creator = TechmdCreator(testpath)
+
+    md_creator.add_techmdreference('abcd1234', 'path/to/file1')
+    md_creator.add_techmdreference('abcd1234', 'path/to/file2')
+
+    md_creator.write_techmdreference()
 
     # Read created file. Reference should be found for both files
     etree = lxml.etree.parse(os.path.join(testpath, 'techmd-references.xml'))

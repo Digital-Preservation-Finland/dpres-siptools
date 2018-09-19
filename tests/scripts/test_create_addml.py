@@ -54,23 +54,27 @@ def test_create_addml_techmdfile(testpath):
     reference file without unnecessary duplication.
     """
 
-    # Call create_addml_techmdfile() twice with
-    # same metadata, but different filename
-    create_addml.create_addml_techmdfile(
+    creator = create_addml.AddmlCreator(testpath)
+
+    # Append two csv files with same 
+    # metadata, but different filename
+    creator.append_md(
         "tests/data/simple_csv.csv", ',', ISHEADER,
-        CHARSET, RECORDSEPARATOR, QUOTINGCHAR, testpath
+        CHARSET, RECORDSEPARATOR, QUOTINGCHAR
     )
 
-    create_addml.create_addml_techmdfile(
+    creator.append_md(
         "tests/data/simple_csv_2.csv", ',', ISHEADER,
-        CHARSET, RECORDSEPARATOR, QUOTINGCHAR, testpath
+        CHARSET, RECORDSEPARATOR, QUOTINGCHAR
     )
 
-    # Call create_addml_techmdfile() with different metadata
-    create_addml.create_addml_techmdfile(
+    # Append csv file with different metadata
+    creator.append_md(
         CSV_FILE, DELIMITER, ISHEADER, CHARSET,
-        RECORDSEPARATOR, QUOTINGCHAR, testpath
+        RECORDSEPARATOR, QUOTINGCHAR
     )
+
+    creator.write()
 
     file1 = os.path.join(
         testpath, '710ad5d65bbb4339fe265820f9ddbf8f-ADDML-techmd.xml'
@@ -96,7 +100,7 @@ def test_create_addml_techmdfile(testpath):
     assert len(flat_files2) == 3
 
     # Check flatFile name attributes
-    assert flat_files1[0].get("name") == "simple_csv_2.csv"
-    assert flat_files1[1].get("name") == "simple_csv.csv"
+    assert flat_files1[0].get("name") == "simple_csv.csv"
+    assert flat_files1[1].get("name") == "simple_csv_2.csv"
 
     assert flat_files2[0].get("name") == "csvfile.csv"
