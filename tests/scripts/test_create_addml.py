@@ -100,7 +100,7 @@ def test_create_addml_techmdfile(testpath):
     assert len(flat_files2) == 3
 
     # Check flatFile name attributes
-    assert flat_files1[0].get("name") == "simple_csv.csv"
-    assert flat_files1[1].get("name") == "simple_csv_2.csv"
+    assert flat_files1[0].get("name") == "tests/data/simple_csv.csv"
+    assert flat_files1[1].get("name") == "tests/data/simple_csv_2.csv"
 
-    assert flat_files2[0].get("name") == "csvfile.csv"
+    assert flat_files2[0].get("name") == "tests/data/csvfile.csv"

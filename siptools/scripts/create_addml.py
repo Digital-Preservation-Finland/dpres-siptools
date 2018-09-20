@@ -97,12 +97,11 @@ class AddmlCreator(TechmdCreator):
         header = csv_header(csv_file, delimiter)
 
         key = (delimiter, header, charset, record_separator, quoting_char)
-        filename = get_filename(csv_file)
 
         # If similar metadata already exists,
         # only append filename to self.filenames
         if key in self.etrees:
-            self.filenames[key].append(filename)
+            self.filenames[key].append(csv_file)
             return
 
         # If similar metadata does not exist, create it
@@ -113,7 +112,7 @@ class AddmlCreator(TechmdCreator):
         )
 
         self.etrees[key] = metadata
-        self.filenames[key] = [filename]
+        self.filenames[key] = [csv_file]
 
 
     def write(self):
@@ -145,12 +144,6 @@ class AddmlCreator(TechmdCreator):
 
         # Clear filenames and etrees
         self.__init__(self.workspace)
-
-
-def get_filename(path):
-    """Return the filename from a path
-    """
-    return path.split("/")[-1]
 
 
 def flat_file_str(fname, def_ref):
