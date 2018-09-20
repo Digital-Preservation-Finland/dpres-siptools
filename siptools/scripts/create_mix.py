@@ -7,7 +7,7 @@ import argparse
 import wand.image
 import PIL.Image
 import nisomix.mix
-import siptools.utils
+from siptools.utils import TechmdCreator 
 
 SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
@@ -38,30 +38,32 @@ def parse_arguments(arguments):
 def main(arguments=None):
     """Write MIX metadata for a image file."""
     args = parse_arguments(arguments)
-    create_mix_techmdfile(args.file, args.workspace)
+
+    creator = MixCreator(args.workspace)
+    creator.add_mix_md(args.file)
+    creator.write()
 
 
-def create_mix_techmdfile(image_file, workspace, file_relpath=None):
-    """Creates  MIX metadata for a image file, and writes it into a METS XML
-    file in workspace. Adds MIX reference to techMD reference file used in
-    compile-structmap script. If similar MIX metadata already exists in
-    workspace, only the techMD reference to the MIX metadata is created for
-    image file.
-
-    :image_file: path to image file
-    :workspace: workspace path
-    :file_relpath: relative path to image file to write to reference file
-    :returns: None
+class MixCreator(TechmdCreator):
+    """Subclass of TechmdCreator, which generates MIX metadata for image files.
     """
-    # Create MIX metadata
-    mix = create_mix(os.path.join(image_file))
 
-    if file_relpath:
-        image_file = file_relpath
-    
-    creator = siptools.utils.TechmdCreator(workspace)
-    creator.add_md(mix, image_file)
-    creator.write('NISOIMG', "2.0")
+    def add_mix_md(self, image_file, file_relpath=None):
+        """Creates  MIX metadata for an image file and append it 
+        to self.md_elements
+
+        :image_file: path to image file
+        :file_relpath: relative path to image file to write to reference file
+        :returns: None
+        """
+
+        # Create MIX metadata
+        mix = create_mix(os.path.join(image_file))
+        md_element = (mix, file_relpath if file_relpath else image_file)
+        self.md_elements.append(md_element)
+
+    def write(self):
+        super(MixCreator, self).write('NISOIMG', "2.0")
 
 
 def _inspect_image(img):

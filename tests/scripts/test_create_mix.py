@@ -4,7 +4,7 @@ import os
 import sys
 import shutil
 import lxml.etree
-import siptools.scripts.create_mix
+import siptools.scripts.create_mix as create_mix
 
 
 def test_create_mix_techmdfile(testpath):
@@ -13,14 +13,20 @@ def test_create_mix_techmdfile(testpath):
     metadata, so only two MIX techMD files should be created in workspace.
     References to MIX techMD should be written into techmd-references.xml file.
     """
+
+    creator = create_mix.MixCreator(testpath)
+
     os.makedirs(os.path.join(testpath, 'data'))
     for image in ['tiff1.tif', 'tiff2.tif', 'tiff1_compressed.tif']:
         # copy sample image into data directory in temporary workspace
         image_path = os.path.join(testpath, 'data/%s' % image)
         shutil.copy('tests/data/images/%s' % image, image_path)
 
-        # create techmd file and add reference
-        siptools.scripts.create_mix.create_mix_techmdfile(image_path, testpath)
+        # Add metadata
+        creator.add_mix_md(image_path)
+
+    # Write metadata
+    creator.write()
 
     # Count the MIX techMD files, i.e. the files with "NISOIMG-" prefix. There
     # should two of them since tiff1.tif and tiff2.tif share the same MIX
@@ -51,7 +57,7 @@ def test_main_utf8_files(testpath):
     os.chdir(testpath)
     try:
         # Call main function with encoded filename as parameter
-        siptools.scripts.create_mix.main(
+        create_mix.main(
             ['--workspace', testpath,
              image_relative_path.encode(sys.getfilesystemencoding())]
         )
@@ -69,7 +75,7 @@ def test_inspect_image():
     """
 
     # pylint: disable=protected-access
-    metadata = siptools.scripts.create_mix._inspect_image(
+    metadata = create_mix._inspect_image(
         'tests/data/images/tiff1.tif'
     )
 
@@ -88,7 +94,7 @@ def test_create_mix():
     function and check that result XML element contains expected elements.
     """
 
-    xml = siptools.scripts.create_mix.create_mix('tests/data/images/tiff1.tif')
+    xml = create_mix.create_mix('tests/data/images/tiff1.tif')
     namespaces = {'ns0': "http://www.loc.gov/mix/v20"}
 
     # compression

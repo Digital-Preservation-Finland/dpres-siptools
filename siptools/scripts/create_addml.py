@@ -58,7 +58,7 @@ def main(arguments=None):
 
 
 class AddmlCreator(TechmdCreator):
-    """ Subclass of utils.techmd_creator, which generates ADDML metadata
+    """Subclass of TechmdCreator, which generates ADDML metadata
     for CSV files.
     """
 
