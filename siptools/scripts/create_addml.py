@@ -5,10 +5,6 @@ import argparse
 import hashlib
 import lxml.etree as ET
 
-# Import for benchmarking
-import time
-import subprocess as subp
-
 import addml
 import xml_helpers
 from siptools.utils import TechmdCreator
@@ -49,18 +45,16 @@ def parse_arguments(arguments):
 
 def main(arguments=None):
     """Write ADDML metadata for a CSV file."""
+
     args = parse_arguments(arguments)
 
     creator = AddmlCreator(args.workspace)
-    creator.append_md(
-        args.file, args.delim, 
+    creator.add_addml_md(
+        args.file, args.delim,
         args.header, args.charset,
         args.sep, args.quot
     )
-
     creator.write()
-
-    # benchmark(int(1e5))
 
 
 class AddmlCreator(TechmdCreator):
@@ -79,8 +73,8 @@ class AddmlCreator(TechmdCreator):
         self.filenames = {}
 
 
-    def append_md(self, csv_file, delimiter, isheader,
-                  charset, record_separator, quoting_char):
+    def add_addml_md(self, csv_file, delimiter, isheader,
+                     charset, record_separator, quoting_char):
 
         """Append metadata to etrees and filenames dicts.
         All the metadata given as the parameters uniquely defines
@@ -124,6 +118,8 @@ class AddmlCreator(TechmdCreator):
 
     def write(self):
         """ Write all the METS XML files and techmdreference file.
+        Base class write is overwritten to handle the references
+        correctly and add flatFile fields to METS XML files.
 
         :returns: None
         """
@@ -134,18 +130,18 @@ class AddmlCreator(TechmdCreator):
 
             # Create METS XML file
             techmd_id, techmd_fname = \
-                self.create_techmdfile(metadata, 'OTHER', '8,3', 'ADDML')
+                self.write_md(metadata, 'OTHER', '8,3', 'ADDML')
 
             # Add all the files to references
             for filename in filenames:
-                self.add_techmdreference(techmd_id, filename)
+                self.add_reference(techmd_id, filename)
 
             # Append all the flatFile elements to the METS XML file
             append = [flat_file_str(filename, "ref_001") for filename in filenames]
             append_lines(techmd_fname, "<addml:flatFiles>", append)
 
         # Write techmdreferences
-        self.write_techmdreference()
+        self.write_references()
 
         # Clear filenames and etrees
         self.__init__(self.workspace)
@@ -214,7 +210,7 @@ def create_addml(
         record_separator, quoting_char
 ):
 
-    """Creates ADDML metadata for a csv file
+    """Creates ADDML metadata for a CSV file
     without flatFile element, which is added
     by create_addml_techmdfile() function.
     This is done to avoid getting different
@@ -292,41 +288,6 @@ def create_addml(
     addml_root = addml.addml([description, reference, flatfiles])
 
     return addml_root
-
-
-def benchmark(num):
-
-    csv_file = "test/csvfile.csv"
-    delimiter = ";"
-    isheader = False
-    charset = "UTF8"
-    record_separator = "CR+LF"
-    quoting_char = '"'
-    workspace = "test/"
-
-    start = time.time()
-
-    creator = AddmlCreator(workspace)
-
-    for i in range(num):
-        creator.append_md(
-            csv_file, delimiter,
-            isheader, charset, 
-            record_separator, quoting_char
-        )
-
-    creator.write()
-
-    end = time.time()
-    clear()
-    print "%d\t%.4f" % (num, end - start)
-
-def clear():
-    subp.call([
-        "rm", 
-        "test/30cf9f14da018e4e34b54a05cc2c9ce3-ADDML-techmd.xml",
-        "test/techmd-references.xml"
-    ])
 
 
 if __name__ == '__main__':

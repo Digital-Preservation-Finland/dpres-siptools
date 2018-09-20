@@ -58,18 +58,18 @@ def test_create_addml_techmdfile(testpath):
 
     # Append two csv files with same 
     # metadata, but different filename
-    creator.append_md(
+    creator.add_addml_md(
         "tests/data/simple_csv.csv", ',', ISHEADER,
         CHARSET, RECORDSEPARATOR, QUOTINGCHAR
     )
 
-    creator.append_md(
+    creator.add_addml_md(
         "tests/data/simple_csv_2.csv", ',', ISHEADER,
         CHARSET, RECORDSEPARATOR, QUOTINGCHAR
     )
 
     # Append csv file with different metadata
-    creator.append_md(
+    creator.add_addml_md(
         CSV_FILE, DELIMITER, ISHEADER, CHARSET,
         RECORDSEPARATOR, QUOTINGCHAR
     )

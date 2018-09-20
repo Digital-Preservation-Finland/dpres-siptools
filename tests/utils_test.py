@@ -34,7 +34,7 @@ def test_decode_path():
 
 
 def test_create_techmdfile(testpath):
-    """Test create_techmdfile function. Pass a dummy XML element to the
+    """Test write_md function. Pass a dummy XML element to the
     function and check that XML file with correct filename is created to
     workspace. Check that XML file contains expected elements.
     """
@@ -42,7 +42,7 @@ def test_create_techmdfile(testpath):
     md_creator = TechmdCreator(testpath)
 
     sample_data = lxml.etree.Element('sampleData')
-    md_creator.create_techmdfile(sample_data, 'NISOIMG', '2.0')
+    md_creator.write_md(sample_data, 'NISOIMG', '2.0')
 
     element_tree = lxml.etree.parse(
         os.path.join(
@@ -69,16 +69,16 @@ def test_create_techmdfile(testpath):
 
 
 def test_add_techmdreference(testpath):
-    """Test add_techmdreference function. Calls function two times and
+    """Test add_reference function. Calls function two times and
     write the techmdreference file.
     """
 
     md_creator = TechmdCreator(testpath)
 
-    md_creator.add_techmdreference('abcd1234', 'path/to/file1')
-    md_creator.add_techmdreference('abcd1234', 'path/to/file2')
+    md_creator.add_reference('abcd1234', 'path/to/file1')
+    md_creator.add_reference('abcd1234', 'path/to/file2')
 
-    md_creator.write_techmdreference()
+    md_creator.write_references()
 
     # Read created file. Reference should be found for both files
     etree = lxml.etree.parse(os.path.join(testpath, 'techmd-references.xml'))
