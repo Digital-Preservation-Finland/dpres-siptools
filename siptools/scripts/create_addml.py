@@ -7,7 +7,7 @@ import lxml.etree as ET
 
 import addml
 import xml_helpers
-from siptools.utils import TechmdCreator
+from siptools.utils import TechmdCreator, encode_path
 
 
 def parse_arguments(arguments):
@@ -136,7 +136,10 @@ class AddmlCreator(TechmdCreator):
                 self.add_reference(techmd_id, filename)
 
             # Append all the flatFile elements to the METS XML file
-            append = [flat_file_str(filename, "ref_001") for filename in filenames]
+            append = [
+                flat_file_str(encode_path(filename), "ref_001") 
+                for filename in filenames
+            ]
             append_lines(techmd_fname, "<addml:flatFiles>", append)
 
         # Write techmdreferences

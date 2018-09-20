@@ -4,6 +4,7 @@ import os.path
 import lxml.etree as ET
 
 import siptools.scripts.create_addml as create_addml
+from siptools.utils import decode_path
 
 
 CSV_FILE = "tests/data/csvfile.csv"
@@ -100,7 +101,10 @@ def test_create_addml_techmdfile(testpath):
     assert len(flat_files2) == 3
 
     # Check flatFile name attributes
-    assert flat_files1[0].get("name") == "tests/data/simple_csv.csv"
-    assert flat_files1[1].get("name") == "tests/data/simple_csv_2.csv"
+    path1 = decode_path(flat_files1[0].get("name"))
+    path2 = decode_path(flat_files1[1].get("name"))
+    path3 = decode_path(flat_files2[0].get("name"))
 
-    assert flat_files2[0].get("name") == "tests/data/csvfile.csv"
+    assert path1 == "tests/data/simple_csv.csv"
+    assert path2 == "tests/data/simple_csv_2.csv"
+    assert path3 == "tests/data/csvfile.csv"
