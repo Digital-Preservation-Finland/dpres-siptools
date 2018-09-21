@@ -57,7 +57,7 @@ def test_create_addml_techmdfile(testpath):
 
     creator = create_addml.AddmlCreator(testpath)
 
-    # Append two csv files with same 
+    # Append two csv files with same
     # metadata, but different filename
     creator.add_addml_md(
         "tests/data/simple_csv.csv", ',', ISHEADER,

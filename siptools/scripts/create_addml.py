@@ -1,12 +1,9 @@
 """Command line tool for creating ADDML metadata."""
 
-import os
 import argparse
-import hashlib
 import lxml.etree as ET
 
 import addml
-import xml_helpers
 from siptools.utils import TechmdCreator, encode_path
 
 
@@ -115,7 +112,7 @@ class AddmlCreator(TechmdCreator):
         self.filenames[key] = [csv_file]
 
 
-    def write(self):
+    def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML"):
         """ Write all the METS XML files and techmdreference file.
         Base class write is overwritten to handle the references
         correctly and add flatFile fields to METS XML files.
@@ -129,7 +126,7 @@ class AddmlCreator(TechmdCreator):
 
             # Create METS XML file
             techmd_id, techmd_fname = \
-                self.write_md(metadata, 'OTHER', '8,3', 'ADDML')
+                self.write_md(metadata, mdtype, mdtypeversion, othermdtype)
 
             # Add all the files to references
             for filename in filenames:
@@ -137,7 +134,7 @@ class AddmlCreator(TechmdCreator):
 
             # Append all the flatFile elements to the METS XML file
             append = [
-                flat_file_str(encode_path(filename), "ref_001") 
+                flat_file_str(encode_path(filename), "ref_001")
                 for filename in filenames
             ]
             append_lines(techmd_fname, "<addml:flatFiles>", append)
@@ -183,6 +180,15 @@ def csv_header(csv_file_path, delimiter, isheader=False, headername='header'):
 
 
 def append_lines(fname, xml_elem, append):
+    """Append all the lines in list append to file fname below
+    the line with xml_elem.
+
+    :fname: File name
+    :xml_elem: Element below which to append
+    :append: List of lines to append
+
+    :returns: None
+    """
 
     # Read all the lines into memory
     with open(fname, 'r') as f_in:

@@ -7,7 +7,7 @@ import argparse
 import wand.image
 import PIL.Image
 import nisomix.mix
-from siptools.utils import TechmdCreator 
+from siptools.utils import TechmdCreator
 
 SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
@@ -49,7 +49,7 @@ class MixCreator(TechmdCreator):
     """
 
     def add_mix_md(self, image_file, file_relpath=None):
-        """Creates  MIX metadata for an image file and append it 
+        """Creates  MIX metadata for an image file and append it
         to self.md_elements
 
         :image_file: path to image file
@@ -62,8 +62,9 @@ class MixCreator(TechmdCreator):
         md_element = (mix, file_relpath if file_relpath else image_file)
         self.md_elements.append(md_element)
 
-    def write(self):
-        super(MixCreator, self).write('NISOIMG', "2.0")
+    # Change the default write parameters
+    def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None):
+        super(MixCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
 def _inspect_image(img):

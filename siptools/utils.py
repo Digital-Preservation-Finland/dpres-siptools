@@ -100,8 +100,8 @@ class TechmdCreator(object):
         :returns: None
         """
 
-        md = (metadata, filename)
-        self.md_elements.append(md)
+        md_element = (metadata, filename)
+        self.md_elements.append(md_element)
 
 
     def write_references(self):
@@ -182,7 +182,7 @@ class TechmdCreator(object):
         return techmd_id, filename
 
 
-    def write(self, mdtype, mdtypeversion, othermdtype=None):
+    def write(self, mdtype="type", mdtypeversion="version", othermdtype=None):
         """Write METS XML and techmdreference files. First, METS XML files are
         written and self.references is appended. Second, techmd-references is
         written.
