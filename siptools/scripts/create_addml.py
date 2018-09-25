@@ -209,15 +209,20 @@ def append_lines(fname, xml_elem, append):
 
 def create_addml(
         csv_file, delimiter, isheader, charset,
-        record_separator, quoting_char, flatfile_field=False
+        record_separator, quoting_char, flatfile_name=None
 ):
 
-    """Creates ADDML metadata for a CSV file
-    without flatFile element, which is added
-    by create_addml_techmdfile() function.
-    This is done to avoid getting different
-    hashes for the same metadata, but different
-    filename.
+    """Creates ADDML metadata for a CSV file by default
+    without flatFile element, which is added by
+    create_addml_techmdfile() function. This is done to
+    avoid getting different hashes for the same metadata,
+    but different filename.
+
+    flatFile elements is added if optional parameter
+    flatfile_name is provided. csv_file parameter is not
+    used as the flatFile element name attribute since that will
+    differ from the original filepath e.g. when it is a tmpfile
+    downloaded from IDA.
 
     :csv_file: Path to the CSV file
     :delimiter: Delimiter used in the CSV file
@@ -225,7 +230,7 @@ def create_addml(
     :charset: Charset used in the CSV file
     :record_separator: Char used for separating CSV file fields
     :quoting_char: Quotation char used in the CSV file
-    :flatfile_field: Boolean, if True: flatFile field is added
+    :flatfile_name: flatFile elements name attribute
 
     :returns: ADDML metadata XML element
     """
@@ -285,10 +290,10 @@ def create_addml(
         'structureTypes', [flat_file_types, record_types, field_types]
     )
 
-    if flatfile_field:
+    if flatfile_name:
         flatfile = addml.definition_elems(
             'flatFile',
-            encode_path(csv_file),
+            encode_path(flatfile_name),
             'ref001'
         )
         elems = [flatfile, flat_file_definitions, structure_types]

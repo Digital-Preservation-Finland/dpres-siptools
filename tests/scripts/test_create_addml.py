@@ -49,6 +49,22 @@ def test_create_addml():
     assert len(addml_etree.find(ADDML_NS + "fieldDefinitions")) == 3
 
 
+def test_create_addml_with_flatfile():
+    """Tests that ``create_addml`` adds flatFile element if optional
+    parameter flatfile_name is provided.
+    """
+
+    addml_etree = create_addml.create_addml(
+        CSV_FILE, DELIMITER, ISHEADER,
+        CHARSET, RECORDSEPARATOR, QUOTINGCHAR,
+        flatfile_name="path/to/test"
+    )
+
+    # Check that URL encoded path is written to flatFile element
+    flatfile = addml_etree.find(ADDML_NS + "flatFile")
+    assert decode_path(flatfile.get("name")) == "path/to/test"
+
+
 def test_create_addml_techmdfile(testpath):
     """
     Test that ``create_addml_techmdfile`` writes addml file and techMD
