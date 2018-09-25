@@ -134,7 +134,7 @@ class AddmlCreator(TechmdCreator):
 
             # Append all the flatFile elements to the METS XML file
             append = [
-                flat_file_str(encode_path(filename), "ref_001")
+                flat_file_str(encode_path(filename), "ref001")
                 for filename in filenames
             ]
             append_lines(techmd_fname, "<addml:flatFiles>", append)
@@ -209,7 +209,7 @@ def append_lines(fname, xml_elem, append):
 
 def create_addml(
         csv_file, delimiter, isheader, charset,
-        record_separator, quoting_char
+        record_separator, quoting_char, flatfile_field=False
 ):
 
     """Creates ADDML metadata for a CSV file
@@ -225,6 +225,7 @@ def create_addml(
     :charset: Charset used in the CSV file
     :record_separator: Char used for separating CSV file fields
     :quoting_char: Quotation char used in the CSV file
+    :flatfile_field: Boolean, if True: flatFile field is added
 
     :returns: ADDML metadata XML element
     """
@@ -283,10 +284,18 @@ def create_addml(
     structure_types = addml.wrapper_elems(
         'structureTypes', [flat_file_types, record_types, field_types]
     )
-    flatfiles = addml.wrapper_elems(
-        'flatFiles', [flat_file_definitions, structure_types]
-    )
 
+    if flatfile_field:
+        flatfile = addml.definition_elems(
+            'flatFile',
+            encode_path(csv_file),
+            'ref001'
+        )
+        elems = [flatfile, flat_file_definitions, structure_types]
+    else:
+        elems = [flat_file_definitions, structure_types]
+
+    flatfiles = addml.wrapper_elems('flatFiles', elems)
     addml_root = addml.addml([description, reference, flatfiles])
 
     return addml_root
