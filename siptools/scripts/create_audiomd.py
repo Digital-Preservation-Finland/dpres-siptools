@@ -138,8 +138,8 @@ def create_audiomd(filename):
     audio_info_elem = _get_audio_info(metadata)
 
     audiomd_elem = audiomd.create_audiomd(
-        file_data = file_data_elem,
-        audio_info = audio_info_elem
+        file_data=file_data_elem,
+        audio_info=audio_info_elem
     )
 
     return audiomd_elem
@@ -197,10 +197,10 @@ def _strip_zeros(float_str):
 
     # if '.' is found in the string and string
     # ends in '0' or '.' strip last character
-    if float_str.find(".") is not -1 and float_str[-1] in ['0', '.']:
+    if float_str.find(".") != -1 and float_str[-1] in ['0', '.']:
         return _strip_zeros(float_str[:-1])
-    else:
-        return float_str
+
+    return float_str
 
 
 def _iso8601_duration(time):
@@ -224,10 +224,52 @@ def _iso8601_duration(time):
 
     return duration
 
+
+def _read_uint(f_in):
+    """Read 4 bytes from f_in and return the corresponding
+    unsigned integer.
+    """
+    uint = 0
+    binary_num = f_in.read(4)
+
+    for i in range(4):
+        uint += ord(binary_num[i])*256**i
+
+    return uint
+
+def _is_broadcast_wav(fname):
+    """Check if file fname is WAV or broadcast WAV file.
+    The function reads all the RIFF chunk IDs and returns
+    True if "bext" chunk is found.
+    """
+    with open(fname) as f_in:
+        f_in.read(4) # Skip RIFF ID
+        size = _read_uint(f_in) + 8
+        f_in.read(4) # Skip WAVE ID
+
+        size -= 12
+
+        # Iterate all WAVE chunks
+        while size > 0:
+            chunk_id = f_in.read(4)
+            chunk_size = _read_uint(f_in)
+
+            if chunk_id == "bext":
+                return True
+            else:
+                size -= (chunk_size + 8)
+                f_in.seek(chunk_size, 1)
+
+    return False
+
+
 if __name__ == '__main__':
     # main()
 
-    print ET.tostring(
-        create_audiomd("tests/data/audio/valid-wav.wav"),
-        pretty_print=True
-    )
+    # print ET.tostring(
+    #     create_audiomd("tests/data/audio/valid-wav.wav"),
+    #     pretty_print=True
+    # )
+
+    print _is_broadcast_wav("tests/data/audio/valid-bwf.wav")
+    print _is_broadcast_wav("tests/data/audio/valid-wav.wav")
