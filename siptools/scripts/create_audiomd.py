@@ -115,8 +115,8 @@ def _get_encoding(stream_dict):
 
     if encoding.split()[0] == "PCM":
         return "PCM"
-    else:
-        return encoding
+
+    return encoding
 
 
 def _get_audio_info(metadata):
