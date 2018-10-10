@@ -8,6 +8,7 @@ from uuid import uuid4
 import datetime
 import platform
 import argparse
+import subprocess
 import magic
 
 try:
@@ -219,6 +220,10 @@ def metadata_info(fname):
             if ver in version:
                 metadata_info_['format']['version'] = ver
 
+    # Try MS Office detection
+    else:
+        metadata_info_ = detect_msoffice(metadata_info_)
+
     return metadata_info_
 
 
@@ -298,6 +303,46 @@ def return_charset(charset_raw):
         raise ValueError('Invalid charset.')
 
     return charset
+
+
+def detect_msoffice(metadata_info):
+    """Try to detect if the file is a MS Office file using the
+    file command. Sets the mimetype and the hard coded version
+    for the file if it is an MS Office file."""
+    openxml_formats = [
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.'
+        'document',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.openxmlformats-officedocument.presentationml.'
+        'presentation']
+
+    binary_formats = ['application/msword', 'application/vnd.ms-excel',
+                      'application/vnd.ms-powerpoint']
+
+    cmd = ['/opt/file-5.30/bin/file', '-b', '--mime-type',
+           metadata_info['filename']]
+    env = os.environ.copy()
+    env["LD_LIBRARY_PATH"] = '/opt/file-5.30/lib64'
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            shell=False, env=env)
+
+    (stdout_result, stderr_result) = proc.communicate()
+    statuscode = proc.returncode
+    mimetype = stdout_result.strip()
+
+    if statuscode != 0 and mimetype not in (openxml_formats or binary_formats):
+        return metadata_info
+
+    metadata_info['format']['mimetype'] = mimetype
+
+    # Sets the version depending on what kind of Office file it is
+    if mimetype in openxml_formats:
+        metadata_info['format']['version'] = '15.0'
+    elif mimetype in binary_formats:
+        metadata_info['format']['version'] = '11.0'
+
+    return metadata_info
 
 
 if __name__ == '__main__':
