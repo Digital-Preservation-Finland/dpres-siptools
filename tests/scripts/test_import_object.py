@@ -278,6 +278,54 @@ def test_import_object_validate_odt_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
+@pytest.mark.parametrize('input_file', ['tests/data/MS_Excel_97-2003.xls'])
+def test_import_object_validate_msexcel_ok(input_file, testpath):
+    arguments = ['--workspace', testpath, 'tests/data/MS_Excel_97-2003.xls']
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(
+        input_file, suffix='-premis-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+                          namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName/text()',
+                      namespaces=NAMESPACES)[0] == 'application/vnd.ms-excel'
+    assert root.xpath('//premis:formatVersion/text()',
+                      namespaces=NAMESPACES)[0] == '11.0'
+
+    assert return_code == 0
+
+
+@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
+@pytest.mark.parametrize('input_file',
+                         ['tests/data/MS_Word_2007-2013_XML.docx'])
+def test_import_object_validate_msword_ok(input_file, testpath):
+    arguments = ['--workspace', testpath,
+                 'tests/data/MS_Word_2007-2013_XML.docx']
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(
+        input_file, suffix='-premis-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+                          namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName/text()',
+                      namespaces=NAMESPACES)[0] == \
+        ('application/vnd.openxmlformats-officedocument.wordprocessingml.'
+         'document')
+    assert root.xpath('//premis:formatVersion/text()',
+                      namespaces=NAMESPACES)[0] == '15.0'
+
+    assert return_code == 0
+
+
 def test_import_object_fail():
     """Test that import_object.main raises error if target file does not
     exist
