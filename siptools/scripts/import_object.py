@@ -306,9 +306,9 @@ def return_charset(charset_raw):
 
 
 def detect_msoffice(metadata_info):
-    """Try to detect if the file is a MS Office file using the
-    file command. Sets the mimetype and the hard coded version
-    for the file if it is an MS Office file."""
+    """Try to detect if the file is a MS Office file using the file
+    command with file version 5.20 or greater. Sets the mimetype and
+    the hard coded version for the file if it is an MS Office file."""
     openxml_formats = [
         'application/vnd.openxmlformats-officedocument.wordprocessingml.'
         'document',
@@ -331,7 +331,7 @@ def detect_msoffice(metadata_info):
     statuscode = proc.returncode
     mimetype = stdout_result.strip()
 
-    if statuscode != 0 and mimetype not in (openxml_formats or binary_formats):
+    if statuscode != 0 or mimetype not in (openxml_formats or binary_formats):
         return metadata_info
 
     metadata_info['format']['mimetype'] = mimetype
