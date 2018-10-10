@@ -23,6 +23,17 @@ import mets
 import xml_helpers.utils as h
 
 
+OPENXML_FORMATS = [
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.'
+    'document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.'
+    'presentation']
+
+BINARY_OFFICE_FORMATS = ['application/msword', 'application/vnd.ms-excel',
+                         'application/vnd.ms-powerpoint']
+
+
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
     parser = argparse.ArgumentParser(
@@ -220,9 +231,16 @@ def metadata_info(fname):
             if ver in version:
                 metadata_info_['format']['version'] = ver
 
-    # Try MS Office detection
-    else:
+    # Try MS Office detection with file 5.30 if mimetype isn't
+    # detected properly
+    elif mimetype not in OPENXML_FORMATS + BINARY_OFFICE_FORMATS:
         metadata_info_ = detect_msoffice(metadata_info_)
+
+    # Sets the version depending on what kind of Office file it is
+    if mimetype in OPENXML_FORMATS:
+        metadata_info_['format']['version'] = '15.0'
+    elif mimetype in BINARY_OFFICE_FORMATS:
+        metadata_info_['format']['version'] = '11.0'
 
     return metadata_info_
 
@@ -305,44 +323,35 @@ def return_charset(charset_raw):
     return charset
 
 
-def detect_msoffice(metadata_info):
+def detect_msoffice(metadata_info_):
     """Try to detect if the file is a MS Office file using the file
-    command with file version 5.20 or greater. Sets the mimetype and
-    the hard coded version for the file if it is an MS Office file."""
-    openxml_formats = [
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.'
-        'document',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.openxmlformats-officedocument.presentationml.'
-        'presentation']
-
-    binary_formats = ['application/msword', 'application/vnd.ms-excel',
-                      'application/vnd.ms-powerpoint']
+    command with file version 5.30 or greater. Sets the mimetype if it
+    is an MS Office file otherwise returns an unchanged metadata_info
+    dictionary."""
 
     cmd = ['/opt/file-5.30/bin/file', '-b', '--mime-type',
-           metadata_info['filename']]
+           metadata_info_['filename']]
     env = os.environ.copy()
     env["LD_LIBRARY_PATH"] = '/opt/file-5.30/lib64'
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            shell=False, env=env)
 
-    (stdout_result, stderr_result) = proc.communicate()
-    statuscode = proc.returncode
-    mimetype = stdout_result.strip()
+    try:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                shell=False, env=env)
 
-    if statuscode != 0 or mimetype not in (openxml_formats or binary_formats):
-        return metadata_info
+        (stdout_result, _) = proc.communicate()
+        statuscode = proc.returncode
+        mimetype = stdout_result.strip()
+    except OSError:
+        return metadata_info_
 
-    metadata_info['format']['mimetype'] = mimetype
+    if statuscode != 0 or (mimetype not in OPENXML_FORMATS +
+                           BINARY_OFFICE_FORMATS):
+        return metadata_info_
 
-    # Sets the version depending on what kind of Office file it is
-    if mimetype in openxml_formats:
-        metadata_info['format']['version'] = '15.0'
-    elif mimetype in binary_formats:
-        metadata_info['format']['version'] = '11.0'
+    metadata_info_['format']['mimetype'] = mimetype
 
-    return metadata_info
+    return metadata_info_
 
 
 if __name__ == '__main__':
