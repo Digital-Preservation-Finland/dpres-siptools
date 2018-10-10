@@ -2,10 +2,9 @@
 
 import argparse
 import ffmpeg
-import lxml.etree as ET
 
 import audiomd
-from siptools.utils import TechmdCreator, encode_path
+from siptools.utils import TechmdCreator
 
 
 def parse_arguments(arguments):
@@ -43,96 +42,29 @@ class AudiomdCreator(TechmdCreator):
     for WAV files.
     """
 
-    def __init__(self, workspace):
-        """
-        :workspace: Output path
-        :etrees: Dict of the generated root elements
-        :filenames: Dict of the filenames corresponding to root elements
-        """
-        super(AudiomdCreator, self).__init__(workspace)
-        self.etrees = {}
-        self.filenames = {}
-
-
     def add_audiomd_md(self, filepath):
-        """Append metadata to etrees and filenames dicts.
-        All the metadata given as the parameters uniquely defines
-        the XML file to be written later. A tuple of the
-        metadata is thus used as the dict key, which makes it possible
-        to efficiently check if corresponding metadata element has
-        already been created. This means that the write_techmdfile()
-        function needs to be called only once for each distinct metadata types.
-
-        :csv_file: CSV file name
-        :delimiter: Delimiter used in the CSV file
-        :isheader: True if CSV has a header else False
-        :charset: Charset used in the CSV file
-        :record_separator: Char used for separating CSV file fields
-        :quoting_char: Quotation char used in the CSV file
-
-        :returns: None
+        """Create audioMD metadata for a WAV file and append it
+        to self.md_elements.
         """
 
-        header = csv_header(csv_file, delimiter)
-
-        key = (delimiter, header, charset, record_separator, quoting_char)
-
-        # If similar metadata already exists,
-        # only append filename to self.filenames
-        if key in self.etrees:
-            self.filenames[key].append(csv_file)
-            return
-
-        # If similar metadata does not exist, create it
-        metadata = create_addml(
-            csv_file, delimiter,
-            isheader, charset,
-            record_separator, quoting_char
-        )
-
-        self.etrees[key] = metadata
-        self.filenames[key] = [csv_file]
+        # Create audioMD metadata
+        metadata = create_audiomd(filepath)
+        md_element = (metadata, filepath)
+        self.md_elements.append(md_element)
 
 
-    def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML"):
-        """ Write all the METS XML files and techmdreference file.
-        Base class write is overwritten to handle the references
-        correctly and add flatFile fields to METS XML files.
-
-        :returns: None
-        """
-
-        for key in self.etrees:
-            metadata = self.etrees[key]
-            filenames = self.filenames[key]
-
-            # Create METS XML file
-            techmd_id, techmd_fname = \
-                self.write_md(metadata, mdtype, mdtypeversion, othermdtype)
-
-            # Add all the files to references
-            for filename in filenames:
-                self.add_reference(techmd_id, filename)
-
-            # Append all the flatFile elements to the METS XML file
-            append = [
-                flat_file_str(encode_path(filename), "ref001")
-                for filename in filenames
-            ]
-            append_lines(techmd_fname, "<addml:flatFiles>", append)
-
-        # Write techmdreferences
-        self.write_references()
-
-        # Clear filenames and etrees
-        self.__init__(self.workspace)
+    def write(self, mdtype="OTHER", mdtypeversion="2.0", othermdtype="AudioMD"):
+        super(AudiomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
 def create_audiomd(filename):
     """Creates and returns the root audioMD XML element.
     """
 
-    metadata = ffmpeg.probe(filename)
+    try:
+        metadata = ffmpeg.probe(filename)
+    except ffmpeg.Error:
+        raise ValueError("File '%s' could not be parsed by ffprobe" % filename)
 
     file_data_elem = _get_file_data(metadata)
     audio_info_elem = _get_audio_info(metadata)
@@ -150,30 +82,41 @@ def _get_file_data(metadata):
     """
 
     stream_dict = metadata["streams"][0]
-    format_dict = metadata["format"]
 
     # amd.file_data() params
     bps = str(stream_dict["bits_per_sample"])
     bit_rate = float(stream_dict["bit_rate"])
-    channels = int(stream_dict["channels"])
     data_rate = str(int(round(bit_rate/1000)))
     sample_rate = float(stream_dict["sample_rate"])
     sampling_frequency = _strip_zeros("%.2f" % (sample_rate/1000))
+    codec = _get_encoding(stream_dict)
+
+    if codec == "PCM":
+        compression_params = ("(:unap)", "(:unap)", "(:unap)", "lossless")
+    else:
+        compression_params = ("(:unav)", "(:unav)", "(:unav)", "(:unav)")
 
     params = {}
-    params["audioDataEncoding"] = "PCM"
+    params["audioDataEncoding"] = codec
     params["bitsPerSample"] = bps
-    params["compression"] = audiomd.amd_compression(
-        "(:unap)",
-        "(:unap)",
-        "(:unap)",
-        "lossless"
-    )
+    params["compression"] = audiomd.amd_compression(*compression_params)
     params["dataRate"] = data_rate
     params["dataRateMode"] = "Fixed"
     params["samplingFrequency"] = sampling_frequency
 
     return audiomd.amd_file_data(params)
+
+
+def _get_encoding(stream_dict):
+    """Get the used codec from the stream_dict. Return PCM if codec is
+    any form of PCM and full codec description otherwise.
+    """
+    encoding = stream_dict["codec_long_name"]
+
+    if encoding.split()[0] == "PCM":
+        return "PCM"
+    else:
+        return encoding
 
 
 def _get_audio_info(metadata):
@@ -233,21 +176,20 @@ def _read_uint(f_in):
     binary_num = f_in.read(4)
 
     for i in range(4):
-        uint += ord(binary_num[i])*256**i
+        uint += ord(binary_num[i]) * 256**i
 
     return uint
 
-def _is_broadcast_wav(fname):
+
+def is_broadcast_wav(fname):
     """Check if file fname is WAV or broadcast WAV file.
     The function reads all the RIFF chunk IDs and returns
     True if "bext" chunk is found.
     """
     with open(fname) as f_in:
         f_in.read(4) # Skip RIFF ID
-        size = _read_uint(f_in) + 8
+        size = _read_uint(f_in) - 4
         f_in.read(4) # Skip WAVE ID
-
-        size -= 12
 
         # Iterate all WAVE chunks
         while size > 0:
@@ -265,11 +207,4 @@ def _is_broadcast_wav(fname):
 
 if __name__ == '__main__':
     # main()
-
-    # print ET.tostring(
-    #     create_audiomd("tests/data/audio/valid-wav.wav"),
-    #     pretty_print=True
-    # )
-
-    print _is_broadcast_wav("tests/data/audio/valid-bwf.wav")
-    print _is_broadcast_wav("tests/data/audio/valid-wav.wav")
+    create_audiomd("test")
