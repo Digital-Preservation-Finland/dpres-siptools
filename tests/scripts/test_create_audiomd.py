@@ -83,7 +83,7 @@ def test_create_audiomd_techmdfile(testpath):
     creator.write()
 
     filepath = os.path.join(
-        testpath, '31d46aa7dd087e68538a839784ff676d-AudioMD-techmd.xml'
+        testpath, 'd5281d2582dc5e5240a45749faf9c206-AudioMD-techmd.xml'
     )
 
     # Check that techmdreference and one AudioMD-techmd files are created
