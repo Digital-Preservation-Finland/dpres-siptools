@@ -231,15 +231,14 @@ def metadata_info(fname):
             if ver in version:
                 metadata_info_['format']['version'] = ver
 
-    # Try MS Office detection with file 5.30 if mimetype isn't
-    # detected properly
-    elif mimetype not in OPENXML_FORMATS + BINARY_OFFICE_FORMATS:
+    # Try MS Office detection with file-5.30
+    else:
         metadata_info_ = detect_msoffice(metadata_info_)
 
     # Sets the version depending on what kind of Office file it is
-    if mimetype in OPENXML_FORMATS:
+    if metadata_info_['format']['mimetype'] in OPENXML_FORMATS:
         metadata_info_['format']['version'] = '15.0'
-    elif mimetype in BINARY_OFFICE_FORMATS:
+    elif metadata_info_['format']['mimetype'] in BINARY_OFFICE_FORMATS:
         metadata_info_['format']['version'] = '11.0'
 
     return metadata_info_
