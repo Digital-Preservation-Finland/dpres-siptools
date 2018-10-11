@@ -206,5 +206,4 @@ def is_broadcast_wav(fname):
 
 
 if __name__ == '__main__':
-    # main()
-    create_audiomd("test")
+    main()

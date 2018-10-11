@@ -56,6 +56,9 @@ create_mix
 create_addml
     for creating ADDML metadata for csv files.
 
+create_audiomd
+    for creating AudioMD metadata for WAV files.
+
 compile_structmap
     for creating structural map in mets.xml.
 
@@ -83,7 +86,11 @@ If your dataset contains image data, create also MIX metadata for each of the im
 ADDML metadata for a CSV file can be created by running::
     
     python siptools/scripts/create_addml.py path/to/csv_file.csv --no-header --charset 'UTF8' --sep 'CR+LF' --quot '"' --delim ';' --workspace ./workspace
-    
+
+AudioMD metadata for a WAV file can be created by running::
+
+    python siptools/scripts/create_audiomd.py path/to/audio/audio.wav --workspace ./workspace
+
 Flags --header and --no-header define whether or not the CSV file has headers. If neither
 is given, CSV file is assumed not to have headers. --sep flag defines the character used to 
 separate records and --delim the character used to separate fields. --quot defines the 
