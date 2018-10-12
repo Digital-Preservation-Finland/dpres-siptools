@@ -89,13 +89,20 @@ def test_create_audiomd_techmdfile(testpath):
 
     creator.write()
 
-    filepath = os.path.join(
-        testpath, 'd5281d2582dc5e5240a45749faf9c206-AudioMD-techmd.xml'
-    )
-
     # Check that techmdreference and one AudioMD-techmd files are created
     assert os.path.isfile(os.path.join(testpath, 'techmd-references.xml'))
-    assert os.path.isfile(filepath)
+
+
+    filepath1 = os.path.join(
+        testpath, 'd5281d2582dc5e5240a45749faf9c206-AudioMD-techmd.xml'
+    )
+    filepath2 = os.path.join(
+        testpath, 'ba6a79aa17288ac82245689e5c2ea98b-AudioMD-techmd.xml'
+    )
+
+    # Different hashes locally and at Pouta are caused by different
+    # attribute orders. This will be addressed in ticket TPASPKT-153
+    assert os.path.isfile(filepath1) or os.path.isfile(filepath2)
 
 
 def test_is_broadcast_wav():
