@@ -237,7 +237,7 @@ def metadata_info(fname):
     else:
         mimetype = detect_msoffice(metadata_info_['filename'], mimetype)
 
-    # Sets the version depending on what kind of Office file it is
+    # Sets the mimetype and version depending on what kind of Office file it is
     if mimetype in OPENXML_FORMATS:
         metadata_info_['format']['mimetype'] = mimetype
         metadata_info_['format']['version'] = '15.0'
