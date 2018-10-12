@@ -15,13 +15,17 @@ except ImportError:
     IPT_INSTALLED = False
 else:
     IPT_INSTALLED = True
-from siptools.utils import encode_path, encode_id
+import ctypes
 import premis
 import mets
 import xml_helpers.utils as h
-import ctypes
-if os.path.exists('/opt/file-5.30/lib64/libmagic.so.1'):
+from siptools.utils import encode_path, encode_id
+
+try:
     ctypes.cdll.LoadLibrary('/opt/file-5.30/lib64/libmagic.so.1')
+except OSError:
+    print 'file-5.30 not found, MS Office detection may not work properly.'
+
 import magic
 
 
@@ -164,8 +168,6 @@ def create_premis_object(tree, fname, skip_inspection=None,
 
 def metadata_info(fname):
     """Return metadata_info dict for given file."""
-    if not os.path.exists('/opt/file-5.30/lib64/libmagic.so.1'):
-        print 'file-5.30 not found, MS Office detection may not work properly.'
     magic_ = magic.open(magic.MAGIC_MIME_TYPE)
     magic_.load()
     mimetype = magic_.file(fname)
