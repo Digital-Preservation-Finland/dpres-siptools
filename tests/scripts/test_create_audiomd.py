@@ -2,6 +2,7 @@
 
 import os.path
 import pytest
+import lxml.etree as ET
 
 import siptools.scripts.create_audiomd as create_audiomd
 
@@ -75,6 +76,12 @@ def test_create_audiomd_techmdfile(testpath):
     reference file.
     """
     creator = create_audiomd.AudiomdCreator(testpath)
+
+    # Debug print
+    print "\n\n%s" % ET.tostring(
+        create_audiomd.create_audiomd("tests/data/audio/valid-wav.wav"),
+        pretty_print=True
+    )
 
     # Append WAV and broadcast WAV files with identical metadata
     creator.add_audiomd_md("tests/data/audio/valid-wav.wav")
