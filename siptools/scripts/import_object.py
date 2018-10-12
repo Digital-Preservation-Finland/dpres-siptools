@@ -28,7 +28,8 @@ OPENXML_FORMATS = [
     'document',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.openxmlformats-officedocument.presentationml.'
-    'presentation']
+    'presentation'
+    ]
 
 BINARY_OFFICE_FORMATS = ['application/msword', 'application/vnd.ms-excel',
                          'application/vnd.ms-powerpoint']
@@ -119,12 +120,13 @@ def create_premis_object(tree, fname, skip_inspection=None,
                          date_created=None, charset=None):
     """Create Premis object for given file."""
 
+    metadata_info_ = metadata_info(fname)
     if not skip_inspection:
         if not IPT_INSTALLED:
             raise Exception('ipt module is required for file validation. '
                             'Please install dpres-ipt or skip file validation '
                             'with --skip_inspection parameter.')
-        for validator in iter_validators(metadata_info(fname)):
+        for validator in iter_validators(metadata_info_):
             validation_result = validator.result()
             if not validation_result['is_valid']:
                 raise Exception(
@@ -137,14 +139,14 @@ def create_premis_object(tree, fname, skip_inspection=None,
     if digest_algorithm is None:
         digest_algorithm = 'MD5'
     if format_name is None:
-        format_name = metadata_info(fname)['format']['mimetype']
-    if format_version is None and (metadata_info(fname) and 'version'
-                                   in metadata_info(fname)['format']):
-        format_version = metadata_info(fname)['format']['version']
-    if charset or (metadata_info(fname) and 'charset'
-                   in metadata_info(fname)['format']):
+        format_name = metadata_info_['format']['mimetype']
+    if format_version is None and (metadata_info_ and 'version'
+                                   in metadata_info_['format']):
+        format_version = metadata_info_['format']['version']
+    if charset or (metadata_info_ and 'charset'
+                   in metadata_info_['format']):
         format_name += '; charset=' + charset if charset \
-            else '; charset=' + metadata_info(fname)['format']['charset']
+            else '; charset=' + metadata_info_['format']['charset']
 
     if date_created is None:
         date_created = creation_date(fname)
@@ -233,12 +235,14 @@ def metadata_info(fname):
 
     # Try MS Office detection with file-5.30
     else:
-        metadata_info_ = detect_msoffice(metadata_info_)
+        mimetype = detect_msoffice(metadata_info_['filename'], mimetype)
 
     # Sets the version depending on what kind of Office file it is
-    if metadata_info_['format']['mimetype'] in OPENXML_FORMATS:
+    if mimetype in OPENXML_FORMATS:
+        metadata_info_['format']['mimetype'] = mimetype
         metadata_info_['format']['version'] = '15.0'
-    elif metadata_info_['format']['mimetype'] in BINARY_OFFICE_FORMATS:
+    elif mimetype in BINARY_OFFICE_FORMATS:
+        metadata_info_['format']['mimetype'] = mimetype
         metadata_info_['format']['version'] = '11.0'
 
     return metadata_info_
@@ -322,18 +326,23 @@ def return_charset(charset_raw):
     return charset
 
 
-def detect_msoffice(metadata_info_):
-    """Try to detect if the file is a MS Office file using the file
-    command with file version 5.30 or greater. Sets the mimetype if it
-    is an MS Office file otherwise returns an unchanged metadata_info
-    dictionary."""
+def detect_msoffice(filepath, mimetype):
+    """Try to detect if the object is of an MS Office format using the
+    file command with version 5.30 or greater from the custom location
+    in /opt. Returns the mimetype, a newly detected one if the detection
+    is successful, or the given one in all failed cases.
 
-    cmd = ['/opt/file-5.30/bin/file', '-b', '--mime-type',
-           metadata_info_['filename']]
+    :filepath: the path to the file
+    :mimetype: the given mimetype for the file
+
+    :returns: the mimetype (given or detected)
+    """
+    custom_path = '/opt/file-5.30'
+    cmd = ['%s/bin/file' % custom_path, '-b', '--mime-type', filepath]
     env = os.environ.copy()
-    env["LD_LIBRARY_PATH"] = '/opt/file-5.30/lib64'
+    env["LD_LIBRARY_PATH"] = '%s/lib64' % custom_path
 
-    try:
+    if os.path.exists(custom_path):
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 shell=False, env=env)
@@ -341,16 +350,15 @@ def detect_msoffice(metadata_info_):
         (stdout_result, _) = proc.communicate()
         statuscode = proc.returncode
         mimetype = stdout_result.strip()
-    except OSError:
-        return metadata_info_
+    else:
+        print 'file-5.30 not found, MS Office detection may not work properly.'
+        return mimetype
 
     if statuscode != 0 or (mimetype not in OPENXML_FORMATS +
                            BINARY_OFFICE_FORMATS):
-        return metadata_info_
+        return mimetype
 
-    metadata_info_['format']['mimetype'] = mimetype
-
-    return metadata_info_
+    return mimetype
 
 
 if __name__ == '__main__':
