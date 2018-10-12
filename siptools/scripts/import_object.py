@@ -19,6 +19,10 @@ from siptools.utils import encode_path, encode_id
 import premis
 import mets
 import xml_helpers.utils as h
+import ctypes
+if os.path.exists('/opt/file-5.30/lib64/libmagic.so.1'):
+    ctypes.cdll.LoadLibrary('/opt/file-5.30/lib64/libmagic.so.1')
+import magic
 
 
 def parse_arguments(arguments):
@@ -160,13 +164,8 @@ def create_premis_object(tree, fname, skip_inspection=None,
 
 def metadata_info(fname):
     """Return metadata_info dict for given file."""
-    import ctypes
-    custom_file_path = '/opt/file-5.30'
-    if os.path.exists(custom_file_path):
-        ctypes.cdll.LoadLibrary('%s/lib64/libmagic.so.1' % custom_file_path)
-    else:
+    if not os.path.exists('/opt/file-5.30/lib64/libmagic.so.1'):
         print 'file-5.30 not found, MS Office detection may not work properly.'
-    import magic
     magic_ = magic.open(magic.MAGIC_MIME_TYPE)
     magic_.load()
     mimetype = magic_.file(fname)

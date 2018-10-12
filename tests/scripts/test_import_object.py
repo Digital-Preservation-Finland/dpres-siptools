@@ -279,7 +279,7 @@ def test_import_object_validate_odt_ok(input_file, testpath):
 
 
 @pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
-@pytest.mark.skipif(not os.path.exists('/opt/file-5.30'),
+@pytest.mark.skipif(not os.path.exists('/opt/file-5.30/lib64/libmagic.so.1'),
                     reason='Requires file-5.30')
 @pytest.mark.parametrize('input_file', ['tests/data/MS_Excel_97-2003.xls'])
 def test_import_object_validate_msexcel_ok(input_file, testpath):
@@ -303,7 +303,7 @@ def test_import_object_validate_msexcel_ok(input_file, testpath):
 
 
 @pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
-@pytest.mark.skipif(not os.path.exists('/opt/file-5.30'),
+@pytest.mark.skipif(not os.path.exists('/opt/file-5.30/lib64/libmagic.so.1'),
                     reason='Requires file-5.30')
 @pytest.mark.parametrize('input_file',
                          ['tests/data/MS_Word_2007-2013_XML.docx'])
