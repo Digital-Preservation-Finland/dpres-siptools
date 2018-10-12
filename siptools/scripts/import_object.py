@@ -8,8 +8,6 @@ from uuid import uuid4
 import datetime
 import platform
 import argparse
-import subprocess
-import magic
 
 try:
     from ipt.validator.validators import iter_validators
@@ -21,18 +19,6 @@ from siptools.utils import encode_path, encode_id
 import premis
 import mets
 import xml_helpers.utils as h
-
-
-OPENXML_FORMATS = [
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.'
-    'document',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.openxmlformats-officedocument.presentationml.'
-    'presentation'
-    ]
-
-BINARY_OFFICE_FORMATS = ['application/msword', 'application/vnd.ms-excel',
-                         'application/vnd.ms-powerpoint']
 
 
 def parse_arguments(arguments):
@@ -174,6 +160,13 @@ def create_premis_object(tree, fname, skip_inspection=None,
 
 def metadata_info(fname):
     """Return metadata_info dict for given file."""
+    import ctypes
+    custom_file_path = '/opt/file-5.30'
+    if os.path.exists(custom_file_path):
+        ctypes.cdll.LoadLibrary('%s/lib64/libmagic.so.1' % custom_file_path)
+    else:
+        print 'file-5.30 not found, MS Office detection may not work properly.'
+    import magic
     magic_ = magic.open(magic.MAGIC_MIME_TYPE)
     magic_.load()
     mimetype = magic_.file(fname)
@@ -233,16 +226,18 @@ def metadata_info(fname):
             if ver in version:
                 metadata_info_['format']['version'] = ver
 
-    # Try MS Office detection with file-5.30
-    else:
-        mimetype = detect_msoffice(metadata_info_['filename'], mimetype)
-
-    # Sets the mimetype and version depending on what kind of Office file it is
-    if mimetype in OPENXML_FORMATS:
-        metadata_info_['format']['mimetype'] = mimetype
+    # If it is an openxml MS Office file return version
+    elif mimetype in ['application/vnd.openxmlformats-officedocument.'
+                      'wordprocessingml.document',
+                      'application/vnd.openxmlformats-officedocument.'
+                      'spreadsheetml.sheet',
+                      'application/vnd.openxmlformats-officedocument.'
+                      'presentationml.presentation']:
         metadata_info_['format']['version'] = '15.0'
-    elif mimetype in BINARY_OFFICE_FORMATS:
-        metadata_info_['format']['mimetype'] = mimetype
+
+    # If it is an binary MS Office file return version
+    elif mimetype in ['application/msword', 'application/vnd.ms-excel',
+                      'application/vnd.ms-powerpoint']:
         metadata_info_['format']['version'] = '11.0'
 
     return metadata_info_
@@ -324,41 +319,6 @@ def return_charset(charset_raw):
         raise ValueError('Invalid charset.')
 
     return charset
-
-
-def detect_msoffice(filepath, mimetype):
-    """Try to detect if the object is of an MS Office format using the
-    file command with version 5.30 or greater from the custom location
-    in /opt. Returns the mimetype, a newly detected one if the detection
-    is successful, or the given one in all failed cases.
-
-    :filepath: the path to the file
-    :mimetype: the given mimetype for the file
-
-    :returns: the mimetype (given or detected)
-    """
-    custom_path = '/opt/file-5.30'
-    cmd = ['%s/bin/file' % custom_path, '-b', '--mime-type', filepath]
-    env = os.environ.copy()
-    env["LD_LIBRARY_PATH"] = '%s/lib64' % custom_path
-
-    if os.path.exists(custom_path):
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                shell=False, env=env)
-
-        (stdout_result, _) = proc.communicate()
-        statuscode = proc.returncode
-        mimetype = stdout_result.strip()
-    else:
-        print 'file-5.30 not found, MS Office detection may not work properly.'
-        return mimetype
-
-    if statuscode != 0 or (mimetype not in OPENXML_FORMATS +
-                           BINARY_OFFICE_FORMATS):
-        return mimetype
-
-    return mimetype
 
 
 if __name__ == '__main__':
