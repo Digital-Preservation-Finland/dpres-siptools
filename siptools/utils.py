@@ -268,6 +268,3 @@ class TechmdCreator(object):
 
         # Clear references and md_elements
         self.__init__(self.workspace)
-
-if __name__ == "__main__":
-    print generate_digest(lxml.etree.parse("tests/data/mets_valid_minimal.xml").getroot())
