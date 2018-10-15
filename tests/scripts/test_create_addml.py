@@ -94,10 +94,10 @@ def test_create_addml_techmdfile(testpath):
     creator.write()
 
     file1 = os.path.join(
-        testpath, '710ad5d65bbb4339fe265820f9ddbf8f-ADDML-techmd.xml'
+        testpath, 'ec816a14242f3984e483fa23174881d5-ADDML-techmd.xml'
     )
     file2 = os.path.join(
-        testpath, '4368cf94e94b8217f2210b0071dc5175-ADDML-techmd.xml'
+        testpath, 'dd678fd96b655fd95efbb9fe4a77483a-ADDML-techmd.xml'
     )
 
     # Check that techmdreference and the two ADDML-techmd files are created

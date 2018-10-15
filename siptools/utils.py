@@ -6,9 +6,11 @@ from collections import defaultdict
 import hashlib
 import os
 from urllib import quote_plus, unquote_plus
+import copy
+import lxml.etree
+
 import xml_helpers
 import mets
-import lxml.etree
 
 
 def encode_path(path, suffix='', prefix='', safe=None):
@@ -50,6 +52,63 @@ def add(treedict, path):
         root = treedict
 
     return root
+
+
+def copy_etree(etree):
+    """Copies etree recursively. Returns new identical etree
+    """
+    return copy.deepcopy(etree)
+
+
+def _pop_attributes(attributes, attrib_list, path):
+    """Pops all the attributes from attributes dict and appends them to
+    attrib_list.
+
+    :attributes: lxml.etree.Element.attrib dictionary
+    :attrib_list: List of all the attributes
+    :path: Path from root XML element to current element
+    :returns: None
+    """
+    for key in attributes:
+        attribute = attributes.pop(key)
+        attrib_list.append('%s="%s" @ %s\n' % (key, attribute, path))
+
+
+def generate_digest(etree):
+    """Generating MD5 digest from etree. Identical metadata must generate
+    same digest even if attributes of any given element are ordered differently.
+
+    This function creates a copy of the etree. All the attributes of the copy
+    are removed and collected to a separete list with path information to the
+    XML element the attributes belong to. This list is sorted and appended
+    to the end of the serialized XML string without the attributes. Thus
+    creating a string with all the original information except the information
+    about attribute ordering inside any given XML element. This string is
+    hashed and the digest returned.
+
+    :etree: XML element for which the MD5 hash is generated
+    :returns: MD5 hash
+    """
+
+    # Creating copy of the original etree to avoid editing it
+    root = copy_etree(etree)
+    tree = lxml.etree.ElementTree(root)
+    attrib_list = []
+
+    # pop all attributes
+    for element in root.iter():
+        attributes = element.attrib
+        path = tree.getpath(element)
+        _pop_attributes(attributes, attrib_list, path)
+
+    attrib_list.sort()
+    string = xml_helpers.utils.serialize(root)
+
+    # Add the sorted attributes at the end of the serialized XML
+    for attribute in attrib_list:
+        string += attribute
+
+    return hashlib.md5(string).hexdigest()
 
 
 class TechmdCreator(object):
@@ -155,7 +214,7 @@ class TechmdCreator(object):
         :othermdtype (string): Value of mdWrap OTHERMDTYPE attribute
         :returns: techmd_id, filename
         """
-        digest = hashlib.md5(xml_helpers.utils.serialize(metadata)).hexdigest()
+        digest = generate_digest(metadata)
         suffix = othermdtype if othermdtype else mdtype
         filename = encode_path("%s-%s-techmd.xml" % (digest, suffix))
         techmd_id = encode_id(filename)
@@ -209,3 +268,6 @@ class TechmdCreator(object):
 
         # Clear references and md_elements
         self.__init__(self.workspace)
+
+if __name__ == "__main__":
+    print generate_digest(lxml.etree.parse("tests/data/mets_valid_minimal.xml").getroot())
