@@ -176,7 +176,7 @@ def _read_uint(f_in):
     binary_num = f_in.read(4)
 
     for i in range(4):
-        uint += ord(binary_num[i]) * 256**i
+        uint += ord(binary_num[i]) << (8*i) # Left shift of 8*i
 
     return uint
 
