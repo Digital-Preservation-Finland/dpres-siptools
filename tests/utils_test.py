@@ -95,7 +95,7 @@ def test_add_techmdreference(testpath):
 
 
 def test_copy_etree():
-    """Test that copy_etree creates a new lxml.etree 
+    """Test that copy_etree creates a new lxml.etree
     instance with identical data.
     """
     etree1 = lxml.etree.parse("tests/data/sample_techmd-references.xml")
@@ -103,3 +103,42 @@ def test_copy_etree():
 
     assert id(etree1) != id(etree2)
     assert lxml.etree.tostring(etree1) == lxml.etree.tostring(etree2)
+
+
+def test_hashing_same_attribute():
+    """Test that identical attributes with other elements produces
+    different digests.
+    """
+    root1 = lxml.etree.Element("root")
+    lxml.etree.SubElement(root1, "sub1", attribute="value")
+    lxml.etree.SubElement(root1, "sub2")
+
+    root2 = lxml.etree.Element("root")
+    lxml.etree.SubElement(root2, "sub1")
+    lxml.etree.SubElement(root2, "sub2", attribute="value")
+
+    assert utils.generate_digest(root1) != utils.generate_digest(root2)
+
+
+def test_hashing_attribute_order():
+    """Test that same metadata with different attribute order produces
+    same digests.
+    """
+    root1 = lxml.etree.Element("root")
+    lxml.etree.SubElement(root1, "sub", attribute1="value", attribute2="value")
+
+    root2 = lxml.etree.Element("root")
+    lxml.etree.SubElement(root2, "sub", attribute2="value", attribute1="value")
+
+    assert utils.generate_digest(root1) == utils.generate_digest(root2)
+
+
+def test_same_metadata_same_hash():
+    """Tests that same metadata produces the same digest.
+    """
+    root = lxml.etree.parse("tests/data/sample_techmd-references.xml").getroot()
+    digest = utils.generate_digest(root)
+
+    for _ in range(10):
+        root = lxml.etree.parse("tests/data/sample_techmd-references.xml").getroot()
+        assert digest == utils.generate_digest(root)

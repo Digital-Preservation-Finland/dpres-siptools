@@ -92,13 +92,13 @@ def generate_digest(etree):
 
     # Creating copy of the original etree to avoid editing it
     root = copy_etree(etree)
-    tree = lxml.etree.ElementTree(root)
+    elem_tree = lxml.etree.ElementTree(root)
     attrib_list = []
 
     # pop all attributes
     for element in root.iter():
         attributes = element.attrib
-        path = tree.getpath(element)
+        path = elem_tree.getpath(element)
         _pop_attributes(attributes, attrib_list, path)
 
     attrib_list.sort()
