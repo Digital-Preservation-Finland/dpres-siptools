@@ -67,6 +67,27 @@ class MixCreator(TechmdCreator):
         super(MixCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
+def _find_largest_img(img):
+    """Iterate over all images in the image file and return the index
+    of the largest image file.
+
+    :img: wand.image.Image instance
+    :returns: Index of the largest image
+    """
+
+    largest_size = 0
+    idx = 0
+
+    for i, image in enumerate(img.sequence):
+        size = image.width * image.height
+
+        if size > largest_size:
+            largest_size = size
+            idx = i
+
+    return idx
+
+
 def _inspect_image(img):
     """Create metadata for image file. Use both Wand and Pillow modules to
     extract metadata from image file.
@@ -75,14 +96,22 @@ def _inspect_image(img):
     :returns: image file metadata dictionary
     """
     metadata = {}
+    idx = 0
 
     with wand.image.Image(filename=img) as i:
+
+        if len(i.sequence) > 1:
+            idx = _find_largest_img(i)
+
+        image = i.sequence[idx]
+
         metadata["byteorder"] = None
-        metadata["width"] = str(i.width)
-        metadata["height"] = str(i.height)
-        metadata["colorspace"] = str(i.colorspace)
-        metadata["bitspersample"] = str(i.depth)
+        metadata["width"] = str(image.width)
+        metadata["height"] = str(image.height)
+        metadata["colorspace"] = str(image.colorspace)
+        metadata["bitspersample"] = str(image.depth)
         metadata["compression"] = str(i.compression)
+
         for key, value in i.metadata.items():
             if key.startswith('tiff:endian'):
                 if value == 'msb':
@@ -91,6 +120,8 @@ def _inspect_image(img):
                     metadata["byteorder"] = 'little endian'
 
     with PIL.Image.open(img) as image:
+
+        image.seek(idx)
         mode = image.mode
         if mode == 'F':
             metadata["bpsunit"] = 'floating point'
