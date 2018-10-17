@@ -5,10 +5,12 @@ PREFIX=/usr
 install:
 	# Cleanup temporary files
 	rm -f INSTALLED_FILES
-
-	# Use Python setuptools
+	# Install with setuptools
 	python setup.py build ; python ./setup.py install -O1 --prefix="${PREFIX}" --root="${ROOT}" --record=INSTALLED_FILES
-	cat INSTALLED_FILES | sed 's/^/\//g' >> INSTALLED_FILES
+	# Remove egg-info directory from INSTALLED_FILES to avoid listing its
+	# contents twice when creating RPM package
+	sed -i '/\.egg-info$$/d' INSTALLED_FILES
+
 
 test:
 	py.test -svvvv --junitprefix=dpres-siptools --junitxml=junit.xml tests
