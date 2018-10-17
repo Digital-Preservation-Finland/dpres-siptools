@@ -10,6 +10,11 @@ install:
 	# Remove egg-info directory from INSTALLED_FILES to avoid listing its
 	# contents twice when creating RPM package
 	sed -i '/\.egg-info$$/d' INSTALLED_FILES
+	# Remove requires.txt from egg-info because it contains packages that
+	# are only available from PyPi and not from RPM repos
+	rm ${ROOT}${PREFIX}/lib/python2.7/site-packages/*.egg-info/requires.txt
+	sed -i '/\.egg-info\/requires.txt$$/d' INSTALLED_FILES
+
 
 
 test:
