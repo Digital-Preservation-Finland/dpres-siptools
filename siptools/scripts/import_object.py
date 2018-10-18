@@ -24,7 +24,8 @@ from siptools.utils import encode_path, encode_id
 try:
     ctypes.cdll.LoadLibrary('/opt/file-5.30/lib64/libmagic.so.1')
 except OSError:
-    print 'file-5.30 not found, MS Office detection may not work properly.'
+    print ('/opt/file-5.30/lib64/libmagic.so.1 not found, MS Office detection '
+           'may not work properly if file command library is older than 5.30.')
 
 import magic
 

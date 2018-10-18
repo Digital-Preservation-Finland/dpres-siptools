@@ -143,6 +143,14 @@ Create a TAR file::
     python siptools/scripts/compress.py --tar_filename sip.tar ./workspace
 
 
+Additional requirements
+-----------------------
+The following software is required for proper detection of certain file formats:
+
+        * for MS Office: file, version 5.30 or greater
+
+The software listed above needs to be installed separately.
+
 Copyright
 ---------
 Copyright (C) 2018 CSC - IT Center for Science Ltd.
