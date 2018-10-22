@@ -6,6 +6,7 @@ scandir
 file-magic
 wand
 Pillow
+ffmpeg-python
 M2Crypto
 python-mimeparse
 git+https://github.com/Digital-Preservation-Finland/xml-helpers.git#egg=xml_helpers
@@ -15,3 +16,4 @@ git+https://github.com/Digital-Preservation-Finland/dpres-signature.git#egg=dpre
 git+https://github.com/Digital-Preservation-Finland/dpres-ipt.git#egg=ipt
 git+https://github.com/Digital-Preservation-Finland/nisomix.git#egg=nisomix
 git+https://github.com/Digital-Preservation-Finland/addml.git#egg=addml
+git+https://github.com/Digital-Preservation-Finland/audiomd.git#egg=audiomd
