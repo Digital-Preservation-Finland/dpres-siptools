@@ -330,6 +330,34 @@ def test_import_object_validate_msword_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
+@pytest.mark.parametrize('input_file, version',
+                         [('tests/data/audio/valid-bwf.wav', '2'),
+                          ('tests/data/audio/valid-wav.wav', '')])
+def test_import_object_validate_wav_ok(input_file, version, testpath):
+    arguments = ['--workspace', testpath, input_file]
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(
+        input_file, suffix='-premis-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+                          namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName/text()',
+                      namespaces=NAMESPACES)[0] == 'audio/x-wav'
+    if version == '':
+        assert len(root.xpath('//premis:formatVersion/text()',
+                              namespaces=NAMESPACES)) == 0
+    else:
+        assert root.xpath('//premis:formatVersion/text()',
+                          namespaces=NAMESPACES)[0] == '2'
+
+    assert return_code == 0
+
+
 def test_import_object_fail():
     """Test that import_object.main raises error if target file does not
     exist
@@ -365,3 +393,11 @@ def iterate_files(path):
     for root, _, files in os.walk(path, topdown=False):
         for name in files:
             yield os.path.join(root, name)
+
+
+def test_is_broadcast_wav():
+    """Test that WAV and broadcast WAV files are properly identified.
+    """
+    path = "tests/data/audio"
+    assert import_object.is_broadcast_wav("%s/valid-bwf.wav" % path)
+    assert not import_object.is_broadcast_wav("%s/valid-wav.wav" % path)

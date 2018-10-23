@@ -242,6 +242,13 @@ def metadata_info(fname):
                       'application/vnd.ms-powerpoint']:
         metadata_info_['format']['version'] = '11.0'
 
+    # If WAVE-file return version
+    elif mimetype == 'audio/x-wav':
+        if is_broadcast_wav(fname):
+            metadata_info_['format']['version'] = '2'
+        else:
+            metadata_info_['format']['version'] = ''
+
     return metadata_info_
 
 
@@ -321,6 +328,43 @@ def return_charset(charset_raw):
         raise ValueError('Invalid charset.')
 
     return charset
+
+
+def _read_uint(f_in):
+    """Read 4 bytes from f_in and return the corresponding
+    unsigned integer.
+    """
+    uint = 0
+    binary_num = f_in.read(4)
+
+    for i in range(4):
+        uint += ord(binary_num[i]) << (8*i) # Left shift of 8*i
+
+    return uint
+
+
+def is_broadcast_wav(fname):
+    """Check if file fname is WAV or broadcast WAV file.
+    The function reads all the RIFF chunk IDs and returns
+    True if "bext" chunk is found.
+    """
+    with open(fname) as f_in:
+        f_in.read(4) # Skip RIFF ID
+        size = _read_uint(f_in) - 4
+        f_in.read(4) # Skip WAVE ID
+
+        # Iterate all WAVE chunks
+        while size > 0:
+            chunk_id = f_in.read(4)
+            chunk_size = _read_uint(f_in)
+
+            if chunk_id == "bext":
+                return True
+            else:
+                size -= (chunk_size + 8)
+                f_in.seek(chunk_size, 1)
+
+    return False
 
 
 if __name__ == '__main__':

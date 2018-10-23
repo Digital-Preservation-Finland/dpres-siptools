@@ -98,11 +98,3 @@ def test_create_audiomd_techmdfile(testpath):
     )
 
     assert os.path.isfile(filepath)
-
-
-def test_is_broadcast_wav():
-    """Test that WAV and broadcast WAV files are properly identified.
-    """
-    path = "tests/data/audio"
-    assert create_audiomd.is_broadcast_wav("%s/valid-bwf.wav" % path)
-    assert not create_audiomd.is_broadcast_wav("%s/valid-wav.wav" % path)
