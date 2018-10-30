@@ -63,6 +63,14 @@ def parse_arguments(arguments):
     parser.add_argument(
         '--date_created', dest='date_created', type=str,
         help='The actual or approximate date and time the object was created')
+    parser.add_argument(
+        '--identifier', dest='identifier', type=str, nargs=2,
+        metavar=('IDENTIFIER_TYPE', 'IDENTIFIER_VALUE'),
+        help='The identifier type and value of the digital object')
+    parser.add_argument(
+        '--format_registry', dest='format_registry', type=str, nargs=2,
+        metavar=('REGISTRY_NAME', 'REGISTRY_KEY'),
+        help='The format registry name and key of the digital object')
     parser.add_argument('--stdout', help='Print output to stdout')
     return parser.parse_args(arguments)
 
@@ -83,7 +91,8 @@ def main(arguments=None):
         create_premis_object(xmldata, filename, args.skip_inspection,
                              args.format_name, args.format_version,
                              args.digest_algorithm, args.message_digest,
-                             args.date_created, args.charset)
+                             args.date_created, args.charset,
+                             args.identifier, args.format_registry)
 
         mdwrap = mets.mdwrap('PREMIS:OBJECT', '2.3', child_elements=[xmldata])
         techmd = mets.techmd(
@@ -112,7 +121,8 @@ def main(arguments=None):
 def create_premis_object(tree, fname, skip_inspection=None,
                          format_name=None, format_version=None,
                          digest_algorithm='MD5', message_digest=None,
-                         date_created=None, charset=None):
+                         date_created=None, charset=None,
+                         identifier=None, format_registry=None):
     """Create Premis object for given file."""
 
     metadata_info_ = metadata_info(fname)
@@ -146,9 +156,24 @@ def create_premis_object(tree, fname, skip_inspection=None,
     if date_created is None:
         date_created = creation_date(fname)
 
+    if identifier is None:
+        object_identifier = premis.identifier(
+            identifier_type='UUID',
+            identifier_value=str(uuid4()))
+    else:
+        object_identifier = premis.identifier(
+            identifier_type=identifier[0],
+            identifier_value=identifier[1])
+
     premis_fixity = premis.fixity(message_digest, digest_algorithm)
     premis_format_des = premis.format_designation(format_name, format_version)
-    premis_format = premis.format(child_elements=[premis_format_des])
+    if format_registry is None:
+        premis_format = premis.format(child_elements=[premis_format_des])
+    else:
+        premis_registry = premis.format_registry(format_registry[0],
+                                                 format_registry[1])
+        premis_format = premis.format(child_elements=[premis_format_des,
+                                                      premis_registry])
     premis_date_created = premis.date_created(date_created)
     premis_create = \
         premis.creating_application(child_elements=[premis_date_created])
@@ -156,10 +181,6 @@ def create_premis_object(tree, fname, skip_inspection=None,
         child_elements=[premis_fixity, premis_format, premis_create])
 
     # Create object element
-    object_identifier = premis.identifier(
-        identifier_type='UUID',
-        identifier_value=str(uuid4()))
-
     el_premis_object = premis.object(
         object_identifier, child_elements=[premis_objchar])
     tree.append(el_premis_object)
