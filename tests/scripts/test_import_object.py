@@ -93,6 +93,48 @@ def test_import_object_structured_ok(testpath):
         assert return_code == 0
 
 
+def test_import_object_identifier(testpath):
+    """Test digital object identifier argument"""
+    input_file = 'tests/data/structured/Documentation files/readme.txt'
+    arguments = ['--workspace', testpath, '--skip_inspection',
+                 '--identifier', 'local', 'test-id', input_file]
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(input_file.decode('utf-8'),
+                                                suffix='-premis-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert root.xpath('//premis:objectIdentifierType',
+                      namespaces=NAMESPACES)[0].text == 'local'
+    assert root.xpath('//premis:objectIdentifierValue',
+                      namespaces=NAMESPACES)[0].text == 'test-id'
+
+    assert return_code == 0
+
+
+def test_import_object_format_registry(testpath):
+    """Test digital object format registry argument"""
+    input_file = 'tests/data/structured/Documentation files/readme.txt'
+    arguments = ['--workspace', testpath, '--skip_inspection',
+                 '--format_registry', 'local', 'test-key', input_file]
+    return_code = import_object.main(arguments)
+
+    output = os.path.join(testpath, encode_path(input_file.decode('utf-8'),
+                                                suffix='-premis-techmd.xml'))
+
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert root.xpath('//premis:formatRegistryName',
+                      namespaces=NAMESPACES)[0].text == 'local'
+    assert root.xpath('//premis:formatRegistryKey',
+                      namespaces=NAMESPACES)[0].text == 'test-key'
+    
+    assert return_code == 0
+
+
 @pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 def test_import_object_validate_pdf_ok(testpath):
     """Test PDF validation in import_object.main funciton."""
