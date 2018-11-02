@@ -7,6 +7,7 @@ import os
 from uuid import uuid4
 import scandir
 import lxml.etree as ET
+import json
 import mets
 import xml_helpers.utils as h
 from siptools.xml.mets import NAMESPACES
@@ -34,9 +35,12 @@ def parse_arguments(arguments):
                         help=("Use structured descriptive metadata for "
                               "creating structMap divs"))
     parser.add_argument('--dmdsec_loc', dest='dmdsec_loc', type=str,
-                        help="Location of  structured descriptive metadata")
+                        help="Location of structured descriptive metadata")
     parser.add_argument('--type_attr', dest='type_attr', type=str,
-                        help="Type of structmap e.g. 'Fairdata-physical'")
+                        help="Type of structmap e.g. 'Fairdata-physical'"
+                             " or 'Directory-physical'")
+    parser.add_argument('--root_type', dest='root_type', type=str,
+                        help="Type of div root")
     parser.add_argument('--workspace', type=str, default='./workspace/',
                         help="Destination directory for output files.")
     parser.add_argument('--stdout', help='Print output also to stdout.')
@@ -64,11 +68,26 @@ def main(arguments=None):
                               filegrp, dmdsec_id)
     else:
         amdids = get_links_event_agent(args.workspace, None)
-        container_div = mets.div(type_attr='directory', dmdid=dmdsec_id,
-                                 admid=amdids)
+
+        if args.type_attr == 'Directory-physical':
+            container_div = mets.div(type_attr='directory', label='.',
+                                     dmdid=dmdsec_id, admid=amdids)
+        else:
+            root_type = args.root_type if args.root_type else 'directory'
+            container_div = mets.div(type_attr=root_type, dmdid=dmdsec_id,
+                                     admid=amdids)
+
+        properties = {}
+        property_path = os.path.join(args.workspace,
+                                     'siptools-file-properties.txt')
+        if os.path.isfile(property_path):
+            with open(property_path) as infile:
+                properties = json.load(infile)
+
         structmap.append(container_div)
         divs = div_structure(args.workspace)
-        create_structmap(args.workspace, divs, container_div, filegrp)
+        create_structmap(args.workspace, divs, container_div, filegrp,
+                         properties=properties, type_attr=args.type_attr)
 
     if args.stdout:
         print h.serialize(mets_filesec)
@@ -244,10 +263,12 @@ def get_links_event_agent(workspace, path):
     return links_e + links_a
 
 
-def create_structmap(workspace, divs, structmap, filegrp, path=''):
+def create_structmap(workspace, divs, structmap, filegrp, path='',
+                     properties={}, type_attr=None):
     """Create structmap based on directory structure
     """
     fptr_list = []
+    order_list = []
     div_list = []
     for div in divs.keys():
         # It's a file if there is "-techmd.xml", lets create file+fptr
@@ -258,20 +279,38 @@ def create_structmap(workspace, divs, structmap, filegrp, path=''):
             amdids = get_links_event_agent(workspace, div_path)
             fileid = add_file_to_filesec(workspace, div_path, filegrp, amdids)
             fptr = mets.fptr(fileid)
-            fptr_list.append(fptr)
+            if div_path in properties:
+                file_properties = properties[div_path]            
+                if 'order' in file_properties:
+                    div_el = mets.div(type_attr='file',
+                                      order=file_properties['order'])
+                    div_el.append(fptr)
+                    order_list.append(div_el)
+                else:
+                    fptr_list.append(fptr)
+            else:
+                fptr_list.append(fptr)
+
         # It's not a file, lets create a div element
         else:
             div_path = encode_path(os.path.join(decode_path(path), div))
             amdids = get_links_event_agent(workspace, div_path)
             _, dmdsec_id = ids_for_files(workspace, div_path, 'dmdsec.xml')
-            div_el = mets.div(type_attr=div, dmdid=dmdsec_id, admid=amdids)
+            if type_attr == 'Directory-physical':
+                div_el = mets.div(type_attr='directory', label=div,
+                                  dmdid=dmdsec_id, admid=amdids)
+            else:
+                div_el = mets.div(type_attr=div, dmdid=dmdsec_id,
+                                  admid=amdids)
             div_list.append(div_el)
-
-            create_structmap(workspace, divs[div], div_el, filegrp, div_path)
+            create_structmap(workspace, divs[div], div_el, filegrp, div_path,
+                             properties, type_attr)
 
     # Add fptr list first, then div list
     for fptr_elem in fptr_list:
         structmap.append(fptr_elem)
+    for div_elem in order_list:
+        structmap.append(div_elem)
     for div_elem in div_list:
         structmap.append(div_elem)
 

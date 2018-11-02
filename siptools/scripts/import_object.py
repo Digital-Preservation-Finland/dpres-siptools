@@ -8,6 +8,7 @@ from uuid import uuid4
 import datetime
 import platform
 import argparse
+import json
 
 try:
     from ipt.validator.validators import iter_validators
@@ -71,6 +72,9 @@ def parse_arguments(arguments):
         '--format_registry', dest='format_registry', type=str, nargs=2,
         metavar=('REGISTRY_NAME', 'REGISTRY_KEY'),
         help='The format registry name and key of the digital object')
+    parser.add_argument(
+        '--order', dest='order', type=int,
+        help='Order number of the digital object')
     parser.add_argument('--stdout', help='Print output to stdout')
     return parser.parse_args(arguments)
 
@@ -111,11 +115,34 @@ def main(arguments=None):
         filename = encode_path(filerel.decode(sys.getfilesystemencoding()),
                                suffix="-premis-techmd.xml")
 
+        properties = {}
+        if args.order:
+            properties['order'] = str(args.order)
+        # Add new properties of a file for othe script files, e.g. structMap        
+
+        if properties != {}:
+            filekey = filename[:-len('-premis-techmd.xml')]
+            append_properties(args.workspace, filekey, properties)
+
         with open(os.path.join(args.workspace, filename), 'w+') as outfile:
             outfile.write(h.serialize(_mets))
             print "Wrote METS technical metadata to file %s" % outfile.name
 
     return 0
+
+
+def append_properties(workspace, fkey, file_properties):
+    """Append separate properties of a file for later use
+    """
+    file_path = os.path.join(workspace, 'siptools-file-properties.txt')
+    properties = {}
+    if os.path.isfile(file_path):
+        with open(file_path) as infile:
+            properties = json.load(infile)
+
+    properties[fkey] = file_properties
+    with open(file_path, 'w+') as outfile:
+        json.dump(properties, outfile)
 
 
 def create_premis_object(tree, fname, skip_inspection=None,

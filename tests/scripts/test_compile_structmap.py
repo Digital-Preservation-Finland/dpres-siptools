@@ -115,3 +115,45 @@ def test_othermd_references(testpath):
         # The file element should have reference to techMD element defined in
         # ``techmd_ids`` dictionary
         assert techmd_ids[filepath] in file_element[0].get('ADMID')
+
+
+def test_compile_structmap_directory_label(testpath):
+    """Test the compile_structmap script."""
+    create_test_data(testpath)
+    return_code = compile_structmap.main(
+        ['--workspace', testpath, '--type_attr', 'Directory-physical'])
+
+    output_structmap = os.path.join(testpath, 'structmap.xml')
+    sm_tree = lxml.etree.parse(output_structmap)
+    sm_root = sm_tree.getroot()
+
+    assert len(sm_root.xpath(
+        '//mets:div[@TYPE="directory" and @LABEL="Software files"]',
+        namespaces=NAMESPACES)) == 1
+
+    assert return_code == 0
+
+
+def test_compile_structmap_order(testpath):
+    """Test the compile_structmap script."""
+    import_object.main(['--workspace', testpath, '--skip_inspection',
+                        '--order', '5',
+                        'tests/data/structured/Software files/koodi.java'])
+    return_code = compile_structmap.main(['--workspace', testpath])
+
+    output_structmap = os.path.join(testpath, 'structmap.xml')
+    sm_tree = lxml.etree.parse(output_structmap)
+    sm_root = sm_tree.getroot()
+
+    output_filesec = os.path.join(testpath, 'filesec.xml')
+    fs_tree = lxml.etree.parse(output_filesec)
+    fs_root = fs_tree.getroot()
+
+    assert len(fs_root.xpath(
+        '/mets:mets/mets:fileSec/mets:fileGrp/mets:file/'
+        'mets:FLocat[@xlink:href="file://tests/data/structured/'
+        'Software+files/koodi.java"]', namespaces=NAMESPACES)) == 1
+
+    assert len(sm_root.xpath(
+        '//mets:div[@TYPE="file" and @ORDER="5"]',
+        namespaces=NAMESPACES)) == 1

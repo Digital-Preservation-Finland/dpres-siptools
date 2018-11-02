@@ -3,6 +3,7 @@
 import sys
 import os.path
 import datetime
+import json
 import lxml.etree as ET
 import pytest
 from siptools.scripts import import_object
@@ -91,6 +92,27 @@ def test_import_object_structured_ok(testpath):
         assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                               namespaces=NAMESPACES)) == 1
         assert return_code == 0
+
+
+def test_import_object_order(testpath):
+    """Test file order"""
+    input_file = 'tests/data/structured/Documentation files/readme.txt'
+    arguments = ['--workspace', testpath, '--skip_inspection',
+                 '--order', '5', input_file]
+    return_code = import_object.main(arguments)
+
+    path = os.path.join(testpath, 'siptools-file-properties.txt')
+    assert os.path.isfile(path)
+
+    properties = {}
+    with open(path) as infile:
+        properties = json.load(infile)
+
+    assert 'tests%2Fdata%2Fstructured%2FDocumentation+files%2Freadme.txt' in properties
+    assert 'order' in properties['tests%2Fdata%2Fstructured%2FDocumentation+files%2Freadme.txt']
+    assert properties['tests%2Fdata%2Fstructured%2FDocumentation+files%2Freadme.txt']['order'] == '5'
+
+    assert return_code == 0
 
 
 def test_import_object_identifier(testpath):
