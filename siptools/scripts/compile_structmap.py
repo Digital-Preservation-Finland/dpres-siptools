@@ -268,7 +268,7 @@ def create_structmap(workspace, divs, structmap, filegrp, path='',
     """Create structmap based on directory structure
     """
     fptr_list = []
-    order_list = []
+    property_list = []
     div_list = []
     for div in divs.keys():
         # It's a file if there is "-techmd.xml", lets create file+fptr
@@ -279,15 +279,9 @@ def create_structmap(workspace, divs, structmap, filegrp, path='',
             amdids = get_links_event_agent(workspace, div_path)
             fileid = add_file_to_filesec(workspace, div_path, filegrp, amdids)
             fptr = mets.fptr(fileid)
-            if div_path in properties:
-                file_properties = properties[div_path]            
-                if 'order' in file_properties:
-                    div_el = mets.div(type_attr='file',
-                                      order=file_properties['order'])
-                    div_el.append(fptr)
-                    order_list.append(div_el)
-                else:
-                    fptr_list.append(fptr)
+            div_el = add_file_properties(properties, div_path, fptr)
+            if div_el:
+                property_list.append(div_el)
             else:
                 fptr_list.append(fptr)
 
@@ -309,10 +303,27 @@ def create_structmap(workspace, divs, structmap, filegrp, path='',
     # Add fptr list first, then div list
     for fptr_elem in fptr_list:
         structmap.append(fptr_elem)
-    for div_elem in order_list:
+    for div_elem in property_list:
         structmap.append(div_elem)
     for div_elem in div_list:
         structmap.append(div_elem)
+
+
+def add_file_properties(properties, path, fptr):
+    """Create a div element with file properties
+    :properties: File properties
+    :path: File path
+    :fptr: Element fptr for file
+    :returns: Div element with properties or None
+    """
+    if path in properties:
+        file_properties = properties[path]
+        if 'order' in file_properties:
+            div_el = mets.div(type_attr='file',
+                              order=file_properties['order'])
+            div_el.append(fptr)
+            return div_el
+    return None
 
 
 def ids_for_files(workspace, path, idtype, dash_count=0):
