@@ -133,6 +133,9 @@ def main(arguments=None):
 
 def append_properties(workspace, fkey, file_properties):
     """Append separate properties of a file for later use
+    :workspace: Workspace to work with
+    :fkey: File path to be used as a key in the properties dict
+    :file_properties: Dict of properties of a file
     """
     file_path = os.path.join(workspace, 'siptools-file-properties.txt')
     properties = {}
