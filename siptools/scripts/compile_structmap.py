@@ -4,10 +4,10 @@ document."""
 import sys
 import argparse
 import os
+import json
 from uuid import uuid4
 import scandir
 import lxml.etree as ET
-import json
 import mets
 import xml_helpers.utils as h
 from siptools.xml.mets import NAMESPACES
@@ -40,7 +40,7 @@ def parse_arguments(arguments):
                         help="Type of structmap e.g. 'Fairdata-physical'"
                              " or 'Directory-physical'")
     parser.add_argument('--root_type', dest='root_type', type=str,
-                        help="Type of div root")
+                        help="Type of root div")
     parser.add_argument('--workspace', type=str, default='./workspace/',
                         help="Destination directory for output files.")
     parser.add_argument('--stdout', help='Print output also to stdout.')
@@ -263,9 +263,16 @@ def get_links_event_agent(workspace, path):
     return links_e + links_a
 
 
-def create_structmap(workspace, divs, structmap, filegrp, path='',
+def create_structmap(workspace, divs, parent, filegrp, path='',
                      properties={}, type_attr=None):
-    """Create structmap based on directory structure
+    """Create structmap based on directory structure and fileSec
+    :workspace: Workspace path
+    :divs: Current directory or file in directory structure walkthrough
+    :parent: Parent element in structMap
+    :filegrp: filegrp element in fileSec
+    :path: Current path in directory structure walkthrough
+    :properties: Properties of files created in import_object.py
+    :type_attr: Structmap type
     """
     fptr_list = []
     property_list = []
@@ -302,11 +309,11 @@ def create_structmap(workspace, divs, structmap, filegrp, path='',
 
     # Add fptr list first, then div list
     for fptr_elem in fptr_list:
-        structmap.append(fptr_elem)
+        parent.append(fptr_elem)
     for div_elem in property_list:
-        structmap.append(div_elem)
+        parent.append(div_elem)
     for div_elem in div_list:
-        structmap.append(div_elem)
+        parent.append(div_elem)
 
 
 def add_file_properties(properties, path, fptr):
