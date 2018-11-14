@@ -287,7 +287,7 @@ def create_structmap(workspace, divs, parent, filegrp, path='',
             fileid = add_file_to_filesec(workspace, div_path, filegrp, amdids)
             fptr = mets.fptr(fileid)
             div_el = add_file_properties(properties, div_path, fptr)
-            if div_el:
+            if div_el is not None:
                 property_list.append(div_el)
             else:
                 fptr_list.append(fptr)
