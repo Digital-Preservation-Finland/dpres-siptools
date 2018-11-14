@@ -101,7 +101,7 @@ def test_import_object_order(testpath):
                  '--order', '5', input_file]
     return_code = import_object.main(arguments)
 
-    path = os.path.join(testpath, 'siptools-file-properties.txt')
+    path = os.path.join(testpath, 'siptools-file-properties.json')
     assert os.path.isfile(path)
 
     properties = {}
