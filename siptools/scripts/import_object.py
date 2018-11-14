@@ -137,7 +137,7 @@ def append_properties(workspace, fkey, file_properties):
     :fkey: File path to be used as a key in the properties dict
     :file_properties: Dict of properties of a file
     """
-    file_path = os.path.join(workspace, 'siptools-file-properties.txt')
+    file_path = os.path.join(workspace, 'siptools-file-properties.json')
     properties = {}
     if os.path.isfile(file_path):
         with open(file_path) as infile:

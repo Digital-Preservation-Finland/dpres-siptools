@@ -89,7 +89,7 @@ def main(arguments=None):
     for entry in scandir(args.workspace):
         if entry.name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
                                'dmdsec.xml', 'structmap.xml', 'filesec.xml',
-                               'rightsmd.xml', 'siptools-file-properties.txt')
+                               'rightsmd.xml', 'siptools-file-properties.json')
                               ) and entry.is_file():
             element = lxml.etree.parse(entry.path).getroot()[0]
             elements.append(element)

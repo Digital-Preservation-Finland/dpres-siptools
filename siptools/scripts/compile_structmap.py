@@ -79,7 +79,7 @@ def main(arguments=None):
 
         properties = {}
         property_path = os.path.join(args.workspace,
-                                     'siptools-file-properties.txt')
+                                     'siptools-file-properties.json')
         if os.path.isfile(property_path):
             with open(property_path) as infile:
                 properties = json.load(infile)
