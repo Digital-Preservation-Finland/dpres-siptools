@@ -94,7 +94,7 @@ def test_create_audiomd_techmdfile(testpath):
 
 
     filepath = os.path.join(
-        testpath, '508019de6c2635e245ed2238c13d56ee-AudioMD-techmd.xml'
+        testpath, '4dab7d9d5bab960188ea0f25e478cb17-AudioMD-techmd.xml'
     )
 
     assert os.path.isfile(filepath)
