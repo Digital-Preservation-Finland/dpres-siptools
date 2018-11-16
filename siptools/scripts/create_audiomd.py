@@ -96,7 +96,7 @@ def _get_file_data(metadata):
     else:
         compression_params = ("(:unav)", "(:unav)", "(:unav)", "(:unav)")
 
-    params = audiomd.get_params(audiomd.FILE_DATA_PARAMS)
+    params = {}
     params["audioDataEncoding"] = codec
     params["bitsPerSample"] = bps
     params["compression"] = audiomd.amd_compression(*compression_params)
