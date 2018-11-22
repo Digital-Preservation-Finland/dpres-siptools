@@ -98,3 +98,33 @@ def test_create_audiomd_techmdfile(testpath):
     )
 
     assert os.path.isfile(filepath)
+
+
+@pytest.mark.parametrize("file, base_path", [
+    ('tests/data/audio/valid-wav.wav', ''),
+    ('./tests/data/audio/valid-wav.wav', ''),
+    ('audio/valid-wav.wav', 'tests/data'),
+    ('./audio/valid-wav.wav', './tests/data'),
+    ('data/audio/valid-wav.wav', 'absolute')
+])
+def test_paths(testpath, file, base_path):
+    """ Test the following path arguments:
+    (1) Path without base_path
+    (2) Path without base bath, but with './'
+    (3) Path with base path
+    (4) Path with base path and with './'
+    (5) Absolute base path
+    """
+    if 'absolute' in base_path:
+        base_path = os.path.join(os.getcwd(), 'tests')
+
+    if base_path != '':
+        create_audiomd.main(['--workspace', testpath, '--base_path',
+                             base_path, file])
+    else:
+        create_audiomd.main(['--workspace', testpath, file])
+
+    assert "file=\"" + os.path.normpath(file) + "\"" in \
+        open(os.path.join(testpath, 'techmd-references.xml')).read()
+
+    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))

@@ -1,5 +1,6 @@
 """Command line tool for creating ADDML metadata."""
 
+import os
 import argparse
 import lxml.etree as ET
 
@@ -36,6 +37,10 @@ def parse_arguments(arguments):
                         help="Quoting character used in the CSV file")
     parser.add_argument('--workspace', type=str, default='./workspace/',
                         help="Workspace directory for the metadata files.")
+    parser.add_argument(
+        '--base_path', type=str, default='',
+        help="Source base path of digital objects. If used, give object in"
+        "relation to this base path.")
 
     return parser.parse_args(arguments)
 
@@ -45,13 +50,16 @@ def main(arguments=None):
 
     args = parse_arguments(arguments)
 
+    filerel = os.path.normpath(args.file)
+    filepath = os.path.normpath(os.path.join(args.base_path, args.file))
+
     creator = AddmlCreator(args.workspace)
     creator.add_addml_md(
-        args.file, args.delim,
+        filepath, args.delim,
         args.header, args.charset,
-        args.sep, args.quot
+        args.sep, args.quot, filerel
     )
-    creator.write()
+    creator.write(filerel=filerel)
 
 
 class AddmlCreator(TechmdCreator):
@@ -71,7 +79,8 @@ class AddmlCreator(TechmdCreator):
 
 
     def add_addml_md(self, csv_file, delimiter, isheader,
-                     charset, record_separator, quoting_char):
+                     charset, record_separator, quoting_char,
+                     filerel=None):
 
         """Append metadata to etrees and filenames dicts.
         All the metadata given as the parameters uniquely defines
@@ -112,7 +121,8 @@ class AddmlCreator(TechmdCreator):
         self.filenames[key] = [csv_file]
 
 
-    def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML"):
+    def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML",
+              filerel=None):
         """ Write all the METS XML files and techmdreference file.
         Base class write is overwritten to handle the references
         correctly and add flatFile fields to METS XML files.
@@ -130,7 +140,7 @@ class AddmlCreator(TechmdCreator):
 
             # Add all the files to references
             for filename in filenames:
-                self.add_reference(techmd_id, filename)
+                self.add_reference(techmd_id, filerel if filerel else filename)
 
             # Append all the flatFile elements to the METS XML file
             append = [

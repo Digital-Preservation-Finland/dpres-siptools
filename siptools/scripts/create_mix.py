@@ -31,6 +31,10 @@ def parse_arguments(arguments):
                         help="Image file to be described as mix metadata")
     parser.add_argument('--workspace', type=unicode, default='./workspace/',
                         help="Workspace directory for the metadata files.")
+    parser.add_argument(
+        '--base_path', type=str, default='',
+        help="Source base path of digital objects. If used, give object in"
+        "relation to this base path.")
 
     return parser.parse_args(arguments)
 
@@ -39,8 +43,11 @@ def main(arguments=None):
     """Write MIX metadata for a image file."""
     args = parse_arguments(arguments)
 
+    filerel = os.path.normpath(args.file)
+    filepath = os.path.normpath(os.path.join(args.base_path, args.file))
+
     creator = MixCreator(args.workspace)
-    creator.add_mix_md(args.file)
+    creator.add_mix_md(filepath, filerel)
     creator.write()
 
 

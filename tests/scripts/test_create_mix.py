@@ -3,6 +3,7 @@
 import os
 import sys
 import shutil
+import pytest
 import lxml.etree
 import siptools.scripts.create_mix as create_mix
 
@@ -154,3 +155,33 @@ def test_mix_multiple_images():
     xpath = '/ns0:mix/ns0:BasicImageInformation/'\
             'ns0:BasicImageCharacteristics/ns0:imageHeight'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "400"
+
+
+@pytest.mark.parametrize("file, base_path", [
+    ('tests/data/images/tiff1.tif', ''),
+    ('./tests/data/images/tiff1.tif', ''),
+    ('images/tiff1.tif', 'tests/data'),
+    ('./images/tiff1.tif', './tests/data'),
+    ('data/images/tiff1.tif', 'absolute')
+])
+def test_paths(testpath, file, base_path):
+    """ Test the following path arguments:
+    (1) Path without base_path
+    (2) Path without base bath, but with './' 
+    (3) Path with base path
+    (4) Path with base path and with './'
+    (5) Absolute base path 
+    """
+    if 'absolute' in base_path:
+        base_path = os.path.join(os.getcwd(), 'tests')
+
+    if base_path != '':
+        create_mix.main(['--workspace', testpath, '--base_path',
+                             base_path, file])
+    else:
+        create_mix.main(['--workspace', testpath, file])
+
+    assert "file=\"" + os.path.normpath(file) + "\"" in \
+        open(os.path.join(testpath, 'techmd-references.xml')).read()
+
+    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))

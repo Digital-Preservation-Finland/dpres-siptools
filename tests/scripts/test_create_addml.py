@@ -1,6 +1,7 @@
 """Tests for ``siptools.scripts.create_addml`` module"""
 
-import os.path
+import os
+import pytest
 import lxml.etree as ET
 
 import siptools.scripts.create_addml as create_addml
@@ -124,3 +125,37 @@ def test_create_addml_techmdfile(testpath):
     assert path1 == "tests/data/simple_csv.csv"
     assert path2 == "tests/data/simple_csv_2.csv"
     assert path3 == "tests/data/csvfile.csv"
+
+
+@pytest.mark.parametrize("file, base_path", [
+    ('tests/data/csvfile.csv', ''),
+    ('./tests/data/csvfile.csv', ''),
+    ('csvfile.csv', 'tests/data'),
+    ('./csvfile.csv', './tests/data'),
+    ('data/csvfile.csv', 'absolute')
+])
+def test_paths(testpath, file, base_path):
+    """ Test the following path arguments:
+    (1) Path without base_path
+    (2) Path without base bath, but with './'
+    (3) Path with base path
+    (4) Path with base path and with './'
+    (5) Absolute base path
+    """
+    if 'absolute' in base_path:
+        base_path = os.path.join(os.getcwd(), 'tests')
+
+    if base_path != '':
+        create_addml.main(['--delim', DELIMITER, '--charset', CHARSET, 
+                           '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
+                           '--workspace', testpath, '--base_path',
+                             base_path, file])
+    else:
+        create_addml.main(['--delim', DELIMITER, '--charset', CHARSET,
+                           '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
+                           '--workspace', testpath, file])
+
+    assert "file=\"" + os.path.normpath(file) + "\"" in \
+        open(os.path.join(testpath, 'techmd-references.xml')).read()
+
+    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))

@@ -1,5 +1,6 @@
 """Command line tool for creating audioMD metadata."""
 
+import os
 import argparse
 import ffmpeg
 
@@ -23,6 +24,10 @@ def parse_arguments(arguments):
     parser.add_argument('file', type=str, help="WAV file name")
     parser.add_argument('--workspace', type=str, default='./workspace/',
                         help="Workspace directory for the metadata files.")
+    parser.add_argument(
+        '--base_path', type=str, default='',
+        help="Source base path of digital objects. If used, give object in"
+        "relation to this base path.")
 
     return parser.parse_args(arguments)
 
@@ -32,8 +37,11 @@ def main(arguments=None):
 
     args = parse_arguments(arguments)
 
+    filerel = os.path.normpath(args.file)
+    filepath = os.path.normpath(os.path.join(args.base_path, args.file))
+
     creator = AudiomdCreator(args.workspace)
-    creator.add_audiomd_md(args.file)
+    creator.add_audiomd_md(filepath, filerel)
     creator.write()
 
 
@@ -42,14 +50,14 @@ class AudiomdCreator(TechmdCreator):
     for WAV files.
     """
 
-    def add_audiomd_md(self, filepath):
+    def add_audiomd_md(self, filepath, filerel=None):
         """Create audioMD metadata for a WAV file and append it
         to self.md_elements.
         """
 
         # Create audioMD metadata
         metadata = create_audiomd(filepath)
-        md_element = (metadata, filepath)
+        md_element = (metadata, filerel if filerel else filepath)
         self.md_elements.append(md_element)
 
 
