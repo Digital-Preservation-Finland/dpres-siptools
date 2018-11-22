@@ -16,9 +16,9 @@ def parse_arguments(arguments):
                     "audioMD metadata is written to <hash>-ADDML-techmd.xml "
                     "METS XML file in the workspace directory. The audioMD "
                     "techMD reference is written to techmd-references.xml. "
-                    "If similar audioMD metadata is already found in workspace, "
-                    "just the new WAV file name is appended to the existing "
-                    "metadata."
+                    "If similar audioMD metadata is already found in "
+                    "workspace, just the new WAV file name is appended to "
+                    "the existing metadata."
     )
 
     parser.add_argument('file', type=str, help="WAV file name")
@@ -60,8 +60,8 @@ class AudiomdCreator(TechmdCreator):
         md_element = (metadata, filerel if filerel else filepath)
         self.md_elements.append(md_element)
 
-
-    def write(self, mdtype="OTHER", mdtypeversion="2.0", othermdtype="AudioMD"):
+    def write(self, mdtype="OTHER", mdtypeversion="2.0",
+              othermdtype="AudioMD"):
         super(AudiomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 

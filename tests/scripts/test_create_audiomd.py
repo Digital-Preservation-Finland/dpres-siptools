@@ -8,7 +8,7 @@ import siptools.scripts.create_audiomd as create_audiomd
 
 
 AUDIOMD_NS = 'http://www.loc.gov/audioMD/'
-NAMESPACES = {"amd" : AUDIOMD_NS}
+NAMESPACES = {"amd": AUDIOMD_NS}
 
 
 def test_create_audiomd_elem():
@@ -91,7 +91,6 @@ def test_create_audiomd_techmdfile(testpath):
 
     # Check that techmdreference and one AudioMD-techmd files are created
     assert os.path.isfile(os.path.join(testpath, 'techmd-references.xml'))
-
 
     filepath = os.path.join(
         testpath, '4dab7d9d5bab960188ea0f25e478cb17-AudioMD-techmd.xml'

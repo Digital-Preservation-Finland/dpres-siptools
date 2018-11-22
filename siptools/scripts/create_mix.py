@@ -139,7 +139,7 @@ def _inspect_image(img):
 
         if image.format == 'TIFF':
             tag_info = image.tag_v2
-            if  tag_info and 277 in tag_info.keys():
+            if tag_info and 277 in tag_info.keys():
                 metadata["samplesperpixel"] = str(tag_info[277])
         elif image.format == 'JPEG':
             exif_info = image._getexif()

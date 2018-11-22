@@ -17,6 +17,7 @@ QUOTINGCHAR = '"'
 
 ADDML_NS = './/{http://www.arkivverket.no/standarder/addml}'
 
+
 def test_create_addml():
     """Test that ``create_addml`` returns valid addml."""
 
@@ -146,10 +147,10 @@ def test_paths(testpath, file, base_path):
         base_path = os.path.join(os.getcwd(), 'tests')
 
     if base_path != '':
-        create_addml.main(['--delim', DELIMITER, '--charset', CHARSET, 
+        create_addml.main(['--delim', DELIMITER, '--charset', CHARSET,
                            '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
                            '--workspace', testpath, '--base_path',
-                             base_path, file])
+                           base_path, file])
     else:
         create_addml.main(['--delim', DELIMITER, '--charset', CHARSET,
                            '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,

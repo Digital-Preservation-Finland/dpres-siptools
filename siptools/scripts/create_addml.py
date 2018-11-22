@@ -77,7 +77,6 @@ class AddmlCreator(TechmdCreator):
         self.etrees = {}
         self.filenames = {}
 
-
     def add_addml_md(self, csv_file, delimiter, isheader,
                      charset, record_separator, quoting_char,
                      filerel=None):
@@ -119,7 +118,6 @@ class AddmlCreator(TechmdCreator):
 
         self.etrees[key] = metadata
         self.filenames[key] = [csv_file]
-
 
     def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML",
               filerel=None):

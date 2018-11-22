@@ -167,17 +167,17 @@ def test_mix_multiple_images():
 def test_paths(testpath, file, base_path):
     """ Test the following path arguments:
     (1) Path without base_path
-    (2) Path without base bath, but with './' 
+    (2) Path without base bath, but with './'
     (3) Path with base path
     (4) Path with base path and with './'
-    (5) Absolute base path 
+    (5) Absolute base path
     """
     if 'absolute' in base_path:
         base_path = os.path.join(os.getcwd(), 'tests')
 
     if base_path != '':
         create_mix.main(['--workspace', testpath, '--base_path',
-                             base_path, file])
+                         base_path, file])
     else:
         create_mix.main(['--workspace', testpath, file])
 
