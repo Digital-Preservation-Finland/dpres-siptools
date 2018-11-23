@@ -14,6 +14,7 @@ from siptools.xml.mets import NAMESPACES, METS_PROFILE, METS_CATALOG, \
     METS_SPECIFICATION, RECORD_STATUS_TYPES, mets_extend
 from siptools.utils import decode_path
 
+
 def parse_arguments(arguments):
     """Parse arguments
     """
@@ -75,7 +76,7 @@ def main(arguments=None):
     # Create list of additional agent elements if packagingservice is defined
     if args.packagingservice:
         _agents = [mets.agent(args.organization_name,
-                                  agent_role='ARCHIVIST')]
+                              agent_role='ARCHIVIST')]
         _agents.append(mets.agent(args.packagingservice, agent_type='OTHER',
                                   agent_role='CREATOR', othertype='SOFTWARE'))
     else:
@@ -88,9 +89,8 @@ def main(arguments=None):
     elements = []
     for entry in scandir(args.workspace):
         if entry.name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
-                               'dmdsec.xml', 'structmap.xml', 'filesec.xml',
-                               'rightsmd.xml')
-                              ) and entry.is_file():
+                                'dmdsec.xml', 'structmap.xml', 'filesec.xml',
+                                'rightsmd.xml')) and entry.is_file():
             element = lxml.etree.parse(entry.path).getroot()[0]
             elements.append(element)
 
@@ -121,7 +121,6 @@ def main(arguments=None):
     if args.clean:
         clean_metsparts(args.workspace)
         print "compile_mets cleaned work files from workspace"
-
 
     return 0
 
