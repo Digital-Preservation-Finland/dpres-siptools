@@ -33,8 +33,8 @@ def parse_arguments(arguments):
                         help="Workspace directory for the metadata files.")
     parser.add_argument('--base_path', type=str, default='',
                         help="Source base path of digital objects. If used, "
-                             "give path to CSV file in relation to this "
-                             "base path.")
+                             "give path to the image file in relation to "
+                             "this base path.")
 
     return parser.parse_args(arguments)
 
