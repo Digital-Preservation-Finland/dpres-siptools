@@ -21,13 +21,13 @@ def parse_arguments(arguments):
                     "the existing metadata."
     )
 
-    parser.add_argument('file', type=str, help="WAV file name")
+    parser.add_argument('file', type=str, help="Path to the WAV file")
     parser.add_argument('--workspace', type=str, default='./workspace/',
                         help="Workspace directory for the metadata files.")
-    parser.add_argument(
-        '--base_path', type=str, default='',
-        help="Source base path of digital objects. If used, give object in"
-        "relation to this base path.")
+    parser.add_argument('--base_path', type=str, default='',
+                        help="Source base path of digital objects. If used, "
+                             "give path to CSV file in relation to this "
+                             "base path.")
 
     return parser.parse_args(arguments)
 

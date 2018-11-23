@@ -28,13 +28,13 @@ def parse_arguments(arguments):
                     "file will not be rewritten."
     )
     parser.add_argument('file', type=unicode,
-                        help="Image file to be described as mix metadata")
+                        help="Path to the image file")
     parser.add_argument('--workspace', type=unicode, default='./workspace/',
                         help="Workspace directory for the metadata files.")
-    parser.add_argument(
-        '--base_path', type=str, default='',
-        help="Source base path of digital objects. If used, give object in"
-        "relation to this base path.")
+    parser.add_argument('--base_path', type=str, default='',
+                        help="Source base path of digital objects. If used, "
+                             "give path to CSV file in relation to this "
+                             "base path.")
 
     return parser.parse_args(arguments)
 
