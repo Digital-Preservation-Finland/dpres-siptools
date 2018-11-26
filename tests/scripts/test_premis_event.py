@@ -6,7 +6,9 @@ import pytest
 
 
 def test_premis_event_ok(testpath):
-    """Test that main function produces xml file with correct elements."""
+    """Test that main function produces event.xml and agent.xml files with
+    correct elements.
+    """
 
     return_code = premis_event.main(
         [
@@ -22,29 +24,50 @@ def test_premis_event_ok(testpath):
         ]
     )
 
-    output_file = os.path.join(testpath,
-                               'tests%2Fdata%2Fstructured-creation-event.xml')
-    tree = ET.parse(output_file)
-    root = tree.getroot()
-
-    assert len(root.findall('{http://www.loc.gov/METS/}amdSec')) == 1
-    assert root.findall(
-        ".//{info:lc/xmlns/premis-v2}eventType"
-    )[0].text == 'creation'
-    assert root.findall(
-        ".//{info:lc/xmlns/premis-v2}eventDateTime"
-    )[0].text == '2016-10-13T12:30:55'
-    assert root.findall(
-        ".//{info:lc/xmlns/premis-v2}eventDetail"
-    )[0].text == 'Testing'
-    assert root.findall(
-        ".//{info:lc/xmlns/premis-v2}eventOutcome"
-    )[0].text == 'success'
-    assert root.findall(
-        ".//{info:lc/xmlns/premis-v2}eventOutcomeDetailNote"
-    )[0].text == 'Outcome detail'
-
+    # Main function should return 0
     assert return_code == 0
+
+    # Read output files
+    event_xml = ET.parse(
+        os.path.join(testpath, 'tests%2Fdata%2Fstructured-creation-event.xml')
+    ).getroot()
+    agent_xml = ET.parse(
+        os.path.join(testpath, 'tests%2Fdata%2Fstructured-creation-agent.xml')
+    ).getroot()
+
+    namespaces = {'mets': 'http://www.loc.gov/METS/',
+                  'premis': 'info:lc/xmlns/premis-v2'}
+
+    # Both output files should have one amdSec element
+    assert len(event_xml.findall('mets:amdSec', namespaces=namespaces)) == 1
+    assert len(agent_xml.findall('mets:amdSec', namespaces=namespaces)) == 1
+
+    # Check thait event.xml contains required elements with correct content
+    for element, content in (
+            (".//premis:eventType", 'creation'),
+            (".//premis:eventDateTime", '2016-10-13T12:30:55'),
+            (".//premis:eventDetail", 'Testing'),
+            (".//premis:eventOutcome", 'success'),
+            (".//premis:eventOutcomeDetailNote", 'Outcome detail')
+    ):
+        assert event_xml.findall(element, namespaces=namespaces)[0].text \
+            == content
+
+    # Check thait agent.xml contains required elements with correct content
+    for element, content in (
+            (".//premis:agentName", 'Demo Application'),
+            (".//premis:agentType", 'software')
+    ):
+        assert agent_xml.findall(element, namespaces=namespaces)[0].text \
+            == content
+
+    # event.xml file should contain link to agent-element in agent.xml file
+    assert \
+        event_xml.findall('.//premis:linkingAgentIdentifierValue',
+                          namespaces=namespaces)[0].text \
+        == \
+        agent_xml.findall('.//premis:agentIdentifierValue',
+                          namespaces=namespaces)[0].text
 
 
 def test_premis_event_fail(testpath):
