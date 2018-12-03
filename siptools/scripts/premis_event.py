@@ -1,5 +1,4 @@
 """Command line tool for creating premis events"""
-
 import sys
 import os
 from uuid import uuid4
@@ -63,59 +62,119 @@ def parse_arguments(arguments):
 
 
 def main(arguments=None):
-    """The main method for premis_event"""
+    """The main method for premis_event.
+
+    :param arguments: list of commandline arguments
+    :returns: 0
+    """
+
     args = parse_arguments(arguments)
 
-    # Create agent
     if args.agent_name:
-
-        output_filename = '%s-agent.xml' % (args.event_type)
-        if args.event_target:
-            output_filename = '%s-%s' % (args.event_target, output_filename)
-        output_filename = encode_path(output_filename)
-
-        agent_id = encode_id(output_filename)
-
         agent_identifier = str(uuid4())
-        premis_agent = create_premis_agent(args.agent_name,
-                                           args.agent_type,
-                                           agent_identifier)
-
-        _mets = create_mets(premis_agent, agent_id, 'PREMIS:AGENT')
-
+        agent_file, agent_mets = create_premis_agent_file(args.workspace,
+                                                          args.event_type,
+                                                          args.agent_name,
+                                                          args.agent_type,
+                                                          agent_identifier,
+                                                          args.event_target)
+        print "premis_event created file: %s" % agent_file
         if args.stdout:
-            print xml_helpers.utils.serialize(_mets)
-
-        write_mets(_mets, os.path.join(args.workspace, output_filename))
-
+            print xml_helpers.utils.serialize(agent_mets)
     else:
         agent_identifier = None
 
-    # Create event
-    output_filename = '%s-event.xml' % args.event_type
-    if args.event_target:
-        output_filename = '%s-%s' % (args.event_target, output_filename)
+    event_file, event_mets = create_premis_event_file(
+        args.workspace,
+        args.event_type,
+        args.event_datetime,
+        args.event_detail,
+        args.event_outcome,
+        args.event_outcome_detail,
+        args.event_target,
+        agent_identifier
+    )
+    print "premis_event created file: %s" % event_file
+    if args.stdout:
+        print xml_helpers.utils.serialize(event_mets)
+
+    return 0
+
+
+def create_premis_agent_file(workspace, event_type, agent_name, agent_type,
+                             agent_identifier, event_target=None):
+    """Creates `<event_type>-agent.xml` file. If path to target file is given
+    as `event_target` parameter, the URL-encoded path is used as filename
+    prefix. The file is METS XML file that contains PREMIS agent element inside
+    digiprovMD element. The ID attribute of digiprovMD is hashed from the
+    filename.
+
+    :param workspace: path to directory where file is created
+    :param event_type: event type (for filename)
+    :param agent_name: PREMIS agentName
+    :param agent_type: PREMIS agentType
+    :param agent_identifier: PREMIS agentIdentifierValue
+    :param event_target: event target file (for filename)
+    :returns: output file path and METS XML element object
+    """
+    output_filename = '%s-agent.xml' % (event_type)
+    if event_target:
+        output_filename = '%s-%s' % (event_target, output_filename)
+    output_filename = encode_path(output_filename)
+
+    agent_id = encode_id(output_filename)
+
+    premis_agent = create_premis_agent(agent_name,
+                                       agent_type,
+                                       agent_identifier)
+
+    agent_mets = _create_mets(premis_agent, agent_id, 'PREMIS:AGENT')
+    _write_mets(agent_mets, os.path.join(workspace, output_filename))
+
+    return (os.path.join(workspace, output_filename),
+            agent_mets)
+
+
+def create_premis_event_file(workspace, event_type, event_datetime,
+                             event_detail, event_outcome, event_outcome_detail,
+                             event_target=None, agent_identifier=None):
+    """Creates `<event_type>-event.xml` file. If path to target file is given
+    as `event_target` parameter, the URL-encoded path is used as filename
+    prefix. The file is METS XML file that contains PREMIS event element inside
+    digiprovMD element. The ID attribute of digiprovMD is hashed from the
+    filename.
+
+    :param workspace: path to directory where file is created
+    :param event_type: PREMIS eventType
+    :param event_datetime: PREMIS eventDateTime
+    :param event_detail: PREMIS eventDetail
+    :param event_outcome: PREMIS eventOutcome
+    :param event_outcome_detail: PREMIS eventOutcomeDetail
+    :param agent_identifier: PREMIS linkingAgentIdentifierValue
+    :param event_target: event target file (for filename)
+    :returns: output file path and METS XML element object
+    """
+    output_filename = '%s-event.xml' % event_type
+    if event_target:
+        output_filename = '%s-%s' % (event_target, output_filename)
     output_filename = encode_path(output_filename)
 
     event_id = encode_id(output_filename)
 
     premis_event = create_premis_event(
-        args.event_type, args.event_datetime, args.event_detail,
-        args.event_outcome, args.event_outcome_detail, agent_identifier
+        event_type, event_datetime, event_detail,
+        event_outcome, event_outcome_detail, agent_identifier
     )
 
-    _mets = create_mets(premis_event, event_id, 'PREMIS:EVENT')
+    event_mets = _create_mets(premis_event, event_id, 'PREMIS:EVENT')
+    _write_mets(event_mets, os.path.join(workspace, output_filename))
 
-    write_mets(_mets, os.path.join(args.workspace, output_filename))
-
-    if args.stdout:
-        print xml_helpers.utils.serialize(_mets)
-
-    return 0
+    return (os.path.join(workspace, output_filename),
+            event_mets)
 
 
-def write_mets(mets_element, output_file):
-    """Write METS XML elemnt to file.
+def _write_mets(mets_element, output_file):
+    """Write METS XML element to file.
 
     :param mets_element: METS XML element
     :param output: output file path
@@ -128,10 +187,8 @@ def write_mets(mets_element, output_file):
     with open(output_file, 'w+') as output:
         output.write(xml_helpers.utils.serialize(mets_element))
 
-    print "premis_event created file: %s" % output_file
 
-
-def create_mets(premis_element, digiprovmd_id, mdtype):
+def _create_mets(premis_element, digiprovmd_id, mdtype):
     """Creates a METS XML element that contains PREMIS element
 
     :param premis_element: PREMIS element
