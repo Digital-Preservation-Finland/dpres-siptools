@@ -14,43 +14,71 @@ from siptools.utils import encode_path, encode_id
 
 def parse_arguments(arguments):
     """Create arguments parser and return parsed command line argumets"""
-    parser = argparse.ArgumentParser(
-        description="Tool for creating premis events")
 
+    def _list2str(lst):
+        """Create a human readable list of words from list of strings.
+
+        :param lst: list of strings
+        :returns: list formatted as single string
+        """
+        first_words = ['"' + string + '"' for string in lst[:-1]]
+        last_word = '"' + lst[-1] + '"'
+        return ', '.join(first_words) + ', and ' + last_word
+
+    parser = argparse.ArgumentParser(
+        description=(
+            "Create METS document that contains PREMIS event element. Another "
+            "METS document that contains PREMIS agent element is created if "
+            "optional parameters \"agent_type\" and \"agent_name\" are used. "
+            "The PREMIS agent element is linked to PREMIS event element by "
+            "unique identifier. The digiprovMD elements get identifiers based "
+            "on the METS document filename. "
+        )
+    )
     parser.add_argument('event_type',
                         type=str,
-                        help='list of event types:%s' % PREMIS_EVENT_TYPES)
+                        metavar='event_type',
+                        choices=PREMIS_EVENT_TYPES,
+                        help=('Event type. Possible values are: ' +
+                              _list2str(PREMIS_EVENT_TYPES)))
     parser.add_argument('event_datetime',
                         type=str,
-                        help='Event datetime yyyy-mm-ddThh:mm:ss')
+                        help='Event datetime formatted as yyyy-mm-ddThh:mm:ss')
     parser.add_argument('--event_detail',
                         dest='event_detail',
                         type=str,
+                        required=True,
                         help='Event detail')
     parser.add_argument('--event_outcome',
+                        metavar='EVENT_OUTCOME',
                         choices=PREMIS_EVENT_OUTCOME_TYPES,
                         dest='event_outcome',
                         type=str,
-                        help=('Event outcome types: %s'
-                              % PREMIS_EVENT_OUTCOME_TYPES))
+                        required=True,
+                        help=('Event outcome type. Possible values are: ' +
+                              _list2str(PREMIS_EVENT_OUTCOME_TYPES)))
     parser.add_argument('--event_outcome_detail',
                         dest='event_outcome_detail',
                         type=str,
-                        help='Event outcome_detail')
+                        help='Event outcome detail')
     parser.add_argument('--workspace',
                         dest='workspace',
                         type=str,
                         default='./workspace',
-                        help="Workspace directory")
+                        help=("Directory where files are created. Default "
+                              "is ./workspace"))
     parser.add_argument('--agent_name',
                         dest='agent_name',
+                        required='--agent_type' in sys.argv,
                         type=str,
                         help='Agent name')
     parser.add_argument('--agent_type',
                         dest='agent_type',
+                        required='--agent_name' in sys.argv,
                         type=str,
                         help='Agent type')
     parser.add_argument('--stdout',
+                        action='store_true',
                         help='Print output to stdout')
     parser.add_argument('--event_target',
                         dest='event_target',
@@ -70,7 +98,7 @@ def main(arguments=None):
 
     args = parse_arguments(arguments)
 
-    if args.agent_name:
+    if args.agent_name or args.agent_type:
         agent_identifier = str(uuid4())
         agent_file, agent_mets = create_premis_agent_file(args.workspace,
                                                           args.event_type,
