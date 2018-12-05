@@ -5,7 +5,6 @@ import argparse
 import os
 import lxml.etree
 import mets
-import xml_helpers.utils as h
 from siptools.xml.mets import METS_MDTYPES
 
 from siptools.utils import encode_path, encode_id
@@ -16,55 +15,69 @@ def main(arguments=None):
     args = parse_arguments(arguments)
 
     if args.dmdsec_target:
-        url_t_path = encode_path(args.dmdsec_target, suffix='-dmdsec.xml')
+        filename = encode_path(args.dmdsec_target, suffix='-dmdsec.xml')
     else:
-        url_t_path = 'dmdsec.xml'
+        filename = 'dmdsec.xml'
 
-    with open(args.dmdsec_location, 'r') as content_file:
-        content = content_file.read()
-
-    _mets = mets.mets()
-
-    tree = lxml.etree.fromstring(content)
-
-    if args.desc_root == 'remove':
-        childs = tree.findall('*')
-    else:
-        childs = [tree]
-    xmldata_e = mets.xmldata(child_elements=childs)
-    namespace = h.get_namespace(childs[0])
-
-    if namespace in METS_MDTYPES.keys():
-        mdtype = METS_MDTYPES[namespace]['mdtype']
-        if 'othermdtype' in METS_MDTYPES[namespace]:
-            othermdtype = METS_MDTYPES[namespace]['othermdtype']
-        else:
-            othermdtype = None
-        version = METS_MDTYPES[namespace]['version']
-    else:
-        raise TypeError("Invalid namespace: %s" % namespace)
-
-    mdwrap_e = mets.mdwrap(mdtype=mdtype,
-                           othermdtype=othermdtype,
-                           mdtypeversion=version,
-                           child_elements=[xmldata_e])
-    dmdsec_e = mets.dmdsec(encode_id(url_t_path), child_elements=[mdwrap_e])
-
-    _mets.append(dmdsec_e)
+    _mets = create_mets(args.dmdsec_location, filename, args.desc_root)
 
     if args.stdout:
-        print h.serialize(_mets)
+        print lxml.etree.tostring(_mets, pretty_print=True)
 
-    output_file = os.path.join(args.workspace, url_t_path)
+    output_file = os.path.join(args.workspace, filename)
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
 
-    with open(output_file, 'w+') as outfile:
-        outfile.write(h.serialize(_mets))
+    _mets.write(output_file,
+                pretty_print=True,
+                xml_declaration=True,
+                encoding='UTF-8')
 
     print "import_description created file: %s" % output_file
 
     return 0
+
+
+def create_mets(input_file, filename, remove_root=False):
+    """Create METS element tree that contains dmdSec element. Descriptive
+    metadata is imported from XML file. The whole XML document or just the
+    child elements of root can be imported.
+
+    :param input_file: path to input file
+    :param filename: file name for generating dmdSec identifier
+    :param remove_root: import only child elements
+    :returns: METS document element tree
+    """
+
+    # Read metadata from XML file.
+    tree = lxml.etree.parse(input_file)
+    if remove_root:
+        metadata = tree.findall('*')
+    else:
+        metadata = [tree.getroot()]
+
+    # Check metadata type
+    namespace = metadata[0].nsmap[metadata[0].prefix]
+    if namespace in METS_MDTYPES.keys():
+        mdtype = METS_MDTYPES[namespace]['mdtype']
+    else:
+        raise TypeError("Invalid namespace: %s" % namespace)
+    othermdtype = METS_MDTYPES[namespace].get('othermdtype', None)
+    version = METS_MDTYPES[namespace]['version']
+
+    # Create METS Element
+    xmldata_element = mets.xmldata(child_elements=metadata)
+    mdwrap_element = mets.mdwrap(mdtype=mdtype,
+                                 othermdtype=othermdtype,
+                                 mdtypeversion=version,
+                                 child_elements=[xmldata_element])
+    dmdsec_element = mets.dmdsec(encode_id(filename),
+                                 child_elements=[mdwrap_element])
+    mets_element = mets.mets(child_elements=[dmdsec_element])
+
+    tree = lxml.etree.ElementTree(mets_element)
+    lxml.etree.cleanup_namespaces(tree)
+    return tree
 
 
 def parse_arguments(arguments):
@@ -93,6 +106,7 @@ def parse_arguments(arguments):
                         help='Print output to stdout')
 
     return parser.parse_args(arguments)
+
 
 if __name__ == '__main__':
     RETVAL = main()
