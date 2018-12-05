@@ -1,4 +1,4 @@
-""" import_description"""
+"""import_description"""
 
 import sys
 import argparse
@@ -6,7 +6,7 @@ import os
 import lxml.etree
 import mets
 import xml_helpers.utils as h
-from siptools.xml.mets import NAMESPACES, METS_MDTYPES
+from siptools.xml.mets import METS_MDTYPES
 
 from siptools.utils import encode_path, encode_id
 
@@ -32,20 +32,22 @@ def main(arguments=None):
     else:
         childs = [tree]
     xmldata_e = mets.xmldata(child_elements=childs)
-    ns = h.get_namespace(childs[0])
+    namespace = h.get_namespace(childs[0])
 
-    if ns in METS_MDTYPES.keys():
-        mdt = METS_MDTYPES[ns]['mdtype']
-        if 'othermdtype' in METS_MDTYPES[ns]:
-            mdo = METS_MDTYPES[ns]['othermdtype']
+    if namespace in METS_MDTYPES.keys():
+        mdtype = METS_MDTYPES[namespace]['mdtype']
+        if 'othermdtype' in METS_MDTYPES[namespace]:
+            othermdtype = METS_MDTYPES[namespace]['othermdtype']
         else:
-            mdo = None
-        mdv = METS_MDTYPES[ns]['version']
+            othermdtype = None
+        version = METS_MDTYPES[namespace]['version']
     else:
-        raise TypeError("Invalid namespace: %s" % ns)
+        raise TypeError("Invalid namespace: %s" % namespace)
 
-    mdwrap_e = mets.mdwrap(mdtype=mdt, othermdtype=mdo, mdtypeversion=mdv,
-                      child_elements=[xmldata_e])
+    mdwrap_e = mets.mdwrap(mdtype=mdtype,
+                           othermdtype=othermdtype,
+                           mdtypeversion=version,
+                           child_elements=[xmldata_e])
     dmdsec_e = mets.dmdsec(encode_id(url_t_path), child_elements=[mdwrap_e])
 
     _mets.append(dmdsec_e)
@@ -66,20 +68,29 @@ def main(arguments=None):
 
 
 def parse_arguments(arguments):
-    """ Create arguments parser and return parsed command line argumets"""
+    """Create arguments parser and return parsed command line argumets"""
     parser = argparse.ArgumentParser(
-        description="Create descriptive metadata")
-    parser.add_argument('dmdsec_location', type=str,
+        description="Create descriptive metadata"
+    )
+    parser.add_argument('dmdsec_location',
+                        type=str,
                         help='Location of descriptive metadata')
-    parser.add_argument('--dmdsec_target', dest='dmdsec_target', type=str,
-                        help='Target of descriptive metadata.'
+    parser.add_argument('--dmdsec_target',
+                        dest='dmdsec_target',
+                        type=str,
+                        help='Target of descriptive metadata. '
                              'Default is the root of dataset')
-    parser.add_argument('--workspace', dest='workspace', type=str,
-                        default='./workspace', help="Workspace directory")
-    parser.add_argument('--desc_root', type=str,
+    parser.add_argument('--workspace',
+                        dest='workspace',
+                        type=str,
+                        default='./workspace',
+                        help="Workspace directory")
+    parser.add_argument('--desc_root',
+                        type=str,
                         help='Preserve or remove root element of descriptive '
                              'metadata')
-    parser.add_argument('--stdout', help='Print output to stdout')
+    parser.add_argument('--stdout',
+                        help='Print output to stdout')
 
     return parser.parse_args(arguments)
 
