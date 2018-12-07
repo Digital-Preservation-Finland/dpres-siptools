@@ -1,12 +1,15 @@
-"""import_description"""
+"""Create METS document that contains descriptive metadata imported from XML
+file
+"""
 
 import sys
 import argparse
 import os
+
 import lxml.etree
 import mets
-from siptools.xml.mets import METS_MDTYPES
 
+from siptools.xml.mets import METS_MDTYPES
 from siptools.utils import encode_path, encode_id
 
 
@@ -83,27 +86,30 @@ def create_mets(input_file, filename, remove_root=False):
 def parse_arguments(arguments):
     """Create arguments parser and return parsed command line argumets"""
     parser = argparse.ArgumentParser(
-        description="Create descriptive metadata"
+        description="Create METS documents that contains descriptive metadata "
+                    "imported from XML file."
     )
     parser.add_argument('dmdsec_location',
                         type=str,
-                        help='Location of descriptive metadata')
+                        help='path to XML file that contains descriptive '
+                             'metadata')
     parser.add_argument('--dmdsec_target',
                         dest='dmdsec_target',
                         type=str,
                         help='Target of descriptive metadata. '
-                             'Default is the root of dataset')
+                             'Default is the root of dataset.')
     parser.add_argument('--workspace',
                         dest='workspace',
                         type=str,
                         default='./workspace',
-                        help="Workspace directory")
+                        help="directory where output is created")
     parser.add_argument('--desc_root',
-                        type=str,
-                        help='Preserve or remove root element of descriptive '
-                             'metadata')
+                        action='store_true',
+                        help='import only child elements from descriptive '
+                             'metadata file')
     parser.add_argument('--stdout',
-                        help='Print output to stdout')
+                        action='store_true',
+                        help='print output to stdout')
 
     return parser.parse_args(arguments)
 

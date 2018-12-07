@@ -46,7 +46,7 @@ def test_end_to_end(testpath):
 
     command = ['python', 'siptools/scripts/import_description.py', dmd_file,
                '--workspace', testpath, '--dmdsec_target', dmd_target,
-               '--desc_root', 'remove']
+               '--desc_root']
     child = subprocess.Popen(command, env=environment)
     streamdata = child.communicate()[0]
     assert child.returncode == 0
