@@ -1,4 +1,6 @@
-"""Command line tool for creating mets"""
+"""Command line tool for creating METS document and copying files to workspace
+directory.
+"""
 
 import os
 import sys
@@ -15,50 +17,82 @@ from siptools.xml.mets import NAMESPACES, METS_PROFILE, METS_CATALOG, \
 from siptools.utils import decode_path
 
 
+def _dict2str(dictionary):
+    """Create a human readable list of words and their explanations from
+    dictionary.
+
+    :param dictionary: list of strings
+    :returns: dictionary formatted as single string
+    """
+    items = ['"%s" (%s)' % (item, dictionary[item]) for item in dictionary]
+    return ", ".join(items[:-1]) + ", and " + items[-1]
+
+
 def parse_arguments(arguments):
     """Parse arguments"""
-    parser = argparse.ArgumentParser(description="Tool for creating mets")
-    parser.add_argument(
-        'mets_profile', type=str, choices=METS_PROFILE,
-        help='list of METS-profiles:%s' % METS_PROFILE)
-    parser.add_argument(
-        'organization_name', type=str, help='Creator name (organization)')
-    parser.add_argument(
-        'contractid', type=str, help='Digital Preservation Contract id')
-    parser.add_argument(
-        '--objid', dest='objid', type=str, default=str(uuid.uuid4()),
-        help='Organizations unique identifier for the package')
-    parser.add_argument(
-        '--label', dest='label', type=str,
-        help='Short description of the information package')
-    parser.add_argument(
-        '--contentid', dest='contentid', type=str,
-        help='Identifier for SIP Content')
-    parser.add_argument(
-        '--create_date', dest='create_date', type=str,
-        default=datetime.datetime.utcnow().isoformat(),
-        help='SIP create datetime yyyy-mm-ddThh:mm:ss')
-    parser.add_argument(
-        '--last_moddate', dest='last_moddate', type=str,
-        help='Last modification datetime yyyy-mm-ddThh:mm:ss')
-    parser.add_argument(
-        '--record_status', dest='record_status', choices=RECORD_STATUS_TYPES,
-        type=str, default='submission',
-        help='list of record status types:%s' % RECORD_STATUS_TYPES)
-    parser.add_argument(
-        '--workspace', dest='workspace', type=str, default='./workspace',
-        help="Workspace directory")
-    parser.add_argument(
-        '--clean', dest='clean', action='store_true', help='Workspace cleanup')
-    parser.add_argument(
-        '--copy_files', dest='copy_files', action='store_true',
-        help='Copy digital objects from base path to workspace')
-    parser.add_argument(
-        '--base_path', dest='base_path', type=str, default='./',
-        help='Base path of the digital objects')
-    parser.add_argument('--stdout', help='Print output to stdout')
-    parser.add_argument('--packagingservice', dest='packagingservice',
-                        type=str, help='Service using siptool')
+    parser = argparse.ArgumentParser(
+        description="Merge partial METS documents in workspace directory into "
+                    "one METS document."
+    )
+    parser.add_argument('mets_profile',
+                        metavar='mets_profile',
+                        type=str,
+                        choices=METS_PROFILE,
+                        help='METS profile. Allowed values are: ' +
+                        _dict2str(METS_PROFILE) + '.')
+    parser.add_argument('organization_name',
+                        type=str,
+                        help='Creator name (organization)')
+    parser.add_argument('contractid',
+                        type=str,
+                        help='Digital Preservation Contract identifier')
+    parser.add_argument('--objid',
+                        type=str,
+                        default=str(uuid.uuid4()),
+                        help='Organizations unique identifier for the package')
+    parser.add_argument('--label',
+                        type=str,
+                        help='Short description of the information package')
+    parser.add_argument('--contentid',
+                        type=str,
+                        help='Identifier for SIP Content')
+    parser.add_argument('--create_date',
+                        type=str,
+                        default=datetime.datetime.utcnow().isoformat(),
+                        help='SIP create datetime formatted as '
+                             'yyyy-mm-ddThh:mm:ss. Defaults to current time.')
+    parser.add_argument('--last_moddate',
+                        type=str,
+                        help='Last modification datetime formatted as '
+                             'yyyy-mm-ddThh:mm:ss')
+    parser.add_argument('--record_status',
+                        choices=RECORD_STATUS_TYPES,
+                        type=str,
+                        default='submission',
+                        help='Record status. Defaults to "submission".')
+    parser.add_argument('--workspace',
+                        type=str,
+                        default='./workspace',
+                        help='Workspace directory. Defaults to "./workspace".')
+    parser.add_argument('--clean',
+                        action='store_true',
+                        help='Remove partial METS documents from workspace '
+                             'directory')
+    parser.add_argument('--copy_files',
+                        action='store_true',
+                        help='Copy digital objects from base path to '
+                             'workspace')
+    parser.add_argument('--base_path',
+                        type=str,
+                        default='./',
+                        help='Base path of the digital objects')
+    parser.add_argument('--stdout',
+                        action='store_true',
+                        help='Print output to stdout.')
+    parser.add_argument('--packagingservice',
+                        type=str,
+                        help='If defined, add packaging service as CREATOR '
+                             'agent to METS Header.')
     return parser.parse_args(arguments)
 
 
