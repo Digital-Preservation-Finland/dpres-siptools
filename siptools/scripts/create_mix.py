@@ -74,8 +74,7 @@ class MixCreator(TechmdCreator):
 
         # Create MIX metadata
         mix = create_mix(os.path.join(image_file))
-        md_element = (mix, file_relpath if file_relpath else image_file)
-        self.md_elements.append(md_element)
+        self.add_md(mix, file_relpath if file_relpath else image_file)
 
     # Change the default write parameters
     def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None):

@@ -9,6 +9,14 @@ import datetime
 import platform
 import argparse
 import json
+import ctypes
+
+try:
+    import ffmpeg
+except ImportError:
+    FFMPEG_INSTALLED = False
+else:
+    FFMPEG_INSTALLED = True
 
 try:
     from ipt.validator.validators import iter_validators
@@ -16,11 +24,11 @@ except ImportError:
     IPT_INSTALLED = False
 else:
     IPT_INSTALLED = True
-import ctypes
+
 import premis
 import mets
 import xml_helpers.utils as h
-from siptools.utils import encode_path, encode_id
+from siptools.utils import TechmdCreator, encode_path
 
 try:
     ctypes.cdll.LoadLibrary('/opt/file-5.30/lib64/libmagic.so.1')
@@ -29,6 +37,10 @@ except OSError:
            'may not work properly if file command library is older than 5.30.')
 
 import magic
+
+
+STREAM_PREMIS = {'h264': ['video/mp4', ''],
+                 'aac' : ['audio/mp4', '']}
 
 
 def parse_arguments(arguments):
@@ -75,6 +87,9 @@ def parse_arguments(arguments):
     parser.add_argument(
         '--order', dest='order', type=int,
         help='Order number of the digital object')
+    parser.add_argument(
+        '--streams', dest='streams', action='store_true',
+        help='Given files include streams')
     parser.add_argument('--stdout', help='Print output to stdout')
     return parser.parse_args(arguments)
 
@@ -86,49 +101,53 @@ def main(arguments=None):
     # Loop files and create premis objects
     files = collect_filepaths(dirs=args.files, base=args.base_path)
     for filename in files:
+
+        premis_list = {}
+
         if args.base_path != '':
             filerel = os.path.relpath(filename, args.base_path)
         else:
             filerel = filename
 
-        xmldata = mets.xmldata()
-        create_premis_object(xmldata, filename, args.skip_inspection,
-                             args.format_name, args.format_version,
-                             args.digest_algorithm, args.message_digest,
-                             args.date_created, args.charset,
-                             args.identifier, args.format_registry)
+        premis_elem = create_premis_object(
+            filename, args.skip_inspection, args.format_name,
+            args.format_version, args.digest_algorithm,
+            args.message_digest, args.date_created, args.charset,
+            args.identifier, args.format_registry)
 
-        mdwrap = mets.mdwrap('PREMIS:OBJECT', '2.3', child_elements=[xmldata])
-        techmd = mets.techmd(
-            encode_id(encode_path(filerel.decode(sys.getfilesystemencoding()),
-                                  suffix="-premis-techmd.xml")),
-            child_elements=[mdwrap])
-        amdsec = mets.amdsec(child_elements=[techmd])
-        _mets = mets.mets(child_elements=[amdsec])
+        if args.streams:
+            premis_list = create_streams(filename, filerel, premis_elem)
+        else:
+            premis_list['root'] = premis_elem
 
-        if args.stdout:
-            print h.serialize(_mets)
-
-        if not os.path.exists(args.workspace):
-            os.makedirs(args.workspace)
-
-        filename = encode_path(filerel.decode(sys.getfilesystemencoding()),
-                               suffix="-premis-techmd.xml")
+        creator = PremisCreator(args.workspace)
+        
+        for key in premis_list.keys():
+            if key == 'root':
+                creator.add_md(premis_list[key], filerel)
+            else:
+                creator.add_md(premis_list[key], filerel, key)
+        creator.write()
 
         properties = {}
         if args.order:
             properties['order'] = str(args.order)
-        # Add new properties of a file for othe script files, e.g. structMap        
+        # Add new properties of a file for other script files, e.g. structMap
 
         if properties != {}:
-            filekey = filename[:-len('-premis-techmd.xml')]
-            append_properties(args.workspace, filekey, properties)
-
-        with open(os.path.join(args.workspace, filename), 'w+') as outfile:
-            outfile.write(h.serialize(_mets))
-            print "Wrote METS technical metadata to file %s" % outfile.name
+            fkey = encode_path(filerel.decode('utf-8'))
+            append_properties(args.workspace, fkey, properties)
 
     return 0
+
+
+class PremisCreator(TechmdCreator):
+    """Subclass of TechmdCreator, which generates PREMIS metadata
+    for files and streams.
+    """
+
+    def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3"):
+        super(PremisCreator, self).write(mdtype, mdtypeversion)
 
 
 def append_properties(workspace, fkey, file_properties):
@@ -148,7 +167,39 @@ def append_properties(workspace, fkey, file_properties):
         json.dump(properties, outfile)
 
 
-def create_premis_object(tree, fname, skip_inspection=None,
+def create_streams(fname, filerel, premis_file):
+    """Create PREMIS objects for streams"""
+    if not FFMPEG_INSTALLED:
+        raise Exception('ffmpeg module is required for streams. '
+                        'Please install ffmpeg module or do not use'
+                        '--streams parameter.')
+    probe = ffmpeg.probe(fname)
+    premis_list = {}
+    premis_list['root'] = premis_file
+    for stream in probe['streams']:
+        id_value = str(uuid4())
+        identifier = premis.identifier(
+            identifier_type='UUID',
+            identifier_value=id_value)
+        format = STREAM_PREMIS[stream['codec_name']]
+        index = str(stream['index'])
+        premis_format_des = premis.format_designation(
+            format[0], format[1])
+        premis_format = premis.format(child_elements=[premis_format_des])
+        premis_objchar = premis.object_characteristics(
+            child_elements=[premis_format])
+        el_premis_object = premis.object(
+            identifier, child_elements=[premis_objchar], bitstream=True)
+
+        premis_list[index] = el_premis_object
+
+        premis_file.append(
+            premis.relationship('structural', 'includes', el_premis_object))
+
+    return premis_list
+
+
+def create_premis_object(fname, skip_inspection=None,
                          format_name=None, format_version=None,
                          digest_algorithm='MD5', message_digest=None,
                          date_created=None, charset=None,
@@ -213,9 +264,8 @@ def create_premis_object(tree, fname, skip_inspection=None,
     # Create object element
     el_premis_object = premis.object(
         object_identifier, child_elements=[premis_objchar])
-    tree.append(el_premis_object)
 
-    return tree
+    return el_premis_object
 
 
 def metadata_info(fname):
@@ -389,7 +439,7 @@ def _read_uint(f_in):
     binary_num = f_in.read(4)
 
     for i in range(4):
-        uint += ord(binary_num[i]) << (8*i) # Left shift of 8*i
+        uint += ord(binary_num[i]) << (8*i)  # Left shift of 8*i
 
     return uint
 
@@ -400,9 +450,9 @@ def is_broadcast_wav(fname):
     True if "bext" chunk is found.
     """
     with open(fname) as f_in:
-        f_in.read(4) # Skip RIFF ID
+        f_in.read(4)  # Skip RIFF ID
         size = _read_uint(f_in) - 4
-        f_in.read(4) # Skip WAVE ID
+        f_in.read(4)  # Skip WAVE ID
 
         # Iterate all WAVE chunks
         while size > 0:

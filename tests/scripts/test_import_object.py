@@ -10,6 +10,16 @@ from siptools.scripts import import_object
 from siptools.utils import encode_path
 from siptools.xml.mets import NAMESPACES
 
+def get_techmd_file(path, input_file, stream=None):
+    """Get id"""
+    ref = os.path.join(path, 'techmd-references.xml')
+    root = ET.parse(ref).getroot()
+    if stream is None:
+        techref = root.xpath("/techmdReferences/techmdReference[not(@stream) and @file='" + encode_path(input_file.decode('utf-8')) + "']")[0]
+    else:
+        techref = root.xpath("/techmdReferences/techmdReference[@stream='" + stream + "' and @file='" + encode_path(input_file.decode('utf-8')) + "']")[0]
+    output = os.path.join(path, techref.text[1:] + "-PREMIS%3AOBJECT-techmd.xml")
+    return output
 
 def test_import_object_ok(testpath):
     """Test import_object.main funtion with valid test data."""
@@ -17,9 +27,7 @@ def test_import_object_ok(testpath):
     arguments = ['--workspace', testpath, '--skip_inspection', input_file]
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file.decode('utf-8'),
-                                                suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -39,9 +47,7 @@ def test_import_object_skip_inspection_ok(testpath):
                  '--date_created', datetime.datetime.utcnow().isoformat()]
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file,
-                                                suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -60,9 +66,7 @@ def test_import_object_skip_inspection_nodate_ok(testpath):
                  '1qw87geiewgwe9']
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file,
-                                                suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -82,10 +86,8 @@ def test_import_object_structured_ok(testpath):
                      os.path.relpath(element, os.curdir)]
         return_code = import_object.main(arguments)
         test_file = os.path.relpath(element, os.curdir)
-        output = os.path.join(testpath,
-                              encode_path(test_file,
-                                          suffix='-premis-techmd.xml'))
 
+        output = get_techmd_file(testpath, test_file)
         tree = ET.parse(output)
         root = tree.getroot()
 
@@ -122,9 +124,7 @@ def test_import_object_identifier(testpath):
                  '--identifier', 'local', 'test-id', input_file]
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file.decode('utf-8'),
-                                                suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -143,9 +143,7 @@ def test_import_object_format_registry(testpath):
                  '--format_registry', 'local', 'test-key', input_file]
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file.decode('utf-8'),
-                                                suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -164,9 +162,7 @@ def test_import_object_validate_pdf_ok(testpath):
     arguments = ['--workspace', testpath, 'tests/data/test_import.pdf']
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file,
-                                                suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -202,8 +198,7 @@ def test_import_object_utf8(testpath):
                                utf8_file]) == 0
 
     # Check output
-    output = os.path.join(testpath, encode_path(utf8_file.decode('utf-8'),
-                                                suffix='-premis-techmd.xml'))
+    output = get_techmd_file(testpath, utf8_file)
     tree = ET.parse(output)
     root = tree.getroot()
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
@@ -216,9 +211,7 @@ def test_import_object_validate_tiff_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_tiff.tif']
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file,
-        suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -238,9 +231,7 @@ def test_import_object_validate_jpeg_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_jpeg.jpeg']
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file,
-        suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -260,9 +251,7 @@ def test_import_object_validate_text_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/text-file.txt']
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file,
-        suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -282,9 +271,7 @@ def test_import_object_validate_csv_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/csvfile.csv']
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file,
-        suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -304,9 +291,7 @@ def test_import_object_validate_mets_xml_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/mets_valid_minimal.xml']
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file,
-        suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -326,9 +311,7 @@ def test_import_object_validate_odt_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/ODF_Text_Document.odt']
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(input_file,
-        suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -350,9 +333,7 @@ def test_import_object_validate_msexcel_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/MS_Excel_97-2003.xls']
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(
-        input_file, suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -376,9 +357,7 @@ def test_import_object_validate_msword_ok(input_file, testpath):
                  'tests/data/MS_Word_2007-2013_XML.docx']
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(
-        input_file, suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -402,9 +381,7 @@ def test_import_object_validate_wav_ok(input_file, version, testpath):
     arguments = ['--workspace', testpath, input_file]
     return_code = import_object.main(arguments)
 
-    output = os.path.join(testpath, encode_path(
-        input_file, suffix='-premis-techmd.xml'))
-
+    output = get_techmd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 

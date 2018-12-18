@@ -22,12 +22,16 @@ def parse_arguments(arguments):
     )
 
     parser.add_argument('file', type=str, help="Path to the WAV file")
-    parser.add_argument('--workspace', type=str, default='./workspace/',
-                        help="Workspace directory for the metadata files.")
-    parser.add_argument('--base_path', type=str, default='',
-                        help="Source base path of digital objects. If used, "
-                             "give path to the WAV file in relation to this "
-                             "base path.")
+    parser.add_argument(
+        '--workspace', type=str, default='./workspace/',
+        help="Workspace directory for the metadata files.")
+    parser.add_argument(
+        '--streams', dest='streams', action='store_true',
+        help='Given files include streams')
+    parser.add_argument(
+        '--base_path', type=str, default='',
+        help="Source base path of digital objects. If used, give path to "
+             "the WAV file in relation to this base path.")
 
     return parser.parse_args(arguments)
 
@@ -40,8 +44,12 @@ def main(arguments=None):
     filerel = os.path.normpath(args.file)
     filepath = os.path.normpath(os.path.join(args.base_path, args.file))
 
+    is_streams = False
+    if args.streams:
+        is_streams = True
+
     creator = AudiomdCreator(args.workspace)
-    creator.add_audiomd_md(filepath, filerel)
+    creator.add_audiomd_md(filepath, filerel, is_streams)
     creator.write()
 
 
@@ -50,15 +58,18 @@ class AudiomdCreator(TechmdCreator):
     for WAV files.
     """
 
-    def add_audiomd_md(self, filepath, filerel=None):
+    def add_audiomd_md(self, filepath, filerel=None, is_streams=False):
         """Create audioMD metadata for a WAV file and append it
         to self.md_elements.
         """
 
         # Create audioMD metadata
-        metadata = create_audiomd(filepath)
-        md_element = (metadata, filerel if filerel else filepath)
-        self.md_elements.append(md_element)
+        audiomd_list = create_audiomd(filepath)
+        for index in audiomd_list.keys():
+            if is_streams:
+                self.add_md(audiomd_list[index], filerel if filerel else filepath, index)
+            else:
+                self.add_md(audiomd_list[index], filerel if filerel else filepath)
 
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="AudioMD"):
@@ -66,7 +77,7 @@ class AudiomdCreator(TechmdCreator):
 
 
 def create_audiomd(filename):
-    """Creates and returns the root audioMD XML element.
+    """Creates and returns list of audioMD XML elements.
     """
 
     try:
@@ -74,22 +85,25 @@ def create_audiomd(filename):
     except ffmpeg.Error:
         raise ValueError("File '%s' could not be parsed by ffprobe" % filename)
 
-    file_data_elem = _get_file_data(metadata)
-    audio_info_elem = _get_audio_info(metadata)
+    audiomd_list = {}
+    for stream_md in metadata["streams"]:
+        if stream_md['codec_type'] != 'audio':
+            continue
+        file_data_elem = _get_stream_data(stream_md)
+        audio_info_elem = _get_audio_info(stream_md)
 
-    audiomd_elem = audiomd.create_audiomd(
-        file_data=file_data_elem,
-        audio_info=audio_info_elem
-    )
+        audiomd_elem = audiomd.create_audiomd(
+            file_data=file_data_elem,
+            audio_info=audio_info_elem
+        )
+        audiomd_list[str(stream_md['index'])] = audiomd_elem
 
-    return audiomd_elem
+    return audiomd_list
 
 
-def _get_file_data(metadata):
+def _get_stream_data(stream_dict):
     """Creates and returns the fileData XML element.
     """
-
-    stream_dict = metadata["streams"][0]
 
     # amd.file_data() params
     bps = str(stream_dict["bits_per_sample"])
@@ -127,14 +141,11 @@ def _get_encoding(stream_dict):
     return encoding
 
 
-def _get_audio_info(metadata):
+def _get_audio_info(stream_dict):
     """Creates and returns the audioInfo XML element.
     """
 
-    stream_dict = metadata["streams"][0]
-    format_dict = metadata["format"]
-
-    time = float(format_dict["duration"])
+    time = float(stream_dict["duration"])
     duration = _iso8601_duration(time)
     channels = str(stream_dict["channels"])
 

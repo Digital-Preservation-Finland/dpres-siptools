@@ -118,15 +118,15 @@ class TechmdCreator(object):
     def __init__(self, workspace):
         """
         :workspace: Output path
-        :md_elements: List of tuples (XML Element, filename)
-        :references: List of tuples (techmd_id, filename)
+        :md_elements: List of tuples (XML Element, filename, stream)
+        :references: List of tuples (techmd_id, filename, stream)
         """
         self.workspace = workspace
         self.md_elements = []
         self.references = []
 
 
-    def add_reference(self, techmd_id, filepath):
+    def add_reference(self, techmd_id, filepath, stream=None):
         """Add techMD reference information to the references list,
         which is written into techmdreferences after self.write() is
         called. techmdreferences is read by compile-structmap script when
@@ -138,11 +138,11 @@ class TechmdCreator(object):
         :returns: None
         """
 
-        reference = (techmd_id, filepath)
+        reference = (techmd_id, filepath, stream)
         self.references.append(reference)
 
 
-    def add_md(self, metadata, filename):
+    def add_md(self, metadata, filename, stream=None):
         """Append metadata XML element into self.md_elements list.
         self.md_elements is read by write() function and all the elements
         are written into corresponding METS XML files.
@@ -159,7 +159,7 @@ class TechmdCreator(object):
         :returns: None
         """
 
-        md_element = (metadata, filename)
+        md_element = (metadata, filename, stream)
         self.md_elements.append(md_element)
 
 
@@ -183,10 +183,12 @@ class TechmdCreator(object):
             references_tree = lxml.etree.ElementTree(references)
 
         # Add all the references
-        for techmd_id, filepath in self.references:
+        for techmd_id, filepath, stream in self.references:
             reference = lxml.etree.Element('techmdReference')
             reference.text = techmd_id
-            reference.set('file', filepath)
+            reference.set('file', encode_path(filepath.decode('utf-8')))
+            if stream is not None:
+                reference.set('stream', stream)
             references.append(reference)
 
         # Write reference list file
@@ -217,7 +219,7 @@ class TechmdCreator(object):
         digest = generate_digest(metadata)
         suffix = othermdtype if othermdtype else mdtype
         filename = encode_path("%s-%s-techmd.xml" % (digest, suffix))
-        techmd_id = encode_id(filename)
+        techmd_id = '_' + digest
         filename = os.path.join(self.workspace, filename)
 
         if not os.path.exists(filename):
@@ -255,13 +257,12 @@ class TechmdCreator(object):
         """
 
         # Write METS XML and append self.references
-        for metadata, filename in self.md_elements:
-
+        for metadata, filename, stream in self.md_elements:
             techmd_id, techmd_fname = self.write_md(
                 metadata, mdtype, mdtypeversion, othermdtype=othermdtype
             )
 
-            self.add_reference(techmd_id, filename)
+            self.add_reference(techmd_id, filename, stream)
 
         # Write techmd-references
         self.write_references()

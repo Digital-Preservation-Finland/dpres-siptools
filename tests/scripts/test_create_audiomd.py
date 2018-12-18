@@ -5,7 +5,7 @@ import pytest
 import lxml.etree as ET
 
 import siptools.scripts.create_audiomd as create_audiomd
-
+from siptools.utils import encode_path
 
 AUDIOMD_NS = 'http://www.loc.gov/audioMD/'
 NAMESPACES = {"amd": AUDIOMD_NS}
@@ -16,8 +16,7 @@ def test_create_audiomd_elem():
     """
 
     audiomd = create_audiomd.create_audiomd(
-        "tests/data/audio/valid-wav.wav"
-    )
+        "tests/data/audio/valid-wav.wav")["0"]
 
     file_data = "/amd:AUDIOMD/amd:fileData"
     audio_info = "/amd:AUDIOMD/amd:audioInfo"
@@ -79,7 +78,7 @@ def test_create_audiomd_techmdfile(testpath):
 
     # Debug print
     print "\n\n%s" % ET.tostring(
-        create_audiomd.create_audiomd("tests/data/audio/valid-wav.wav"),
+        create_audiomd.create_audiomd("tests/data/audio/valid-wav.wav")["0"],
         pretty_print=True
     )
 
@@ -123,7 +122,7 @@ def test_paths(testpath, file, base_path):
     else:
         create_audiomd.main(['--workspace', testpath, file])
 
-    assert "file=\"" + os.path.normpath(file) + "\"" in \
+    assert "file=\"" + encode_path(os.path.normpath(file).decode('utf-8')) + "\"" in \
         open(os.path.join(testpath, 'techmd-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))

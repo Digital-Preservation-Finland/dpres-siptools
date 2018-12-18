@@ -5,7 +5,7 @@ import pytest
 import lxml.etree as ET
 
 import siptools.scripts.create_addml as create_addml
-from siptools.utils import decode_path
+from siptools.utils import decode_path, encode_path
 
 
 CSV_FILE = "tests/data/csvfile.csv"
@@ -156,7 +156,7 @@ def test_paths(testpath, file, base_path):
                            '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
                            '--workspace', testpath, file])
 
-    assert "file=\"" + os.path.normpath(file) + "\"" in \
+    assert "file=\"" + encode_path(os.path.normpath(file).decode('utf-8')) + "\"" in \
         open(os.path.join(testpath, 'techmd-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))
