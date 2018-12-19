@@ -60,9 +60,6 @@ def main(arguments=None):
     """The main method for compile_structmap"""
     args = parse_arguments(arguments)
 
-    structmap = mets.structmap(type_attr=args.type_attr)
-    mets_structmap = mets.mets(child_elements=[structmap])
-
     filegrp = mets.filegrp()
     filesec = mets.filesec(child_elements=[filegrp])
     mets_filesec = mets.mets(child_elements=[filesec])
@@ -71,36 +68,15 @@ def main(arguments=None):
                                  dash_count=0)
 
     if args.dmdsec_struct == 'ead3':
-        container_div = mets.div(type_attr='logical')
-        structmap.append(container_div)
-        create_ead3_structmap(args.dmdsec_loc, args.workspace, container_div,
-                              filegrp, dmdsec_id)
+        structmap = create_ead3_structmap(args.dmdsec_loc, args.workspace,
+                                          filegrp, dmdsec_id, args.type_attr)
     else:
-        amdids = get_links_event_agent(args.workspace, None)
-
-        if args.type_attr == 'Directory-physical':
-            container_div = mets.div(type_attr='directory', label='.',
-                                     dmdid=dmdsec_id, admid=amdids)
-        else:
-            root_type = args.root_type if args.root_type else 'directory'
-            container_div = mets.div(type_attr=root_type, dmdid=dmdsec_id,
-                                     admid=amdids)
-
-        properties = {}
-        property_path = os.path.join(args.workspace,
-                                     'siptools-file-properties.json')
-        if os.path.isfile(property_path):
-            with open(property_path) as infile:
-                properties = json.load(infile)
-
-        structmap.append(container_div)
-        divs = div_structure(args.workspace)
-        create_structmap(args.workspace, divs, container_div, filegrp,
-                         properties=properties, type_attr=args.type_attr)
+        structmap = create_structmap(args.workspace, dmdsec_id, filegrp,
+                                     args.type_attr, args.root_type)
 
     if args.stdout:
         print h.serialize(mets_filesec)
-        print h.serialize(mets_structmap)
+        print h.serialize(structmap)
 
     output_sm_file = os.path.join(args.workspace, 'structmap.xml')
     output_fs_file = os.path.join(args.workspace, 'filesec.xml')
@@ -112,7 +88,7 @@ def main(arguments=None):
         os.makedirs(os.path.dirname(output_fs_file))
 
     with open(output_sm_file, 'w+') as outfile:
-        outfile.write(h.serialize(mets_structmap))
+        outfile.write(h.serialize(structmap))
 
     with open(output_fs_file, 'w+') as outfile:
         outfile.write(h.serialize(mets_filesec))
@@ -121,6 +97,46 @@ def main(arguments=None):
                                                       output_fs_file)
 
     return 0
+
+
+def create_structmap(workspace, dmdsec_id, filegrp, type_attr=None,
+                     root_type=None):
+    """Creates METS document element tree that contains structural map.
+
+    :param workspace: directory from which some files are searhed
+    :param dmdsec_id: dmdSec element identifier
+    :param filegrp: fileSec fileGrp element
+    :param type_attr: TYPE attribute of div element
+    :param root_type: TYPE attribute of div element
+    :returns: structural map element
+    """
+
+    structmap = mets.structmap(type_attr=type_attr)
+    amdids = get_links_event_agent(workspace, None)
+
+    if type_attr == 'Directory-physical':
+        container_div = mets.div(type_attr='directory', label='.',
+                                 dmdid=dmdsec_id, admid=amdids)
+    else:
+        root_type = root_type if root_type else 'directory'
+        container_div = mets.div(type_attr=root_type, dmdid=dmdsec_id,
+                                 admid=amdids)
+
+    properties = {}
+    property_path = os.path.join(workspace,
+                                 'siptools-file-properties.json')
+    if os.path.isfile(property_path):
+        with open(property_path) as infile:
+            properties = json.load(infile)
+
+    structmap.append(container_div)
+    divs = div_structure(workspace)
+    create_div(workspace, divs, container_div, filegrp,
+               properties=properties, type_attr=type_attr)
+
+    mets_element = mets.mets(child_elements=[structmap])
+    ET.cleanup_namespaces(mets_element)
+    return ET.ElementTree(mets_element)
 
 
 def div_structure(workspace):
@@ -137,9 +153,14 @@ def div_structure(workspace):
     return divs
 
 
-def create_ead3_structmap(descfile, workspace, structmap, filegrp, dmdsec_id):
+def create_ead3_structmap(descfile, workspace, filegrp, dmdsec_id, type_attr):
     """Create structmap based on ead3 descriptive metadata structure.
     """
+
+    structmap = mets.structmap(type_attr=type_attr)
+    container_div = mets.div(type_attr='logical')
+    structmap.append(container_div)
+
     import_xml = ET.parse(descfile)
     root = import_xml.getroot()
 
@@ -162,6 +183,9 @@ def create_ead3_structmap(descfile, workspace, structmap, filegrp, dmdsec_id):
             ead3_c_div(ead3_c, div_ead, filegrp, workspace, cnum=cnum)
 
     structmap.append(div_ead)
+    mets_element = mets.mets(child_elements=[structmap])
+    ET.cleanup_namespaces(mets_element)
+    return ET.ElementTree(mets_element)
 
 
 def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
@@ -274,9 +298,10 @@ def get_links_event_agent(workspace, path):
     return links_e + links_a
 
 
-def create_structmap(workspace, divs, parent, filegrp, path='',
-                     properties={}, type_attr=None):
-    """Create structmap based on directory structure and fileSec
+def create_div(workspace, divs, parent, filegrp, path='', properties={},
+               type_attr=None):
+    """Recursively create structmap divs based on directory structure and
+    fileSec.
 
     :param workspace: Workspace path
     :param divs: Current directory or file in directory structure walkthrough
@@ -317,8 +342,8 @@ def create_structmap(workspace, divs, parent, filegrp, path='',
                 div_el = mets.div(type_attr=div, dmdid=dmdsec_id,
                                   admid=amdids)
             div_list.append(div_el)
-            create_structmap(workspace, divs[div], div_el, filegrp, div_path,
-                             properties, type_attr)
+            create_div(workspace, divs[div], div_el, filegrp, div_path,
+                       properties, type_attr)
 
     # Add fptr list first, then div list
     for fptr_elem in fptr_list:
