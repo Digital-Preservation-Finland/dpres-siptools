@@ -156,7 +156,7 @@ def test_paths(testpath, file, base_path):
                            '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
                            '--workspace', testpath, file])
 
-    assert "file=\"" + encode_path(os.path.normpath(file).decode('utf-8')) + "\"" in \
+    assert "file=\"" + os.path.normpath(file) + "\"" in \
         open(os.path.join(testpath, 'techmd-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))

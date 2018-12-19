@@ -11,7 +11,7 @@ import lxml.etree as ET
 import mets
 import xml_helpers.utils as h
 from siptools.xml.mets import NAMESPACES
-from siptools.utils import encode_id, encode_path, decode_path, tree, add
+from siptools.utils import encode_id, encode_path, tree, add
 
 
 def ead3_ns(tag):
@@ -144,29 +144,51 @@ def create_structmap(workspace, filesec, type_attr=None, root_type=None):
         with open(property_path) as infile:
             properties = json.load(infile)
 
+    fileset = get_files(workspace)
     structmap = mets.structmap(type_attr=type_attr)
     structmap.append(container_div)
     divs = div_structure(workspace)
     create_div(workspace, divs, container_div, filesec,
-               properties=properties, type_attr=type_attr)
+               fileset, properties=properties, type_attr=type_attr)
 
     mets_element = mets.mets(child_elements=[structmap])
     ET.cleanup_namespaces(mets_element)
     return ET.ElementTree(mets_element)
 
 
-def div_structure(workspace):
+def get_files(workspace):
+    """
+    """
+    reference_file = os.path.join(workspace, 'techmd-references.xml')
+    xml = ET.parse(reference_file)
+    fileset = set()
+    files = xml.xpath('/techmdReferences/techmdReference/@file')
+    for path in files:
+        fileset.add(path)
+    return sorted(fileset)
+
+
+def get_streams(workspace, path):
+    """
+    """
+    reference_file = os.path.join(workspace, 'techmd-references.xml')
+    xml = ET.parse(reference_file)
+    streamset = set()
+    streams = xml.xpath('/techmdReferences/techmdReference[@file="%s"]/@stream' % path)
+    for stream in streams:
+        streamset.add(stream)
+    return sorted(streamset)
+
+
+def div_structure(fileset):
     """Create div structure for directory-based structmap
 
     :param str workspace: Path to directory
     :returns: Directory tree as a dict like object
     """
-    workspace_files = [fname.name for fname in scandir.scandir(workspace)]
-    techmd_files = [x for x in workspace_files if '-premis-techmd.xml' in x]
     divs = tree()
-    for techmd_file in techmd_files:
+    for techmd_file in fileset:
         add(divs, decode_path(techmd_file).split('/'))
-
     return divs
 
 
@@ -196,13 +218,15 @@ def create_ead3_structmap(descfile, workspace, filegrp, type_attr):
     div_ead = mets.div(type_attr='archdesc', label=level, dmdid=dmdids,
                        admid=amdids)
 
+    fileset = get_files(workspace)
+
     if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:
         for ead3_c in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
             if len(ET.QName(ead3_c.tag).localname) > 1:
                 cnum = str(ET.QName(ead3_c.tag).localname)[-2:]
             else:
                 cnum = None
-            ead3_c_div(ead3_c, div_ead, filegrp, workspace, cnum=cnum)
+            ead3_c_div(ead3_c, div_ead, filegrp, workspace, fileset, cnum=cnum)
 
     structmap.append(div_ead)
     mets_element = mets.mets(child_elements=[structmap])
@@ -211,7 +235,7 @@ def create_ead3_structmap(descfile, workspace, filegrp, type_attr):
 
 
 # TODO: Why workspace parameter is required?
-def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
+def ead3_c_div(parent, structmap, filegrp, workspace, fileset, cnum=None):
     """Create div elements based on ead3 c elements. Fptr elements are
     created based on ead dao elements. The Ead3 elements tags are put
     into @type and the @level or @otherlevel attributes from ead3 will
@@ -234,7 +258,7 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
 
     for elem in parent.findall("./*"):
         if ET.QName(elem.tag).localname in allowed_c_subs:
-            ead3_c_div(elem, c_div, filegrp, workspace, cnum=cnum_sub)
+            ead3_c_div(elem, c_div, filegrp, workspace, fileset, cnum=cnum_sub)
 
     for files in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
         if ET.QName(files.tag).localname in ['dao', 'daoset']:
@@ -245,7 +269,7 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
                 ead3_file = files.xpath("./@href")[0]
             if ead3_file.startswith('/'):
                 ead3_file = ead3_file[1:]
-            tech_file = encode_path(ead3_file)
+            tech_file = [x for x in fileset if ead3_file in x][0]
             amdids = get_links_event_agent(workspace, tech_file)
             fileid = add_file_to_filesec(workspace, tech_file, filegrp, amdids)
             dao = mets.fptr(fileid=fileid)
@@ -266,27 +290,28 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     :param str returns: id of file added to fileGrp
     :returns: unique identifier of file element
     """
-    techmd_files, techmd_ids = ids_for_files(workspace, path,
-                                             '-premis-techmd.xml')
     fileid = '_' + str(uuid4())
-    # TODO When calling encode(decode(string)) you should get the original
-    # string back, but this does something else (also). Should be refactored.
-    # -vvainio 26.06.2018
-    filepath = encode_path(decode_path(techmd_files[0], '-premis-techmd.xml'),
-                           safe='/')
 
-    # Create list of IDs of techmD elements that contain othermd metadata
-    othermd_ids = get_techmd_references(workspace, decode_path(path))
+    # Create list of IDs of techmD elements
+    techmd_ids = get_techmd_references(workspace, path)
 
     # Create XML element and add it to fileGrp
     file_el = mets.file_elem(
         fileid,
-        admid_elements=techmd_ids+amdids+othermd_ids,
+        admid_elements=set(amdids).union(techmd_ids),
         loctype='URL',
-        xlink_href='file://%s' % filepath,
+        xlink_href='file://%s' % encode_path(path, safe='/'),
         xlink_type='simple',
         groupid=None
     )
+
+    streams = get_streams(workspace, path)
+    if streams:
+        for stream in streams:
+            stream_ids = get_techmd_references(workspace, path, stream=stream)
+            stream_el = mets.stream(admid_elements=stream_ids)
+            file_el.append(stream_el)
+
     filegrp.append(file_el)
 
     return fileid
@@ -311,7 +336,7 @@ def get_fileid(filesec, path):
     return element.attrib['ID']
 
 
-def get_techmd_references(workspace, path):
+def get_techmd_references(workspace, path, stream=None):
     """If techMD reference file exists in workspace, read the techMD IDs that
     should be referenced by a file.
 
@@ -324,10 +349,15 @@ def get_techmd_references(workspace, path):
 
     if os.path.isfile(reference_file):
         element_tree = ET.parse(reference_file)
-        reference_elements = element_tree.xpath(
-            '/techmdReferences/techmdReference[@file="%s"]' % path
-        )
-        techmd_ids = [element.text for element in reference_elements]
+        if stream is None:
+            reference_elements = element_tree.xpath(
+                '/techmdReferences/techmdReference[@file="%s" and not(@stream)]' % path
+            )
+        else:
+            reference_elements = element_tree.xpath(
+                '/techmdReferences/techmdReference[@file="%s" and @stream="%s"]' % (path, stream)
+            )
+        techmd_ids = set([element.text for element in reference_elements])
 
     return techmd_ids
 
@@ -335,19 +365,21 @@ def get_techmd_references(workspace, path):
 def get_links_event_agent(workspace, path):
     """Get link identifiers for events and agents
     """
-    _, links_e = ids_for_files(workspace, path, 'event.xml', dash_count=1)
-    _, links_a = ids_for_files(workspace, path, 'agent.xml', dash_count=1)
+    links_e = ids_for_files(workspace, path, 'event.xml', dash_count=1)
+    links_a = ids_for_files(workspace, path, 'agent.xml', dash_count=1)
     return links_e + links_a
 
 
-def create_div(workspace, divs, parent, filesec, path='', properties={},
-               type_attr=None):
-    """Recursively create structmap div elements based on directory structure.
+def create_div(workspace, divs, parent, filesec, fileset, path='',
+               properties={}, type_attr=None):
+    """Recursively create fileSec and structmap divs based on directory
+    structure.
 
     :param workspace: Workspace path
     :param divs: Current directory or file in directory structure walkthrough
     :param parent: Parent element in structMap
     :param filesec: filesec element
+    :param fileset: Set of digital objects (file paths)
     :param path: Current path in directory structure walkthrough
     :param properties: Properties of files created in import_object.py
     :param type_attr: Structmap type
@@ -357,11 +389,9 @@ def create_div(workspace, divs, parent, filesec, path='', properties={},
     property_list = []
     div_list = []
     for div in divs.keys():
-        # It's a file if there is "-techmd.xml", lets create file+fptr
-        # elements
-        if div.endswith('-premis-techmd.xml'):
-            div = div[:-len('-premis-techmd.xml')]
-            div_path = encode_path(os.path.join(decode_path(path), div))
+        div_path = os.path.join(path, div)
+        # It's a file, lets create file+fptr elements
+        if div_path in fileset:
             fileid = get_fileid(filesec, decode_path(div_path))
             fptr = mets.fptr(fileid)
             div_el = add_file_properties(properties, div_path, fptr)
@@ -372,9 +402,9 @@ def create_div(workspace, divs, parent, filesec, path='', properties={},
 
         # It's not a file, lets create a div element
         else:
-            div_path = encode_path(os.path.join(decode_path(path), div))
+            div_path = os.path.join(path, div)
             amdids = get_links_event_agent(workspace, div_path)
-            _, dmdsec_id = ids_for_files(workspace, div_path, 'dmdsec.xml')
+            dmdsec_id = ids_for_files(workspace, div_path, 'dmdsec.xml')
             if type_attr == 'Directory-physical':
                 div_el = mets.div(type_attr='directory', label=div,
                                   dmdid=dmdsec_id, admid=amdids)
@@ -382,8 +412,8 @@ def create_div(workspace, divs, parent, filesec, path='', properties={},
                 div_el = mets.div(type_attr=div, dmdid=dmdsec_id,
                                   admid=amdids)
             div_list.append(div_el)
-            create_div(workspace, divs[div], div_el, filesec, div_path,
-                       properties, type_attr)
+            create_div(workspace, divs[div], div_el, filesec, fileset,
+                       div_path, properties, type_attr)
 
     # Add fptr list first, then div list
     for fptr_elem in fptr_list:
@@ -427,8 +457,8 @@ def add_file_properties(properties, path, fptr):
     :param fptr: Element fptr for file
     :returns: Div element with properties or None
     """
-    if path in properties:
-        file_properties = properties[path]
+    if encode_path(path) in properties:
+        file_properties = properties[encode_path(path)]
         if 'order' in file_properties:
             div_el = mets.div(type_attr='file',
                               order=file_properties['order'])
@@ -447,7 +477,7 @@ def ids_for_files(workspace, path, idtype, dash_count=0):
     :param str idtype: Only return filenames that contain this word
     :param int dash_count: If path is None, False, or 0, return filenames that
                            have this many dashes
-    :returns (list, list): List of found files and list of Ids of files
+    :returns (list): List of ids of found files
     """
     # Find all files from workspace directory and filter out filenames that do
     # not contain idtype
@@ -457,7 +487,7 @@ def ids_for_files(workspace, path, idtype, dash_count=0):
     if path:
         # Filter filenames based on path
         files_result = [x for x in md_files
-                        if path in x and (path+'%2F') not in x]
+                        if encode_path(path) in x and (path+'%2F') not in x]
     else:
         # Filter filenames based on number of '-'-characters in filename
         files_result = [x for x in md_files if x.count('-') == dash_count]
@@ -465,7 +495,7 @@ def ids_for_files(workspace, path, idtype, dash_count=0):
     # Create IDs for files
     id_result = [encode_id(x) for x in files_result]
 
-    return files_result, id_result
+    return id_result
 
 
 if __name__ == '__main__':

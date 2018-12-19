@@ -7,7 +7,6 @@ import json
 import lxml.etree as ET
 import pytest
 from siptools.scripts import import_object
-from siptools.utils import encode_path
 from siptools.xml.mets import NAMESPACES
 
 def get_techmd_file(path, input_file, stream=None):
@@ -15,9 +14,9 @@ def get_techmd_file(path, input_file, stream=None):
     ref = os.path.join(path, 'techmd-references.xml')
     root = ET.parse(ref).getroot()
     if stream is None:
-        techref = root.xpath("/techmdReferences/techmdReference[not(@stream) and @file='" + encode_path(input_file.decode('utf-8')) + "']")[0]
+        techref = root.xpath("/techmdReferences/techmdReference[not(@stream) and @file='" + input_file.decode(sys.getfilesystemencoding()) + "']")[0]
     else:
-        techref = root.xpath("/techmdReferences/techmdReference[@stream='" + stream + "' and @file='" + encode_path(input_file.decode('utf-8')) + "']")[0]
+        techref = root.xpath("/techmdReferences/techmdReference[@stream='" + stream + "' and @file='" + input_file.decode(sys.getfilesystemencoding()) + "']")[0]
     output = os.path.join(path, techref.text[1:] + "-PREMIS%3AOBJECT-techmd.xml")
     return output
 

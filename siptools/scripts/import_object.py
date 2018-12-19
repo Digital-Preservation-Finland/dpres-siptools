@@ -27,7 +27,6 @@ else:
 
 import premis
 import mets
-import xml_helpers.utils as h
 from siptools.utils import TechmdCreator, encode_path
 
 try:
@@ -127,7 +126,7 @@ def main(arguments=None):
                 creator.add_md(premis_list[key], filerel)
             else:
                 creator.add_md(premis_list[key], filerel, key)
-        creator.write()
+        creator.write(stdout=args.stdout)
 
         properties = {}
         if args.order:
@@ -135,8 +134,7 @@ def main(arguments=None):
         # Add new properties of a file for other script files, e.g. structMap
 
         if properties != {}:
-            fkey = encode_path(filerel.decode('utf-8'))
-            append_properties(args.workspace, fkey, properties)
+            append_properties(args.workspace, filerel, properties)
 
     return 0
 
@@ -146,7 +144,7 @@ class PremisCreator(TechmdCreator):
     for files and streams.
     """
 
-    def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3"):
+    def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3", stdout=False):
         super(PremisCreator, self).write(mdtype, mdtypeversion)
 
 
@@ -162,6 +160,7 @@ def append_properties(workspace, fkey, file_properties):
         with open(file_path) as infile:
             properties = json.load(infile)
 
+    fkey = encode_path(fkey.decode('utf-8'))
     properties[fkey] = file_properties
     with open(file_path, 'w+') as outfile:
         json.dump(properties, outfile)

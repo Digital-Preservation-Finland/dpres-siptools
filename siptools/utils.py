@@ -2,6 +2,7 @@
 Utilities for siptools
 """
 
+import sys
 from collections import defaultdict
 import hashlib
 import os
@@ -186,7 +187,10 @@ class TechmdCreator(object):
         for techmd_id, filepath, stream in self.references:
             reference = lxml.etree.Element('techmdReference')
             reference.text = techmd_id
-            reference.set('file', encode_path(filepath.decode('utf-8')))
+            if isinstance(filepath, str):
+                reference.set('file', filepath.decode(sys.getfilesystemencoding()))
+            else:
+                reference.set('file', filepath)
             if stream is not None:
                 reference.set('stream', stream)
             references.append(reference)
@@ -198,7 +202,7 @@ class TechmdCreator(object):
                               encoding="utf-8")
 
 
-    def write_md(self, metadata, mdtype, mdtypeversion, othermdtype=None):
+    def write_md(self, metadata, mdtype, mdtypeversion, othermdtype=None, stdout=False):
         """Wraps XML metadata into techMD element and writes it to a METS XML
         file in the workspace. The output filename is
         <mdtype>-<hash>-othermd.xml, where <mdtype> is the type of metadata
@@ -237,13 +241,15 @@ class TechmdCreator(object):
 
             with open(filename, 'w+') as outfile:
                 outfile.write(xml_helpers.utils.serialize(mets_))
+                if stdout:
+                    print xml_helpers.utils.serialize(mets_)
                 print "Wrote METS %s technical metadata to file %s" \
                       % (mdtype, outfile.name)
 
         return techmd_id, filename
 
 
-    def write(self, mdtype="type", mdtypeversion="version", othermdtype=None):
+    def write(self, mdtype="type", mdtypeversion="version", othermdtype=None, stdout=False):
         """Write METS XML and techmdreference files. First, METS XML files are
         written and self.references is appended. Second, techmd-references is
         written.
@@ -259,9 +265,10 @@ class TechmdCreator(object):
         # Write METS XML and append self.references
         for metadata, filename, stream in self.md_elements:
             techmd_id, techmd_fname = self.write_md(
-                metadata, mdtype, mdtypeversion, othermdtype=othermdtype
+                metadata, mdtype, mdtypeversion, othermdtype=othermdtype, stdout=stdout
             )
-
+            if stdout:
+                h.serialize(metadata)
             self.add_reference(techmd_id, filename, stream)
 
         # Write techmd-references

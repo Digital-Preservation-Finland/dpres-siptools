@@ -30,6 +30,10 @@ def test_compile_structmap_ok(testpath):
     fs_tree = lxml.etree.parse(output_filesec)
     fs_root = fs_tree.getroot()
 
+    lxml.etree.dump(sm_root)
+    print '---'
+    lxml.etree.dump(fs_root)
+
     assert len(fs_root.xpath(
         '/mets:mets/mets:fileSec/mets:fileGrp/mets:file/'
         'mets:FLocat[@xlink:href="file://tests/data/structured/'
