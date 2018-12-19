@@ -51,6 +51,7 @@ def parse_arguments(arguments):
                         help="Destination directory for output files. "
                              "Defaults to ./workspace/")
     parser.add_argument('--stdout',
+                        action='store_true',
                         help='Print output also to stdout.')
     return parser.parse_args(arguments)
 
