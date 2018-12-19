@@ -31,19 +31,27 @@ def parse_arguments(arguments):
                     "in workspace directory. Outputs two XML files: "
                     "filesec.xml and structmap.xml"
     )
-    parser.add_argument('--dmdsec_struct', dest='dmdsec_struct', type=str,
-                        help=("Use structured descriptive metadata for "
-                              "creating structMap divs"))
-    parser.add_argument('--dmdsec_loc', dest='dmdsec_loc', type=str,
+    parser.add_argument('--dmdsec_struct',
+                        type=str,
+                        help="Use structured descriptive metadata for "
+                             "creating structMap divs")
+    parser.add_argument('--dmdsec_loc',
+                        type=str,
                         help="Location of structured descriptive metadata")
-    parser.add_argument('--type_attr', dest='type_attr', type=str,
+    parser.add_argument('--type_attr',
+                        type=str,
                         help="Type of structmap e.g. 'Fairdata-physical'"
                              " or 'Directory-physical'")
-    parser.add_argument('--root_type', dest='root_type', type=str,
+    parser.add_argument('--root_type',
+                        type=str,
                         help="Type of root div")
-    parser.add_argument('--workspace', type=str, default='./workspace/',
-                        help="Destination directory for output files.")
-    parser.add_argument('--stdout', help='Print output also to stdout.')
+    parser.add_argument('--workspace',
+                        type=str,
+                        default='./workspace/',
+                        help="Destination directory for output files. "
+                             "Defaults to ./workspace/")
+    parser.add_argument('--stdout',
+                        help='Print output also to stdout.')
     return parser.parse_args(arguments)
 
 
@@ -117,8 +125,8 @@ def main(arguments=None):
 def div_structure(workspace):
     """Create div structure for directory-based structmap
 
-    :workspace (str): Path to directory
-    :returns (defaultdict): Directory tree as a dict like object
+    :param str workspace: Path to directory
+    :returns: Directory tree as a dict like object
     """
     workspace_files = [fname.name for fname in scandir.scandir(workspace)]
     techmd_files = [x for x in workspace_files if '-premis-techmd.xml' in x]
@@ -201,12 +209,14 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
 def add_file_to_filesec(workspace, path, filegrp, amdids):
     """Add file element to fileSec element given as parameter.
 
-    :workspace: Workspace directorye from which techMD files and techMD
-                reference files searched.
-    :path: url encoded path of the file
-    :filegrp (lxml.etree.Element): fileSec element
-    :amdids (list): list of administrative metadata associated with the file
-    :returns (str): id of file added to fileSec
+    :param workspace: Workspace directorye from which techMD files and techMD
+                      reference files searched.
+    :param path: url encoded path of the file
+    :param lxml.etree Element filegrp: fileSec element
+    :param list amdids: list of administrative metadata associated with the
+                        file
+    :param str returns: id of file added to fileSec
+    :returns: unique identifier of file element
     """
     techmd_files, techmd_ids = ids_for_files(workspace, path,
                                              '-premis-techmd.xml')
@@ -238,9 +248,9 @@ def get_techmd_references(workspace, path):
     """If techMD reference file exists in workspace, read the techMD IDs that
     should be referenced by a file.
 
-    :workspace (str): path to directory from which othermd
-    :path (str): path of the file for which the IDs are read
-    :returns (list): list of techMD IDs
+    :param str workspace: path to directory from which othermd
+    :param str path: path of the file for which the IDs are read
+    :returns list: list of techMD IDs
     """
     reference_file = os.path.join(workspace, 'techmd-references.xml')
     techmd_ids = []
@@ -266,13 +276,15 @@ def get_links_event_agent(workspace, path):
 def create_structmap(workspace, divs, parent, filegrp, path='',
                      properties={}, type_attr=None):
     """Create structmap based on directory structure and fileSec
-    :workspace: Workspace path
-    :divs: Current directory or file in directory structure walkthrough
-    :parent: Parent element in structMap
-    :filegrp: filegrp element in fileSec
-    :path: Current path in directory structure walkthrough
-    :properties: Properties of files created in import_object.py
-    :type_attr: Structmap type
+
+    :param workspace: Workspace path
+    :param divs: Current directory or file in directory structure walkthrough
+    :param parent: Parent element in structMap
+    :param filegrp: filegrp element in fileSec
+    :param path: Current path in directory structure walkthrough
+    :param properties: Properties of files created in import_object.py
+    :param type_attr: Structmap type
+    :returns: ``None``
     """
     fptr_list = []
     property_list = []
@@ -318,9 +330,10 @@ def create_structmap(workspace, divs, parent, filegrp, path='',
 
 def add_file_properties(properties, path, fptr):
     """Create a div element with file properties
-    :properties: File properties
-    :path: File path
-    :fptr: Element fptr for file
+
+    :param properties: File properties
+    :param path: File path
+    :param fptr: Element fptr for file
     :returns: Div element with properties or None
     """
     if path in properties:
@@ -337,12 +350,12 @@ def ids_for_files(workspace, path, idtype, dash_count=0):
     """Search files in workspace based on keywords or number of dashes in
     filename, and create ID for each found file.
 
-    :workspace (str): Path to directory from which the files are searched
-    :path (str): If not None, False, or 0, only return filenames that contain
-                 this word
-    :idtype (str): Only return filenames that contain this word
-    :dash_count (int): If path is None, False, or 0, return filenames that have
-                       this many dashes
+    :param str workspace: Path to directory from which the files are searched
+    :param str path: If not None, False, or 0, only return filenames that
+                     contain this word
+    :param str idtype: Only return filenames that contain this word
+    :param int dash_count: If path is None, False, or 0, return filenames that
+                           have this many dashes
     :returns (list, list): List of found files and list of Ids of files
     """
     # Find all files from workspace directory and filter out filenames that do
