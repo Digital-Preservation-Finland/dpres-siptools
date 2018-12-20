@@ -77,7 +77,8 @@ def _pop_attributes(attributes, attrib_list, path):
 
 def generate_digest(etree):
     """Generating MD5 digest from etree. Identical metadata must generate
-    same digest even if attributes of any given element are ordered differently.
+    same digest even if attributes of any given element are ordered
+    differently.
 
     This function creates a copy of the etree. All the attributes of the copy
     are removed and collected to a separete list with path information to the
@@ -112,6 +113,21 @@ def generate_digest(etree):
     return hashlib.md5(string).hexdigest()
 
 
+def get_files(workspace):
+    """Get unique and sorted set of files from techmd-references.xml
+
+    :workspace: Workspace path
+    :returns: Set of files
+    """
+    reference_file = os.path.join(workspace, 'techmd-references.xml')
+    xml = lxml.etree.parse(reference_file)
+    fileset = set()
+    files = xml.xpath('/techmdReferences/techmdReference/@file')
+    for path in files:
+        fileset.add(path)
+    return sorted(fileset)
+
+
 class TechmdCreator(object):
     """ Class for generating METS XML and techmd-references files efficiently.
     """
@@ -125,7 +141,6 @@ class TechmdCreator(object):
         self.workspace = workspace
         self.md_elements = []
         self.references = []
-
 
     def add_reference(self, techmd_id, filepath, stream=None):
         """Add techMD reference information to the references list,
@@ -142,7 +157,6 @@ class TechmdCreator(object):
         reference = (techmd_id, filepath, stream)
         self.references.append(reference)
 
-
     def add_md(self, metadata, filename, stream=None):
         """Append metadata XML element into self.md_elements list.
         self.md_elements is read by write() function and all the elements
@@ -151,18 +165,20 @@ class TechmdCreator(object):
         When write() is called create_techmdfile() automatically writes
         corresponding metadata to the same METS XML file. However,
         serializing and hashing the XML elements can be rather time consuming.
-        If the metadata can be easily separated without serializing and hashing,
-        this function should only be called once for each distinct metadata.
-        This should be implemented by the subclasses of TechmdCreator.
+        If the metadata can be easily separated without serializing and
+        hashing, this function should only be called once for each distinct
+        metadata. This should be implemented by the subclasses of
+        TechmdCreator.
 
         :metadata: Metadata XML element
+        :filename: path of the file described in techMD element
+        :stream: Stream index, or None if not a stream
 
         :returns: None
         """
 
         md_element = (metadata, filename, stream)
         self.md_elements.append(md_element)
-
 
     def write_references(self):
         """Write "techmd-references.xml" file, which is read by
@@ -188,7 +204,8 @@ class TechmdCreator(object):
             reference = lxml.etree.Element('techmdReference')
             reference.text = techmd_id
             if isinstance(filepath, str):
-                reference.set('file', filepath.decode(sys.getfilesystemencoding()))
+                reference.set(
+                    'file', filepath.decode(sys.getfilesystemencoding()))
             else:
                 reference.set('file', filepath)
             if stream is not None:
@@ -201,8 +218,8 @@ class TechmdCreator(object):
                               xml_declaration=True,
                               encoding="utf-8")
 
-
-    def write_md(self, metadata, mdtype, mdtypeversion, othermdtype=None, stdout=False):
+    def write_md(self, metadata, mdtype, mdtypeversion, othermdtype=None,
+                 stdout=False):
         """Wraps XML metadata into techMD element and writes it to a METS XML
         file in the workspace. The output filename is
         <mdtype>-<hash>-othermd.xml, where <mdtype> is the type of metadata
@@ -218,6 +235,8 @@ class TechmdCreator(object):
         :mdtype (string): Value of mdWrap MDTYPE attribute
         :mdtypeversion (string): Value of mdWrap MDTYPEVERSION attribute
         :othermdtype (string): Value of mdWrap OTHERMDTYPE attribute
+        :stdout (boolean): Print also to stdout
+
         :returns: techmd_id, filename
         """
         digest = generate_digest(metadata)
@@ -248,8 +267,8 @@ class TechmdCreator(object):
 
         return techmd_id, filename
 
-
-    def write(self, mdtype="type", mdtypeversion="version", othermdtype=None, stdout=False):
+    def write(self, mdtype="type", mdtypeversion="version", othermdtype=None,
+              stdout=False):
         """Write METS XML and techmdreference files. First, METS XML files are
         written and self.references is appended. Second, techmd-references is
         written.
@@ -259,13 +278,19 @@ class TechmdCreator(object):
         where add_md was not called or write() function needs to be implemented
         differently.
 
+        :mdtype (string): Value of mdWrap MDTYPE attribute
+        :mdtypeversion (string): Value of mdWrap MDTYPEVERSION attribute
+        :othermdtype (string): Value of mdWrap OTHERMDTYPE attribute
+        :stdout (boolean): Print also to stdout
+
         :returns: None
         """
 
         # Write METS XML and append self.references
         for metadata, filename, stream in self.md_elements:
             techmd_id, techmd_fname = self.write_md(
-                metadata, mdtype, mdtypeversion, othermdtype=othermdtype, stdout=stdout
+                metadata, mdtype, mdtypeversion, othermdtype=othermdtype,
+                stdout=stdout
             )
             if stdout:
                 h.serialize(metadata)

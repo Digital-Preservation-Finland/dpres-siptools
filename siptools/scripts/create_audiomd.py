@@ -67,9 +67,11 @@ class AudiomdCreator(TechmdCreator):
         audiomd_list = create_audiomd(filepath)
         for index in audiomd_list.keys():
             if is_streams:
-                self.add_md(audiomd_list[index], filerel if filerel else filepath, index)
+                self.add_md(audiomd_list[index],
+                            filerel if filerel else filepath, index)
             else:
-                self.add_md(audiomd_list[index], filerel if filerel else filepath)
+                self.add_md(audiomd_list[index],
+                            filerel if filerel else filepath)
 
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="AudioMD"):
@@ -77,7 +79,9 @@ class AudiomdCreator(TechmdCreator):
 
 
 def create_audiomd(filename):
-    """Creates and returns list of audioMD XML elements.
+    """Creates and returns list of audioMD XML sections.
+    :filename: Audio file path
+    :returns: List of AudioMD XML sections.
     """
 
     try:

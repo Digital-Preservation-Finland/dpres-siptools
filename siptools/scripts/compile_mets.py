@@ -14,7 +14,8 @@ import mets
 import xml_helpers.utils as h
 from siptools.xml.mets import NAMESPACES, METS_PROFILE, METS_CATALOG, \
     METS_SPECIFICATION, RECORD_STATUS_TYPES, mets_extend
-from siptools.utils import decode_path
+from siptools.utils import get_files
+
 
 
 def _dict2str(dictionary):
@@ -222,13 +223,12 @@ def clean_metsparts(path):
 def copy_files(workspace, data_dir):
     """Copy digital objects to workspace
     """
-    for entry in scandir(workspace):
-        if entry.name.endswith('-premis-techmd.xml') and entry.is_file():
-            source = decode_path(entry.name, '-premis-techmd.xml')
-            target = os.path.join(workspace, source)
-            if not os.path.exists(os.path.dirname(target)):
-                os.makedirs(os.path.dirname(target))
-            copyfile(os.path.join(data_dir, source), target)
+    files = get_files(workspace)
+    for source in files:
+        target = os.path.join(workspace, source)
+        if not os.path.exists(os.path.dirname(target)):
+            os.makedirs(os.path.dirname(target))
+        copyfile(os.path.join(data_dir, source), target)
 
 
 if __name__ == '__main__':

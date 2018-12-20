@@ -11,7 +11,7 @@ import lxml.etree as ET
 import mets
 import xml_helpers.utils as h
 from siptools.xml.mets import NAMESPACES
-from siptools.utils import encode_id, encode_path, tree, add
+from siptools.utils import encode_id, encode_path, tree, add, get_files
 
 
 def ead3_ns(tag):
@@ -169,12 +169,18 @@ def get_files(workspace):
 
 
 def get_streams(workspace, path):
-    """
+    """Get stream indexes of a file
+
+    :workspace: Workspace path
+    :path: Path of a digital object in techmd-references.xml
+
+    :returns: Sorted set of stream indexes of a file
     """
     reference_file = os.path.join(workspace, 'techmd-references.xml')
     xml = ET.parse(reference_file)
     streamset = set()
-    streams = xml.xpath('/techmdReferences/techmdReference[@file="%s"]/@stream' % path)
+    streams = xml.xpath(
+        '/techmdReferences/techmdReference[@file="%s"]/@stream' % path)
     for stream in streams:
         streamset.add(stream)
     return sorted(streamset)
@@ -183,7 +189,7 @@ def get_streams(workspace, path):
 def div_structure(fileset):
     """Create div structure for directory-based structmap
 
-    :param str workspace: Path to directory
+    :fileset: Set of digital objects (file paths)
     :returns: Directory tree as a dict like object
     """
     divs = tree()
@@ -194,6 +200,12 @@ def div_structure(fileset):
 
 def create_ead3_structmap(descfile, workspace, filegrp, type_attr):
     """Create structmap based on ead3 descriptive metadata structure.
+
+    :desc_file: EAD3 descriptive metadata file
+    :workspace: Workspace path
+    :structmap: Structmap element
+    :filegrp: fileGrp element
+    :dmdsec_id: ID of dmdSec section
     """
     structmap = mets.structmap(type_attr=type_attr)
     container_div = mets.div(type_attr='logical')
@@ -234,12 +246,23 @@ def create_ead3_structmap(descfile, workspace, filegrp, type_attr):
     return ET.ElementTree(mets_element)
 
 
+<<<<<<< HEAD
 # TODO: Why workspace parameter is required?
 def ead3_c_div(parent, structmap, filegrp, workspace, fileset, cnum=None):
+=======
+def ead3_c_div(parent, div, filegrp, workspace, fileset, cnum=None):
+>>>>>>> KDKPAS-1862 Fix digital object copying, various pep8 fixes.
     """Create div elements based on ead3 c elements. Fptr elements are
     created based on ead dao elements. The Ead3 elements tags are put
     into @type and the @level or @otherlevel attributes from ead3 will
     be put into @label.
+
+    :parent: Element to follow in EAD3 
+    :div: Div element in structmap
+    :filegrp: fileGrp element
+    :workspace: Workspace path
+    :fileset: Set of files paths
+    :cnum: EAD3 c level
     """
     allowed_c_subs = ['c', 'c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07',
                       'c08', 'c09', 'c10', 'c11', 'c12']
@@ -275,7 +298,7 @@ def ead3_c_div(parent, structmap, filegrp, workspace, fileset, cnum=None):
             dao = mets.fptr(fileid=fileid)
             c_div.append(dao)
 
-    structmap.append(c_div)
+    div.append(c_div)
 
 
 def add_file_to_filesec(workspace, path, filegrp, amdids):
@@ -351,11 +374,13 @@ def get_techmd_references(workspace, path, stream=None):
         element_tree = ET.parse(reference_file)
         if stream is None:
             reference_elements = element_tree.xpath(
-                '/techmdReferences/techmdReference[@file="%s" and not(@stream)]' % path
+                '/techmdReferences/techmdReference[@file="%s" '
+                'and not(@stream)]' % path
             )
         else:
             reference_elements = element_tree.xpath(
-                '/techmdReferences/techmdReference[@file="%s" and @stream="%s"]' % (path, stream)
+                '/techmdReferences/techmdReference[@file="%s" '
+                'and @stream="%s"]' % (path, stream)
             )
         techmd_ids = set([element.text for element in reference_elements])
 
@@ -364,6 +389,8 @@ def get_techmd_references(workspace, path, stream=None):
 
 def get_links_event_agent(workspace, path):
     """Get link identifiers for events and agents
+    :workspace: Workspace path
+    :path: Path of the digital object
     """
     links_e = ids_for_files(workspace, path, 'event.xml', dash_count=1)
     links_a = ids_for_files(workspace, path, 'agent.xml', dash_count=1)
@@ -455,6 +482,7 @@ def add_file_properties(properties, path, fptr):
     :param properties: File properties
     :param path: File path
     :param fptr: Element fptr for file
+
     :returns: Div element with properties or None
     """
     if encode_path(path) in properties:

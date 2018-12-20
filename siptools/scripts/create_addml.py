@@ -58,7 +58,7 @@ def main(arguments=None):
     creator.add_addml_md(
         filepath, args.delim,
         args.header, args.charset,
-        args.sep, args.quot, filerel
+        args.sep, args.quot
     )
     creator.write(filerel=filerel)
 
@@ -79,8 +79,7 @@ class AddmlCreator(TechmdCreator):
         self.filenames = {}
 
     def add_addml_md(self, csv_file, delimiter, isheader,
-                     charset, record_separator, quoting_char,
-                     filerel=None):
+                     charset, record_separator, quoting_char):
 
         """Append metadata to etrees and filenames dicts.
         All the metadata given as the parameters uniquely defines

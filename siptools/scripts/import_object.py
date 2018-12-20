@@ -26,7 +26,6 @@ else:
     IPT_INSTALLED = True
 
 import premis
-import mets
 from siptools.utils import TechmdCreator, encode_path
 
 try:
@@ -39,7 +38,7 @@ import magic
 
 
 STREAM_PREMIS = {'h264': ['video/mp4', ''],
-                 'aac' : ['audio/mp4', '']}
+                 'aac': ['audio/mp4', '']}
 
 
 def parse_arguments(arguments):
@@ -115,12 +114,12 @@ def main(arguments=None):
             args.identifier, args.format_registry)
 
         if args.streams:
-            premis_list = create_streams(filename, filerel, premis_elem)
+            premis_list = create_streams(filename, premis_elem)
         else:
             premis_list['root'] = premis_elem
 
         creator = PremisCreator(args.workspace)
-        
+
         for key in premis_list.keys():
             if key == 'root':
                 creator.add_md(premis_list[key], filerel)
@@ -150,6 +149,7 @@ class PremisCreator(TechmdCreator):
 
 def append_properties(workspace, fkey, file_properties):
     """Append separate properties of a file for later use
+
     :workspace: Workspace to work with
     :fkey: File path to be used as a key in the properties dict
     :file_properties: Dict of properties of a file
@@ -166,8 +166,12 @@ def append_properties(workspace, fkey, file_properties):
         json.dump(properties, outfile)
 
 
-def create_streams(fname, filerel, premis_file):
-    """Create PREMIS objects for streams"""
+def create_streams(fname, premis_file):
+    """Create PREMIS objects for streams
+
+    :fname: Digital object file path
+    :premis_file: Created PREMIS XML file for the digital object file
+    """
     if not FFMPEG_INSTALLED:
         raise Exception('ffmpeg module is required for streams. '
                         'Please install ffmpeg module or do not use'
