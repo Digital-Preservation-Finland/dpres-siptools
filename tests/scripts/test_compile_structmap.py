@@ -4,6 +4,7 @@ import os
 import shutil
 import pytest
 import lxml.etree
+import mets
 from siptools.xml.mets import NAMESPACES
 from siptools.scripts import compile_structmap
 from siptools.scripts import import_object
@@ -165,3 +166,22 @@ def test_compile_structmap_order(testpath):
 
     assert len(sm_root.xpath('//mets:div[@TYPE="file" and @ORDER="5"]',
                              namespaces=NAMESPACES)) == 1
+
+
+def test_get_fileid():
+    """Test get_fileid function. Create a fileGrp element with few files and
+    test that the function finds correct file IDs.
+    """
+
+    # Create fileGrp element that contains three file elements with different
+    # identifiers and paths
+    files = [mets.file_elem(file_id='identifier%s' % num,
+                            admid_elements=['foo', 'bar'],
+                            loctype='foo',
+                            xlink_href=u'file://path/to/file+name%s' % num,
+                            xlink_type='foo') for num in range(3)]
+
+    filegrp = mets.filegrp(child_elements=files)
+
+    assert compile_structmap.get_fileid(filegrp, 'path/to/file name1') \
+        == 'identifier1'

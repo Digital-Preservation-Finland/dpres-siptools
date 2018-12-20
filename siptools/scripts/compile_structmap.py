@@ -60,22 +60,27 @@ def main(arguments=None):
     """The main method for compile_structmap"""
     args = parse_arguments(arguments)
 
-    filegrp = mets.filegrp()
-    filesec = mets.filesec(child_elements=[filegrp])
-    mets_filesec = mets.mets(child_elements=[filesec])
-
     _, dmdsec_id = ids_for_files(args.workspace, None, 'dmdsec.xml',
                                  dash_count=0)
 
     if args.dmdsec_struct == 'ead3':
+        # If structured descriptive metadata for structMap divs is used, also
+        # the fileSec element (apparently?) is different. The
+        # create_ead3_structmap function populates the fileGrp element.
+        filegrp = mets.filegrp()
+        filesec_element = mets.filesec(child_elements=[filegrp])
+        filesec = mets.mets(child_elements=[filesec_element])
+
         structmap = create_ead3_structmap(args.dmdsec_loc, args.workspace,
                                           filegrp, dmdsec_id, args.type_attr)
     else:
-        structmap = create_structmap(args.workspace, dmdsec_id, filegrp,
-                                     args.type_attr, args.root_type)
+        filesec = create_filesec(args.workspace)
+        structmap = create_structmap(args.workspace, dmdsec_id,
+                                     filesec.getroot(), args.type_attr,
+                                     args.root_type)
 
     if args.stdout:
-        print h.serialize(mets_filesec)
+        print h.serialize(filesec)
         print h.serialize(structmap)
 
     output_sm_file = os.path.join(args.workspace, 'structmap.xml')
@@ -91,7 +96,7 @@ def main(arguments=None):
         outfile.write(h.serialize(structmap))
 
     with open(output_fs_file, 'w+') as outfile:
-        outfile.write(h.serialize(mets_filesec))
+        outfile.write(h.serialize(filesec))
 
     print "compile_structmap created files: %s %s" % (output_sm_file,
                                                       output_fs_file)
@@ -99,13 +104,27 @@ def main(arguments=None):
     return 0
 
 
-def create_structmap(workspace, dmdsec_id, filegrp, type_attr=None,
+def create_filesec(workspace):
+    """Creates METS document element tree that contains fileSec element.
+    """
+    filegrp = mets.filegrp()
+    filesec = mets.filesec(child_elements=[filegrp])
+
+    directories = div_structure(workspace)
+    create_filegrp(workspace, directories, filegrp)
+
+    mets_element = mets.mets(child_elements=[filesec])
+    ET.cleanup_namespaces(mets_element)
+    return ET.ElementTree(mets_element)
+
+
+def create_structmap(workspace, dmdsec_id, filesec, type_attr=None,
                      root_type=None):
     """Creates METS document element tree that contains structural map.
 
     :param workspace: directory from which some files are searhed
     :param dmdsec_id: dmdSec element identifier
-    :param filegrp: fileSec fileGrp element
+    :param filesec: fileSec element
     :param type_attr: TYPE attribute of div element
     :param root_type: TYPE attribute of div element
     :returns: structural map element
@@ -131,7 +150,7 @@ def create_structmap(workspace, dmdsec_id, filegrp, type_attr=None,
 
     structmap.append(container_div)
     divs = div_structure(workspace)
-    create_div(workspace, divs, container_div, filegrp,
+    create_div(workspace, divs, container_div, filesec,
                properties=properties, type_attr=type_attr)
 
     mets_element = mets.mets(child_elements=[structmap])
@@ -150,6 +169,7 @@ def div_structure(workspace):
     divs = tree()
     for techmd_file in techmd_files:
         add(divs, decode_path(techmd_file).split('/'))
+
     return divs
 
 
@@ -188,6 +208,7 @@ def create_ead3_structmap(descfile, workspace, filegrp, dmdsec_id, type_attr):
     return ET.ElementTree(mets_element)
 
 
+# TODO: Why workspace parameter is required?
 def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
     """Create div elements based on ead3 c elements. Fptr elements are
     created based on ead dao elements. The Ead3 elements tags are put
@@ -232,15 +253,15 @@ def ead3_c_div(parent, structmap, filegrp, workspace, cnum=None):
 
 
 def add_file_to_filesec(workspace, path, filegrp, amdids):
-    """Add file element to fileSec element given as parameter.
+    """Add file element to fileGrp element given as parameter.
 
     :param workspace: Workspace directorye from which techMD files and techMD
                       reference files searched.
     :param path: url encoded path of the file
-    :param lxml.etree Element filegrp: fileSec element
+    :param lxml.etree.Element filegrp: fileGrp element
     :param list amdids: list of administrative metadata associated with the
                         file
-    :param str returns: id of file added to fileSec
+    :param str returns: id of file added to fileGrp
     :returns: unique identifier of file element
     """
     techmd_files, techmd_ids = ids_for_files(workspace, path,
@@ -255,7 +276,7 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     # Create list of IDs of techmD elements that contain othermd metadata
     othermd_ids = get_techmd_references(workspace, decode_path(path))
 
-    # Create XML element and add it to fileSec
+    # Create XML element and add it to fileGrp
     file_el = mets.file_elem(
         fileid,
         admid_elements=techmd_ids+amdids+othermd_ids,
@@ -267,6 +288,25 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     filegrp.append(file_el)
 
     return fileid
+
+
+def get_fileid(filesec, path):
+    """Find a file with `path` from fileSec. Returns the ID attribute of
+    matching file element.
+
+    :param path: path of the file
+    :param lxml.etree Element filesec: fileSec element
+    :returns: file element identifier
+    """
+    encoded_path = encode_path(path, safe='/')
+
+    element = filesec.xpath(
+        '//mets:fileGrp/mets:file/mets:FLocat[@xlink:href="file://%s"]/..'
+        % encoded_path,
+        namespaces=NAMESPACES
+    )[0]
+
+    return element.attrib['ID']
 
 
 def get_techmd_references(workspace, path):
@@ -298,15 +338,14 @@ def get_links_event_agent(workspace, path):
     return links_e + links_a
 
 
-def create_div(workspace, divs, parent, filegrp, path='', properties={},
+def create_div(workspace, divs, parent, filesec, path='', properties={},
                type_attr=None):
-    """Recursively create structmap divs based on directory structure and
-    fileSec.
+    """Recursively create structmap div elements based on directory structure.
 
     :param workspace: Workspace path
     :param divs: Current directory or file in directory structure walkthrough
     :param parent: Parent element in structMap
-    :param filegrp: filegrp element in fileSec
+    :param filesec: filesec element
     :param path: Current path in directory structure walkthrough
     :param properties: Properties of files created in import_object.py
     :param type_attr: Structmap type
@@ -321,8 +360,7 @@ def create_div(workspace, divs, parent, filegrp, path='', properties={},
         if div.endswith('-premis-techmd.xml'):
             div = div[:-len('-premis-techmd.xml')]
             div_path = encode_path(os.path.join(decode_path(path), div))
-            amdids = get_links_event_agent(workspace, div_path)
-            fileid = add_file_to_filesec(workspace, div_path, filegrp, amdids)
+            fileid = get_fileid(filesec, decode_path(div_path))
             fptr = mets.fptr(fileid)
             div_el = add_file_properties(properties, div_path, fptr)
             if div_el is not None:
@@ -342,7 +380,7 @@ def create_div(workspace, divs, parent, filegrp, path='', properties={},
                 div_el = mets.div(type_attr=div, dmdid=dmdsec_id,
                                   admid=amdids)
             div_list.append(div_el)
-            create_div(workspace, divs[div], div_el, filegrp, div_path,
+            create_div(workspace, divs[div], div_el, filesec, div_path,
                        properties, type_attr)
 
     # Add fptr list first, then div list
@@ -352,6 +390,31 @@ def create_div(workspace, divs, parent, filegrp, path='', properties={},
         parent.append(div_elem)
     for div_elem in div_list:
         parent.append(div_elem)
+
+
+def create_filegrp(workspace, directory, filegrp, path=''):
+    """Recursively create fileGrp elements based on directory structure.
+
+    :param workspace: Workspace path
+    :param directory: Content dictionary of current directory in directory
+                      structure
+    :param filegrp: filegrp element in fileSec
+    :param path: Current path in directory structure walkthrough
+    :returns: ``None``
+    """
+    for item in directory.keys():
+        if item.endswith('-premis-techmd.xml'):
+            # Item is a file
+            item = item[:-len('-premis-techmd.xml')]
+            file_path = encode_path(os.path.join(decode_path(path), item))
+            amdids = get_links_event_agent(workspace, file_path)
+            add_file_to_filesec(workspace, file_path, filegrp, amdids)
+
+        else:
+            # Item is a directory
+            directory_path = encode_path(os.path.join(decode_path(path), item))
+            amdids = get_links_event_agent(workspace, directory_path)
+            create_filegrp(workspace, directory[item], filegrp, directory_path)
 
 
 def add_file_properties(properties, path, fptr):
