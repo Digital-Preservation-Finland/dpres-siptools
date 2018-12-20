@@ -147,25 +147,13 @@ def create_structmap(workspace, filesec, type_attr=None, root_type=None):
     fileset = get_files(workspace)
     structmap = mets.structmap(type_attr=type_attr)
     structmap.append(container_div)
-    divs = div_structure(workspace)
+    divs = div_structure(fileset)
     create_div(workspace, divs, container_div, filesec,
                fileset, properties=properties, type_attr=type_attr)
 
     mets_element = mets.mets(child_elements=[structmap])
     ET.cleanup_namespaces(mets_element)
     return ET.ElementTree(mets_element)
-
-
-def get_files(workspace):
-    """
-    """
-    reference_file = os.path.join(workspace, 'techmd-references.xml')
-    xml = ET.parse(reference_file)
-    fileset = set()
-    files = xml.xpath('/techmdReferences/techmdReference/@file')
-    for path in files:
-        fileset.add(path)
-    return sorted(fileset)
 
 
 def get_streams(workspace, path):
@@ -246,12 +234,7 @@ def create_ead3_structmap(descfile, workspace, filegrp, type_attr):
     return ET.ElementTree(mets_element)
 
 
-<<<<<<< HEAD
-# TODO: Why workspace parameter is required?
 def ead3_c_div(parent, structmap, filegrp, workspace, fileset, cnum=None):
-=======
-def ead3_c_div(parent, div, filegrp, workspace, fileset, cnum=None):
->>>>>>> KDKPAS-1862 Fix digital object copying, various pep8 fixes.
     """Create div elements based on ead3 c elements. Fptr elements are
     created based on ead dao elements. The Ead3 elements tags are put
     into @type and the @level or @otherlevel attributes from ead3 will
