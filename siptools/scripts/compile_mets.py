@@ -17,7 +17,6 @@ from siptools.xml.mets import NAMESPACES, METS_PROFILE, METS_CATALOG, \
 from siptools.utils import get_files
 
 
-
 def _dict2str(dictionary):
     """Create a human readable list of words and their explanations from
     dictionary.

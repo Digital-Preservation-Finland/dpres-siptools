@@ -6,7 +6,6 @@ import shutil
 import pytest
 import lxml.etree
 import siptools.scripts.create_mix as create_mix
-from siptools.utils import encode_path
 
 
 def test_create_mix_techmdfile(testpath):

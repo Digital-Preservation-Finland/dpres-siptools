@@ -1,20 +1,21 @@
 """ Test"""
-from siptools.scripts.import_description import main
 import os
+from urllib import quote_plus
 import lxml.etree as ET
 import pytest
-from urllib import quote_plus
+from siptools.scripts.import_description import main
 
 
 def test_import_description_valid_file(testpath):
     """ Test case for single valid xml-file"""
-    dmdsec_location = 'tests/data/import_description/metadata/dc_description.xml'
+    dmdsec_location = 'tests/data/import_description/metadata/' \
+        'dc_description.xml'
     dmdsec_target = 'tests/data/structured/'
 
     url_location = quote_plus(dmdsec_target, safe='') + '-dmdsec.xml'
 
-    main([dmdsec_location, '--dmdsec_target', dmdsec_target, '--workspace',
-        testpath, '--desc_root'])
+    main([dmdsec_location, '--dmdsec_target', dmdsec_target,
+          '--workspace', testpath, '--desc_root'])
 
     output_file = os.path.join(testpath, url_location)
     tree = ET.parse(output_file)
@@ -23,11 +24,13 @@ def test_import_description_valid_file(testpath):
 
 def test_import_description_file_not_found(testpath):
     """ Test case for not existing xml-file."""
-    dmdsec_location = 'tests/data/import_description/metadata/dc_description_not_found.xml'
+    dmdsec_location = 'tests/data/import_description/metadata/' \
+        'dc_description_not_found.xml'
     dmdsec_target = 'tests/data/structured/'
 
     with pytest.raises(IOError):
-        main([dmdsec_location,  '--workspace', dmdsec_target, '--workspace', testpath])
+        main([dmdsec_location, '--workspace', dmdsec_target,
+              '--workspace', testpath])
 
 
 def test_import_description_no_xml(testpath):
@@ -36,7 +39,8 @@ def test_import_description_no_xml(testpath):
     dmdsec_target = 'tests/data/structured/'
 
     with pytest.raises(ET.XMLSyntaxError):
-        main([dmdsec_location,  '--workspace', dmdsec_target, '--workspace', testpath])
+        main([dmdsec_location, '--workspace', dmdsec_target,
+              '--workspace', testpath])
 
 
 def test_import_description_invalid_namespace(testpath):
@@ -45,4 +49,5 @@ def test_import_description_invalid_namespace(testpath):
     dmdsec_target = 'tests/data/structured/'
 
     with pytest.raises(TypeError):
-        main([dmdsec_location,  '--workspace', dmdsec_target, '--workspace', testpath])
+        main([dmdsec_location, '--workspace', dmdsec_target,
+              '--workspace', testpath])

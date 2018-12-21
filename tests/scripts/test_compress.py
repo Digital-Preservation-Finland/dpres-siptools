@@ -1,16 +1,15 @@
-from tempfile import NamedTemporaryFile
-import siptools.scripts.compress
 import os
 import time
-import pytest
 import subprocess
+import pytest
+import siptools.scripts.compress
 
 def test_compress(testpath):
 
     dir_to_tar = os.path.abspath(
         os.path.join(os.path.dirname(__file__), '..', 'data', 'structured'))
-    output=os.path.join(testpath, 'sip.tar')
-    arguments=[dir_to_tar, '--tar_filename', output]
+    output = os.path.join(testpath, 'sip.tar')
+    arguments = [dir_to_tar, '--tar_filename', output]
 
     assert siptools.scripts.compress.main(arguments) == 0
 

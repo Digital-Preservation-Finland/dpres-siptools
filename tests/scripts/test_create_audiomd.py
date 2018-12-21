@@ -5,7 +5,6 @@ import pytest
 import lxml.etree as ET
 
 import siptools.scripts.create_audiomd as create_audiomd
-from siptools.utils import encode_path
 
 AUDIOMD_NS = 'http://www.loc.gov/audioMD/'
 NAMESPACES = {"amd": AUDIOMD_NS}

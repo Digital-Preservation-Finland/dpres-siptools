@@ -9,16 +9,23 @@ import pytest
 from siptools.scripts import import_object
 from siptools.xml.mets import NAMESPACES
 
+
 def get_techmd_file(path, input_file, stream=None):
     """Get id"""
     ref = os.path.join(path, 'techmd-references.xml')
     root = ET.parse(ref).getroot()
     if stream is None:
-        techref = root.xpath("/techmdReferences/techmdReference[not(@stream) and @file='" + input_file.decode(sys.getfilesystemencoding()) + "']")[0]
+        techref = root.xpath("/techmdReferences/techmdReference[not(@stream) "
+                             "and @file='%s'" % input_file.decode(
+                                 sys.getfilesystemencoding()))[0]
     else:
-        techref = root.xpath("/techmdReferences/techmdReference[@stream='" + stream + "' and @file='" + input_file.decode(sys.getfilesystemencoding()) + "']")[0]
-    output = os.path.join(path, techref.text[1:] + "-PREMIS%3AOBJECT-techmd.xml")
+        techref = root.xpath("/techmdReferences/techmdReference[@stream='%s' "
+                             "and @file='%s']" % (stream, input_file.decode(
+                                 sys.getfilesystemencoding())))[0]
+    output = os.path.join(path, techref.text[1:] +
+                          "-PREMIS%3AOBJECT-techmd.xml")
     return output
+
 
 def test_import_object_ok(testpath):
     """Test import_object.main funtion with valid test data."""
@@ -109,9 +116,13 @@ def test_import_object_order(testpath):
     with open(path) as infile:
         properties = json.load(infile)
 
-    assert 'tests%2Fdata%2Fstructured%2FDocumentation+files%2Freadme.txt' in properties
-    assert 'order' in properties['tests%2Fdata%2Fstructured%2FDocumentation+files%2Freadme.txt']
-    assert properties['tests%2Fdata%2Fstructured%2FDocumentation+files%2Freadme.txt']['order'] == '5'
+    assert 'tests%2Fdata%2Fstructured%2FDocumentation+files%2Freadme.txt' \
+        in properties
+    assert 'order' in properties[
+        'tests%2Fdata%2Fstructured%2FDocumentation+files%2Freadme.txt']
+    assert properties[
+        'tests%2Fdata%2Fstructured%2FDocumentation+files%2F''readme.txt'
+        ]['order'] == '5'
 
     assert return_code == 0
 
@@ -150,7 +161,7 @@ def test_import_object_format_registry(testpath):
                       namespaces=NAMESPACES)[0].text == 'local'
     assert root.xpath('//premis:formatRegistryKey',
                       namespaces=NAMESPACES)[0].text == 'test-key'
-    
+
     assert return_code == 0
 
 
@@ -214,11 +225,14 @@ def test_import_object_validate_tiff_ok(input_file, testpath):
     tree = ET.parse(output)
     root = tree.getroot()
 
-    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+    assert len(root.xpath(
+        '/mets:mets/mets:amdSec/mets:techMD',
         namespaces=NAMESPACES)) == 1
-    assert root.xpath('//premis:formatName/text()',
+    assert root.xpath(
+        '//premis:formatName/text()',
         namespaces=NAMESPACES)[0] == 'image/tiff'
-    assert root.xpath('//premis:formatVersion/text()',
+    assert root.xpath(
+        '//premis:formatVersion/text()',
         namespaces=NAMESPACES)[0] == '6.0'
 
     assert return_code == 0
@@ -234,11 +248,14 @@ def test_import_object_validate_jpeg_ok(input_file, testpath):
     tree = ET.parse(output)
     root = tree.getroot()
 
-    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+    assert len(root.xpath(
+        '/mets:mets/mets:amdSec/mets:techMD',
         namespaces=NAMESPACES)) == 1
-    assert root.xpath('//premis:formatName/text()',
+    assert root.xpath(
+        '//premis:formatName/text()',
         namespaces=NAMESPACES)[0] == 'image/jpeg'
-    assert root.xpath('//premis:formatVersion/text()',
+    assert root.xpath(
+        '//premis:formatVersion/text()',
         namespaces=NAMESPACES)[0] in ['1.0', '1.01', '1.02']
 
     assert return_code == 0
@@ -254,11 +271,14 @@ def test_import_object_validate_text_ok(input_file, testpath):
     tree = ET.parse(output)
     root = tree.getroot()
 
-    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+    assert len(root.xpath(
+        '/mets:mets/mets:amdSec/mets:techMD',
         namespaces=NAMESPACES)) == 1
-    assert root.xpath('//premis:formatName/text()',
+    assert root.xpath(
+        '//premis:formatName/text()',
         namespaces=NAMESPACES)[0] == 'text/plain; charset=UTF-8'
-    assert len(root.xpath('//premis:formatVersion/text()',
+    assert len(root.xpath(
+        '//premis:formatVersion/text()',
         namespaces=NAMESPACES)) == 0
 
     assert return_code == 0
@@ -274,11 +294,14 @@ def test_import_object_validate_csv_ok(input_file, testpath):
     tree = ET.parse(output)
     root = tree.getroot()
 
-    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+    assert len(root.xpath(
+        '/mets:mets/mets:amdSec/mets:techMD',
         namespaces=NAMESPACES)) == 1
-    assert root.xpath('//premis:formatName/text()',
+    assert root.xpath(
+        '//premis:formatName/text()',
         namespaces=NAMESPACES)[0] == 'text/plain; charset=ISO-8859-15'
-    assert len(root.xpath('//premis:formatVersion/text()',
+    assert len(root.xpath(
+        '//premis:formatVersion/text()',
         namespaces=NAMESPACES)) == 0
 
     assert return_code == 0
@@ -294,11 +317,14 @@ def test_import_object_validate_mets_xml_ok(input_file, testpath):
     tree = ET.parse(output)
     root = tree.getroot()
 
-    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+    assert len(root.xpath(
+        '/mets:mets/mets:amdSec/mets:techMD',
         namespaces=NAMESPACES)) == 1
-    assert root.xpath('//premis:formatName/text()',
+    assert root.xpath(
+        '//premis:formatName/text()',
         namespaces=NAMESPACES)[0] == 'text/xml; charset=UTF-8'
-    assert root.xpath('//premis:formatVersion/text()',
+    assert root.xpath(
+        '//premis:formatVersion/text()',
         namespaces=NAMESPACES)[0] == '1.0'
 
     assert return_code == 0
@@ -314,11 +340,14 @@ def test_import_object_validate_odt_ok(input_file, testpath):
     tree = ET.parse(output)
     root = tree.getroot()
 
-    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+    assert len(root.xpath(
+        '/mets:mets/mets:amdSec/mets:techMD',
         namespaces=NAMESPACES)) == 1
-    assert root.xpath('//premis:formatName/text()',
+    assert root.xpath(
+        '//premis:formatName/text()',
         namespaces=NAMESPACES)[0] == 'application/vnd.oasis.opendocument.text'
-    assert root.xpath('//premis:formatVersion/text()',
+    assert root.xpath(
+        '//premis:formatVersion/text()',
         namespaces=NAMESPACES)[0] == '1.0'
 
     assert return_code == 0

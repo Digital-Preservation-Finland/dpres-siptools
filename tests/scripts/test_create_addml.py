@@ -5,7 +5,7 @@ import pytest
 import lxml.etree as ET
 
 import siptools.scripts.create_addml as create_addml
-from siptools.utils import decode_path, encode_path
+from siptools.utils import decode_path
 
 
 CSV_FILE = "tests/data/csvfile.csv"

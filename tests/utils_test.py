@@ -136,9 +136,11 @@ def test_hashing_attribute_order():
 def test_same_metadata_same_hash():
     """Tests that same metadata produces the same digest.
     """
-    root = lxml.etree.parse("tests/data/sample_techmd-references.xml").getroot()
+    root = lxml.etree.parse(
+        "tests/data/sample_techmd-references.xml").getroot()
     digest = utils.generate_digest(root)
 
     for _ in range(10):
-        root = lxml.etree.parse("tests/data/sample_techmd-references.xml").getroot()
+        root = lxml.etree.parse(
+            "tests/data/sample_techmd-references.xml").getroot()
         assert digest == utils.generate_digest(root)

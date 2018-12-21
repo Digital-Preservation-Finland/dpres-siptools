@@ -60,7 +60,8 @@ def test_compile_mets_ok(testpath):
     root = tree.getroot()
 
     assert len(root.xpath(
-        '/mets:mets[@PROFILE="http://digitalpreservation.fi/mets-profiles/cultural-heritage"]',
+        '/mets:mets[@PROFILE="http://digitalpreservation.fi'
+        '/mets-profiles/cultural-heritage"]',
         namespaces=NAMESPACES
     )) == 1
     assert len(root.xpath(
@@ -120,7 +121,8 @@ def test_compile_mets_cleanup_ok(testpath):
     root = tree.getroot()
 
     assert len(root.xpath(
-        '/mets:mets[@PROFILE="http://digitalpreservation.fi/mets-profiles/cultural-heritage"]',
+        '/mets:mets[@PROFILE="http://digitalpreservation.fi/'
+        'mets-profiles/cultural-heritage"]',
         namespaces=NAMESPACES
     )) == 1
     assert len(root.xpath(
@@ -151,6 +153,7 @@ def test_compile_mets_cleanup_ok(testpath):
                       namespaces=NAMESPACES)[0].text == 'CSC'
 
     assert return_code == 0
+
 
 def test_compile_mets_fail(testpath):
     #TODO: Missing docstring

@@ -288,12 +288,10 @@ class TechmdCreator(object):
 
         # Write METS XML and append self.references
         for metadata, filename, stream in self.md_elements:
-            techmd_id, techmd_fname = self.write_md(
+            techmd_id, _ = self.write_md(
                 metadata, mdtype, mdtypeversion, othermdtype=othermdtype,
                 stdout=stdout
             )
-            if stdout:
-                h.serialize(metadata)
             self.add_reference(techmd_id, filename, stream)
 
         # Write techmd-references

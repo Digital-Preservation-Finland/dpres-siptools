@@ -240,7 +240,7 @@ def ead3_c_div(parent, structmap, filegrp, workspace, fileset, cnum=None):
     into @type and the @level or @otherlevel attributes from ead3 will
     be put into @label.
 
-    :parent: Element to follow in EAD3 
+    :parent: Element to follow in EAD3
     :div: Div element in structmap
     :filegrp: fileGrp element
     :workspace: Workspace path
@@ -365,9 +365,9 @@ def get_techmd_references(workspace, path, stream=None):
                 '/techmdReferences/techmdReference[@file="%s" '
                 'and @stream="%s"]' % (path, stream)
             )
-        techmd_ids = set([element.text for element in reference_elements])
+        techmd_ids = [element.text for element in reference_elements]
 
-    return techmd_ids
+    return set(techmd_ids)
 
 
 def get_links_event_agent(workspace, path):
@@ -468,6 +468,8 @@ def add_file_properties(properties, path, fptr):
 
     :returns: Div element with properties or None
     """
+    if properties is None:
+        return None
     if encode_path(path) in properties:
         file_properties = properties[encode_path(path)]
         if 'order' in file_properties:
