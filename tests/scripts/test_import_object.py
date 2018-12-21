@@ -16,7 +16,7 @@ def get_techmd_file(path, input_file, stream=None):
     root = ET.parse(ref).getroot()
     if stream is None:
         techref = root.xpath("/techmdReferences/techmdReference[not(@stream) "
-                             "and @file='%s'" % input_file.decode(
+                             "and @file='%s']" % input_file.decode(
                                  sys.getfilesystemencoding()))[0]
     else:
         techref = root.xpath("/techmdReferences/techmdReference[@stream='%s' "
