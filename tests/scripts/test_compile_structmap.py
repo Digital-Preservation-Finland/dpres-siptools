@@ -92,13 +92,14 @@ def test_othermd_references(testpath):
     compile_structmap.main(['--workspace', workspace])
 
     # Read filesec.xml
-    mets = lxml.etree.parse(os.path.join(workspace, 'filesec.xml'))
+    mets_document = lxml.etree.parse(os.path.join(workspace, 'filesec.xml'))
     namespaces = {'mets': "http://www.loc.gov/METS/",
                   'xlink': "http://www.w3.org/1999/xlink"}
 
     # fileGrp section should contain 3 file elements
-    files = mets.xpath('/mets:mets/mets:fileSec/mets:fileGrp/mets:file',
-                       namespaces=namespaces)
+    files = mets_document.xpath(
+        '/mets:mets/mets:fileSec/mets:fileGrp/mets:file', namespaces=namespaces
+    )
     assert len(files) == 3
 
     # This dictonary maps filepath to MIX techMD IDs excpected to be referenced
@@ -114,7 +115,7 @@ def test_othermd_references(testpath):
         # Find file element from mets based on filepath
         xpath = '//mets:FLocat[@xlink:href="file://%s"]/parent::mets:file' \
             % filepath
-        file_element = mets.xpath(xpath, namespaces=namespaces)
+        file_element = mets_document.xpath(xpath, namespaces=namespaces)
 
         # The file element should have reference to techMD element defined in
         # ``techmd_ids`` dictionary

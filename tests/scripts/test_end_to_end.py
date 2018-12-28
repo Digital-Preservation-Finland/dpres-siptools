@@ -16,8 +16,6 @@ def test_end_to_end(testpath):
     dmd_file = 'tests/data/import_description/metadata/dc_description.xml'
     dmd_target = 'tests/data/single'
     file_to_sign = 'mets.xml'
-    signature_filename = os.path.join(os.path.abspath(testpath),
-                                      'signature.sig')
     private_key = 'tests/data/rsa-keys.crt'
 
     environment = os.environ.copy()
@@ -29,9 +27,8 @@ def test_end_to_end(testpath):
                '--digest_algorithm', 'MD5', '--message_digest',
                '1qw87geiewgwe9', '--date_created', '2017-01-11T10:14:13',
                '--charset', 'ISO-8859-15']
-    # child=subprocess.Popen(command)
     child = subprocess.Popen(command, env=environment)
-    streamdata = child.communicate()[0]
+    child.communicate()
     assert child.returncode == 0
 
     command = ['python', 'siptools/scripts/premis_event.py', 'creation',
@@ -41,20 +38,20 @@ def test_end_to_end(testpath):
                'Demo Application', '--agent_type', 'software',
                '--event_target', objects]
     child = subprocess.Popen(command, env=environment)
-    streamdata = child.communicate()[0]
+    child.communicate()
     assert child.returncode == 0
 
     command = ['python', 'siptools/scripts/import_description.py', dmd_file,
                '--workspace', testpath, '--dmdsec_target', dmd_target,
                '--desc_root']
     child = subprocess.Popen(command, env=environment)
-    streamdata = child.communicate()[0]
+    child.communicate()
     assert child.returncode == 0
 
     command = ['python', 'siptools/scripts/compile_structmap.py',
                '--workspace', testpath]
     child = subprocess.Popen(command, env=environment)
-    streamdata = child.communicate()[0]
+    child.communicate()
     assert child.returncode == 0
 
     command = ['python', 'siptools/scripts/compile_mets.py',
@@ -62,19 +59,19 @@ def test_end_to_end(testpath):
                'contract-id-1234', '--create_date', '2017-01-11T10:14:13',
                '--copy_files', '--clean']
     child = subprocess.Popen(command, env=environment)
-    streamdata = child.communicate()[0]
+    child.communicate()
     assert child.returncode == 0
 
     command = ['python', 'siptools/scripts/sign_mets.py',
                '--workspace', testpath, private_key]
     child = subprocess.Popen(command, env=environment)
-    streamdata = child.communicate()[0]
+    child.communicate()
     assert child.returncode == 0
 
     command = ['python', 'siptools/scripts/compress.py',
                '--tar_filename', os.path.join(testpath, 'sip.tar'), testpath]
     child = subprocess.Popen(command, env=environment)
-    streamdata = child.communicate()[0]
+    child.communicate()
     assert child.returncode == 0
 
     schematron_path = '/usr/share/dpres-xml-schemas/schematron/'
@@ -106,5 +103,5 @@ def test_end_to_end(testpath):
         command = ['check-xml-schematron-features', '-s',
                    rule_path, os.path.join(testpath, file_to_sign)]
         child = subprocess.Popen(command, env=environment)
-        streamdata = child.communicate()[0]
+        child.communicate()
         assert child.returncode == 0
