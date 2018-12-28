@@ -60,9 +60,6 @@ def main(arguments=None):
     """The main method for compile_structmap"""
     args = parse_arguments(arguments)
 
-    _, dmdsec_id = ids_for_files(args.workspace, None, 'dmdsec.xml',
-                                 dash_count=0)
-
     if args.dmdsec_struct == 'ead3':
         # If structured descriptive metadata for structMap divs is used, also
         # the fileSec element (apparently?) is different. The
@@ -72,12 +69,11 @@ def main(arguments=None):
         filesec = mets.mets(child_elements=[filesec_element])
 
         structmap = create_ead3_structmap(args.dmdsec_loc, args.workspace,
-                                          filegrp, dmdsec_id, args.type_attr)
+                                          filegrp, args.type_attr)
     else:
         filesec = create_filesec(args.workspace)
-        structmap = create_structmap(args.workspace, dmdsec_id,
-                                     filesec.getroot(), args.type_attr,
-                                     args.root_type)
+        structmap = create_structmap(args.workspace, filesec.getroot(),
+                                     args.type_attr, args.root_type)
 
     if args.stdout:
         print h.serialize(filesec)
@@ -118,36 +114,37 @@ def create_filesec(workspace):
     return ET.ElementTree(mets_element)
 
 
-def create_structmap(workspace, dmdsec_id, filesec, type_attr=None,
-                     root_type=None):
+def create_structmap(workspace, filesec, type_attr=None, root_type=None):
     """Creates METS document element tree that contains structural map.
 
     :param workspace: directory from which some files are searhed
-    :param dmdsec_id: dmdSec element identifier
     :param filesec: fileSec element
     :param type_attr: TYPE attribute of div element
     :param root_type: TYPE attribute of div element
     :returns: structural map element
     """
 
-    structmap = mets.structmap(type_attr=type_attr)
+    if os.path.isfile(os.path.join(workspace, 'dmdsec.xml')):
+        dmdids = [encode_id('dmdsec.xml')]
+    else:
+        dmdids = None
     amdids = get_links_event_agent(workspace, None)
 
     if type_attr == 'Directory-physical':
         container_div = mets.div(type_attr='directory', label='.',
-                                 dmdid=dmdsec_id, admid=amdids)
+                                 dmdid=dmdids, admid=amdids)
     else:
         root_type = root_type if root_type else 'directory'
-        container_div = mets.div(type_attr=root_type, dmdid=dmdsec_id,
+        container_div = mets.div(type_attr=root_type, dmdid=dmdids,
                                  admid=amdids)
 
     properties = {}
-    property_path = os.path.join(workspace,
-                                 'siptools-file-properties.json')
+    property_path = os.path.join(workspace, 'siptools-file-properties.json')
     if os.path.isfile(property_path):
         with open(property_path) as infile:
             properties = json.load(infile)
 
+    structmap = mets.structmap(type_attr=type_attr)
     structmap.append(container_div)
     divs = div_structure(workspace)
     create_div(workspace, divs, container_div, filesec,
@@ -173,10 +170,9 @@ def div_structure(workspace):
     return divs
 
 
-def create_ead3_structmap(descfile, workspace, filegrp, dmdsec_id, type_attr):
+def create_ead3_structmap(descfile, workspace, filegrp, type_attr):
     """Create structmap based on ead3 descriptive metadata structure.
     """
-
     structmap = mets.structmap(type_attr=type_attr)
     container_div = mets.div(type_attr='logical')
     structmap.append(container_div)
@@ -190,8 +186,14 @@ def create_ead3_structmap(descfile, workspace, filegrp, dmdsec_id, type_attr):
     else:
         level = root.xpath("//ead3:archdesc/@level",
                            namespaces=NAMESPACES)[0]
+
+    if os.path.isfile(os.path.join(workspace, 'dmdsec.xml')):
+        dmdids = [encode_id('dmdsec.xml')]
+    else:
+        dmdids = None
     amdids = get_links_event_agent(workspace, None)
-    div_ead = mets.div(type_attr='archdesc', label=level, dmdid=dmdsec_id,
+
+    div_ead = mets.div(type_attr='archdesc', label=level, dmdid=dmdids,
                        admid=amdids)
 
     if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:

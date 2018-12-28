@@ -8,6 +8,7 @@ import mets
 from siptools.xml.mets import NAMESPACES
 from siptools.scripts import compile_structmap
 from siptools.scripts import import_object
+from siptools.scripts import import_description
 
 
 def create_test_data(workspace):
@@ -40,6 +41,36 @@ def test_compile_structmap_ok(testpath):
                              namespaces=NAMESPACES)) == 1
 
     assert return_code == 0
+
+
+def test_compile_structmap_dmdsecid(testpath):
+    """Test the compile_structmap script for workspace that contains
+    descriptive metadata in dmdsec.xml file. The ID of dmdSec should be
+    included in structMap.
+    """
+    # Create -premis-techmd.xml and dmdsec.xml files in workspace
+    import_object.main(['--workspace', testpath, '--skip_inspection',
+                        'tests/data/structured/Software files/koodi.java'])
+    dmdsec = import_description.create_mets(
+        'tests/data/import_description/metadata/dc_description.xml',
+        'dmdsec.xml'
+    )
+    dmdsec.write(os.path.join(testpath, 'dmdsec.xml'))
+
+    # Create structmap
+    compile_structmap.main(['--workspace', testpath])
+
+    # The root div of structMap should have reference to dmdSec element in
+    # dmdsec.xml
+    dmdsecid = dmdsec.xpath('/mets:mets/mets:dmdSec',
+                            namespaces=NAMESPACES)[0].attrib['ID']
+    structmap = lxml.etree.parse(os.path.join(testpath, 'structmap.xml'))
+    assert len(
+        structmap.xpath(
+            '/mets:mets/mets:structMap/mets:div[@DMDID="%s"]' % dmdsecid,
+            namespaces=NAMESPACES
+        )
+    ) == 1
 
 
 def test_compile_structmap_not_ok(testpath):
