@@ -14,11 +14,18 @@ SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'I': '1', 'F': '1'}
 
 
+def str_to_unicode(string):
+    """Convert string to unicode string. Assumes that string encoding is the
+    encoding of filesystem (unicode() assumes ASCII by default).
+
+    :param string: encoded string
+    :returns: decoded string
+    """
+    return unicode(string, sys.getfilesystemencoding())
+
+
 def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
-    # Convert all arguments to unicode strings
-    arguments = [x.decode(sys.getfilesystemencoding()) for x in arguments]
-
     parser = argparse.ArgumentParser(
         description="Tool for creating mix metadata for an image. The MIX "
                     "metadata is written to <hash>-NISOIMG-techmd.xml METS "
@@ -27,9 +34,10 @@ def parse_arguments(arguments):
                     "similar MIX metadata is already found in workspace, the "
                     "file will not be rewritten."
     )
-    parser.add_argument('file', type=unicode,
+    parser.add_argument('file', type=str_to_unicode,
                         help="Path to the image file")
-    parser.add_argument('--workspace', type=unicode, default='./workspace/',
+    parser.add_argument('--workspace', type=str_to_unicode,
+                        default='./workspace/',
                         help="Workspace directory for the metadata files.")
     parser.add_argument('--base_path', type=str, default='',
                         help="Source base path of digital objects. If used, "
