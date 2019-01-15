@@ -60,6 +60,8 @@ def main(arguments=None):
     """The main method for compile_structmap"""
     args = parse_arguments(arguments)
 
+    fileset = get_files(args.workspace)
+
     if args.dmdsec_struct == 'ead3':
         # If structured descriptive metadata for structMap divs is used, also
         # the fileSec element (apparently?) is different. The
@@ -69,11 +71,11 @@ def main(arguments=None):
         filesec = mets.mets(child_elements=[filesec_element])
 
         structmap = create_ead3_structmap(args.dmdsec_loc, args.workspace,
-                                          filegrp, args.type_attr)
+                                          filegrp, fileset, args.type_attr)
     else:
-        filesec = create_filesec(args.workspace)
+        filesec = create_filesec(args.workspace, fileset)
         structmap = create_structmap(args.workspace, filesec.getroot(),
-                                     args.type_attr, args.root_type)
+                                     fileset, args.type_attr, args.root_type)
 
     if args.stdout:
         print h.serialize(filesec)
@@ -100,21 +102,22 @@ def main(arguments=None):
     return 0
 
 
-def create_filesec(workspace):
+def create_filesec(workspace, fileset):
     """Creates METS document element tree that contains fileSec element.
     """
     filegrp = mets.filegrp()
     filesec = mets.filesec(child_elements=[filegrp])
 
-    directories = div_structure(workspace)
-    create_filegrp(workspace, directories, filegrp)
+    directories = div_structure(fileset)
+    create_filegrp(workspace, filegrp, fileset)
 
     mets_element = mets.mets(child_elements=[filesec])
     ET.cleanup_namespaces(mets_element)
     return ET.ElementTree(mets_element)
 
 
-def create_structmap(workspace, filesec, type_attr=None, root_type=None):
+def create_structmap(workspace, filesec, fileset, type_attr=None,
+                     root_type=None):
     """Creates METS document element tree that contains structural map.
 
     :param workspace: directory from which some files are searhed
@@ -144,7 +147,6 @@ def create_structmap(workspace, filesec, type_attr=None, root_type=None):
         with open(property_path) as infile:
             properties = json.load(infile)
 
-    fileset = get_files(workspace)
     structmap = mets.structmap(type_attr=type_attr)
     structmap.append(container_div)
     divs = div_structure(fileset)
@@ -182,11 +184,11 @@ def div_structure(fileset):
     """
     divs = tree()
     for techmd_file in fileset:
-        add(divs, decode_path(techmd_file).split('/'))
+        add(divs, techmd_file.split('/'))
     return divs
 
 
-def create_ead3_structmap(descfile, workspace, filegrp, type_attr):
+def create_ead3_structmap(descfile, workspace, filegrp, fileset, type_attr):
     """Create structmap based on ead3 descriptive metadata structure.
 
     :desc_file: EAD3 descriptive metadata file
@@ -217,8 +219,6 @@ def create_ead3_structmap(descfile, workspace, filegrp, type_attr):
 
     div_ead = mets.div(type_attr='archdesc', label=level, dmdid=dmdids,
                        admid=amdids)
-
-    fileset = get_files(workspace)
 
     if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:
         for ead3_c in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
@@ -281,7 +281,7 @@ def ead3_c_div(parent, structmap, filegrp, workspace, fileset, cnum=None):
             dao = mets.fptr(fileid=fileid)
             c_div.append(dao)
 
-    div.append(c_div)
+    structmap.append(c_div)
 
 
 def add_file_to_filesec(workspace, path, filegrp, amdids):
@@ -332,7 +332,6 @@ def get_fileid(filesec, path):
     :returns: file element identifier
     """
     encoded_path = encode_path(path, safe='/')
-
     element = filesec.xpath(
         '//mets:fileGrp/mets:file/mets:FLocat[@xlink:href="file://%s"]/..'
         % encoded_path,
@@ -402,7 +401,7 @@ def create_div(workspace, divs, parent, filesec, fileset, path='',
         div_path = os.path.join(path, div)
         # It's a file, lets create file+fptr elements
         if div_path in fileset:
-            fileid = get_fileid(filesec, decode_path(div_path))
+            fileid = get_fileid(filesec, div_path)
             fptr = mets.fptr(fileid)
             div_el = add_file_properties(properties, div_path, fptr)
             if div_el is not None:
@@ -434,29 +433,17 @@ def create_div(workspace, divs, parent, filesec, fileset, path='',
         parent.append(div_elem)
 
 
-def create_filegrp(workspace, directory, filegrp, path=''):
-    """Recursively create fileGrp elements based on directory structure.
+def create_filegrp(workspace, filegrp, fileset):
+    """Add files to fileSec under fileGrp element.
 
     :param workspace: Workspace path
-    :param directory: Content dictionary of current directory in directory
-                      structure
     :param filegrp: filegrp element in fileSec
-    :param path: Current path in directory structure walkthrough
+    :param fileset: Set of digital object names
     :returns: ``None``
     """
-    for item in directory.keys():
-        if item.endswith('-premis-techmd.xml'):
-            # Item is a file
-            item = item[:-len('-premis-techmd.xml')]
-            file_path = encode_path(os.path.join(decode_path(path), item))
-            amdids = get_links_event_agent(workspace, file_path)
-            add_file_to_filesec(workspace, file_path, filegrp, amdids)
-
-        else:
-            # Item is a directory
-            directory_path = encode_path(os.path.join(decode_path(path), item))
-            amdids = get_links_event_agent(workspace, directory_path)
-            create_filegrp(workspace, directory[item], filegrp, directory_path)
+    for path in fileset:
+        amdids = get_links_event_agent(workspace, path)
+        add_file_to_filesec(workspace, path, filegrp, amdids)
 
 
 def add_file_properties(properties, path, fptr):
