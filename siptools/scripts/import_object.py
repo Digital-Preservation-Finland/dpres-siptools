@@ -26,7 +26,7 @@ else:
     IPT_INSTALLED = True
 
 import premis
-from siptools.utils import TechmdCreator, encode_path
+from siptools.utils import AmdCreator, encode_path
 
 try:
     ctypes.cdll.LoadLibrary('/opt/file-5.30/lib64/libmagic.so.1')
@@ -160,8 +160,8 @@ def main(arguments=None):
     return 0
 
 
-class PremisCreator(TechmdCreator):
-    """Subclass of TechmdCreator, which generates PREMIS metadata
+class PremisCreator(AmdCreator):
+    """Subclass of AmdCreator, which generates PREMIS metadata
     for files and streams.
     """
 

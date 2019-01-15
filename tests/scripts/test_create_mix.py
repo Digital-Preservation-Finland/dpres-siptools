@@ -12,7 +12,7 @@ def test_create_mix_techmdfile(testpath):
     """Test for ``create_mix_techmdfile`` function. Creates MIX techMD for
     three different image files. Two of the image files share the same MIX
     metadata, so only two MIX techMD files should be created in workspace.
-    References to MIX techMD should be written into techmd-references.xml file.
+    References to MIX techMD should be written into amd-references.xml file.
     """
 
     creator = create_mix.MixCreator(testpath)
@@ -33,12 +33,12 @@ def test_create_mix_techmdfile(testpath):
     # should two of them since tiff1.tif and tiff2.tif share the same MIX
     # metadata.
     files = os.listdir(testpath)
-    assert len([x for x in files if x.endswith('NISOIMG-techmd.xml')]) == 2
+    assert len([x for x in files if x.endswith('NISOIMG-amd.xml')]) == 2
 
     # Count the references written to techMD reference file. There should be
     # one reference per image file.
-    xml = lxml.etree.parse(os.path.join(testpath, 'techmd-references.xml'))
-    assert len(xml.xpath('//techmdReference')) == 3
+    xml = lxml.etree.parse(os.path.join(testpath, 'amd-references.xml'))
+    assert len(xml.xpath('//amdReference')) == 3
 
 
 def test_main_utf8_files(testpath):
@@ -66,8 +66,8 @@ def test_main_utf8_files(testpath):
         os.chdir(last_path)
 
     # Check that filename is found in techMD reference file.
-    xml = lxml.etree.parse(os.path.join(testpath, 'techmd-references.xml'))
-    assert len(xml.xpath(u'//techmdReference[@file="data/äöå.tif"]')) == 1
+    xml = lxml.etree.parse(os.path.join(testpath, 'amd-references.xml'))
+    assert len(xml.xpath(u'//amdReference[@file="data/äöå.tif"]')) == 1
 
 
 def test_inspect_image():
@@ -182,6 +182,6 @@ def test_paths(testpath, file, base_path):
         create_mix.main(['--workspace', testpath, file])
 
     assert "file=\"" + os.path.normpath(file) + "\"" in \
-        open(os.path.join(testpath, 'techmd-references.xml')).read()
+        open(os.path.join(testpath, 'amd-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))

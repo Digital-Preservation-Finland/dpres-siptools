@@ -41,7 +41,7 @@ def test_create_techmdfile(testpath):
     workspace. Check that XML file contains expected elements.
     """
 
-    md_creator = utils.TechmdCreator(testpath)
+    md_creator = utils.AmdCreator(testpath)
 
     sample_data = lxml.etree.Element('sampleData')
     md_creator.write_md(sample_data, 'NISOIMG', '2.0')
@@ -49,7 +49,7 @@ def test_create_techmdfile(testpath):
     element_tree = lxml.etree.parse(
         os.path.join(
             testpath,
-            '455752263d67f67402b0dc9e7119e5b3-NISOIMG-techmd.xml'
+            '455752263d67f67402b0dc9e7119e5b3-NISOIMG-amd.xml'
         )
     )
 
@@ -75,7 +75,7 @@ def test_add_techmdreference(testpath):
     write the techmdreference file.
     """
 
-    md_creator = utils.TechmdCreator(testpath)
+    md_creator = utils.AmdCreator(testpath)
 
     md_creator.add_reference('abcd1234', 'path/to/file1')
     md_creator.add_reference('abcd1234', 'path/to/file2')
@@ -83,13 +83,13 @@ def test_add_techmdreference(testpath):
     md_creator.write_references()
 
     # Read created file. Reference should be found for both files
-    etree = lxml.etree.parse(os.path.join(testpath, 'techmd-references.xml'))
+    etree = lxml.etree.parse(os.path.join(testpath, 'amd-references.xml'))
     reference = etree.xpath(
-        '/techmdReferences/techmdReference[@file="path/to/file1"]'
+        '/amdReferences/amdReference[@file="path/to/file1"]'
     )
     assert reference[0].text == 'abcd1234'
     reference = etree.xpath(
-        '/techmdReferences/techmdReference[@file="path/to/file2"]'
+        '/amdReferences/amdReference[@file="path/to/file2"]'
     )
     assert reference[0].text == 'abcd1234'
 

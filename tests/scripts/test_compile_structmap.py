@@ -96,15 +96,15 @@ def test_file_and_dir(testpath):
     assert return_code == 0
 
 
-def test_get_techmd_references(testpath):
-    """Test get_techmd_references function. Copies sample techMD reference file
-    to workspace and reads the techMD IDs for a file.
+def test_get_amd_references(testpath):
+    """Test get_amd_references function. Copies sample MD reference file
+    to workspace and reads the administrative MD IDs for a file.
     """
     shutil.copy('tests/data/sample_techmd-references.xml',
-                os.path.join(testpath, 'techmd-references.xml'))
+                os.path.join(testpath, 'amd-references.xml'))
 
     # The sample file contains two references for file2
-    ids = compile_structmap.get_techmd_references(testpath, 'path/to/file2')
+    ids = compile_structmap.get_amd_references(testpath, 'path/to/file2')
     assert set(ids) == set(['abcd1234', 'efgh5678'])
 
 

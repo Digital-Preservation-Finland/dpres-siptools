@@ -114,15 +114,15 @@ def generate_digest(etree):
 
 
 def get_files(workspace):
-    """Get unique and sorted set of files from techmd-references.xml
+    """Get unique and sorted set of files from amd-references.xml
 
     :workspace: Workspace path
     :returns: Set of files
     """
-    reference_file = os.path.join(workspace, 'techmd-references.xml')
+    reference_file = os.path.join(workspace, 'amd-references.xml')
     xml = lxml.etree.parse(reference_file)
     fileset = set()
-    files = xml.xpath('/techmdReferences/techmdReference/@file')
+    files = xml.xpath('/amdReferences/amdReference/@file')
     for path in files:
         fileset.add(path)
     return sorted(fileset)
@@ -163,33 +163,34 @@ def iso8601_duration(time):
     return duration
 
 
-class TechmdCreator(object):
-    """ Class for generating METS XML and techmd-references files efficiently.
+class AmdCreator(object):
+    """ Class for generating METS XML and amd-references files efficiently.
     """
 
     def __init__(self, workspace):
         """
         :workspace: Output path
         :md_elements: List of tuples (XML Element, filename, stream)
-        :references: List of tuples (techmd_id, filename, stream)
+        :references: List of tuples (amd_id, filename, stream)
         """
         self.workspace = workspace
         self.md_elements = []
         self.references = []
 
-    def add_reference(self, techmd_id, filepath, stream=None):
-        """Add techMD reference information to the references list,
-        which is written into techmdreferences after self.write() is
-        called. techmdreferences is read by compile-structmap script when
-        fileSec elements are created for METS XML.
+    def add_reference(self, amd_id, filepath, stream=None):
+        """Add administrative metadata reference information to the
+        references list, which is written into amd-references after
+        self.write() is called. amd-references is read by the
+        compile-structmap script when fileSec elements are created for
+        METS XML.
 
-        :techmd_id: ID of techMD element to be referenced
-        :filepath: path of the file described in techMD element
+        :amd_id: ID of administrative MD element to be referenced
+        :filepath: path of the file linking to the MD element
 
         :returns: None
         """
 
-        reference = (techmd_id, filepath, stream)
+        reference = (amd_id, filepath, stream)
         self.references.append(reference)
 
     def add_md(self, metadata, filename, stream=None):
@@ -197,16 +198,16 @@ class TechmdCreator(object):
         self.md_elements is read by write() function and all the elements
         are written into corresponding METS XML files.
 
-        When write() is called create_techmdfile() automatically writes
+        When write() is called write_md() automatically writes
         corresponding metadata to the same METS XML file. However,
         serializing and hashing the XML elements can be rather time consuming.
         If the metadata can be easily separated without serializing and
         hashing, this function should only be called once for each distinct
         metadata. This should be implemented by the subclasses of
-        TechmdCreator.
+        AmdCreator.
 
         :metadata: Metadata XML element
-        :filename: path of the file described in techMD element
+        :filename: path of the file linking to the MD element
         :stream: Stream index, or None if not a stream
 
         :returns: None
@@ -216,12 +217,12 @@ class TechmdCreator(object):
         self.md_elements.append(md_element)
 
     def write_references(self):
-        """Write "techmd-references.xml" file, which is read by
-        compile-structmap script when fileSec elements are
+        """Write "amd-references.xml" file, which is read by
+        the compile-structmap script when fileSec elements are
         created for METS XML.
         """
 
-        reference_file = os.path.join(self.workspace, 'techmd-references.xml')
+        reference_file = os.path.join(self.workspace, 'amd-references.xml')
 
         # read existing reference list file or create new file
         if os.path.exists(reference_file):
@@ -231,13 +232,13 @@ class TechmdCreator(object):
                 references_tree = lxml.etree.parse(file_, parser)
                 references = references_tree.getroot()
         else:
-            references = lxml.etree.Element('techmdReferences')
+            references = lxml.etree.Element('amdReferences')
             references_tree = lxml.etree.ElementTree(references)
 
         # Add all the references
-        for techmd_id, filepath, stream in self.references:
-            reference = lxml.etree.Element('techmdReference')
-            reference.text = techmd_id
+        for amd_id, filepath, stream in self.references:
+            reference = lxml.etree.Element('amdReference')
+            reference.text = amd_id
             if isinstance(filepath, str):
                 reference.set(
                     'file', filepath.decode(sys.getfilesystemencoding()))
@@ -254,9 +255,9 @@ class TechmdCreator(object):
                               encoding="utf-8")
 
     def write_md(self, metadata, mdtype, mdtypeversion, othermdtype=None,
-                 stdout=False):
-        """Wraps XML metadata into techMD element and writes it to a METS XML
-        file in the workspace. The output filename is
+                 section=None, stdout=False):
+        """Wraps XML metadata into administrative MD element and writes
+        it to a METS XML file in the workspace. The output filename is
         <mdtype>-<hash>-othermd.xml, where <mdtype> is the type of metadata
         given as parameter and <hash> is a string generated from the metadata.
 
@@ -272,12 +273,12 @@ class TechmdCreator(object):
         :othermdtype (string): Value of mdWrap OTHERMDTYPE attribute
         :stdout (boolean): Print also to stdout
 
-        :returns: techmd_id, filename
+        :returns: amd_id, filename
         """
         digest = generate_digest(metadata)
         suffix = othermdtype if othermdtype else mdtype
-        filename = encode_path("%s-%s-techmd.xml" % (digest, suffix))
-        techmd_id = '_' + digest
+        filename = encode_path("%s-%s-amd.xml" % (digest, suffix))
+        amd_id = '_' + digest
         filename = os.path.join(self.workspace, filename)
 
         if not os.path.exists(filename):
@@ -286,10 +287,13 @@ class TechmdCreator(object):
             xmldata.append(metadata)
             mdwrap = mets.mdwrap(mdtype, mdtypeversion, othermdtype)
             mdwrap.append(xmldata)
-            techmd = mets.techmd(techmd_id)
-            techmd.append(mdwrap)
+            if section == 'digiprovMd':
+                amd = mets.digiprovmd(amd_id)
+            else:
+                amd = mets.techmd(amd_id)
+            amd.append(mdwrap)
             amdsec = mets.amdsec()
-            amdsec.append(techmd)
+            amdsec.append(amd)
             mets_ = mets.mets()
             mets_.append(amdsec)
 
@@ -297,15 +301,15 @@ class TechmdCreator(object):
                 outfile.write(xml_helpers.utils.serialize(mets_))
                 if stdout:
                     print xml_helpers.utils.serialize(mets_)
-                print "Wrote METS %s technical metadata to file %s" \
+                print "Wrote METS %s administrative metadata to file %s" \
                       % (mdtype, outfile.name)
 
-        return techmd_id, filename
+        return amd_id, filename
 
     def write(self, mdtype="type", mdtypeversion="version", othermdtype=None,
-              stdout=False):
-        """Write METS XML and techmdreference files. First, METS XML files are
-        written and self.references is appended. Second, techmd-references is
+              section=None, stdout=False):
+        """Write METS XML and amd-reference files. First, METS XML files are
+        written and self.references is appended. Second, amd-references is
         written.
 
         If subclasses is optimized to call add_md once for each metadata type,
@@ -323,13 +327,13 @@ class TechmdCreator(object):
 
         # Write METS XML and append self.references
         for metadata, filename, stream in self.md_elements:
-            techmd_id, _ = self.write_md(
+            amd_id, _ = self.write_md(
                 metadata, mdtype, mdtypeversion, othermdtype=othermdtype,
-                stdout=stdout
+                section=section, stdout=stdout
             )
-            self.add_reference(techmd_id, filename, stream)
+            self.add_reference(amd_id, filename, stream)
 
-        # Write techmd-references
+        # Write amd-references
         self.write_references()
 
         # Clear references and md_elements

@@ -12,18 +12,18 @@ from siptools.xml.mets import NAMESPACES
 
 def get_techmd_file(path, input_file, stream=None):
     """Get id"""
-    ref = os.path.join(path, 'techmd-references.xml')
+    ref = os.path.join(path, 'amd-references.xml')
     root = ET.parse(ref).getroot()
     if stream is None:
-        techref = root.xpath("/techmdReferences/techmdReference[not(@stream) "
+        techref = root.xpath("/amdReferences/amdReference[not(@stream) "
                              "and @file='%s']" % input_file.decode(
                                  sys.getfilesystemencoding()))[0]
     else:
-        techref = root.xpath("/techmdReferences/techmdReference[@stream='%s' "
+        techref = root.xpath("/amdReferences/amdReference[@stream='%s' "
                              "and @file='%s']" % (stream, input_file.decode(
                                  sys.getfilesystemencoding())))[0]
     output = os.path.join(path, techref.text[1:] +
-                          "-PREMIS%3AOBJECT-techmd.xml")
+                          "-PREMIS%3AOBJECT-amd.xml")
     return output
 
 

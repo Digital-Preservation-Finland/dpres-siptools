@@ -5,7 +5,8 @@ import argparse
 import ffmpeg
 
 import audiomd
-from siptools.utils import TechmdCreator, iso8601_duration, strip_zeros
+from siptools.utils import AmdCreator, iso8601_duration, strip_zeros
+
 
 def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
@@ -53,9 +54,9 @@ def main(arguments=None):
     creator.write()
 
 
-class AudiomdCreator(TechmdCreator):
-    """Subclass of TechmdCreator, which generates audioMD metadata
-    for audio files.
+class AudiomdCreator(AmdCreator):
+    """Subclass of AmdCreator, which generates audioMD metadata
+    for WAV files.
     """
 
     def add_audiomd_md(self, filepath, filerel=None, is_streams=False):

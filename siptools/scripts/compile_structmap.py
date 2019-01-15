@@ -163,15 +163,15 @@ def get_streams(workspace, path):
     """Get stream indexes of a file
 
     :workspace: Workspace path
-    :path: Path of a digital object in techmd-references.xml
+    :path: Path of a digital object in amd-references.xml
 
     :returns: Sorted set of stream indexes of a file
     """
-    reference_file = os.path.join(workspace, 'techmd-references.xml')
+    reference_file = os.path.join(workspace, 'amd-references.xml')
     xml = ET.parse(reference_file)
     streamset = set()
     streams = xml.xpath(
-        '/techmdReferences/techmdReference[@file="%s"]/@stream' % path)
+        '/amdReferences/amdReference[@file="%s"]/@stream' % path)
     for stream in streams:
         streamset.add(stream)
     return sorted(streamset)
@@ -301,7 +301,7 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     fileid = '_' + str(uuid4())
 
     # Create list of IDs of techmD elements
-    techmd_ids = get_techmd_references(workspace, path)
+    techmd_ids = get_amd_references(workspace, path)
 
     # Create XML element and add it to fileGrp
     file_el = mets.file_elem(
@@ -316,7 +316,7 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     streams = get_streams(workspace, path)
     if streams:
         for stream in streams:
-            stream_ids = get_techmd_references(workspace, path, stream=stream)
+            stream_ids = get_amd_references(workspace, path, stream=stream)
             stream_el = mets.stream(admid_elements=stream_ids)
             file_el.append(stream_el)
 
@@ -343,32 +343,32 @@ def get_fileid(filesec, path):
     return element.attrib['ID']
 
 
-def get_techmd_references(workspace, path, stream=None):
-    """If techMD reference file exists in workspace, read the techMD IDs that
-    should be referenced by a file.
+def get_amd_references(workspace, path, stream=None):
+    """If administrative MD reference file exists in workspace, read
+    the MD IDs that should be referenced by a file.
 
     :param str workspace: path to directory from which othermd
     :param str path: path of the file for which the IDs are read
-    :returns list: list of techMD IDs
+    :returns list: list of administrative MD IDs
     """
-    reference_file = os.path.join(workspace, 'techmd-references.xml')
-    techmd_ids = []
+    reference_file = os.path.join(workspace, 'amd-references.xml')
+    amd_ids = []
 
     if os.path.isfile(reference_file):
         element_tree = ET.parse(reference_file)
         if stream is None:
             reference_elements = element_tree.xpath(
-                '/techmdReferences/techmdReference[@file="%s" '
+                '/amdReferences/amdReference[@file="%s" '
                 'and not(@stream)]' % path
             )
         else:
             reference_elements = element_tree.xpath(
-                '/techmdReferences/techmdReference[@file="%s" '
+                '/amdReferences/amdReference[@file="%s" '
                 'and @stream="%s"]' % (path, stream)
             )
-        techmd_ids = [element.text for element in reference_elements]
+        amd_ids = [element.text for element in reference_elements]
 
-    return set(techmd_ids)
+    return set(amd_ids)
 
 
 def get_links_event_agent(workspace, path):

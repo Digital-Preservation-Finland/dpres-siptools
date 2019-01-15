@@ -135,11 +135,11 @@ def test_create_audiomd_techmdfile(testpath):
     creator.write()
 
     # Check that techmdreference and one AudioMD-techmd files are created
-    assert os.path.isfile(os.path.join(testpath, 'techmd-references.xml'))
+    assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
 
     filepath = os.path.join(
-        testpath, '704fbd57169eac3af9388e03c89dd919-AudioMD-techmd.xml'
-#        testpath, '4dab7d9d5bab960188ea0f25e478cb17-AudioMD-techmd.xml'
+        testpath, '704fbd57169eac3af9388e03c89dd919-AudioMD-amd.xml'
+        # testpath, '4dab7d9d5bab960188ea0f25e478cb17-AudioMD-amd.xml'
     )
 
     assert os.path.isfile(filepath)
@@ -170,6 +170,6 @@ def test_paths(testpath, file, base_path):
         create_audiomd.main(['--workspace', testpath, file])
 
     assert "file=\"" + os.path.normpath(file) + "\"" in \
-        open(os.path.join(testpath, 'techmd-references.xml')).read()
+        open(os.path.join(testpath, 'amd-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))

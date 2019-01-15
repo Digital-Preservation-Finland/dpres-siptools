@@ -96,14 +96,14 @@ def test_create_addml_techmdfile(testpath):
     creator.write()
 
     file1 = os.path.join(
-        testpath, 'ec816a14242f3984e483fa23174881d5-ADDML-techmd.xml'
+        testpath, 'ec816a14242f3984e483fa23174881d5-ADDML-amd.xml'
     )
     file2 = os.path.join(
-        testpath, 'dd678fd96b655fd95efbb9fe4a77483a-ADDML-techmd.xml'
+        testpath, 'dd678fd96b655fd95efbb9fe4a77483a-ADDML-amd.xml'
     )
 
     # Check that techmdreference and the two ADDML-techmd files are created
-    assert os.path.isfile(os.path.join(testpath, 'techmd-references.xml'))
+    assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
     assert os.path.isfile(file1)
     assert os.path.isfile(file2)
 
@@ -157,6 +157,6 @@ def test_paths(testpath, file, base_path):
                            '--workspace', testpath, file])
 
     assert "file=\"" + os.path.normpath(file) + "\"" in \
-        open(os.path.join(testpath, 'techmd-references.xml')).read()
+        open(os.path.join(testpath, 'amd-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))

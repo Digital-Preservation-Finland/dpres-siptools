@@ -7,7 +7,7 @@ import argparse
 import wand.image
 import PIL.Image
 import nisomix.mix
-from siptools.utils import TechmdCreator
+from siptools.utils import AmdCreator
 
 SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
@@ -59,8 +59,8 @@ def main(arguments=None):
     creator.write()
 
 
-class MixCreator(TechmdCreator):
-    """Subclass of TechmdCreator, which generates MIX metadata for image files.
+class MixCreator(AmdCreator):
+    """Subclass of AmdCreator, which generates MIX metadata for image files.
     """
 
     def add_mix_md(self, image_file, file_relpath=None):

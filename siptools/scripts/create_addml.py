@@ -5,7 +5,7 @@ import argparse
 import lxml.etree as ET
 
 import addml
-from siptools.utils import TechmdCreator, encode_path
+from siptools.utils import AmdCreator, encode_path
 
 
 def parse_arguments(arguments):
@@ -63,8 +63,8 @@ def main(arguments=None):
     creator.write(filerel=filerel)
 
 
-class AddmlCreator(TechmdCreator):
-    """Subclass of TechmdCreator, which generates ADDML metadata
+class AddmlCreator(AmdCreator):
+    """Subclass of AmdCreator, which generates ADDML metadata
     for CSV files.
     """
 
