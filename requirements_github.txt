@@ -17,3 +17,4 @@ git+https://github.com/Digital-Preservation-Finland/dpres-ipt.git#egg=ipt
 git+https://github.com/Digital-Preservation-Finland/nisomix.git#egg=nisomix
 git+https://github.com/Digital-Preservation-Finland/addml.git#egg=addml
 git+https://github.com/Digital-Preservation-Finland/audiomd.git#egg=audiomd
+git+https://github.com/Digital-Preservation-Finland/videomd.git#egg=videomd
