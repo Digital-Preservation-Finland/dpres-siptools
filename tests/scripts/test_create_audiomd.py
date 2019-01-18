@@ -11,7 +11,7 @@ NAMESPACES = {"amd": AUDIOMD_NS}
 
 
 def test_create_audiomd_elem():
-    """Test that ``create_addml`` returns valid audiomd.
+    """Test that ``create_audiomd`` returns valid audiomd.
     """
 
     audiomd = create_audiomd.create_audiomd(
@@ -40,7 +40,8 @@ def test_create_audiomd_elem():
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unap)'
 
     path = "%s/amd:compression/amd:codecName" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unap)'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == \
+        'PCM signed 16-bit little-endian'
 
     path = "%s/amd:compression/amd:codecQuality" % file_data
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossless'
@@ -59,6 +60,52 @@ def test_create_audiomd_elem():
 
     path = "%s/amd:numChannels" % audio_info
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '1'
+
+
+def test_stream():
+    """Test that ``create_audiomd`` returns valid audiomd from a
+       video container.
+    """
+
+    audiomd = create_audiomd.create_audiomd(
+        "tests/data/video/mp4.mp4")["1"]
+
+    file_data = "/amd:AUDIOMD/amd:fileData"
+    audio_info = "/amd:AUDIOMD/amd:audioInfo"
+
+    path = "%s/amd:audioDataEncoding" % file_data
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'AAC'
+
+    path = "%s/amd:bitsPerSample" % file_data
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unap)'
+
+    path = "%s/amd:compression/amd:codecCreatorApp" % file_data
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'
+
+    path = "%s/amd:compression/amd:codecCreatorAppVersion" % file_data
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'
+
+    path = "%s/amd:compression/amd:codecName" % file_data
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == \
+        'AAC (Advanced Audio Coding)'
+
+    path = "%s/amd:compression/amd:codecQuality" % file_data
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'
+
+    path = "%s/amd:dataRate" % file_data
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '385'
+
+    path = "%s/amd:dataRateMode" % file_data
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Fixed'
+
+    path = "%s/amd:samplingFrequency" % file_data
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '48'
+
+    path = "%s/amd:duration" % audio_info
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT5.31S'
+
+    path = "%s/amd:numChannels" % audio_info
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '6'
 
 
 def test_invalid_wav_file():
@@ -91,7 +138,8 @@ def test_create_audiomd_techmdfile(testpath):
     assert os.path.isfile(os.path.join(testpath, 'techmd-references.xml'))
 
     filepath = os.path.join(
-        testpath, '4dab7d9d5bab960188ea0f25e478cb17-AudioMD-techmd.xml'
+        testpath, '704fbd57169eac3af9388e03c89dd919-AudioMD-techmd.xml'
+#        testpath, '4dab7d9d5bab960188ea0f25e478cb17-AudioMD-techmd.xml'
     )
 
     assert os.path.isfile(filepath)

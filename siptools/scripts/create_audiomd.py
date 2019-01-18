@@ -12,16 +12,17 @@ def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
 
     parser = argparse.ArgumentParser(
-        description="Tool for creating audioMD metadata for a WAV file. The "
-                    "audioMD metadata is written to <hash>-ADDML-techmd.xml "
-                    "METS XML file in the workspace directory. The audioMD "
-                    "techMD reference is written to techmd-references.xml. "
-                    "If similar audioMD metadata is already found in "
-                    "workspace, just the new WAV file name is appended to "
-                    "the existing metadata."
+        description="Tool for creating audioMD metadata for an audio or "
+                    "video file. The audioMD metadata is written to "
+                    "<hash>-AudioMD-techmd.xml METS XML file in the "
+                    "workspace directory. The audioMD techMD reference is "
+                    "written to techmd-references.xml. "
+                    "If the same audioMD metadata is already found in "
+                    "workspace, just the new file name or stream is appended "
+                    "the the existing metadata."
     )
 
-    parser.add_argument('file', type=str, help="Path to the WAV file")
+    parser.add_argument('file', type=str, help="Path to the audio file")
     parser.add_argument(
         '--workspace', type=str, default='./workspace/',
         help="Workspace directory for the metadata files.")
@@ -31,13 +32,13 @@ def parse_arguments(arguments):
     parser.add_argument(
         '--base_path', type=str, default='',
         help="Source base path of digital objects. If used, give path to "
-             "the WAV file in relation to this base path.")
+             "the audio file in relation to this base path.")
 
     return parser.parse_args(arguments)
 
 
 def main(arguments=None):
-    """Write audioMD metadata for a WAV file."""
+    """Write audioMD metadata for an audio file."""
 
     args = parse_arguments(arguments)
 
@@ -55,7 +56,7 @@ def main(arguments=None):
 
 class AudiomdCreator(TechmdCreator):
     """Subclass of TechmdCreator, which generates audioMD metadata
-    for WAV files.
+    for audio files.
     """
 
     def add_audiomd_md(self, filepath, filerel=None, is_streams=False):
@@ -111,6 +112,8 @@ def _get_stream_data(stream_dict):
 
     # amd.file_data() params
     bps = str(stream_dict["bits_per_sample"])
+    if bps == "0":
+        bps = "(:unap)"
     bit_rate = float(stream_dict["bit_rate"])
     data_rate = str(int(round(bit_rate/1000)))
     sample_rate = float(stream_dict["sample_rate"])
@@ -118,16 +121,18 @@ def _get_stream_data(stream_dict):
     codec = _get_encoding(stream_dict)
 
     if codec == "PCM":
-        compression_params = ("(:unap)", "(:unap)", "(:unap)", "lossless")
+        compression_params = ("(:unap)", "(:unap)",
+                              stream_dict["codec_long_name"], "lossless")
     else:
-        compression_params = ("(:unav)", "(:unav)", "(:unav)", "(:unav)")
+        compression_params = ("(:unav)", "(:unav)",
+                              stream_dict["codec_long_name"], "(:unav)")
 
     params = {}
     params["audioDataEncoding"] = codec
     params["bitsPerSample"] = bps
     params["compression"] = audiomd.amd_compression(*compression_params)
     params["dataRate"] = data_rate
-    params["dataRateMode"] = "Fixed"
+    params["dataRateMode"] = "Fixed" # TODO
     params["samplingFrequency"] = sampling_frequency
 
     return audiomd.amd_file_data(params)
@@ -141,6 +146,8 @@ def _get_encoding(stream_dict):
 
     if encoding.split()[0] == "PCM":
         return "PCM"
+    elif encoding.split()[0] == "AAC":
+        return "AAC"
 
     return encoding
 

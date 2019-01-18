@@ -470,3 +470,57 @@ def test_is_broadcast_wav():
     path = "tests/data/audio"
     assert import_object.is_broadcast_wav("%s/valid-bwf.wav" % path)
     assert not import_object.is_broadcast_wav("%s/valid-wav.wav" % path)
+
+
+def test_streams(testpath):
+    """Test with streams, the test file vontains one video and one audio
+       stream.
+    """
+    input_file = 'tests/data/video/mp4.mp4'
+    arguments = ['--workspace', testpath, '--skip_inspection', '--streams',
+                 input_file]
+    return_code = import_object.main(arguments)
+
+    # Streams
+    stream_id = []
+    for i in [0, 1]:
+        output = get_techmd_file(testpath, input_file, str(i))
+        tree = ET.parse(output)
+        root = tree.getroot()
+        if i == 1:
+            mime = 'audio/mp4'
+        else:
+            mime = 'video/mp4'
+        stream_id.append(root.xpath('//premis:objectIdentifierValue',
+                                    namespaces=NAMESPACES)[0].text)
+        assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+                              namespaces=NAMESPACES)) == 1
+        assert root.xpath('//premis:formatName',
+                          namespaces=NAMESPACES)[0].text == mime
+        assert len(root.xpath('//premis:messageDigest',
+                              namespaces=NAMESPACES)) == 0
+        assert len(root.xpath('//premis:relationship',
+                              namespaces=NAMESPACES)) == 0
+        assert root.xpath('//premis:object/@xsi:type',
+                          namespaces=NAMESPACES)[0] == 'premis:bitstream'
+
+    # Container
+    output = get_techmd_file(testpath, input_file)
+    tree = ET.parse(output)
+    root = tree.getroot()
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+                          namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName',
+                          namespaces=NAMESPACES)[0].text == 'video/mp4'
+    assert len(root.xpath('//premis:messageDigest',
+                          namespaces=NAMESPACES)) == 1
+    assert len(root.xpath('//premis:relationship',
+                          namespaces=NAMESPACES)) == 2
+    assert root.xpath('//premis:object/@xsi:type',
+                          namespaces=NAMESPACES)[0] == 'premis:file'
+    assert len(root.xpath('//premis:relatedObjectIdentifierValue[.="%s"]' % stream_id[0],
+                          namespaces=NAMESPACES)) == 1
+    assert len(root.xpath('//premis:relatedObjectIdentifierValue[.="%s"]' % stream_id[1],
+                          namespaces=NAMESPACES)) == 1
+
+    assert return_code == 0

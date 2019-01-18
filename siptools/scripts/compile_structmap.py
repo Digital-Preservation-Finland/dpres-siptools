@@ -122,6 +122,7 @@ def create_structmap(workspace, filesec, fileset, type_attr=None,
 
     :param workspace: directory from which some files are searhed
     :param filesec: fileSec element
+    :param fileset: Sorted list of digital objects (file paths)
     :param type_attr: TYPE attribute of div element
     :param root_type: TYPE attribute of div element
     :returns: structural map element
@@ -179,7 +180,7 @@ def get_streams(workspace, path):
 def div_structure(fileset):
     """Create div structure for directory-based structmap
 
-    :fileset: Set of digital objects (file paths)
+    :fileset: Sorted list of digital objects (file paths)
     :returns: Directory tree as a dict like object
     """
     divs = tree()
@@ -195,6 +196,7 @@ def create_ead3_structmap(descfile, workspace, filegrp, fileset, type_attr):
     :workspace: Workspace path
     :structmap: Structmap element
     :filegrp: fileGrp element
+    :fileset: Sorted list of digital objects (file paths)
     :dmdsec_id: ID of dmdSec section
     """
     structmap = mets.structmap(type_attr=type_attr)
@@ -244,7 +246,7 @@ def ead3_c_div(parent, structmap, filegrp, workspace, fileset, cnum=None):
     :div: Div element in structmap
     :filegrp: fileGrp element
     :workspace: Workspace path
-    :fileset: Set of files paths
+    :fileset: Sorted list of digital objects (file paths)
     :cnum: EAD3 c level
     """
     allowed_c_subs = ['c', 'c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07',
@@ -388,7 +390,7 @@ def create_div(workspace, divs, parent, filesec, fileset, path='',
     :param divs: Current directory or file in directory structure walkthrough
     :param parent: Parent element in structMap
     :param filesec: filesec element
-    :param fileset: Set of digital objects (file paths)
+    :param fileset: Sorted list of digital objects (file paths)
     :param path: Current path in directory structure walkthrough
     :param properties: Properties of files created in import_object.py
     :param type_attr: Structmap type
@@ -438,7 +440,7 @@ def create_filegrp(workspace, filegrp, fileset):
 
     :param workspace: Workspace path
     :param filegrp: filegrp element in fileSec
-    :param fileset: Set of digital object names
+    :param fileset: Set of digital objects (file paths)
     :returns: ``None``
     """
     for path in fileset:
