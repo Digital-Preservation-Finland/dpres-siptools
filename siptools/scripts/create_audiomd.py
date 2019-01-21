@@ -5,8 +5,7 @@ import argparse
 import ffmpeg
 
 import audiomd
-from siptools.utils import TechmdCreator
-
+from siptools.utils import TechmdCreator, iso8601_duration, strip_zeros
 
 def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
@@ -108,6 +107,8 @@ def create_audiomd(filename):
 
 def _get_stream_data(stream_dict):
     """Creates and returns the fileData XML element.
+    :stream_dict: Stream dictionary given by FFMPEG
+    :returns: AudioMD fileData element
     """
 
     # amd.file_data() params
@@ -117,7 +118,7 @@ def _get_stream_data(stream_dict):
     bit_rate = float(stream_dict["bit_rate"])
     data_rate = str(int(round(bit_rate/1000)))
     sample_rate = float(stream_dict["sample_rate"])
-    sampling_frequency = _strip_zeros("%.2f" % (sample_rate/1000))
+    sampling_frequency = strip_zeros("%.2f" % (sample_rate/1000))
     codec = _get_encoding(stream_dict)
 
     if codec == "PCM":
@@ -141,6 +142,8 @@ def _get_stream_data(stream_dict):
 def _get_encoding(stream_dict):
     """Get the used codec from the stream_dict. Return PCM if codec is
     any form of PCM and full codec description otherwise.
+    :stream_dict: Stream dictionary given by FFMPEG
+    :returns: File encoding string
     """
     encoding = stream_dict["codec_long_name"]
 
@@ -154,48 +157,15 @@ def _get_encoding(stream_dict):
 
 def _get_audio_info(stream_dict):
     """Creates and returns the audioInfo XML element.
+    :stream_dict: Stream dictionary given by FFMPEG
+    :returns: AudioMD audioInfo element
     """
 
     time = float(stream_dict["duration"])
-    duration = _iso8601_duration(time)
+    duration = iso8601_duration(time)
     channels = str(stream_dict["channels"])
 
     return audiomd.amd_audio_info(duration=duration, num_channels=channels)
-
-
-def _strip_zeros(float_str):
-    """Recursively strip trailing zeros from a float i.e. _strip_zeros("44.10")
-    returns "44.1" and _srip_zeros("44.0") returns "44"
-    """
-
-    # if '.' is found in the string and string
-    # ends in '0' or '.' strip last character
-    if float_str.find(".") != -1 and float_str[-1] in ['0', '.']:
-        return _strip_zeros(float_str[:-1])
-
-    return float_str
-
-
-def _iso8601_duration(time):
-    """Convert seconds into ISO 8601 duration PT[hours]H[minutes]M[seconds]S
-    with seconds given in two decimal precision.
-    """
-
-    hours = time // (60*60)
-    minutes = time // 60 % 60
-    seconds = time % 60
-
-    duration = "PT"
-
-    if hours:
-        duration += "%dH" % hours
-    if minutes:
-        duration += "%dM" % minutes
-    if seconds:
-        seconds = _strip_zeros("%.2f" % seconds)
-        duration += "%sS" % seconds
-
-    return duration
 
 
 if __name__ == '__main__':

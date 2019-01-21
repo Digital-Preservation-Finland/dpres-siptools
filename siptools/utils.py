@@ -128,6 +128,41 @@ def get_files(workspace):
     return sorted(fileset)
 
 
+def strip_zeros(float_str):
+    """Recursively strip trailing zeros from a float i.e. strip_zeros("44.10")
+    returns "44.1" and _srip_zeros("44.0") returns "44"
+    """
+
+    # if '.' is found in the string and string
+    # ends in '0' or '.' strip last character
+    if float_str.find(".") != -1 and float_str[-1] in ['0', '.']:
+        return strip_zeros(float_str[:-1])
+
+    return float_str
+
+
+def iso8601_duration(time):
+    """Convert seconds into ISO 8601 duration PT[hours]H[minutes]M[seconds]S
+    with seconds given in two decimal precision.
+    """
+
+    hours = time // (60*60)
+    minutes = time // 60 % 60
+    seconds = time % 60
+
+    duration = "PT"
+
+    if hours:
+        duration += "%dH" % hours
+    if minutes:
+        duration += "%dM" % minutes
+    if seconds:
+        seconds = strip_zeros("%.2f" % seconds)
+        duration += "%sS" % seconds
+
+    return duration
+
+
 class TechmdCreator(object):
     """ Class for generating METS XML and techmd-references files efficiently.
     """

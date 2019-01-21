@@ -37,8 +37,30 @@ except OSError:
 import magic
 
 
-STREAM_PREMIS = {'h264': ['video/mp4', ''],
-                 'aac': ['audio/mp4', '']}
+FILE_VERSION = {
+    'text/xml': '1.0',
+    'text/plain': '',
+    'text/csv': '',
+    'image/tiff': '6.0',
+    'application/vnd.oasis.opendocument.text': '1.0',
+    'application/vnd.oasis.opendocument.spreadsheet': '1.0',
+    'application/vnd.oasis.opendocument.presentation': '1.0',
+    'application/vnd.oasis.opendocument.graphics': '1.0',
+    'application/vnd.oasis.opendocument.formula': '1.0',
+    'application/vnd.openxmlformats-officedocument'
+    '.wordprocessingml.document': '15.0',
+    'application/vnd.openxmlformats-officedocument'
+    '.spreadsheetml.sheet': '15.0',
+    'application/vnd.openxmlformats-officedocument'
+    '.presentationml.presentation': '15.0',
+    'application/msword': '11.0',
+    'application/vnd.ms-excel': '11.0',
+    'application/vnd.ms-powerpoint': '11.0',
+    'audio/x-wav': '',
+    'video/mp4': ''}
+
+STREAM_MIMETYPE = {'h264': ['video/mp4', ''],
+                   'aac': ['audio/mp4', '']}
 
 
 def parse_arguments(arguments):
@@ -184,7 +206,7 @@ def create_streams(fname, premis_file):
         identifier = premis.identifier(
             identifier_type='UUID',
             identifier_value=id_value)
-        format = STREAM_PREMIS[stream['codec_name']]
+        format = STREAM_MIMETYPE[stream['codec_name']]
         index = str(stream['index'])
         premis_format_des = premis.format_designation(
             format[0], format[1])
@@ -298,12 +320,17 @@ def metadata_info(fname):
         }
     }
 
-    # If it's an XML-file, return fixed mimetype with charset and version
-    if mimetype == 'text/xml' or mimetype == 'application/xml':
+    # Return version info from dictionary
+    if mimetype in FILE_VERSION:
+        metadata_info_['format']['version'] = FILE_VERSION[mimetype]
+
+    # If it's an XML-file, return fixed mimetype and version
+    if mimetype == 'application/xml':
         metadata_info_['format']['mimetype'] = 'text/xml'
         metadata_info_['format']['version'] = '1.0'
         mimetype = 'text/xml'
 
+    # Find correct charset
     if mimetype in ['text/plain', 'text/csv', 'application/xhtml+xml',
                     'text/xml', 'text/html', 'application/gml+xml',
                     'application/vnd.google-earth.kml+xml']:
@@ -311,47 +338,17 @@ def metadata_info(fname):
     else:
         del metadata_info_['format']['charset']
 
-    if mimetype in ['text/plain', 'text/csv']:
-        metadata_info_['format']['version'] = ''
-
-    elif mimetype == 'image/tiff':
-        metadata_info_['format']['version'] = '6.0'
-
-    # If it's a PDF-file, return version
-    #elif formatname == 'application/pdf':
-    #    formatversion = version_command.rsplit(None, 1)[-1]
-
-    # If it's an Open Office document return fixed version
-    elif mimetype.startswith('application/vnd.oasis.opendocument'):
-        metadata_info_['format']['version'] = '1.0'
-
-    # I it's a jpeg file, return version
-    elif mimetype == 'image/jpeg':
+    # If it's a jpeg file, return version
+    if mimetype == 'image/jpeg':
         versions = ['1.10', '1.01', '1.02']
         for ver in versions:
             if ver in version:
                 metadata_info_['format']['version'] = ver
 
-    # If it is an openxml MS Office file return version
-    elif mimetype in ['application/vnd.openxmlformats-officedocument.'
-                      'wordprocessingml.document',
-                      'application/vnd.openxmlformats-officedocument.'
-                      'spreadsheetml.sheet',
-                      'application/vnd.openxmlformats-officedocument.'
-                      'presentationml.presentation']:
-        metadata_info_['format']['version'] = '15.0'
-
-    # If it is an binary MS Office file return version
-    elif mimetype in ['application/msword', 'application/vnd.ms-excel',
-                      'application/vnd.ms-powerpoint']:
-        metadata_info_['format']['version'] = '11.0'
-
-    # If WAVE-file return version
-    elif mimetype == 'audio/x-wav':
+    # If Broadcast WAVE file return version
+    if mimetype == 'audio/x-wav':
         if is_broadcast_wav(fname):
             metadata_info_['format']['version'] = '2'
-        else:
-            metadata_info_['format']['version'] = ''
 
     return metadata_info_
 
