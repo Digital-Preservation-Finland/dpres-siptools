@@ -12,6 +12,7 @@ import lxml.etree
 
 import xml_helpers
 import mets
+import premis
 
 
 def encode_path(path, suffix='', prefix='', safe=None):
@@ -75,6 +76,19 @@ def _pop_attributes(attributes, attrib_list, path):
         attrib_list.append('%s="%s" @ %s\n' % (key, attribute, path))
 
 
+def remove_identifiers(metadata, prefix, linking_prefix=None):
+    """Removes the unique identifier for the XML metadata."""
+    for identifier in premis.iter_elements(
+            metadata, '%sIdentifierValue' % prefix):
+        identifier.getparent().remove(identifier)
+    if linking_prefix:
+        for linking_identifier in premis.iter_elements(
+                metadata, 'linking%sIdentifierValue' % linking_prefix):
+            linking_identifier.getparent().remove(linking_identifier)
+
+    return metadata
+
+
 def generate_digest(etree):
     """Generating MD5 digest from etree. Identical metadata must generate
     same digest even if attributes of any given element are ordered
@@ -96,6 +110,10 @@ def generate_digest(etree):
     root = copy_etree(etree)
     elem_tree = lxml.etree.ElementTree(root)
     attrib_list = []
+
+    # Remove premis identifiers before metadata comparison
+    elem_tree = remove_identifiers(elem_tree, 'event', 'Agent')
+    elem_tree = remove_identifiers(elem_tree, 'agent')
 
     # pop all attributes
     for element in root.iter():
@@ -193,7 +211,7 @@ class AmdCreator(object):
         reference = (amd_id, filepath, stream)
         self.references.append(reference)
 
-    def add_md(self, metadata, filename, stream=None):
+    def add_md(self, metadata, filename=None, stream=None):
         """Append metadata XML element into self.md_elements list.
         self.md_elements is read by write() function and all the elements
         are written into corresponding METS XML files.
@@ -239,10 +257,10 @@ class AmdCreator(object):
         for amd_id, filepath, stream in self.references:
             reference = lxml.etree.Element('amdReference')
             reference.text = amd_id
-            if isinstance(filepath, str):
+            if filepath is not None and isinstance(filepath, str):
                 reference.set(
                     'file', filepath.decode(sys.getfilesystemencoding()))
-            else:
+            elif filepath is not None:
                 reference.set('file', filepath)
             if stream is not None:
                 reference.set('stream', stream)
@@ -271,6 +289,7 @@ class AmdCreator(object):
         :mdtype (string): Value of mdWrap MDTYPE attribute
         :mdtypeversion (string): Value of mdWrap MDTYPEVERSION attribute
         :othermdtype (string): Value of mdWrap OTHERMDTYPE attribute
+        :section (string): Type of mets metadata section
         :stdout (boolean): Print also to stdout
 
         :returns: amd_id, filename
@@ -287,7 +306,7 @@ class AmdCreator(object):
             xmldata.append(metadata)
             mdwrap = mets.mdwrap(mdtype, mdtypeversion, othermdtype)
             mdwrap.append(xmldata)
-            if section == 'digiprovMd':
+            if section == 'digiprovmd':
                 amd = mets.digiprovmd(amd_id)
             else:
                 amd = mets.techmd(amd_id)

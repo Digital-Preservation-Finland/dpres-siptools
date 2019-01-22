@@ -9,7 +9,7 @@ import mets
 import xml_helpers.utils
 
 from siptools.xml.premis import PREMIS_EVENT_TYPES, PREMIS_EVENT_OUTCOME_TYPES
-from siptools.utils import encode_path, encode_id
+from siptools.utils import AmdCreator, encode_path, encode_id
 
 
 def parse_arguments(arguments):
@@ -100,33 +100,42 @@ def main(arguments=None):
 
     if args.agent_name or args.agent_type:
         agent_identifier = str(uuid4())
-        agent_file, agent_mets = create_premis_agent_file(args.workspace,
-                                                          args.event_type,
-                                                          args.agent_name,
-                                                          args.agent_type,
-                                                          agent_identifier,
-                                                          args.event_target)
-        print "premis_event created file: %s" % agent_file
+        agent = create_premis_agent(args.agent_name,
+                                    args.agent_type, agent_identifier)
+
+        agent_creator = PremisCreator(args.workspace)
+        agent_creator.add_md(agent, args.event_target)
+        agent_creator.write(mdtype="PREMIS:AGENT", stdout=args.stdout)
+
         if args.stdout:
-            print xml_helpers.utils.serialize(agent_mets)
+            print xml_helpers.utils.serialize(agent)
     else:
         agent_identifier = None
 
-    event_file, event_mets = create_premis_event_file(
-        args.workspace,
+    event = create_premis_event(
         args.event_type,
         args.event_datetime,
         args.event_detail,
         args.event_outcome,
         args.event_outcome_detail,
-        args.event_target,
         agent_identifier
     )
-    print "premis_event created file: %s" % event_file
-    if args.stdout:
-        print xml_helpers.utils.serialize(event_mets)
+    creator = PremisCreator(args.workspace)
+    creator.add_md(event, args.event_target)
+    creator.write(mdtype="PREMIS:EVENT", stdout=args.stdout)
 
     return 0
+
+
+class PremisCreator(AmdCreator):
+    """Subclass of AmdCreator, which generates PREMIS event
+    or agent metadata.
+    """
+
+    def write(self, mdtype="PREMIS", mdtypeversion="2.3",
+              section="digiprovmd", stdout=False):
+        super(PremisCreator, self).write(
+            mdtype=mdtype, mdtypeversion=mdtypeversion, section=section)
 
 
 def create_premis_agent_file(workspace, event_type, agent_name, agent_type,
