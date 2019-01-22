@@ -180,8 +180,8 @@ def create_mets(workspace, mets_attributes, metshdr_attributes,
     # Collect elements from workspace XML files
     elements = []
     for entry in scandir(workspace):
-        if entry.name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
-                                'dmdsec.xml', 'structmap.xml', 'filesec.xml',
+        if entry.name.endswith(('-amd.xml', 'dmdsec.xml',
+                                'structmap.xml', 'filesec.xml',
                                 'rightsmd.xml')) and entry.is_file():
             element = lxml.etree.parse(entry.path).getroot()[0]
             elements.append(element)
@@ -212,9 +212,9 @@ def clean_metsparts(path):
     """
     for root, _, files in os.walk(path, topdown=False):
         for name in files:
-            if (name.endswith(('-techmd.xml', '-agent.xml', '-event.xml',
-                               'dmdsec.xml', 'structmap.xml', 'filesec.xml',
-                               'rightsmd.xml', 'techmd-references.xml',
+            if (name.endswith(('-amd.xml', 'dmdsec.xml', 'structmap.xml',
+                               'filesec.xml', 'rightsmd.xml',
+                               'amd-references.xml',
                                'siptools-file-properties.json'))):
                 os.remove(os.path.join(root, name))
 

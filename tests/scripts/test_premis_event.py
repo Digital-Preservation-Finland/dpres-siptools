@@ -1,8 +1,21 @@
 """Tests for :mod:`siptools.scripts.premis_event` module"""
 import os
+import sys
 import xml.etree.ElementTree as ET
-from siptools.scripts import premis_event
 import pytest
+from siptools.scripts import premis_event
+
+
+def get_techmd_file(path, input_file):
+    """Get id"""
+    ref = os.path.join(path, 'amd-references.xml')
+    root = ET.parse(ref).getroot()
+    amdref = root.xpath("/amdreferences/amdreference[not(@stream) "
+                        "and @file='%s']" % input_file.decode(
+                            sys.getfilesystemencoding()))[0]
+    output = os.path.join(path, amdref.text[1:] +
+                          "-PREMIS%3AEVENT-amd.xml")
+    return output
 
 
 def test_premis_event_ok(testpath):
@@ -29,10 +42,14 @@ def test_premis_event_ok(testpath):
 
     # Read output files
     event_xml = ET.parse(
-        os.path.join(testpath, 'tests%2Fdata%2Fstructured-creation-event.xml')
+        os.path.join(
+            testpath,
+            '4a4a5d87842b048eef1c59ab3fef286d-PREMIS%3AEVENT-amd.xml')
     ).getroot()
     agent_xml = ET.parse(
-        os.path.join(testpath, 'tests%2Fdata%2Fstructured-creation-agent.xml')
+        os.path.join(
+            testpath,
+            'd4e928570d571cb1ba79e3b7ba23cd89-PREMIS%3AAGENT-amd.xml')
     ).getroot()
 
     namespaces = {'mets': 'http://www.loc.gov/METS/',
