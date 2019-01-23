@@ -6,7 +6,7 @@ from fractions import Fraction
 import ffmpeg
 
 import videomd
-from siptools.utils import TechmdCreator, iso8601_duration, strip_zeros
+from siptools.utils import AmdCreator, iso8601_duration, strip_zeros
 
 
 def parse_arguments(arguments):
@@ -54,8 +54,8 @@ def main(arguments=None):
     creator.write()
 
 
-class VideomdCreator(TechmdCreator):
-    """Subclass of TechmdCreator, which generates videoMD metadata
+class VideomdCreator(AmdCreator):
+    """Subclass of AmdCreator, which generates videoMD metadata
     for video files.
     """
 

@@ -162,11 +162,11 @@ def test_create_videomd_techmdfile(testpath):
 
     creator.write()
 
-    # Check that techmdreference and one VideoMD-techmd files are created
-    assert os.path.isfile(os.path.join(testpath, 'techmd-references.xml'))
+    # Check that amdreference and one VideoMD-amd files are created
+    assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
 
     filepath = os.path.join(
-        testpath, '8b8e24235c6cf62922219ec71aa9f927-VideoMD-techmd.xml'
+        testpath, '8b8e24235c6cf62922219ec71aa9f927-VideoMD-amd.xml'
     )
 
     assert os.path.isfile(filepath)
@@ -197,6 +197,6 @@ def test_paths(testpath, file, base_path):
         create_videomd.main(['--workspace', testpath, file])
 
     assert "file=\"" + os.path.normpath(file) + "\"" in \
-        open(os.path.join(testpath, 'techmd-references.xml')).read()
+        open(os.path.join(testpath, 'amd-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))
