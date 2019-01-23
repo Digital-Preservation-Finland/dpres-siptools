@@ -132,7 +132,7 @@ def create_structmap(workspace, filesec, fileset, type_attr=None,
         dmdids = [encode_id('dmdsec.xml')]
     else:
         dmdids = None
-    amdids = get_links_event_agent(workspace, None)
+    amdids = get_amd_references(workspace, directory='.')
 
     if type_attr == 'Directory-physical':
         container_div = mets.div(type_attr='directory', label='.',
@@ -217,7 +217,7 @@ def create_ead3_structmap(descfile, workspace, filegrp, fileset, type_attr):
         dmdids = [encode_id('dmdsec.xml')]
     else:
         dmdids = None
-    amdids = get_links_event_agent(workspace, None)
+    amdids = get_amd_references(workspace, directory='.')
 
     div_ead = mets.div(type_attr='archdesc', label=level, dmdid=dmdids,
                        admid=amdids)
@@ -278,35 +278,32 @@ def ead3_c_div(parent, structmap, filegrp, workspace, fileset, cnum=None):
             if ead3_file.startswith('/'):
                 ead3_file = ead3_file[1:]
             tech_file = [x for x in fileset if ead3_file in x][0]
-            amdids = get_links_event_agent(workspace, tech_file)
-            fileid = add_file_to_filesec(workspace, tech_file, filegrp, amdids)
+            fileid = add_file_to_filesec(workspace, tech_file, filegrp)
             dao = mets.fptr(fileid=fileid)
             c_div.append(dao)
 
     structmap.append(c_div)
 
 
-def add_file_to_filesec(workspace, path, filegrp, amdids):
+def add_file_to_filesec(workspace, path, filegrp):
     """Add file element to fileGrp element given as parameter.
 
     :param workspace: Workspace directorye from which techMD files and techMD
                       reference files searched.
     :param path: url encoded path of the file
     :param lxml.etree.Element filegrp: fileGrp element
-    :param list amdids: list of administrative metadata associated with the
-                        file
     :param str returns: id of file added to fileGrp
     :returns: unique identifier of file element
     """
     fileid = '_' + str(uuid4())
 
-    # Create list of IDs of techmD elements
-    techmd_ids = get_amd_references(workspace, path)
+    # Create list of IDs of amdID elements
+    amdids = get_amd_references(workspace, path=path)
 
     # Create XML element and add it to fileGrp
     file_el = mets.file_elem(
         fileid,
-        admid_elements=set(amdids).union(techmd_ids),
+        admid_elements=set(amdids),
         loctype='URL',
         xlink_href='file://%s' % encode_path(path, safe='/'),
         xlink_type='simple',
@@ -316,7 +313,8 @@ def add_file_to_filesec(workspace, path, filegrp, amdids):
     streams = get_streams(workspace, path)
     if streams:
         for stream in streams:
-            stream_ids = get_amd_references(workspace, path, stream=stream)
+            stream_ids = get_amd_references(workspace, path=path,
+                                            stream=stream)
             stream_el = mets.stream(admid_elements=stream_ids)
             file_el.append(stream_el)
 
@@ -343,7 +341,7 @@ def get_fileid(filesec, path):
     return element.attrib['ID']
 
 
-def get_amd_references(workspace, path, stream=None):
+def get_amd_references(workspace, path=None, stream=None, directory=None):
     """If administrative MD reference file exists in workspace, read
     the MD IDs that should be referenced by a file.
 
@@ -356,10 +354,15 @@ def get_amd_references(workspace, path, stream=None):
 
     if os.path.isfile(reference_file):
         element_tree = ET.parse(reference_file)
-        if stream is None:
+        if stream is None and directory is None:
             reference_elements = element_tree.xpath(
                 '/amdReferences/amdReference[@file="%s" '
                 'and not(@stream)]' % path
+            )
+        elif stream is None and directory is not None:
+            directory = os.path.normpath(directory)
+            reference_elements = element_tree.xpath(
+                '/amdReferences/amdReference[@directory="%s"]' % directory
             )
         else:
             reference_elements = element_tree.xpath(
@@ -369,16 +372,6 @@ def get_amd_references(workspace, path, stream=None):
         amd_ids = [element.text for element in reference_elements]
 
     return set(amd_ids)
-
-
-def get_links_event_agent(workspace, path):
-    """Get link identifiers for events and agents
-    :workspace: Workspace path
-    :path: Path of the digital object
-    """
-    links_e = ids_for_files(workspace, path, 'event.xml', dash_count=1)
-    links_a = ids_for_files(workspace, path, 'agent.xml', dash_count=1)
-    return links_e + links_a
 
 
 def create_div(workspace, divs, parent, filesec, fileset, path='',
@@ -414,7 +407,7 @@ def create_div(workspace, divs, parent, filesec, fileset, path='',
         # It's not a file, lets create a div element
         else:
             div_path = os.path.join(path, div)
-            amdids = get_links_event_agent(workspace, div_path)
+            amdids = get_amd_references(workspace, directory=div_path)
             dmdsec_id = ids_for_files(workspace, div_path, 'dmdsec.xml')
             if type_attr == 'Directory-physical':
                 div_el = mets.div(type_attr='directory', label=div,
@@ -444,8 +437,7 @@ def create_filegrp(workspace, filegrp, fileset):
     :returns: ``None``
     """
     for path in fileset:
-        amdids = get_links_event_agent(workspace, path)
-        add_file_to_filesec(workspace, path, filegrp, amdids)
+        add_file_to_filesec(workspace, path, filegrp)
 
 
 def add_file_properties(properties, path, fptr):

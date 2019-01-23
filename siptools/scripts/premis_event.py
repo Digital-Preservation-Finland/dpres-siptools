@@ -102,7 +102,7 @@ def main(arguments=None):
     directory = None
 
     if args.event_target and os.path.isdir(args.event_target):
-        directory = args.event_target
+        directory = os.path.normpath(args.event_target)
     elif args.event_target and os.path.isfile(args.event_target):
         event_target = args.event_target
     elif not args.event_target:
