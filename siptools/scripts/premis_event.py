@@ -98,13 +98,23 @@ def main(arguments=None):
 
     args = parse_arguments(arguments)
 
+    event_target = None
+    directory = None
+
+    if args.event_target and os.path.isdir(args.event_target):
+        directory = args.event_target
+    elif args.event_target and os.path.isfile(args.event_target):
+        event_target = args.event_target
+    elif not args.event_target:
+        directory = '.'
+
     if args.agent_name or args.agent_type:
         agent_identifier = str(uuid4())
         agent = create_premis_agent(args.agent_name,
                                     args.agent_type, agent_identifier)
 
         agent_creator = PremisCreator(args.workspace)
-        agent_creator.add_md(agent, args.event_target)
+        agent_creator.add_md(agent, event_target, directory=directory)
         agent_creator.write(mdtype="PREMIS:AGENT", stdout=args.stdout)
 
         if args.stdout:
@@ -120,8 +130,9 @@ def main(arguments=None):
         args.event_outcome_detail,
         agent_identifier
     )
+
     creator = PremisCreator(args.workspace)
-    creator.add_md(event, args.event_target)
+    creator.add_md(event, event_target, directory=directory)
     creator.write(mdtype="PREMIS:EVENT", stdout=args.stdout)
 
     return 0

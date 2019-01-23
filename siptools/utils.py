@@ -188,14 +188,15 @@ class AmdCreator(object):
     def __init__(self, workspace):
         """
         :workspace: Output path
-        :md_elements: List of tuples (XML Element, filename, stream)
-        :references: List of tuples (amd_id, filename, stream)
+        :md_elements: List of tuples (XML Element, filename, stream,
+                      directory)
+        :references: List of tuples (amd_id, filename, stream, directory)
         """
         self.workspace = workspace
         self.md_elements = []
         self.references = []
 
-    def add_reference(self, amd_id, filepath, stream=None):
+    def add_reference(self, amd_id, filepath, stream=None, directory=None):
         """Add administrative metadata reference information to the
         references list, which is written into amd-references after
         self.write() is called. amd-references is read by the
@@ -204,14 +205,16 @@ class AmdCreator(object):
 
         :amd_id: ID of administrative MD element to be referenced
         :filepath: path of the file linking to the MD element
+        :stream: id of the stream linking to the MD element
+        :filepath: path of the directory linking to the MD element
 
         :returns: None
         """
 
-        reference = (amd_id, filepath, stream)
+        reference = (amd_id, filepath, stream, directory)
         self.references.append(reference)
 
-    def add_md(self, metadata, filename=None, stream=None):
+    def add_md(self, metadata, filename=None, stream=None, directory=None):
         """Append metadata XML element into self.md_elements list.
         self.md_elements is read by write() function and all the elements
         are written into corresponding METS XML files.
@@ -225,13 +228,14 @@ class AmdCreator(object):
         AmdCreator.
 
         :metadata: Metadata XML element
-        :filename: path of the file linking to the MD element
+        :filename: Path of the file linking to the MD element
         :stream: Stream index, or None if not a stream
+        :directory: Path of the directory linking to the MD element
 
         :returns: None
         """
 
-        md_element = (metadata, filename, stream)
+        md_element = (metadata, filename, stream, directory)
         self.md_elements.append(md_element)
 
     def write_references(self):
@@ -254,7 +258,7 @@ class AmdCreator(object):
             references_tree = lxml.etree.ElementTree(references)
 
         # Add all the references
-        for amd_id, filepath, stream in self.references:
+        for amd_id, filepath, stream, directory in self.references:
             reference = lxml.etree.Element('amdReference')
             reference.text = amd_id
             if filepath is not None and isinstance(filepath, str):
@@ -264,6 +268,11 @@ class AmdCreator(object):
                 reference.set('file', filepath)
             if stream is not None:
                 reference.set('stream', stream)
+            if directory is not None and isinstance(directory, str):
+                reference.set(
+                    'directory', directory.decode(sys.getfilesystemencoding()))
+            elif directory is not None:
+                reference.set('directory', directory)
             references.append(reference)
 
         # Write reference list file
@@ -345,12 +354,12 @@ class AmdCreator(object):
         """
 
         # Write METS XML and append self.references
-        for metadata, filename, stream in self.md_elements:
+        for metadata, filename, stream, directory in self.md_elements:
             amd_id, _ = self.write_md(
                 metadata, mdtype, mdtypeversion, othermdtype=othermdtype,
                 section=section, stdout=stdout
             )
-            self.add_reference(amd_id, filename, stream)
+            self.add_reference(amd_id, filename, stream, directory)
 
         # Write amd-references
         self.write_references()
