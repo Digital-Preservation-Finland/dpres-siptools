@@ -343,26 +343,29 @@ def get_fileid(filesec, path):
 
 def get_amd_references(workspace, path=None, stream=None, directory=None):
     """If administrative MD reference file exists in workspace, read
-    the MD IDs that should be referenced by a file.
+    the MD IDs that should be referenced for the file, stream or
+    directory in question.
 
-    :param str workspace: path to directory from which othermd
-    :param str path: path of the file for which the IDs are read
-    :returns list: list of administrative MD IDs
+    :workspace: path to workspace directory
+    :path: path of the file for which MD IDs are read
+    :stream: stream index for which MD IDs are read
+    :directory: path of the directory for which MD IDs are read
+    :returns: a set of administrative MD IDs
     """
     reference_file = os.path.join(workspace, 'amd-references.xml')
     amd_ids = []
 
     if os.path.isfile(reference_file):
         element_tree = ET.parse(reference_file)
-        if stream is None and directory is None:
-            reference_elements = element_tree.xpath(
-                '/amdReferences/amdReference[@file="%s" '
-                'and not(@stream)]' % path
-            )
-        elif stream is None and directory is not None:
+        if directory:
             directory = os.path.normpath(directory)
             reference_elements = element_tree.xpath(
                 '/amdReferences/amdReference[@directory="%s"]' % directory
+            )
+        elif stream is None:
+            reference_elements = element_tree.xpath(
+                '/amdReferences/amdReference[@file="%s" '
+                'and not(@stream)]' % path
             )
         else:
             reference_elements = element_tree.xpath(

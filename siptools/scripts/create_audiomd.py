@@ -56,7 +56,7 @@ def main(arguments=None):
 
 class AudiomdCreator(AmdCreator):
     """Subclass of AmdCreator, which generates audioMD metadata
-    for WAV files.
+    for audio files.
     """
 
     def add_audiomd_md(self, filepath, filerel=None, is_streams=False):

@@ -76,8 +76,10 @@ def _pop_attributes(attributes, attrib_list, path):
         attrib_list.append('%s="%s" @ %s\n' % (key, attribute, path))
 
 
-def remove_identifiers(metadata, prefix, linking_prefix=None):
-    """Removes the unique identifier for the XML metadata."""
+def _remove_identifiers(metadata, prefix, linking_prefix=None):
+    """Removes the unique identifier and the linking identifiers for the
+    PREMIS XML metadata.
+    """
     for identifier in premis.iter_elements(
             metadata, '%sIdentifierValue' % prefix):
         identifier.getparent().remove(identifier)
@@ -92,7 +94,8 @@ def remove_identifiers(metadata, prefix, linking_prefix=None):
 def generate_digest(etree):
     """Generating MD5 digest from etree. Identical metadata must generate
     same digest even if attributes of any given element are ordered
-    differently.
+    differently. Also some metadata sections contain unique identifiers
+    that have to be removed if digest comparison is to work.
 
     This function creates a copy of the etree. All the attributes of the copy
     are removed and collected to a separete list with path information to the
@@ -100,7 +103,8 @@ def generate_digest(etree):
     to the end of the serialized XML string without the attributes. Thus
     creating a string with all the original information except the information
     about attribute ordering inside any given XML element. This string is
-    hashed and the digest returned.
+    hashed and the digest returned. For some PREMIS metadata identifiers are
+    also removed.
 
     :etree: XML element for which the MD5 hash is generated
     :returns: MD5 hash
@@ -112,8 +116,8 @@ def generate_digest(etree):
     attrib_list = []
 
     # Remove premis identifiers before metadata comparison
-    elem_tree = remove_identifiers(elem_tree, 'event', 'Agent')
-    elem_tree = remove_identifiers(elem_tree, 'agent')
+    elem_tree = _remove_identifiers(elem_tree, 'event', 'Agent')
+    elem_tree = _remove_identifiers(elem_tree, 'agent')
 
     # pop all attributes
     for element in root.iter():
@@ -206,7 +210,7 @@ class AmdCreator(object):
         :amd_id: ID of administrative MD element to be referenced
         :filepath: path of the file linking to the MD element
         :stream: id of the stream linking to the MD element
-        :filepath: path of the directory linking to the MD element
+        :directory: path of the directory linking to the MD element
 
         :returns: None
         """
@@ -261,18 +265,14 @@ class AmdCreator(object):
         for amd_id, filepath, stream, directory in self.references:
             reference = lxml.etree.Element('amdReference')
             reference.text = amd_id
-            if filepath is not None and isinstance(filepath, str):
-                reference.set(
-                    'file', filepath.decode(sys.getfilesystemencoding()))
-            elif filepath is not None:
-                reference.set('file', filepath)
-            if stream is not None:
-                reference.set('stream', stream)
-            if directory is not None and isinstance(directory, str):
+            if directory:
                 reference.set(
                     'directory', directory.decode(sys.getfilesystemencoding()))
-            elif directory is not None:
-                reference.set('directory', directory)
+            if filepath:
+                reference.set(
+                    'file', filepath.decode(sys.getfilesystemencoding()))
+            if stream:
+                reference.set('stream', stream)
             references.append(reference)
 
         # Write reference list file
