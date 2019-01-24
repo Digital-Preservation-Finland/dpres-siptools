@@ -144,3 +144,25 @@ def test_same_metadata_same_hash():
         root = lxml.etree.parse(
             "tests/data/sample_techmd-references.xml").getroot()
         assert digest == utils.generate_digest(root)
+
+
+def test_different_ids_same_hash():
+    """Test that the generate_digest function returns the same hash for
+    two premis metadata sections with different identifiers.
+    """
+    event1 = '<premis:event xmlns:premis="info:lc/xmlns/premis-v2">' \
+             '<premis:eventIdentifier><premis:eventIdentifierType>a' \
+             '</premis:eventIdentifierType><premis:eventIdentifierValue>b' \
+             '</premis:eventIdentifierValue>123</premis:eventIdentifier>' \
+             '</premis:event>'
+
+    event2 = '<premis:event xmlns:premis="info:lc/xmlns/premis-v2">' \
+             '<premis:eventIdentifier><premis:eventIdentifierType>a' \
+             '</premis:eventIdentifierType><premis:eventIdentifierValue>b' \
+             '</premis:eventIdentifierValue>134</premis:eventIdentifier>' \
+             '</premis:event>'
+
+    xml1 = lxml.etree.fromstring(event1)
+    xml2 = lxml.etree.fromstring(event2)
+
+    assert utils.generate_digest(xml1) == utils.generate_digest(xml2)

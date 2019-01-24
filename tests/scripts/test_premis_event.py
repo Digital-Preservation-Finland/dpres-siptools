@@ -1,7 +1,7 @@
 """Tests for :mod:`siptools.scripts.premis_event` module"""
 import os
 import sys
-import xml.etree.ElementTree as ET
+import lxml.etree as ET
 import pytest
 from siptools.scripts import premis_event
 
@@ -85,6 +85,85 @@ def test_premis_event_ok(testpath):
         == \
         agent_xml.findall('.//premis:agentIdentifierValue',
                           namespaces=namespaces)[0].text
+
+
+def test_amd_links_root(testpath):
+    """Tests that premis_event script writes reference links correctly
+    to the amd-references file.
+    """
+    return_code = premis_event.main(
+        [
+            'creation',
+            '2016-10-13T12:30:55',
+            '--event_detail', 'Testing',
+            '--event_outcome', 'success',
+            '--workspace', testpath
+        ]
+    )
+
+    # Main function should return 0
+    assert return_code == 0
+
+    ref = os.path.join(testpath, 'amd-references.xml')
+    assert os.path.isfile(ref)
+
+    root = ET.parse(ref).getroot()
+    dir_ref = root.xpath("/amdReferences/amdReference")[0].get('directory')
+    assert dir_ref == '.'
+
+
+def test_amd_links_file(testpath):
+    """Tests that premis_event script writes reference links correctly
+    to the amd-references file with a proper file target.
+    """
+    target = 'tests/data/test_import.pdf'
+    return_code = premis_event.main(
+        [
+            'creation',
+            '2016-10-13T12:30:55',
+            '--event_detail', 'Testing',
+            '--event_outcome', 'success',
+            '--workspace', testpath,
+            '--event_target', target
+        ]
+    )
+
+    # Main function should return 0
+    assert return_code == 0
+
+    ref = os.path.join(testpath, 'amd-references.xml')
+    assert os.path.isfile(ref)
+
+    root = ET.parse(ref).getroot()
+    dir_ref = root.xpath("/amdReferences/amdReference")[0].get('file')
+    assert dir_ref == target
+
+
+def test_amd_links_dir(testpath):
+    """Tests that premis_event script writes reference links correctly
+    to the amd-references file with a directory target.
+    """
+    target = 'tests/data'
+    return_code = premis_event.main(
+        [
+            'creation',
+            '2016-10-13T12:30:55',
+            '--event_detail', 'Testing',
+            '--event_outcome', 'success',
+            '--workspace', testpath,
+            '--event_target', target
+        ]
+    )
+
+    # Main function should return 0
+    assert return_code == 0
+
+    ref = os.path.join(testpath, 'amd-references.xml')
+    assert os.path.isfile(ref)
+
+    root = ET.parse(ref).getroot()
+    dir_ref = root.xpath("/amdReferences/amdReference")[0].get('directory')
+    assert dir_ref == target
 
 
 def test_premis_event_fail(testpath):

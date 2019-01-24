@@ -8,6 +8,7 @@ import mets
 from siptools.xml.mets import NAMESPACES
 from siptools.scripts import compile_structmap
 from siptools.scripts import import_object
+from siptools.scripts import premis_event
 from siptools.scripts import import_description
 
 
@@ -15,6 +16,10 @@ def create_test_data(workspace):
     """Create technical metadata test data."""
     import_object.main(['--workspace', workspace, '--skip_inspection',
                         'tests/data/structured/Software files/koodi.java'])
+    premis_event.main(['creation', '2016-10-13T12:30:55',
+                       '--event_detail', 'Testing', '--event_outcome',
+                       'success', '--workspace', workspace, '--event_target',
+                       'tests/data/structured/Software files'])
 
 
 def test_compile_structmap_ok(testpath):
@@ -154,8 +159,12 @@ def test_othermd_references(testpath):
 
 
 # pylint: disable=invalid-name
-def test_compile_structmap_directory_label(testpath):
-    """Test the compile_structmap script."""
+def test_compile_structmap_directory(testpath):
+    """Test the compile_structmap script. Assert that directory
+    structure is transferred to the structmap and that the premis
+    event ID created in the test data is linked to the correct div
+    element.
+    """
     create_test_data(testpath)
     return_code = compile_structmap.main(
         ['--workspace', testpath, '--type_attr', 'Directory-physical']
@@ -168,6 +177,11 @@ def test_compile_structmap_directory_label(testpath):
     assert len(sm_root.xpath('//mets:div[@TYPE="directory" and '
                              '@LABEL="Software files"]',
                              namespaces=NAMESPACES)) == 1
+
+    assert sm_root.xpath(
+        '//mets:div[@TYPE="directory" and @LABEL="Software files"]',
+        namespaces=NAMESPACES)[0].get(
+            'ADMID') == '_47244c09fb49dfd4d0577d29820bfa6c'
 
     assert return_code == 0
 
