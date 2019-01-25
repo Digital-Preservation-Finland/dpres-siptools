@@ -214,9 +214,12 @@ class AmdCreator(object):
 
         :returns: None
         """
-
-        reference = (amd_id, filepath, stream, directory)
-        self.references.append(reference)
+        references = {}
+        references['amd_id'] = amd_id
+        references['file'] = filepath
+        references['stream'] = stream
+        references['directory'] = directory
+        self.references.append(references)
 
     def add_md(self, metadata, filename=None, stream=None, directory=None):
         """Append metadata XML element into self.md_elements list.
@@ -262,18 +265,18 @@ class AmdCreator(object):
             references_tree = lxml.etree.ElementTree(references)
 
         # Add all the references
-        for amd_id, filepath, stream, directory in self.references:
+        for ref in self.references:
             reference = lxml.etree.Element('amdReference')
-            reference.text = amd_id
-            if directory:
-                reference.set(
-                    'directory', directory.decode(sys.getfilesystemencoding()))
-            if filepath:
-                reference.set(
-                    'file', filepath.decode(sys.getfilesystemencoding()))
-            if stream:
-                reference.set('stream', stream)
-            references.append(reference)
+            reference.text = ref['amd_id']
+            for key in ref:
+                if key == 'amd_id':
+                    pass
+                elif isinstance(ref[key], str):
+                    reference.set(
+                        key, ref[key].decode(sys.getfilesystemencoding()))
+                elif ref[key]:
+                    reference.set(key, ref[key])
+                references.append(reference)
 
         # Write reference list file
         references_tree.write(reference_file,
