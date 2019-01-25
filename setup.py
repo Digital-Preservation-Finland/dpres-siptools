@@ -44,6 +44,7 @@ def main():
             "nisomix",
             "addml",
             "audiomd"
+            "videomd"
         ],
         dependency_links=[
             'git+https://gitlab.csc.fi/dpres/xml-helpers.git'
@@ -57,6 +58,7 @@ def main():
             '@develop#egg=nisomix-0.0',
             'git+https://gitlab.csc.fi/dpres/addml.git@develop#egg=addml-0.0',
             'git+https://gitlab.csc.fi/dpres/audiomd.git@develop#egg=audiomd-0.0'
+            'git+https://gitlab.csc.fi/dpres/videomd.git@develop#egg=videomd-0.0'
         ],
         entry_points={'console_scripts': scripts_list()}
 
