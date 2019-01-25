@@ -80,7 +80,9 @@ def test_inspect_image():
         'tests/data/images/tiff1.tif'
     )
 
-    assert metadata["compression"] == 'b44a'
+    # python-wand returns different values for versions 0.4.x and 0.5.x
+    assert metadata["compression"] in ['b44a', 'no']
+
     assert metadata["byteorder"] == "little endian"
     assert metadata["width"] == "2"
     assert metadata["height"] == "2"
@@ -101,7 +103,8 @@ def test_create_mix():
     # compression
     xpath = '/ns0:mix/ns0:BasicDigitalObjectInformation/ns0:Compression/'\
         'ns0:compressionScheme'
-    assert xml.xpath(xpath, namespaces=namespaces)[0].text == "b44a"
+    # python-wand returns different values for versions 0.4.x and 0.5.x
+    assert xml.xpath(xpath, namespaces=namespaces)[0].text in ["b44a", "no"]
 
     # byteorder
     xpath = '/ns0:mix/ns0:BasicDigitalObjectInformation/ns0:byteOrder'
