@@ -6,18 +6,6 @@ import pytest
 from siptools.scripts import premis_event
 
 
-def get_techmd_file(path, input_file):
-    """Get id"""
-    ref = os.path.join(path, 'amd-references.xml')
-    root = ET.parse(ref).getroot()
-    amdref = root.xpath("/amdreferences/amdreference[not(@stream) "
-                        "and @file='%s']" % input_file.decode(
-                            sys.getfilesystemencoding()))[0]
-    output = os.path.join(path, amdref.text[1:] +
-                          "-PREMIS%3AEVENT-amd.xml")
-    return output
-
-
 def test_premis_event_ok(testpath):
     """Test that main function produces event.xml and agent.xml files with
     correct elements.

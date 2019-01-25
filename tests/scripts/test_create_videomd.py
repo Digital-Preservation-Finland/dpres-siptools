@@ -144,9 +144,9 @@ def test_invalid_file():
         create_videomd.create_videomd("non-existent.mpg")
 
 
-def test_create_videomd_techmdfile(testpath):
-    """Test that ``create_videomd_techmdfile`` writes VideoMD file and techMD
-    reference file.
+def test_create_videomd(testpath):
+    """Test that ``create_videomd`` writes VideoMD file and
+    amd-reference file.
     """
     creator = create_videomd.VideomdCreator(testpath)
 

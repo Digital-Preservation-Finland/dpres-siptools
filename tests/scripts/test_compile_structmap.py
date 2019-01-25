@@ -53,7 +53,7 @@ def test_compile_structmap_dmdsecid(testpath):
     descriptive metadata in dmdsec.xml file. The ID of dmdSec should be
     included in structMap.
     """
-    # Create -premis-techmd.xml and dmdsec.xml files in workspace
+    # Create -premis-amd.xml and dmdsec.xml files in workspace
     import_object.main(['--workspace', testpath, '--skip_inspection',
                         'tests/data/structured/Software files/koodi.java'])
     dmdsec = import_description.create_mets(
@@ -105,7 +105,7 @@ def test_get_amd_references(testpath):
     """Test get_amd_references function. Copies sample MD reference file
     to workspace and reads the administrative MD IDs for a file.
     """
-    shutil.copy('tests/data/sample_techmd-references.xml',
+    shutil.copy('tests/data/sample_amd-references.xml',
                 os.path.join(testpath, 'amd-references.xml'))
 
     # The sample file contains two references for file2
@@ -115,8 +115,8 @@ def test_get_amd_references(testpath):
 
 def test_othermd_references(testpath):
     """Test that main function creates references to othermd-metadata from file
-    element in fileSec. A sample workspace contains techMD files, MIX metadata
-    files, and techMD reference file for three image files. Two of the images
+    element in fileSec. A sample workspace contains aMD files, MIX metadata
+    files, and aMD reference file for three image files. Two of the images
     are similar and therefore have same MIX metadata.
     """
 
@@ -140,22 +140,22 @@ def test_othermd_references(testpath):
 
     # This dictonary maps filepath to MIX techMD IDs excpected to be referenced
     # in fileSec
-    techmd_ids = {"sample_images/sample_tiff1_compressed.tif":
-                  "_c08061e439bd40407c9e5332fec6084e",
-                  "sample_images/sample_tiff1.tif":
-                  "_e50655691d21e110a3c4b38da52fb91c",
-                  "sample_images/sample_tiff2.tif":
-                  "_e50655691d21e110a3c4b38da52fb91c"}
+    amd_ids = {"sample_images/sample_tiff1_compressed.tif":
+               "_c08061e439bd40407c9e5332fec6084e",
+               "sample_images/sample_tiff1.tif":
+               "_e50655691d21e110a3c4b38da52fb91c",
+               "sample_images/sample_tiff2.tif":
+               "_e50655691d21e110a3c4b38da52fb91c"}
 
-    for filepath in techmd_ids:
+    for filepath in amd_ids:
         # Find file element from mets based on filepath
         xpath = '//mets:FLocat[@xlink:href="file://%s"]/parent::mets:file' \
             % filepath
         file_element = mets_document.xpath(xpath, namespaces=namespaces)
 
         # The file element should have reference to techMD element defined in
-        # ``techmd_ids`` dictionary
-        assert techmd_ids[filepath] in file_element[0].get('ADMID')
+        # ``amd_ids`` dictionary
+        assert amd_ids[filepath] in file_element[0].get('ADMID')
 
 
 # pylint: disable=invalid-name

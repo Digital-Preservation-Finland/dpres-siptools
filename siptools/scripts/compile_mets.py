@@ -143,8 +143,8 @@ def main(arguments=None):
 def create_mets(workspace, mets_attributes, metshdr_attributes,
                 organization, packagingservice=None):
     """Creates METS document element tree. Looks for files with prefix
-    "-techmd.xml", "-agent.xml", "-event.xml", "dmdsec.xml", "structmap.xml",
-    "filesec.xml", and "rightsmd.xml" from workspace and merges the dmdSec,
+    "-amd.xml", "dmdsec.xml", "structmap.xml", "filesec.xml", and
+    "rightsmd.xml" from workspace and merges the dmdSec,
     amdSec, fileSec, and structMap elements (one element from each file) into
     one METS document. Also metsHdr element is created and included in
     document.

@@ -13,9 +13,9 @@ def parse_arguments(arguments):
 
     parser = argparse.ArgumentParser(
         description="Tool for creating ADDML metadata for a CSV file. The "
-                    "ADDML metadata is written to <hash>-ADDML-techmd.xml "
+                    "ADDML metadata is written to <hash>-ADDML-amd.xml "
                     "METS XML file in the workspace directory. The ADDML "
-                    "techMD reference is written to techmd-references.xml. "
+                    "techMD reference is written to amd-references.xml. "
                     "If similar ADDML metadata is already found in workspace, "
                     "just the new CSV file name is appended to the existing "
                     "metadata."
@@ -86,7 +86,7 @@ class AddmlCreator(AmdCreator):
         the XML file to be written later. A tuple of the
         metadata is thus used as the dict key, which makes it possible
         to efficiently check if corresponding metadata element has
-        already been created. This means that the write_techmdfile()
+        already been created. This means that the write_md()
         function needs to be called only once for each distinct metadata types.
 
         :csv_file: CSV file name
@@ -121,7 +121,7 @@ class AddmlCreator(AmdCreator):
 
     def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML",
               filerel=None):
-        """ Write all the METS XML files and techmdreference file.
+        """ Write all the METS XML files and amd-reference file.
         Base class write is overwritten to handle the references
         correctly and add flatFile fields to METS XML files.
 
@@ -133,21 +133,21 @@ class AddmlCreator(AmdCreator):
             filenames = self.filenames[key]
 
             # Create METS XML file
-            techmd_id, techmd_fname = \
+            amd_id, amd_fname = \
                 self.write_md(metadata, mdtype, mdtypeversion, othermdtype)
 
             # Add all the files to references
             for filename in filenames:
-                self.add_reference(techmd_id, filerel if filerel else filename)
+                self.add_reference(amd_id, filerel if filerel else filename)
 
             # Append all the flatFile elements to the METS XML file
             append = [
                 flat_file_str(encode_path(filename), "ref001")
                 for filename in filenames
             ]
-            append_lines(techmd_fname, "<addml:flatFiles>", append)
+            append_lines(amd_fname, "<addml:flatFiles>", append)
 
-        # Write techmdreferences
+        # Write amd-references
         self.write_references()
 
         # Clear filenames and etrees
@@ -221,8 +221,8 @@ def create_addml(
 ):
 
     """Creates ADDML metadata for a CSV file by default
-    without flatFile element, which is added by
-    create_addml_techmdfile() function. This is done to
+    without flatFile element, which is added by the
+    write() method of the AddmlCreator class. This is done to
     avoid getting different hashes for the same metadata,
     but different filename.
 

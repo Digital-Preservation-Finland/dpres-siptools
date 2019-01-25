@@ -14,9 +14,9 @@ def parse_arguments(arguments):
 
     parser = argparse.ArgumentParser(
         description="Tool for creating videoMD metadata for a video file. The "
-                    "videoMD metadata is written to <hash>-VideoMD-techmd.xml "
+                    "videoMD metadata is written to <hash>-VideoMD-amd.xml "
                     "METS XML file in the workspace directory. The videoMD "
-                    "techMD reference is written to techmd-references.xml. "
+                    "techMD reference is written to amd-references.xml. "
                     "If the same videoMD metadata is already found in "
                     "workspace, just the new file or stream is appended to "
                     "the existing metadata."

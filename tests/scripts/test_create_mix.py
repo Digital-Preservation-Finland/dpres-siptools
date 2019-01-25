@@ -35,7 +35,7 @@ def test_create_mix_techmdfile(testpath):
     files = os.listdir(testpath)
     assert len([x for x in files if x.endswith('NISOIMG-amd.xml')]) == 2
 
-    # Count the references written to techMD reference file. There should be
+    # Count the references written to amd-reference file. There should be
     # one reference per image file.
     xml = lxml.etree.parse(os.path.join(testpath, 'amd-references.xml'))
     assert len(xml.xpath('//amdReference')) == 3
@@ -65,7 +65,7 @@ def test_main_utf8_files(testpath):
     finally:
         os.chdir(last_path)
 
-    # Check that filename is found in techMD reference file.
+    # Check that filename is found in amd-reference file.
     xml = lxml.etree.parse(os.path.join(testpath, 'amd-references.xml'))
     assert len(xml.xpath(u'//amdReference[@file="data/äöå.tif"]')) == 1
 

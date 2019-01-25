@@ -10,19 +10,19 @@ from siptools.scripts import import_object
 from siptools.xml.mets import NAMESPACES
 
 
-def get_techmd_file(path, input_file, stream=None):
+def get_amd_file(path, input_file, stream=None):
     """Get id"""
     ref = os.path.join(path, 'amd-references.xml')
     root = ET.parse(ref).getroot()
     if stream is None:
-        techref = root.xpath("/amdReferences/amdReference[not(@stream) "
-                             "and @file='%s']" % input_file.decode(
-                                 sys.getfilesystemencoding()))[0]
+        amdref = root.xpath("/amdReferences/amdReference[not(@stream) "
+                            "and @file='%s']" % input_file.decode(
+                                sys.getfilesystemencoding()))[0]
     else:
-        techref = root.xpath("/amdReferences/amdReference[@stream='%s' "
-                             "and @file='%s']" % (stream, input_file.decode(
-                                 sys.getfilesystemencoding())))[0]
-    output = os.path.join(path, techref.text[1:] +
+        amdref = root.xpath("/amdReferences/amdReference[@stream='%s' "
+                            "and @file='%s']" % (stream, input_file.decode(
+                                sys.getfilesystemencoding())))[0]
+    output = os.path.join(path, amdref.text[1:] +
                           "-PREMIS%3AOBJECT-amd.xml")
     return output
 
@@ -33,7 +33,7 @@ def test_import_object_ok(testpath):
     arguments = ['--workspace', testpath, '--skip_inspection', input_file]
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -53,7 +53,7 @@ def test_import_object_skip_inspection_ok(testpath):
                  '--date_created', datetime.datetime.utcnow().isoformat()]
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -72,7 +72,7 @@ def test_import_object_skip_inspection_nodate_ok(testpath):
                  '1qw87geiewgwe9']
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -93,7 +93,7 @@ def test_import_object_structured_ok(testpath):
         return_code = import_object.main(arguments)
         test_file = os.path.relpath(element, os.curdir)
 
-        output = get_techmd_file(testpath, test_file)
+        output = get_amd_file(testpath, test_file)
         tree = ET.parse(output)
         root = tree.getroot()
 
@@ -134,7 +134,7 @@ def test_import_object_identifier(testpath):
                  '--identifier', 'local', 'test-id', input_file]
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -153,7 +153,7 @@ def test_import_object_format_registry(testpath):
                  '--format_registry', 'local', 'test-key', input_file]
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -172,7 +172,7 @@ def test_import_object_validate_pdf_ok(testpath):
     arguments = ['--workspace', testpath, 'tests/data/test_import.pdf']
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -208,7 +208,7 @@ def test_import_object_utf8(testpath):
                                utf8_file]) == 0
 
     # Check output
-    output = get_techmd_file(testpath, utf8_file)
+    output = get_amd_file(testpath, utf8_file)
     tree = ET.parse(output)
     root = tree.getroot()
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
@@ -221,7 +221,7 @@ def test_import_object_validate_tiff_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_tiff.tif']
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -244,7 +244,7 @@ def test_import_object_validate_jpeg_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_jpeg.jpeg']
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -267,7 +267,7 @@ def test_import_object_validate_text_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/text-file.txt']
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -290,7 +290,7 @@ def test_import_object_validate_csv_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/csvfile.csv']
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -313,7 +313,7 @@ def test_import_object_validate_mets_xml_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/mets_valid_minimal.xml']
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -336,7 +336,7 @@ def test_import_object_validate_odt_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/ODF_Text_Document.odt']
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -361,7 +361,7 @@ def test_import_object_validate_msexcel_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/MS_Excel_97-2003.xls']
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -385,7 +385,7 @@ def test_import_object_validate_msword_ok(input_file, testpath):
                  'tests/data/MS_Word_2007-2013_XML.docx']
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -409,7 +409,7 @@ def test_import_object_validate_wav_ok(input_file, version, testpath):
     arguments = ['--workspace', testpath, input_file]
     return_code = import_object.main(arguments)
 
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
 
@@ -484,7 +484,7 @@ def test_streams(testpath):
     # Streams
     stream_id = []
     for i in [0, 1]:
-        output = get_techmd_file(testpath, input_file, str(i))
+        output = get_amd_file(testpath, input_file, str(i))
         tree = ET.parse(output)
         root = tree.getroot()
         if i == 1:
@@ -505,22 +505,24 @@ def test_streams(testpath):
                           namespaces=NAMESPACES)[0] == 'premis:bitstream'
 
     # Container
-    output = get_techmd_file(testpath, input_file)
+    output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
     assert root.xpath('//premis:formatName',
-                          namespaces=NAMESPACES)[0].text == 'video/mp4'
+                      namespaces=NAMESPACES)[0].text == 'video/mp4'
     assert len(root.xpath('//premis:messageDigest',
                           namespaces=NAMESPACES)) == 1
     assert len(root.xpath('//premis:relationship',
                           namespaces=NAMESPACES)) == 2
     assert root.xpath('//premis:object/@xsi:type',
-                          namespaces=NAMESPACES)[0] == 'premis:file'
-    assert len(root.xpath('//premis:relatedObjectIdentifierValue[.="%s"]' % stream_id[0],
-                          namespaces=NAMESPACES)) == 1
-    assert len(root.xpath('//premis:relatedObjectIdentifierValue[.="%s"]' % stream_id[1],
-                          namespaces=NAMESPACES)) == 1
+                      namespaces=NAMESPACES)[0] == 'premis:file'
+    assert len(root.xpath(
+        '//premis:relatedObjectIdentifierValue[.="%s"]' % stream_id[0],
+        namespaces=NAMESPACES)) == 1
+    assert len(root.xpath(
+        '//premis:relatedObjectIdentifierValue[.="%s"]' % stream_id[1],
+        namespaces=NAMESPACES)) == 1
 
     assert return_code == 0

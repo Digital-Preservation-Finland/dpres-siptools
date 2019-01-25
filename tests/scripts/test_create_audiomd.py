@@ -116,9 +116,9 @@ def test_invalid_wav_file():
         create_audiomd.create_audiomd("non-existent.wav")
 
 
-def test_create_audiomd_techmdfile(testpath):
-    """Test that ``create_audiomd_techmdfile`` writes AudioMD file and techMD
-    reference file.
+def test_create_audiomd(testpath):
+    """Test that ``create_audiomd`` writes AudioMD file and
+    amd-reference file.
     """
     creator = create_audiomd.AudiomdCreator(testpath)
 
@@ -134,7 +134,7 @@ def test_create_audiomd_techmdfile(testpath):
 
     creator.write()
 
-    # Check that techmdreference and one AudioMD-techmd files are created
+    # Check that amd-reference and one AudioMD-amd files are created
     assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
 
     filepath = os.path.join(

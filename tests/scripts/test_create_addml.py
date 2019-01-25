@@ -67,10 +67,10 @@ def test_create_addml_with_flatfile():
     assert decode_path(flatfile.get("name")) == "path/to/test"
 
 
-def test_create_addml_techmdfile(testpath):
+def test_create_addml_creator(testpath):
     """
-    Test that ``create_addml_techmdfile`` writes addml file and techMD
-    reference file without unnecessary duplication.
+    Test that ``create_addml`` writes addml file and
+    amd-reference file without unnecessary duplication.
     """
 
     creator = create_addml.AddmlCreator(testpath)
@@ -102,12 +102,12 @@ def test_create_addml_techmdfile(testpath):
         testpath, 'dd678fd96b655fd95efbb9fe4a77483a-ADDML-amd.xml'
     )
 
-    # Check that techmdreference and the two ADDML-techmd files are created
+    # Check that amd-reference and the two ADDML-amd files are created
     assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
     assert os.path.isfile(file1)
     assert os.path.isfile(file2)
 
-    # Parse ADDML-techmd files to check that right flatFiles are added
+    # Parse ADDML-amd files to check that right flatFiles are added
     root1 = ET.parse(file1)
     root2 = ET.parse(file2)
 

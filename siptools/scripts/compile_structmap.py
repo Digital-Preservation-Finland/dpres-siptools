@@ -26,9 +26,9 @@ def parse_arguments(arguments):
 
     parser = argparse.ArgumentParser(
         description="Tool for generating METS fileSec and structMap based on "
-                    "technical metada files (-premis-techmd.xml -suffix) and "
-                    "descriptive metadata files (-dmdsec.xml -suffix) found "
-                    "in workspace directory. Outputs two XML files: "
+                    "administrative metada files (-premis-amd.xml -suffix) "
+                    "and descriptive metadata files (-dmdsec.xml -suffix) "
+                    "found in the workspace directory. Outputs two XML files: "
                     "filesec.xml and structmap.xml"
     )
     parser.add_argument('--dmdsec_struct',
@@ -184,8 +184,8 @@ def div_structure(fileset):
     :returns: Directory tree as a dict like object
     """
     divs = tree()
-    for techmd_file in fileset:
-        add(divs, techmd_file.split('/'))
+    for amd_file in fileset:
+        add(divs, amd_file.split('/'))
     return divs
 
 
@@ -277,8 +277,8 @@ def ead3_c_div(parent, structmap, filegrp, workspace, fileset, cnum=None):
                 ead3_file = files.xpath("./@href")[0]
             if ead3_file.startswith('/'):
                 ead3_file = ead3_file[1:]
-            tech_file = [x for x in fileset if ead3_file in x][0]
-            fileid = add_file_to_filesec(workspace, tech_file, filegrp)
+            amd_file = [x for x in fileset if ead3_file in x][0]
+            fileid = add_file_to_filesec(workspace, amd_file, filegrp)
             dao = mets.fptr(fileid=fileid)
             c_div.append(dao)
 
@@ -288,8 +288,8 @@ def ead3_c_div(parent, structmap, filegrp, workspace, fileset, cnum=None):
 def add_file_to_filesec(workspace, path, filegrp):
     """Add file element to fileGrp element given as parameter.
 
-    :param workspace: Workspace directorye from which techMD files and techMD
-                      reference files searched.
+    :param workspace: Workspace directorye from which administrative MD
+                      files and amd reference files searched.
     :param path: url encoded path of the file
     :param lxml.etree.Element filegrp: fileGrp element
     :param str returns: id of file added to fileGrp

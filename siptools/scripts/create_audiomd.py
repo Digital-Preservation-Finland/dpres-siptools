@@ -14,9 +14,9 @@ def parse_arguments(arguments):
     parser = argparse.ArgumentParser(
         description="Tool for creating audioMD metadata for an audio or "
                     "video file. The audioMD metadata is written to "
-                    "<hash>-AudioMD-techmd.xml METS XML file in the "
+                    "<hash>-AudioMD-amd.xml METS XML file in the "
                     "workspace directory. The audioMD techMD reference is "
-                    "written to techmd-references.xml. "
+                    "written to amd-references.xml. "
                     "If the same audioMD metadata is already found in "
                     "workspace, just the new file name or stream is appended "
                     "the the existing metadata."
