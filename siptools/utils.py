@@ -135,19 +135,28 @@ def generate_digest(etree):
     return hashlib.md5(string).hexdigest()
 
 
-def get_files(workspace):
-    """Get unique and sorted set of files from amd-references.xml
+def get_objectlist(workspace, file_path=None):
+    """Get unique and sorted list of files or streams from amd-references.xml
 
     :workspace: Workspace path
-    :returns: Set of files
+    :file_path: If given, finds streams of the given file.
+                If None, finds a sorted list all file paths.
+    :returns: Sorted list of files, or streams of a given file
     """
     reference_file = os.path.join(workspace, 'amd-references.xml')
     xml = lxml.etree.parse(reference_file)
-    fileset = set()
-    files = xml.xpath('/amdReferences/amdReference/@file')
-    for path in files:
-        fileset.add(path)
-    return sorted(fileset)
+    objectset = set()
+    if file_path is not None:
+        streams = xml.xpath(
+            '/techmdReferences/techmdReference[@file="%s"]/@stream'
+            '' % file_path)
+        for stream in streams:
+            objectset.add(stream)
+    else:
+        files = xml.xpath('/amdReferences/amdReference/@file')
+        for path in files:
+            objectset.add(path)
+    return sorted(objectset)
 
 
 def strip_zeros(float_str):

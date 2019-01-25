@@ -134,7 +134,7 @@ def _get_stream_data(stream_dict):
     params["bitsPerSample"] = bps
     params["compression"] = audiomd.amd_compression(*compression_params)
     params["dataRate"] = data_rate
-    params["dataRateMode"] = "Fixed" # TODO
+    params["dataRateMode"] = "Fixed"  # TODO
     params["samplingFrequency"] = sampling_frequency
 
     return audiomd.amd_file_data(params)

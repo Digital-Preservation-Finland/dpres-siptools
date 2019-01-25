@@ -181,7 +181,7 @@ def test_compile_structmap_directory(testpath):
     assert sm_root.xpath(
         '//mets:div[@TYPE="directory" and @LABEL="Software files"]',
         namespaces=NAMESPACES)[0].get(
-            'ADMID') == '_47244c09fb49dfd4d0577d29820bfa6c'
+        'ADMID') == '_47244c09fb49dfd4d0577d29820bfa6c'
 
     assert return_code == 0
 

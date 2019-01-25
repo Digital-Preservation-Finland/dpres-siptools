@@ -14,7 +14,7 @@ import mets
 import xml_helpers.utils as h
 from siptools.xml.mets import NAMESPACES, METS_PROFILE, METS_CATALOG, \
     METS_SPECIFICATION, RECORD_STATUS_TYPES, mets_extend
-from siptools.utils import get_files
+from siptools.utils import get_objectlist
 
 
 def _dict2str(dictionary):
@@ -222,7 +222,7 @@ def clean_metsparts(path):
 def copy_files(workspace, data_dir):
     """Copy digital objects to workspace
     """
-    files = get_files(workspace)
+    files = get_objectlist(workspace)
     for source in files:
         target = os.path.join(workspace, source)
         if not os.path.exists(os.path.dirname(target)):

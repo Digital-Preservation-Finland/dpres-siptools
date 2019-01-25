@@ -4,6 +4,7 @@ import subprocess
 import pytest
 import siptools.scripts.compress
 
+
 def test_compress(testpath):
 
     dir_to_tar = os.path.abspath(
