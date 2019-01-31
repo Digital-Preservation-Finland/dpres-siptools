@@ -116,45 +116,66 @@ def _get_stream_data(stream_dict, sound):
     if 'bits_per_raw_sample' in stream_dict:
         bps = str(stream_dict["bits_per_raw_sample"])
     else:
-        bps = "0"
-    bit_rate = float(stream_dict["bit_rate"])
-    data_rate = strip_zeros("%.2f" % (float(bit_rate)/1000000))
-    frame_rate = stream_dict["avg_frame_rate"].split('/')[0]
-
-    par = strip_zeros("%.2f" % float(Fraction(
-        stream_dict['sample_aspect_ratio'].replace(':', '/'))))
-    dar = stream_dict['display_aspect_ratio'].replace(':', '/')
+        bps = '0'
+    if 'bit_rate' in stream_dict:
+        bit_rate = float(stream_dict["bit_rate"])
+        data_rate = strip_zeros("%.2f" % (float(bit_rate)/1000000))
+    else:
+        data_rate = '0'
+    if 'avg_frame_rate' in stream_dict:
+        frame_rate = stream_dict["avg_frame_rate"].split('/')[0]
+    else:
+        frame_rate = '0'
+    if 'sample_aspect_ratio' in stream_dict:
+        par = strip_zeros("%.2f" % float(Fraction(
+            stream_dict['sample_aspect_ratio'].replace(':', '/'))))
+    else:
+        par = '0'
+    if 'display_aspect_ratio' in stream_dict:
+        dar = stream_dict['display_aspect_ratio'].replace(':', '/')
+    else:
+        dar = '(:unav)'
+    if 'width' in stream_dict:
+        width = stream_dict['width']
+    else:
+        width = '0'
+    if 'height' in stream_dict:
+        height = stream_dict['height']
+    else:
+        height = '0'
 
     compression = videomd.vmd_compression(
         '(:unav)', '(:unav)', stream_dict["codec_long_name"], '(:unav)')
 
-    frame = videomd.vmd_frame(pixels_horizontal=str(stream_dict['width']),
-                              pixels_vertical=str(stream_dict['height']),
+    frame = videomd.vmd_frame(pixels_horizontal=str(width),
+                              pixels_vertical=str(height),
                               par=par,
                               dar=dar)
 
-    time = float(stream_dict["duration"])
-    duration = iso8601_duration(time)
+    if 'duration' in stream_dict:
+        time = float(stream_dict["duration"])
+        duration = iso8601_duration(time)
+    else:
+        duration = '(:unav)'
 
     sampling = "(:unav)"
-    for sampling_code in ["444", "422", "420", "440", "411", "410"]:
-        if sampling_code in stream_dict["pix_fmt"]:
-            sampling = ":".join(sampling_code)
-            break
-
-    if stream_dict["pix_fmt"] in ["gray"]:
-        color = "Grayscale"
-    if stream_dict["pix_fmt"] in ["monob", "monow"]:
-        color = "B&W"
-    else:
-        color = "Color"
+    color = "Color"
+    if 'pix_fmt' in stream_dict:
+        for sampling_code in ["444", "422", "420", "440", "411", "410"]:
+            if sampling_code in stream_dict["pix_fmt"]:
+                sampling = ":".join(sampling_code)
+                break
+        if stream_dict["pix_fmt"] in ["gray"]:
+            color = "Grayscale"
+        if stream_dict["pix_fmt"] in ["monob", "monow"]:
+            color = "B&W"
 
     params = {}
     params["duration"] = duration
     params["bitsPerSample"] = bps
     params["compression"] = compression
     params["dataRate"] = data_rate
-    params["dataRateMode"] = "Fixed"  # TODO
+    params["dataRateMode"] = "Fixed"  # TODO: Could also be "Variable"
     params["color"] = color
     params["frameRate"] = frame_rate
     params["frame"] = frame

@@ -60,7 +60,7 @@ class AudiomdCreator(AmdCreator):
     """
 
     def add_audiomd_md(self, filepath, filerel=None, is_streams=False):
-        """Create audioMD metadata for a WAV file and append it
+        """Create audioMD metadata for a audio file and append it
         to self.md_elements.
         """
 
@@ -113,15 +113,22 @@ def _get_stream_data(stream_dict):
     """
 
     # amd.file_data() params
-    bps = str(stream_dict["bits_per_sample"])
-    if bps == "0":
-        bps = "(:unap)"
-    bit_rate = float(stream_dict["bit_rate"])
-    data_rate = str(int(round(bit_rate/1000)))
-    sample_rate = float(stream_dict["sample_rate"])
-    sampling_frequency = strip_zeros("%.2f" % (sample_rate/1000))
-    codec = _get_encoding(stream_dict)
+    if 'bits_per_sample' in stream_dict:
+        bps = str(stream_dict["bits_per_sample"])
+    else:
+        bps = '0'
+    if 'bit_rate' in stream_dict:
+        bit_rate = float(stream_dict["bit_rate"])
+        data_rate = str(int(round(bit_rate/1000)))
+    else:
+        data_rate = '0'
+    if 'sample_rate' in stream_dict:
+        sample_rate = float(stream_dict["sample_rate"])
+        sampling_frequency = strip_zeros("%.2f" % (sample_rate/1000))
+    else:
+        sampling_frequency = '0'
 
+    codec = _get_encoding(stream_dict)
     if codec == "PCM":
         compression_params = ("(:unap)", "(:unap)",
                               stream_dict["codec_long_name"], "lossless")
@@ -134,7 +141,7 @@ def _get_stream_data(stream_dict):
     params["bitsPerSample"] = bps
     params["compression"] = audiomd.amd_compression(*compression_params)
     params["dataRate"] = data_rate
-    params["dataRateMode"] = "Fixed"  # TODO
+    params["dataRateMode"] = "Fixed"  # TODO: Could also be "Variable"
     params["samplingFrequency"] = sampling_frequency
 
     return audiomd.amd_file_data(params)
@@ -148,10 +155,15 @@ def _get_encoding(stream_dict):
     """
     encoding = stream_dict["codec_long_name"]
 
-    if encoding.split()[0] == "PCM":
-        return "PCM"
-    elif encoding.split()[0] == "AAC":
-        return "AAC"
+    encoding_dict = {
+        "PCM": "PCM",
+        "AAC": "AAC",
+        "MP3": "MP3",
+        "FLAC": "FLAC",
+        "Winndows Media Audio": "WMA"
+    }
+    if encoding.split()[0] in encoding_dict:
+        return encoding_dict[encoding.split()[0]]
 
     return encoding
 

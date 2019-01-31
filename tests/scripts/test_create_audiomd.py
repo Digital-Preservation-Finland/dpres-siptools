@@ -77,7 +77,7 @@ def test_stream():
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'AAC'
 
     path = "%s/amd:bitsPerSample" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unap)'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '0'
 
     path = "%s/amd:compression/amd:codecCreatorApp" % file_data
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'

@@ -69,9 +69,9 @@ def test_compile_mets_ok(testpath):
     assert len(root.xpath(
         '/mets:mets[@LABEL="Test SIP"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
-        '/mets:mets[@fi:CATALOG="1.7.0"]', namespaces=NAMESPACES)) == 1
+        '/mets:mets[@fi:CATALOG="1.7.1"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
-        '/mets:mets[@fi:SPECIFICATION="1.7.0"]', namespaces=NAMESPACES)) == 1
+        '/mets:mets[@fi:SPECIFICATION="1.7.1"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath('/mets:mets[@fi:CONTRACTID="contract-id-1234"]',
                           namespaces=NAMESPACES)) == 1
     assert len(root.xpath('/mets:mets[@fi:CONTENTID="Aineisto-123"]',
@@ -130,9 +130,9 @@ def test_compile_mets_cleanup_ok(testpath):
     assert len(root.xpath(
         '/mets:mets[@LABEL="Test SIP"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
-        '/mets:mets[@fi:CATALOG="1.7.0"]', namespaces=NAMESPACES)) == 1
+        '/mets:mets[@fi:CATALOG="1.7.1"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath(
-        '/mets:mets[@fi:SPECIFICATION="1.7.0"]', namespaces=NAMESPACES)) == 1
+        '/mets:mets[@fi:SPECIFICATION="1.7.1"]', namespaces=NAMESPACES)) == 1
     assert len(root.xpath('/mets:mets[@fi:CONTENTID="Aineisto-123"]',
                           namespaces=NAMESPACES)) == 1
     assert len(root.xpath('/mets:mets/mets:metsHdr',

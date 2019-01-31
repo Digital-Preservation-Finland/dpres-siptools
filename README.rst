@@ -11,7 +11,7 @@ The aim is to provide digital preservation services for culture and research to 
 the access and use of materials long in the future. Documentation and specifications
 for the digital preservation service can be found in: http://digitalpreservation.fi
 
-The Pre-Ingest Tool currently supports specification version 1.7.0.
+The Pre-Ingest Tool currently supports specification version 1.7.1.
 
 Installation
 ------------
@@ -57,7 +57,10 @@ create_addml
     for creating ADDML metadata for csv files.
 
 create_audiomd
-    for creating AudioMD metadata for WAV files.
+    for creating AudioMD metadata for audio files.
+
+create_videomd
+    for creating VideoMD metadata for video files.
 
 compile_structmap
     for creating structural map in mets.xml.
@@ -79,6 +82,8 @@ tests/data/structured followingly::
 
     python siptools/scripts/import_object.py --workspace ./workspace 'tests/data/structured'
 
+Parameter´--streams is required if the file is an A/V container.
+
 If your dataset contains image data, create also MIX metadata for each of the image files::
 
     python siptools/scripts/create_mix.py path/to/images/image.tif --workspace ./workspace
@@ -92,9 +97,16 @@ is given, CSV file is assumed not to have headers. --sep flag defines the charac
 separate records and --delim the character used to separate fields. --quot defines the 
 quotation character used.
 
-AudioMD metadata for a WAV file can be created by running::
+AudioMD metadata for a audio stream file can be created by running::
 
     python siptools/scripts/create_audiomd.py path/to/audio/audio.wav --workspace ./workspace
+
+VideoMD metadata for a video stream file can be created by running::
+
+    python siptools/scripts/create_videomd.py path/to/video/video.wav --workspace ./workspace
+
+If the file is an A/V container, parameter --streams is required in the above
+AudioMD and VideoMD scripts.
 
 An example how to create digital provenance metadata for mets.xml.
 Values for the parameters --event_outcome and --event_type are predefined lists::
@@ -147,13 +159,32 @@ For a short description about other optional arguments which are not listed here
     python siptools/scripts/<scriptname>.py --help
 
 
-Additional requirements
------------------------
+Additional requirements and notes
+---------------------------------
 The following software is required for proper detection of certain file formats:
 
         * for MS Office: file, version 5.30 or greater
+        * for audio and video files: ffmpeg
 
 The software listed above needs to be installed separately.
+
+The Pre-Ingest Tool might produce some metadata elements incorrectly with
+some file formats. We are working on with this issue, and the support for
+new file formats will be available in future versions. Please contact to the
+Digital Preservation Services for more information.
+The following file formats are currently supported: 
+text/plain, text/xml, text/csv, image/tiff, image/jpeg,
+application/vnd.oasis.opendocument.text,
+application/vnd.oasis.opendocument.spreadsheet, 
+application/vnd.oasis.opendocument.presentation,
+application/vnd.oasis.opendocument.graphics,
+application/vnd.oasis.opendocument.formula,
+application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
+application/vnd.openxmlformats-officedocument.presentationml.presentation,
+application/msword, application/vnd.ms-excel,
+application/vnd.ms-powerpoint, audio/x-wav
+
 
 Copyright
 ---------
