@@ -148,7 +148,7 @@ def get_objectlist(workspace, file_path=None):
     objectset = set()
     if file_path is not None:
         streams = xml.xpath(
-            '/techmdReferences/techmdReference[@file="%s"]/@stream'
+            '/amdReferences/amdReference[@file="%s"]/@stream'
             '' % file_path)
         for stream in streams:
             objectset.add(stream)
