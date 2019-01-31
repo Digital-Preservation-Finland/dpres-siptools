@@ -37,28 +37,16 @@ def main():
             "wand",
             "Pillow",
             "ffmpeg-python",
-            "xml_helpers",
-            "mets",
-            "premis",
-            "dpres_signature",
-            "nisomix",
-            "addml",
-            "audiomd"
-            "videomd"
-        ],
-        dependency_links=[
-            'git+https://gitlab.csc.fi/dpres/xml-helpers.git'
-            '@develop#egg=xml_helpers-0.0',
-            'git+https://gitlab.csc.fi/dpres/mets.git@develop#egg=mets-0.0',
-            'git+https://gitlab.csc.fi/dpres/premis.git'
-            '@develop#egg=premis-0.0',
-            'git+https://gitlab.csc.fi/dpres/dpres-signature.git'
-            '@develop#egg=dpres_signature-0.0',
-            'git+https://gitlab.csc.fi/dpres/nisomix.git'
-            '@develop#egg=nisomix-0.0',
-            'git+https://gitlab.csc.fi/dpres/addml.git@develop#egg=addml-0.0',
-            'git+https://gitlab.csc.fi/dpres/audiomd.git@develop#egg=audiomd-0.0'
-            'git+https://gitlab.csc.fi/dpres/videomd.git@develop#egg=videomd-0.0'
+            'xml_helpers@git+https://gitlab.csc.fi/dpres/xml-helpers.git'
+            '@develop',
+            'mets@git+https://gitlab.csc.fi/dpres/mets.git@develop',
+            'premis@git+https://gitlab.csc.fi/dpres/premis.git@develop',
+            'dpres_signature@git+https://gitlab.csc.fi/dpres/'
+            'dpres-signature.git@develop',
+            'nisomix@git+https://gitlab.csc.fi/dpres/nisomix.git@develop',
+            'addml@git+https://gitlab.csc.fi/dpres/addml.git@develop',
+            'audiomd@git+https://gitlab.csc.fi/dpres/audiomd.git@develop',
+            'videomd@git+https://gitlab.csc.fi/dpres/videomd.git@develop'
         ],
         entry_points={'console_scripts': scripts_list()}
 
