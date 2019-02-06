@@ -168,3 +168,65 @@ def test_premis_event_fail(testpath):
                 '--workspace', testpath
             ]
         )
+
+
+def test_create_premis_event_file_ok(testpath):
+    """Test that create_premis_event_file function produces event.xml file with
+    correct elements.
+    """
+
+    (file_path, event_xml) = premis_event.create_premis_event_file(
+        testpath,
+        'creation',
+        '2016-10-13T12:30:55',
+        'Testing',
+        'success',
+        'Outcome detail')
+
+    assert file_path == os.path.join(testpath, 'creation-event-amd.xml')
+
+    namespaces = {'mets': 'http://www.loc.gov/METS/',
+                  'premis': 'info:lc/xmlns/premis-v2'}
+
+    # Should have one amdSec element
+    assert len(event_xml.findall('mets:amdSec', namespaces=namespaces)) == 1
+
+    # Check thait event.xml contains required elements with correct content
+    for element, content in (
+            (".//premis:eventType", 'creation'),
+            (".//premis:eventDateTime", '2016-10-13T12:30:55'),
+            (".//premis:eventDetail", 'Testing'),
+            (".//premis:eventOutcome", 'success'),
+            (".//premis:eventOutcomeDetailNote", 'Outcome detail')
+    ):
+        assert event_xml.findall(
+            element, namespaces=namespaces)[0].text == content
+
+
+def test_create_premis_agent_file_ok(testpath):
+    """Test that create_premis_agent_file function produces agent.xml file with
+    correct elements.
+    """
+
+    (file_path, agent_xml) = premis_event.create_premis_agent_file(
+        testpath,
+        'event-type',
+        'Demo Application',
+        'software',
+        'Agent Identifier')
+
+    assert file_path == os.path.join(testpath, 'event-type-agent-amd.xml')
+
+    namespaces = {'mets': 'http://www.loc.gov/METS/',
+                  'premis': 'info:lc/xmlns/premis-v2'}
+
+    # Should have one amdSec element
+    assert len(agent_xml.findall('mets:amdSec', namespaces=namespaces)) == 1
+
+    # Check thait agent.xml contains required elements with correct content
+    for element, content in (
+            (".//premis:agentName", 'Demo Application'),
+            (".//premis:agentType", 'software')
+    ):
+        assert agent_xml.findall(element, namespaces=namespaces)[0].text \
+            == content
