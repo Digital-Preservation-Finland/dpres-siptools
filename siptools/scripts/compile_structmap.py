@@ -182,10 +182,8 @@ def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
     """
     structmap = mets.structmap(type_attr=type_attr)
     container_div = mets.div(type_attr='logical')
-    structmap.append(container_div)
 
-    import_xml = ET.parse(descfile)
-    root = import_xml.getroot()
+    root = ET.parse(descfile).getroot()
 
     if root.xpath("//ead3:archdesc/@otherlevel", namespaces=NAMESPACES):
         level = root.xpath("//ead3:archdesc/@otherlevel",
@@ -212,7 +210,8 @@ def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
             ead3_c_div(ead3_c, div_ead, filegrp, workspace, filelist,
                        cnum=cnum)
 
-    structmap.append(div_ead)
+    container_div.append(div_ead)
+    structmap.append(container_div)
     mets_element = mets.mets(child_elements=[structmap])
     ET.cleanup_namespaces(mets_element)
     return ET.ElementTree(mets_element)
