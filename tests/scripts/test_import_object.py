@@ -3,7 +3,7 @@
 import sys
 import os.path
 import datetime
-import json
+import pickle
 import lxml.etree as ET
 import pytest
 from siptools.scripts import import_object
@@ -30,7 +30,7 @@ def get_amd_file(path, input_file, stream=None):
 def test_import_object_ok(testpath):
     """Test import_object.main funtion with valid test data."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_inspection', input_file]
+    arguments = ['--workspace', testpath, '--skip_wellformed', input_file]
     return_code = import_object.main(arguments)
 
     output = get_amd_file(testpath, input_file)
@@ -43,10 +43,10 @@ def test_import_object_ok(testpath):
     assert return_code == 0
 
 
-def test_import_object_skip_inspection_ok(testpath):
+def test_import_object_skip_wellformed_ok(testpath):
     """Test import_object.main function --skip-inspection argument."""
     input_file = 'tests/data/text-file.txt'
-    arguments = ['--workspace', testpath, input_file, '--skip_inspection',
+    arguments = ['--workspace', testpath, input_file, '--skip_wellformed',
                  '--format_name', 'image/dpx', '--format_version', '1.0',
                  '--digest_algorithm', 'MD5', '--message_digest',
                  '1qw87geiewgwe9',
@@ -63,10 +63,10 @@ def test_import_object_skip_inspection_ok(testpath):
     assert return_code == 0
 
 
-def test_import_object_skip_inspection_nodate_ok(testpath):
+def test_import_object_skip_wellformed_nodate_ok(testpath):
     """Test import_object.main function without --date_created argument."""
     input_file = 'tests/data/text-file.txt'
-    arguments = ['--workspace', testpath, input_file, '--skip_inspection',
+    arguments = ['--workspace', testpath, input_file, '--skip_wellformed',
                  '--format_name', 'image/dpx', '--format_version', '1.0',
                  '--digest_algorithm', 'MD5', '--message_digest',
                  '1qw87geiewgwe9']
@@ -88,7 +88,7 @@ def test_import_object_structured_ok(testpath):
                                              'tests/data/structured'))
     test_file = ""
     for element in iterate_files(test_data):
-        arguments = ['--workspace', workspace, '--skip_inspection',
+        arguments = ['--workspace', workspace, '--skip_wellformed',
                      os.path.relpath(element, os.curdir)]
         return_code = import_object.main(arguments)
         test_file = os.path.relpath(element, os.curdir)
@@ -105,24 +105,21 @@ def test_import_object_structured_ok(testpath):
 def test_import_object_order(testpath):
     """Test file order"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_inspection',
+    arguments = ['--workspace', testpath, '--skip_wellformed',
                  '--order', '5', input_file]
     return_code = import_object.main(arguments)
-
-    path = os.path.join(testpath, 'siptools-file-properties.json')
+    output = get_amd_file(testpath, input_file)
+    path = output.replace('-PREMIS%3AOBJECT-amd.xml',
+                          '-text-scraper.pkl')
     assert os.path.isfile(path)
 
-    properties = {}
+    streams = {}
     with open(path) as infile:
-        properties = json.load(infile)
+        streams = pickle.load(infile)
 
-    assert 'tests%2Fdata%2Fstructured%2FDocumentation+files%2Freadme.txt' \
-        in properties
-    assert 'order' in properties[
-        'tests%2Fdata%2Fstructured%2FDocumentation+files%2Freadme.txt']
-    assert properties[
-        'tests%2Fdata%2Fstructured%2FDocumentation+files%2F''readme.txt'
-        ]['order'] == '5'
+    assert 'properties' in streams[0]
+    assert 'order' in streams[0]['properties']
+    assert streams[0]['properties']['order'] == '5'
 
     assert return_code == 0
 
@@ -130,7 +127,7 @@ def test_import_object_order(testpath):
 def test_import_object_identifier(testpath):
     """Test digital object identifier argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_inspection',
+    arguments = ['--workspace', testpath, '--skip_wellformed',
                  '--identifier', 'local', 'test-id', input_file]
     return_code = import_object.main(arguments)
 
@@ -149,7 +146,7 @@ def test_import_object_identifier(testpath):
 def test_import_object_format_registry(testpath):
     """Test digital object format registry argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_inspection',
+    arguments = ['--workspace', testpath, '--skip_wellformed',
                  '--format_registry', 'local', 'test-key', input_file]
     return_code = import_object.main(arguments)
 
@@ -204,7 +201,7 @@ def test_import_object_utf8(testpath):
         file_.write('Voi änkeröinen.')
 
     # Run function
-    assert import_object.main(['--workspace', testpath, '--skip_inspection',
+    assert import_object.main(['--workspace', testpath, '--skip_wellformed',
                                utf8_file]) == 0
 
     # Check output
@@ -437,26 +434,6 @@ def test_import_object_fail():
         import_object.main(arguments)
 
 
-@pytest.mark.parametrize('input_charset,output_charset',
-                         [('ISO-8859-15', 'ISO-8859-15'),
-                          ('ISO-8859-1', 'ISO-8859-15'),
-                          ('US-ASCII', 'ISO-8859-15'),
-                          ('UTF-8', 'UTF-8'),
-                          ('UTF-16', 'UTF-16'),
-                          ('UTF-16LE', 'UTF-16'),
-                          ('UTF-16BE', 'UTF-16'),
-                          ('UTF-32', 'UTF-32')])
-def test_return_charset_ok(input_charset, output_charset):
-    """Test ``return_charset`` function with valid inputs"""
-    assert import_object.return_charset(input_charset) == output_charset
-
-
-def test_return_charset_invalid():
-    """Test ``return_charset`` function with invalid charset as input."""
-    with pytest.raises(ValueError):
-        import_object.return_charset('KOI8-R')
-
-
 def iterate_files(path):
     """Iterate through all files inside a directory."""
     for root, _, files in os.walk(path, topdown=False):
@@ -464,30 +441,21 @@ def iterate_files(path):
             yield os.path.join(root, name)
 
 
-def test_is_broadcast_wav():
-    """Test that WAV and broadcast WAV files are properly identified.
-    """
-    path = "tests/data/audio"
-    assert import_object.is_broadcast_wav("%s/valid-bwf.wav" % path)
-    assert not import_object.is_broadcast_wav("%s/valid-wav.wav" % path)
-
-
 def test_streams(testpath):
     """Test with streams, the test file vontains one video and one audio
        stream.
     """
     input_file = 'tests/data/video/mp4.mp4'
-    arguments = ['--workspace', testpath, '--skip_inspection', '--streams',
-                 input_file]
+    arguments = ['--workspace', testpath, '--skip_wellformed', input_file]
     return_code = import_object.main(arguments)
 
     # Streams
     stream_id = []
-    for i in [0, 1]:
+    for i in [1, 2]:
         output = get_amd_file(testpath, input_file, str(i))
         tree = ET.parse(output)
         root = tree.getroot()
-        if i == 1:
+        if i == 2:
             mime = 'audio/mp4'
         else:
             mime = 'video/mp4'

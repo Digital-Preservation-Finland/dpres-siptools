@@ -9,6 +9,7 @@ import os
 from urllib import quote_plus, unquote_plus
 import copy
 import lxml.etree
+import pickle
 
 import xml_helpers
 import mets
@@ -284,7 +285,7 @@ class AmdCreator(object):
                     reference.set(
                         key, ref[key].decode(sys.getfilesystemencoding()))
                 elif ref[key]:
-                    reference.set(key, ref[key])
+                    reference.set(key, str(ref[key]))
                 references.append(reference)
 
         # Write reference list file
@@ -346,8 +347,23 @@ class AmdCreator(object):
 
         return amd_id, filename
 
+    def write_dict(self, scraper_streams, premis_amd_id):
+        """Write streams to a file for further scripts.
+        :streams: Streams from scraper
+        :premis_amd_id: The AMDID of corresponding premis FILE object
+        """
+        digest = premis_amd_id[1:]
+        filename = encode_path("%s-%s-scraper.pkl" % (
+            digest, scraper_streams[0]['stream_type']))
+        filename = os.path.join(self.workspace, filename)
+
+        if not os.path.exists(filename):
+            with open(filename, 'w') as outfile:
+                pickle.dump(scraper_streams, outfile)
+            print "Wrote technical data to: %s" % (outfile.name)
+
     def write(self, mdtype="type", mdtypeversion="version", othermdtype=None,
-              section=None, stdout=False):
+              section=None, stdout=False, scraper_streams=None):
         """Write METS XML and amd-reference files. First, METS XML files are
         written and self.references is appended. Second, amd-references is
         written.
@@ -371,6 +387,8 @@ class AmdCreator(object):
                 metadata, mdtype, mdtypeversion, othermdtype=othermdtype,
                 section=section, stdout=stdout
             )
+            if scraper_streams and stream == None:
+                self.write_dict(scraper_streams, amd_id)
             self.add_reference(amd_id, filename, stream, directory)
 
         # Write amd-references

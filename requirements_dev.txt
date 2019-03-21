@@ -7,9 +7,10 @@ pytest-cov
 lxml
 scandir
 file-magic
+pymediainfo
 wand
 Pillow
-ffmpeg-python
+opf-fido
 git+https://gitlab.csc.fi/dpres/xml-helpers.git@develop#egg=xml_helpers
 git+https://gitlab.csc.fi/dpres/mets.git@develop#egg=mets
 git+https://gitlab.csc.fi/dpres/premis.git@develop#egg=premis
@@ -18,6 +19,4 @@ git+https://gitlab.csc.fi/dpres/nisomix.git@develop#egg=nisomix
 git+https://gitlab.csc.fi/dpres/addml.git@develop#egg=addml
 git+https://gitlab.csc.fi/dpres/audiomd.git@develop#egg=audiomd
 git+https://gitlab.csc.fi/dpres/videomd.git@develop#egg=videomd
-
-# Optional install requirements
-git+https://gitlab.csc.fi/dpres/dpres-ipt.git@develop#egg=ipt
+git+https://gitlab.csc.fi/dpres/file-scraper.git@develop#egg=file_scraper
