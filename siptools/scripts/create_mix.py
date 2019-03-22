@@ -5,10 +5,8 @@ import os
 import sys
 import argparse
 import pickle
-from file_scraper.scraper import Scraper
-import lxml.etree
 import nisomix.mix
-from siptools.utils import AmdCreator
+from siptools.utils import AmdCreator, scrape_file
 
 SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
@@ -95,34 +93,7 @@ def create_mix(filename, filerel=None, workspace=None):
     :image: image file
     :returns: MIX XML element
     """
-    if filerel is None:
-        filerel = filename
-
-    ref_exists = False
-    if workspace is not None:
-        ref = os.path.join(workspace, 'amd-references.xml')
-        if os.path.isfile(ref):
-            ref_exists = True
-
-    if ref_exists:
-        root = lxml.etree.parse(ref).getroot()
-        amdref = root.xpath("/amdReferences/amdReference[not(@stream) "
-                            "and @file='%s']" % filerel.decode(
-                                sys.getfilesystemencoding()))[0]
-        pkl_name = os.path.join(workspace, '%s-scraper.pkl' % amdref.text[1:])
-
-        streams = None
-        if not os.path.isfile(pkl_name):
-            scraper = Scraper(filename)
-            scraper.scrape()
-            streams = scraper.streams
-        else:
-            with open(pkl_name, 'rb') as pkl_file:
-                streams = pickle.load(pkl_file)
-    else:
-        scraper = Scraper(filename)
-        scraper.scrape()
-        streams = scraper.streams
+    streams = scrape_file(filename, filerel=filerel, workspace=workspace)
 
     mix_dict = {}
     for index, stream_md in streams.iteritems():

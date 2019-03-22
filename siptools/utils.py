@@ -10,10 +10,46 @@ from urllib import quote_plus, unquote_plus
 import copy
 import lxml.etree
 import pickle
-
+from file_scraper.scraper import Scraper
 import xml_helpers
 import mets
 import premis
+
+
+def scrape_file(filename, filerel=None, workspace=None):
+    """Return already existing scraping result or create a new one, if
+    missing.
+    """
+    if filerel is None:
+        filerel = filename
+
+    ref_exists = False
+    if workspace is not None:
+        ref = os.path.join(workspace, 'amd-references.xml')
+        if os.path.isfile(ref):
+            ref_exists = True
+
+    if ref_exists:
+        root = lxml.etree.parse(ref).getroot()
+        amdref = root.xpath("/amdReferences/amdReference[not(@stream) "
+                            "and @file='%s']" % filerel.decode(
+                                sys.getfilesystemencoding()))[0]
+        pkl_name = os.path.join(workspace, '%s-scraper.pkl' % amdref.text[1:])
+
+        streams = None
+        if not os.path.isfile(pkl_name):
+            scraper = Scraper(filename)
+            scraper.scrape(False)
+            streams = scraper.streams
+        else:
+            with open(pkl_name, 'rb') as pkl_file:
+                streams = pickle.load(pkl_file)
+    else:
+        scraper = Scraper(filename)
+        scraper.scrape(False)
+        streams = scraper.streams
+
+    return streams
 
 
 def encode_path(path, suffix='', prefix='', safe=None):

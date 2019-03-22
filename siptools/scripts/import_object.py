@@ -7,10 +7,9 @@ from uuid import uuid4
 import datetime
 import platform
 import argparse
-
-import premis
 from file_scraper.scraper import Scraper
-from siptools.utils import AmdCreator, encode_path
+import premis
+from siptools.utils import AmdCreator, encode_path, scrape_file
 
 
 ALLOWED_CHARSETS = ['ISO-8859-15', 'UTF-8', 'UTF-16', 'UTF-32']
@@ -91,12 +90,12 @@ def main(arguments=None):
 
         scraper = Scraper(filename)
         if not args.skip_inspection:
-            scraper.scrape(True)
+             scraper.scrape(True)
         else:
-            scraper.scrape(False)
+             scraper.scrape(False)
 
         premis_elem = create_premis_object(
-            filename, args.skip_inspection, args.format_name,
+            filename, scraper, args.format_name,
             args.format_version, args.digest_algorithm,
             args.message_digest, args.date_created, args.charset,
             args.identifier, args.format_registry)
@@ -183,18 +182,12 @@ def create_streams(streams, premis_file):
     return premis_list
 
 
-def create_premis_object(fname, skip_inspection=None,
+def create_premis_object(fname, scraper,
                          format_name=None, format_version=None,
                          digest_algorithm='MD5', message_digest=None,
                          date_created=None, charset=None,
                          identifier=None, format_registry=None):
     """Create Premis object for given file."""
-
-    scraper = Scraper(fname)
-    if not skip_inspection:
-        scraper.scrape(True)
-    else:
-        scraper.scrape(False)
 
     if scraper.info[0]['class'] == 'FileExists' and \
             scraper.well_formed is False:

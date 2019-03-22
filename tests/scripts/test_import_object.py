@@ -163,7 +163,7 @@ def test_import_object_format_registry(testpath):
     assert return_code == 0
 
 
-@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
+@pytest.mark.skipif('jhove' not in sys.modules, reason='Requires jhove')
 def test_import_object_validate_pdf_ok(testpath):
     """Test PDF validation in import_object.main funciton."""
     input_file = 'tests/data/test_import.pdf'
