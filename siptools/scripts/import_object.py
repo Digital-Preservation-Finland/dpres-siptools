@@ -15,7 +15,16 @@ from siptools.utils import AmdCreator, encode_path
 
 ALLOWED_CHARSETS = ['ISO-8859-15', 'UTF-8', 'UTF-16', 'UTF-32']
 
-
+DEFAULT_VERSIONS = {
+    'application/msword': '11.0', 
+    'application/vnd.ms-excel': '11.0',
+    'application/vnd.ms-powerpoint': '11.0',
+    'application/vnd.openxmlformats-'
+    'officedocument.presentationml.presentation': '15.0',
+    'application/vnd.openxmlformats-'
+    'officedocument.spreadsheetml.sheet': '15.0',
+    'application/vnd.openxmlformats-'
+    'officedocument.wordprocessingml.document': '15.0'}
 
 def parse_arguments(arguments):
     """ Create arguments parser and return parsed command line argumets"""
@@ -31,7 +40,7 @@ def parse_arguments(arguments):
         '--workspace', type=str, default='./workspace/',
         help="Workspace directory for the metadata files.")
     parser.add_argument(
-        '--skip_wellformed', action='store_true',
+        '--skip_inspection', action='store_true',
         help='Skip file wellformed check and give technical metadata as parameters')
     parser.add_argument(
         '--format_name', dest='format_name', type=str,
@@ -81,13 +90,13 @@ def main(arguments=None):
             filerel = filename
 
         scraper = Scraper(filename)
-        if not args.skip_wellformed:
+        if not args.skip_inspection:
             scraper.scrape(True)
         else:
             scraper.scrape(False)
 
         premis_elem = create_premis_object(
-            filename, args.skip_wellformed, args.format_name,
+            filename, args.skip_inspection, args.format_name,
             args.format_version, args.digest_algorithm,
             args.message_digest, args.date_created, args.charset,
             args.identifier, args.format_registry)
@@ -95,9 +104,7 @@ def main(arguments=None):
         creator = PremisCreator(args.workspace)
         creator.add_md(premis_elem, filerel)
 
-        premis_list = None
-        if scraper.streams[0]['stream_type'] == 'videocontainer':
-            premis_list = create_streams(scraper.streams, premis_elem)
+        premis_list = create_streams(scraper.streams, premis_elem)
 
         if premis_list is not None:
             for index, premis_stream in premis_list.iteritems():
@@ -140,9 +147,20 @@ def create_streams(streams, premis_file):
     :fname: Digital object file path
     :premis_file: Created PREMIS XML file for the digital object file
     """
+    if streams[0]['stream_type'] not in ['videocontainer', 'image']:
+        return None
+
+    if streams[0]['stream_type'] == 'image':
+        image_count = 0
+        for index, stream in streams.iteritems():
+            if stream['stream_type'] == 'image':
+                image_count = image_count + 1
+        if image_count < 2:
+            return None
+
     premis_list = {}
     for index, stream in streams.iteritems():
-        if stream['stream_type'] not in ['video', 'audio']:
+        if stream['stream_type'] not in ['video', 'audio', 'image']:
             continue
 
         id_value = str(uuid4())
@@ -165,7 +183,7 @@ def create_streams(streams, premis_file):
     return premis_list
 
 
-def create_premis_object(fname, skip_wellformed=None,
+def create_premis_object(fname, skip_inspection=None,
                          format_name=None, format_version=None,
                          digest_algorithm='MD5', message_digest=None,
                          date_created=None, charset=None,
@@ -173,10 +191,14 @@ def create_premis_object(fname, skip_wellformed=None,
     """Create Premis object for given file."""
 
     scraper = Scraper(fname)
-    if not skip_wellformed:
+    if not skip_inspection:
         scraper.scrape(True)
     else:
         scraper.scrape(False)
+
+    if scraper.info[0]['class'] == 'FileExists' and \
+            scraper.well_formed is False:
+        raise IOError('File not found.')
 
     if message_digest is None or digest_algorithm is None:
         message_digest = scraper.checksum(algorithm='md5')
@@ -184,8 +206,12 @@ def create_premis_object(fname, skip_wellformed=None,
 
     if format_name is None:
         format_name = scraper.mimetype
+
     if format_version is None:
         format_version = scraper.version
+        if format_name in DEFAULT_VERSIONS:
+            format_version = DEFAULT_VERSIONS[format_name]
+
     if not charset and 'charset' in scraper.streams[0]:
         charset = scraper.streams[0]['charset']
     if charset:

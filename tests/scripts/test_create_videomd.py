@@ -3,7 +3,7 @@
 import os.path
 import pytest
 import lxml.etree as ET
-
+import pickle
 import siptools.scripts.create_videomd as create_videomd
 
 VIDEOMD_NS = 'http://www.loc.gov/videoMD/'
@@ -27,7 +27,7 @@ def test_create_videomd_elem():
     assert len(videomd.xpath(path, namespaces=NAMESPACES)) == 1
 
     path = "%s/vmd:bitsPerSample" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '0'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '8'
 
     path = "%s/vmd:compression/vmd:codecCreatorApp" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'
@@ -37,10 +37,10 @@ def test_create_videomd_elem():
 
     path = "%s/vmd:compression/vmd:codecName" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == \
-        'MPEG-1 video'
+        'MPEG Video'
 
     path = "%s/vmd:compression/vmd:codecQuality" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossy'
 
     path = "%s/vmd:dataRate" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '0.32'
@@ -61,16 +61,16 @@ def test_create_videomd_elem():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1'
 
     path = "%s/vmd:frame/vmd:DAR" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '4/3'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1.333'
 
     path = "%s/vmd:sampling" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '4:2:0'
 
     path = "%s/vmd:duration" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT19.03S'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT19.02S'
 
     path = "%s/vmd:signalFormat" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unap)'
 
     path = "%s/vmd:sound" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'No'
@@ -82,7 +82,7 @@ def test_stream():
     """
 
     videomd = create_videomd.create_videomd(
-        "tests/data/video/mp4.mp4")["0"]
+        "tests/data/video/mp4.mp4")["1"]
 
     file_data = "/vmd:VIDEOMD/vmd:fileData"
 
@@ -90,23 +90,22 @@ def test_stream():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '8'
 
     path = "%s/vmd:compression/vmd:codecCreatorApp" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Lavf53.24.2'
 
     path = "%s/vmd:compression/vmd:codecCreatorAppVersion" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '53.24.2'
 
     path = "%s/vmd:compression/vmd:codecName" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == \
-        'H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'AVC'
 
     path = "%s/vmd:compression/vmd:codecQuality" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossy'
 
     path = "%s/vmd:dataRate" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1.21'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1.205959'
 
     path = "%s/vmd:dataRateMode" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Fixed'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Variable'
 
     path = "%s/vmd:color" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Color'
@@ -121,7 +120,7 @@ def test_stream():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1'
 
     path = "%s/vmd:frame/vmd:DAR" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '16/9'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1.778'
 
     path = "%s/vmd:sampling" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '4:2:0'
@@ -130,7 +129,7 @@ def test_stream():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT5.28S'
 
     path = "%s/vmd:signalFormat" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unap)'
 
     path = "%s/vmd:sound" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Yes'
@@ -166,10 +165,44 @@ def test_create_videomd(testpath):
     assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
 
     filepath = os.path.join(
-        testpath, '8b8e24235c6cf62922219ec71aa9f927-VideoMD-amd.xml'
+        testpath, '1276adbe0c85be09d0416ce04fbc1e87-VideoMD-amd.xml'
     )
 
     assert os.path.isfile(filepath)
+
+
+def test_existing_scraper_result(testpath):
+    """Test that existing pickle file from import_object is used.
+    We just need to check duration, since it's different from the real
+    duration.
+    """
+    amdid = '1276adbe0c85be09d0416ce04fbc1e87'
+    file_ = 'tests/data/video/mpg1.mpg'
+    xml = """<?xml version='1.0' encoding='UTF-8'?>
+          <amdReferences>
+          <amdReference file="%s">_%s</amdReference>
+          </amdReferences>""" % (file_, amdid)
+    with open(os.path.join(testpath, 'amd-references.xml'), 'w') as out:
+        out.write(xml)
+
+    stream_dict = {0: {
+        'mimetype': 'video/mpeg', 'index': 0, 'par': '1', 'frame_rate': '30',
+        'data_rate': '0.171304', 'bits_per_sample': '8',
+        'data_rate_mode':'Variable', 'color': 'Color',
+        'codec_quality': 'lossy', 'signal_format': '(:unap)', 'dar': '1.778',
+        'height': '180', 'sound': 'No', 'version': '1',
+        'codec_name': 'MPEG Video',
+        'codec_creator_app_version': '(:unav)',
+        'duration': 'PT50S', 'sampling': '4:2:0', 'stream_type': 'video',
+        'width': '320', 'codec_creator_app': '(:unav)'}}
+    with open(os.path.join(testpath, ('%s-scraper.pkl' % amdid)), 'wb') \
+            as outfile:
+        pickle.dump(stream_dict, outfile)
+
+    videomd = create_videomd.create_videomd(file_, workspace=testpath)["0"]
+
+    path = "/vmd:VIDEOMD/vmd:fileData/vmd:duration"
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT50S'
 
 
 @pytest.mark.parametrize("file, base_path", [

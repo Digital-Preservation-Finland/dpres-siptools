@@ -8,6 +8,7 @@ import json
 from uuid import uuid4
 import scandir
 import lxml.etree as ET
+import pickle
 import mets
 import xml_helpers.utils as h
 from siptools.xml.mets import NAMESPACES
@@ -141,17 +142,11 @@ def create_structmap(workspace, filesec, filelist, type_attr=None,
         container_div = mets.div(type_attr=root_type, dmdid=dmdids,
                                  admid=amdids)
 
-    properties = {}
-    property_path = os.path.join(workspace, 'siptools-file-properties.json')
-    if os.path.isfile(property_path):
-        with open(property_path) as infile:
-            properties = json.load(infile)
-
     structmap = mets.structmap(type_attr=type_attr)
     structmap.append(container_div)
     divs = div_structure(filelist)
     create_div(workspace, divs, container_div, filesec,
-               filelist, properties=properties, type_attr=type_attr)
+               filelist, type_attr=type_attr)
 
     mets_element = mets.mets(child_elements=[structmap])
     ET.cleanup_namespaces(mets_element)
@@ -360,7 +355,7 @@ def get_amd_references(workspace, path=None, stream=None, directory=None):
 
 
 def create_div(workspace, divs, parent, filesec, filelist, path='',
-               properties={}, type_attr=None):
+               type_attr=None):
     """Recursively create fileSec and structmap divs based on directory
     structure.
 
@@ -370,7 +365,6 @@ def create_div(workspace, divs, parent, filesec, filelist, path='',
     :param filesec: filesec element
     :param filelist: Sorted list of digital objects (file paths)
     :param path: Current path in directory structure walkthrough
-    :param properties: Properties of files created in import_object.py
     :param type_attr: Structmap type
     :returns: ``None``
     """
@@ -383,7 +377,7 @@ def create_div(workspace, divs, parent, filesec, filelist, path='',
         if div_path in filelist:
             fileid = get_fileid(filesec, div_path)
             fptr = mets.fptr(fileid)
-            div_el = add_file_properties(properties, div_path, fptr)
+            div_el = add_file_properties(workspace, div_path, fptr)
             if div_el is not None:
                 property_list.append(div_el)
             else:
@@ -402,7 +396,7 @@ def create_div(workspace, divs, parent, filesec, filelist, path='',
                                   admid=amdids)
             div_list.append(div_el)
             create_div(workspace, divs[div], div_el, filesec, filelist,
-                       div_path, properties, type_attr)
+                       div_path, type_attr)
 
     # Add fptr list first, then div list
     for fptr_elem in fptr_list:
@@ -425,7 +419,7 @@ def create_filegrp(workspace, filegrp, filelist):
         add_file_to_filesec(workspace, path, filegrp)
 
 
-def add_file_properties(properties, path, fptr):
+def add_file_properties(workspace, path, fptr, stream=None):
     """Create a div element with file properties
 
     :param properties: File properties
@@ -434,15 +428,34 @@ def add_file_properties(properties, path, fptr):
 
     :returns: Div element with properties or None
     """
-    if properties is None:
+
+    amdref = next(iter(get_amd_references(workspace, path=path,
+                       stream=stream)))
+    pkl_name = os.path.join(workspace, '%s-scraper.pkl' % amdref[1:])
+
+    if not os.path.isfile(pkl_name):
         return None
-    if encode_path(path) in properties:
-        file_properties = properties[encode_path(path)]
-        if 'order' in file_properties:
-            div_el = mets.div(type_attr='file',
-                              order=file_properties['order'])
-            div_el.append(fptr)
-            return div_el
+
+    with open(pkl_name, 'rb') as pkl_file:
+        streams = pickle.load(pkl_file)
+
+    if stream is None:
+        index = 0
+    else:
+        index = int(stream)
+
+    properties = {}
+    if 'properties' not in streams[index]:
+        return None
+    else:
+        properties = streams[index]['properties']
+
+    if 'order' in properties:
+        div_el = mets.div(type_attr='file',
+                          order=properties['order'])
+        div_el.append(fptr)
+        return div_el
+
     return None
 
 

@@ -4,8 +4,9 @@
 import os
 import sys
 import argparse
-import wand.image
-import PIL.Image
+import pickle
+from file_scraper.scraper import Scraper
+import lxml.etree
 import nisomix.mix
 from siptools.utils import AmdCreator
 
@@ -63,7 +64,7 @@ class MixCreator(AmdCreator):
     """Subclass of AmdCreator, which generates MIX metadata for image files.
     """
 
-    def add_mix_md(self, image_file, file_relpath=None):
+    def add_mix_md(self, filepath, filerel=None):
         """Creates  MIX metadata for an image file and append it
         to self.md_elements
 
@@ -73,130 +74,95 @@ class MixCreator(AmdCreator):
         """
 
         # Create MIX metadata
-        mix = create_mix(os.path.join(image_file))
-        self.add_md(mix, file_relpath if file_relpath else image_file)
+        mix_dict = create_mix(filepath, filerel, self.workspace)
+
+        for index in mix_dict.keys():
+            if '0' in mix_dict and len(mix_dict) == 1:
+                self.add_md(mix_dict[index],
+                            filerel if filerel else filepath)
+            else:
+                self.add_md(mix_dict[index],
+                            filerel if filerel else filepath, index)
 
     # Change the default write parameters
     def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None):
         super(MixCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
-def _find_largest_img(img):
-    """Iterate over all images in the image file and return the index
-    of the largest image file.
-
-    :img: wand.image.Image instance
-    :returns: Index of the largest image
-    """
-
-    largest_size = 0
-    idx = 0
-
-    for i, image in enumerate(img.sequence):
-        size = image.width * image.height
-
-        if size > largest_size:
-            largest_size = size
-            idx = i
-
-    return idx
-
-
-def _inspect_image(img):
-    """Create metadata for image file. Use both Wand and Pillow modules to
-    extract metadata from image file.
-
-    :img: image file path
-    :returns: image file metadata dictionary
-    """
-    metadata = {}
-    idx = 0
-
-    with wand.image.Image(filename=img) as i:
-
-        if len(i.sequence) > 1:
-            idx = _find_largest_img(i)
-
-        image = i.sequence[idx]
-
-        metadata["byteorder"] = None
-        metadata["width"] = str(image.width)
-        metadata["height"] = str(image.height)
-        metadata["colorspace"] = str(image.colorspace)
-        metadata["bitspersample"] = str(image.depth)
-        metadata["compression"] = str(i.compression)
-
-        for key, value in i.metadata.items():
-            if key.startswith('tiff:endian'):
-                if value == 'msb':
-                    metadata["byteorder"] = 'big endian'
-                elif value == 'lsb':
-                    metadata["byteorder"] = 'little endian'
-
-    with PIL.Image.open(img) as image:
-
-        image.seek(idx)
-        mode = image.mode
-        if mode == 'F':
-            metadata["bpsunit"] = 'floating point'
-        else:
-            metadata["bpsunit"] = 'integer'
-
-        metadata["samplesperpixel"] = None
-
-        if image.format == 'TIFF':
-            tag_info = image.tag_v2
-            if tag_info and 277 in tag_info.keys():
-                metadata["samplesperpixel"] = str(tag_info[277])
-        elif image.format == 'JPEG':
-            exif_info = image._getexif()
-            if exif_info and 277 in exif_info.keys():
-                metadata["samplesperpixel"] = str(exif_info[277])
-
-        if not metadata["samplesperpixel"]:
-            metadata["samplesperpixel"] = SAMPLES_PER_PIXEL[mode]
-
-    return metadata
-
-
-def create_mix(image):
+def create_mix(filename, filerel=None, workspace=None):
     """Create MIX metadata XML element for an image file.
 
     :image: image file
     :returns: MIX XML element
     """
-    metadata = _inspect_image(image)
+    if filerel is None:
+        filerel = filename
 
-    mix_compression \
-        = nisomix.mix.mix_Compression(
-            compressionScheme=metadata["compression"]
+    ref_exists = False
+    if workspace is not None:
+        ref = os.path.join(workspace, 'amd-references.xml')
+        if os.path.isfile(ref):
+            ref_exists = True
+
+    if ref_exists:
+        root = lxml.etree.parse(ref).getroot()
+        amdref = root.xpath("/amdReferences/amdReference[not(@stream) "
+                            "and @file='%s']" % filerel.decode(
+                                sys.getfilesystemencoding()))[0]
+        pkl_name = os.path.join(workspace, '%s-scraper.pkl' % amdref.text[1:])
+
+        streams = None
+        if not os.path.isfile(pkl_name):
+            scraper = Scraper(filename)
+            scraper.scrape()
+            streams = scraper.streams
+        else:
+            with open(pkl_name, 'rb') as pkl_file:
+                streams = pickle.load(pkl_file)
+    else:
+        scraper = Scraper(filename)
+        scraper.scrape()
+        streams = scraper.streams
+
+    mix_dict = {}
+    for index, stream_md in streams.iteritems():
+        if stream_md['stream_type'] != 'image':
+            continue
+
+        mix_compression = nisomix.mix.mix_Compression(
+            compressionScheme=stream_md["compression"])
+
+        if not 'byte_order' in stream_md:
+            byte_order = None
+        else:
+            byte_order = stream_md["byte_order"]
+        basicdigitalobjectinformation \
+            = nisomix.mix.mix_BasicDigitalObjectInformation(
+                byteOrder=byte_order,
+                Compression_elements=[mix_compression])
+
+        basicimageinformation = nisomix.mix.mix_BasicImageInformation(
+            imageWidth=stream_md["width"],
+            imageHeight=stream_md["height"],
+            colorSpace=stream_md["colorspace"])
+
+        imageassessmentmetadata = nisomix.mix.mix_ImageAssessmentMetadata(
+            bitsPerSampleValue_elements=stream_md["bps_value"],
+            bitsPerSampleUnit=stream_md["bps_unit"],
+            samplesPerPixel=stream_md["samples_per_pixel"]
         )
 
-    basicdigitalobjectinformation \
-        = nisomix.mix.mix_BasicDigitalObjectInformation(
-            byteOrder=metadata["byteorder"],
-            Compression_elements=[mix_compression]
+        mix_root = nisomix.mix.mix_mix(
+            BasicDigitalObjectInformation=basicdigitalobjectinformation,
+            BasicImageInformation=basicimageinformation,
+            ImageAssessmentMetadata=imageassessmentmetadata
         )
+        mix_dict[str(index)] = mix_root
 
-    basicimageinformation = nisomix.mix.mix_BasicImageInformation(
-        imageWidth=metadata["width"],
-        imageHeight=metadata["height"],
-        colorSpace=metadata["colorspace"]
-    )
+    if not mix_dict:
+        raise ValueError('Image stream info could not be constructed.')
 
-    imageassessmentmetadata = nisomix.mix.mix_ImageAssessmentMetadata(
-        bitsPerSampleValue_elements=metadata["bitspersample"],
-        bitsPerSampleUnit=metadata["bpsunit"],
-        samplesPerPixel=metadata["samplesperpixel"]
-    )
-
-    mix_root = nisomix.mix.mix_mix(
-        BasicDigitalObjectInformation=basicdigitalobjectinformation,
-        BasicImageInformation=basicimageinformation,
-        ImageAssessmentMetadata=imageassessmentmetadata
-    )
-
-    return mix_root
+    return mix_dict
 
 
 if __name__ == '__main__':

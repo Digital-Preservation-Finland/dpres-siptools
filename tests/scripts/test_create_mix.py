@@ -5,6 +5,7 @@ import sys
 import shutil
 import pytest
 import lxml.etree
+import pickle
 import siptools.scripts.create_mix as create_mix
 
 
@@ -70,34 +71,12 @@ def test_main_utf8_files(testpath):
     assert len(xml.xpath(u'//amdReference[@file="data/äöå.tif"]')) == 1
 
 
-def test_inspect_image():
-    """Test for ``_inspect_image`` function. Pass a sample image file for
-    function and check that expected metada is found.
-    """
-
-    # pylint: disable=protected-access
-    metadata = create_mix._inspect_image(
-        'tests/data/images/tiff1.tif'
-    )
-
-    # python-wand returns different values for versions 0.4.x and 0.5.x
-    assert metadata["compression"] in ['b44a', 'no']
-
-    assert metadata["byteorder"] == "little endian"
-    assert metadata["width"] == "2"
-    assert metadata["height"] == "2"
-    assert metadata["colorspace"] == "srgb"
-    assert metadata["bitspersample"] == "8"
-    assert metadata["bpsunit"] == "integer"
-    assert metadata["samplesperpixel"] == "3"
-
-
 def test_create_mix():
     """Test ``create_mix`` function. Pass valid metadata dictionary to
     function and check that result XML element contains expected elements.
     """
 
-    xml = create_mix.create_mix('tests/data/images/tiff1.tif')
+    xml = create_mix.create_mix('tests/data/images/tiff1.tif')['0']
     namespaces = {'ns0': "http://www.loc.gov/mix/v20"}
 
     # compression
@@ -142,22 +121,55 @@ def test_create_mix():
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "3"
 
 
+def test_existing_scraper_result(testpath):
+    """Test that existing pickle file from import_object is used.
+    We just need to check width, since it's different from the real one.
+    """
+    amdid = 'f54380dfc2960793badf5e81c9b1627c'
+    file_ = 'tests/data/images/tiff1.tif'
+    namespaces = {'ns0': "http://www.loc.gov/mix/v20"}
+    xml = """<?xml version='1.0' encoding='UTF-8'?>
+          <amdReferences>
+          <amdReference file="%s">_%s</amdReference>
+          </amdReferences>""" % (file_, amdid)
+    with open(os.path.join(testpath, 'amd-references.xml'), 'w') as out:
+        out.write(xml)
+
+    stream_dict = {0: {
+        'bps_unit': 'integer', 'bps_value': '8', 'colorspace': 'srgb',
+        'compression': 'lzw', 'height': '400', 'mimetype': 'image/tiff',
+        'samples_per_pixel': '3', 'stream_type': 'image', 'version': '6.0',
+        'width': '1234', 'byte_order': 'little endian'}}
+    with open(os.path.join(testpath, ('%s-scraper.pkl' % amdid)), 'wb') \
+            as outfile:
+        pickle.dump(stream_dict, outfile)
+
+    mix = create_mix.create_mix(file_, workspace=testpath)["0"]
+    path = "//ns0:imageWidth"
+    assert mix.xpath(path, namespaces=namespaces)[0].text == '1234'
+
+
 def test_mix_multiple_images():
     """Test ``create_mix`` functions generates metadata for the largest image
     in the file if there are multiple images present.
     """
-    xml = create_mix.create_mix("tests/data/images/multiple_images.tif")
+    xml_dict = create_mix.create_mix("tests/data/images/multiple_images.tif")
     namespaces = {'ns0': "http://www.loc.gov/mix/v20"}
+    sizes = {'0': (2, 2), '1': (2, 2), '2': (2, 2), '3': (640, 400),
+             '4': (2, 2), '5': (2, 2), '6': (2, 2)}
 
-    # width
-    xpath = '/ns0:mix/ns0:BasicImageInformation/'\
-        'ns0:BasicImageCharacteristics/ns0:imageWidth'
-    assert xml.xpath(xpath, namespaces=namespaces)[0].text == "640"
+    for index, xml in xml_dict.iteritems():
+        # width
+        xpath = '/ns0:mix/ns0:BasicImageInformation/'\
+            'ns0:BasicImageCharacteristics/ns0:imageWidth'
+        assert xml.xpath(xpath, namespaces=namespaces)[0].text == \
+            str(sizes[index][0])
 
-    # height
-    xpath = '/ns0:mix/ns0:BasicImageInformation/'\
+        # height
+        xpath = '/ns0:mix/ns0:BasicImageInformation/'\
             'ns0:BasicImageCharacteristics/ns0:imageHeight'
-    assert xml.xpath(xpath, namespaces=namespaces)[0].text == "400"
+        assert xml.xpath(xpath, namespaces=namespaces)[0].text == \
+            str(sizes[index][1])
 
 
 @pytest.mark.parametrize("file, base_path", [

@@ -160,41 +160,6 @@ def get_objectlist(workspace, file_path=None):
     return sorted(objectset)
 
 
-def strip_zeros(float_str):
-    """Recursively strip trailing zeros from a float i.e. strip_zeros("44.10")
-    returns "44.1" and _srip_zeros("44.0") returns "44"
-    """
-
-    # if '.' is found in the string and string
-    # ends in '0' or '.' strip last character
-    if float_str.find(".") != -1 and float_str[-1] in ['0', '.']:
-        return strip_zeros(float_str[:-1])
-
-    return float_str
-
-
-def iso8601_duration(time):
-    """Convert seconds into ISO 8601 duration PT[hours]H[minutes]M[seconds]S
-    with seconds given in two decimal precision.
-    """
-
-    hours = time // (60*60)
-    minutes = time // 60 % 60
-    seconds = time % 60
-
-    duration = "PT"
-
-    if hours:
-        duration += "%dH" % hours
-    if minutes:
-        duration += "%dM" % minutes
-    if seconds:
-        seconds = strip_zeros("%.2f" % seconds)
-        duration += "%sS" % seconds
-
-    return duration
-
-
 class AmdCreator(object):
     """ Class for generating METS XML and amd-references files efficiently.
     """
@@ -353,12 +318,11 @@ class AmdCreator(object):
         :premis_amd_id: The AMDID of corresponding premis FILE object
         """
         digest = premis_amd_id[1:]
-        filename = encode_path("%s-%s-scraper.pkl" % (
-            digest, scraper_streams[0]['stream_type']))
+        filename = encode_path("%s-scraper.pkl" % digest)
         filename = os.path.join(self.workspace, filename)
 
         if not os.path.exists(filename):
-            with open(filename, 'w') as outfile:
+            with open(filename, 'wb') as outfile:
                 pickle.dump(scraper_streams, outfile)
             print "Wrote technical data to: %s" % (outfile.name)
 

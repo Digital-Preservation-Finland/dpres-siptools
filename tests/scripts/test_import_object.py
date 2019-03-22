@@ -13,6 +13,7 @@ from siptools.xml.mets import NAMESPACES
 def get_amd_file(path, input_file, stream=None):
     """Get id"""
     ref = os.path.join(path, 'amd-references.xml')
+
     root = ET.parse(ref).getroot()
     if stream is None:
         amdref = root.xpath("/amdReferences/amdReference[not(@stream) "
@@ -30,7 +31,7 @@ def get_amd_file(path, input_file, stream=None):
 def test_import_object_ok(testpath):
     """Test import_object.main funtion with valid test data."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_wellformed', input_file]
+    arguments = ['--workspace', testpath, '--skip_inspection', input_file]
     return_code = import_object.main(arguments)
 
     output = get_amd_file(testpath, input_file)
@@ -43,10 +44,10 @@ def test_import_object_ok(testpath):
     assert return_code == 0
 
 
-def test_import_object_skip_wellformed_ok(testpath):
+def test_import_object_skip_inspection_ok(testpath):
     """Test import_object.main function --skip-inspection argument."""
     input_file = 'tests/data/text-file.txt'
-    arguments = ['--workspace', testpath, input_file, '--skip_wellformed',
+    arguments = ['--workspace', testpath, input_file, '--skip_inspection',
                  '--format_name', 'image/dpx', '--format_version', '1.0',
                  '--digest_algorithm', 'MD5', '--message_digest',
                  '1qw87geiewgwe9',
@@ -63,10 +64,10 @@ def test_import_object_skip_wellformed_ok(testpath):
     assert return_code == 0
 
 
-def test_import_object_skip_wellformed_nodate_ok(testpath):
+def test_import_object_skip_inspection_nodate_ok(testpath):
     """Test import_object.main function without --date_created argument."""
     input_file = 'tests/data/text-file.txt'
-    arguments = ['--workspace', testpath, input_file, '--skip_wellformed',
+    arguments = ['--workspace', testpath, input_file, '--skip_inspection',
                  '--format_name', 'image/dpx', '--format_version', '1.0',
                  '--digest_algorithm', 'MD5', '--message_digest',
                  '1qw87geiewgwe9']
@@ -88,7 +89,7 @@ def test_import_object_structured_ok(testpath):
                                              'tests/data/structured'))
     test_file = ""
     for element in iterate_files(test_data):
-        arguments = ['--workspace', workspace, '--skip_wellformed',
+        arguments = ['--workspace', workspace, '--skip_inspection',
                      os.path.relpath(element, os.curdir)]
         return_code = import_object.main(arguments)
         test_file = os.path.relpath(element, os.curdir)
@@ -105,12 +106,12 @@ def test_import_object_structured_ok(testpath):
 def test_import_object_order(testpath):
     """Test file order"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_wellformed',
+    arguments = ['--workspace', testpath, '--skip_inspection',
                  '--order', '5', input_file]
     return_code = import_object.main(arguments)
     output = get_amd_file(testpath, input_file)
     path = output.replace('-PREMIS%3AOBJECT-amd.xml',
-                          '-text-scraper.pkl')
+                          '-scraper.pkl')
     assert os.path.isfile(path)
 
     streams = {}
@@ -127,7 +128,7 @@ def test_import_object_order(testpath):
 def test_import_object_identifier(testpath):
     """Test digital object identifier argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_wellformed',
+    arguments = ['--workspace', testpath, '--skip_inspection',
                  '--identifier', 'local', 'test-id', input_file]
     return_code = import_object.main(arguments)
 
@@ -146,7 +147,7 @@ def test_import_object_identifier(testpath):
 def test_import_object_format_registry(testpath):
     """Test digital object format registry argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_wellformed',
+    arguments = ['--workspace', testpath, '--skip_inspection',
                  '--format_registry', 'local', 'test-key', input_file]
     return_code = import_object.main(arguments)
 
@@ -201,7 +202,7 @@ def test_import_object_utf8(testpath):
         file_.write('Voi änkeröinen.')
 
     # Run function
-    assert import_object.main(['--workspace', testpath, '--skip_wellformed',
+    assert import_object.main(['--workspace', testpath, '--skip_inspection',
                                utf8_file]) == 0
 
     # Check output
@@ -212,7 +213,6 @@ def test_import_object_utf8(testpath):
                           namespaces=NAMESPACES)) == 1
 
 
-@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/valid_tiff.tif'])
 def test_import_object_validate_tiff_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_tiff.tif']
@@ -235,7 +235,6 @@ def test_import_object_validate_tiff_ok(input_file, testpath):
     assert return_code == 0
 
 
-@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/valid_jpeg.jpeg'])
 def test_import_object_validate_jpeg_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_jpeg.jpeg']
@@ -258,7 +257,6 @@ def test_import_object_validate_jpeg_ok(input_file, testpath):
     assert return_code == 0
 
 
-@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_validate_text_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/text-file.txt']
@@ -281,7 +279,6 @@ def test_import_object_validate_text_ok(input_file, testpath):
     assert return_code == 0
 
 
-@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/csvfile.csv'])
 def test_import_object_validate_csv_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/csvfile.csv']
@@ -296,7 +293,7 @@ def test_import_object_validate_csv_ok(input_file, testpath):
         namespaces=NAMESPACES)) == 1
     assert root.xpath(
         '//premis:formatName/text()',
-        namespaces=NAMESPACES)[0] == 'text/plain; charset=ISO-8859-15'
+        namespaces=NAMESPACES)[0] == 'text/plain; charset=UTF-8'
     assert len(root.xpath(
         '//premis:formatVersion/text()',
         namespaces=NAMESPACES)) == 0
@@ -304,7 +301,6 @@ def test_import_object_validate_csv_ok(input_file, testpath):
     assert return_code == 0
 
 
-@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/mets_valid_minimal.xml'])
 def test_import_object_validate_mets_xml_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/mets_valid_minimal.xml']
@@ -327,7 +323,6 @@ def test_import_object_validate_mets_xml_ok(input_file, testpath):
     assert return_code == 0
 
 
-@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file', ['tests/data/ODF_Text_Document.odt'])
 def test_import_object_validate_odt_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/ODF_Text_Document.odt']
@@ -345,12 +340,11 @@ def test_import_object_validate_odt_ok(input_file, testpath):
         namespaces=NAMESPACES)[0] == 'application/vnd.oasis.opendocument.text'
     assert root.xpath(
         '//premis:formatVersion/text()',
-        namespaces=NAMESPACES)[0] == '1.0'
+        namespaces=NAMESPACES)[0] == '1.1'
 
     assert return_code == 0
 
 
-@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.skipif(not os.path.exists('/opt/file-5.30/lib64/libmagic.so.1'),
                     reason='Requires file-5.30')
 @pytest.mark.parametrize('input_file', ['tests/data/MS_Excel_97-2003.xls'])
@@ -372,7 +366,6 @@ def test_import_object_validate_msexcel_ok(input_file, testpath):
     assert return_code == 0
 
 
-@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.skipif(not os.path.exists('/opt/file-5.30/lib64/libmagic.so.1'),
                     reason='Requires file-5.30')
 @pytest.mark.parametrize('input_file',
@@ -398,7 +391,6 @@ def test_import_object_validate_msword_ok(input_file, testpath):
     assert return_code == 0
 
 
-@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
 @pytest.mark.parametrize('input_file, version',
                          [('tests/data/audio/valid-bwf.wav', '2'),
                           ('tests/data/audio/valid-wav.wav', '')])
@@ -442,11 +434,11 @@ def iterate_files(path):
 
 
 def test_streams(testpath):
-    """Test with streams, the test file vontains one video and one audio
+    """Test with streams, the test file contains one video and one audio
        stream.
     """
     input_file = 'tests/data/video/mp4.mp4'
-    arguments = ['--workspace', testpath, '--skip_wellformed', input_file]
+    arguments = ['--workspace', testpath, '--skip_inspection', input_file]
     return_code = import_object.main(arguments)
 
     # Streams
