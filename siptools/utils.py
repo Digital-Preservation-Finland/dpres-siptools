@@ -285,6 +285,8 @@ class AmdCreator(object):
                 elif isinstance(ref[key], str):
                     reference.set(
                         key, ref[key].decode(sys.getfilesystemencoding()))
+                elif isinstance(ref[key], unicode):
+                    reference.set(key, ref[key])
                 elif ref[key]:
                     reference.set(key, str(ref[key]))
                 references.append(reference)
