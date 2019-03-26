@@ -76,7 +76,7 @@ def test_create_mix():
     function and check that result XML element contains expected elements.
     """
 
-    xml = create_mix.create_mix('tests/data/images/tiff1.tif')['0']
+    xml = create_mix.create_mix('tests/data/images/tiff1.tif')
     namespaces = {'ns0': "http://www.loc.gov/mix/v20"}
 
     # compression
@@ -144,32 +144,17 @@ def test_existing_scraper_result(testpath):
             as outfile:
         pickle.dump(stream_dict, outfile)
 
-    mix = create_mix.create_mix(file_, workspace=testpath)["0"]
+    mix = create_mix.create_mix(file_, workspace=testpath)
     path = "//ns0:imageWidth"
     assert mix.xpath(path, namespaces=namespaces)[0].text == '1234'
 
 
 def test_mix_multiple_images():
-    """Test ``create_mix`` functions generates metadata for the largest image
-    in the file if there are multiple images present.
+    """Test ``create_mix`` functions raises error if there are multiple
+    images present.
     """
-    xml_dict = create_mix.create_mix("tests/data/images/multiple_images.tif")
-    namespaces = {'ns0': "http://www.loc.gov/mix/v20"}
-    sizes = {'0': (2, 2), '1': (2, 2), '2': (2, 2), '3': (640, 400),
-             '4': (2, 2), '5': (2, 2), '6': (2, 2)}
-
-    for index, xml in xml_dict.iteritems():
-        # width
-        xpath = '/ns0:mix/ns0:BasicImageInformation/'\
-            'ns0:BasicImageCharacteristics/ns0:imageWidth'
-        assert xml.xpath(xpath, namespaces=namespaces)[0].text == \
-            str(sizes[index][0])
-
-        # height
-        xpath = '/ns0:mix/ns0:BasicImageInformation/'\
-            'ns0:BasicImageCharacteristics/ns0:imageHeight'
-        assert xml.xpath(xpath, namespaces=namespaces)[0].text == \
-            str(sizes[index][1])
+    with pytest.raises(ValueError):
+        create_mix.create_mix("tests/data/images/multiple_images.tif")
 
 
 @pytest.mark.parametrize("file, base_path", [

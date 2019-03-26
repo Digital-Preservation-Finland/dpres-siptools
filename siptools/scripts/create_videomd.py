@@ -11,6 +11,11 @@ FILEDATA_KEYS = [
     'frame_rate', 'data_rate', 'bits_per_sample', 'data_rate_mode', 'color',
     'signal_format', 'sound', 'duration', 'sampling']
 
+ALLOW_UNAV = ['duration', 'codec_creator_app', 'codec_creator_app_version',
+              'codec_name', 'dar', 'sampling', 'signal_format']
+ALLOW_ZERO = ['data_rate', 'bits_per_sample', 'frame_rate', 'width',
+              'height', 'par']
+
 
 def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
@@ -74,12 +79,31 @@ class VideomdCreator(AmdCreator):
         super(VideomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
+def check_missing_metadata(streams, filename):
+    """If an element is none, use value (:unav) if allowed in the
+    specifications. Otherwise raise exception.
+    """
+    for index, stream in streams.iteritems():
+        for key, element in stream.iteritems():
+            if element is None:
+                if key in ALLOW_UNAV:
+                    stream[index][key] = '(:unav)'
+                if key in ALLOW_ZERO:
+                    stream[index][key] = '0'
+                else:
+                    raise ValueError('Missing metadata value for key %s in '
+                                     'index %s for file %s' % (
+                                        key, str(index), filename))
+    return streams
+
+
 def create_videomd(filename, filerel=None, workspace=None):
     """Creates and returns list of videoMD XML sections.
     :filename: Audio file path
     :returns: List of VideoMD XML sections.
     """
     streams = scrape_file(filename, filerel=filerel, workspace=workspace)
+    streams = check_missing_metadata(streams, filename)
 
     videomd_dict = {}
     for index, stream_md in streams.iteritems():

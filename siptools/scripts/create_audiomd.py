@@ -11,6 +11,10 @@ FILEDATA_KEYS = ['audio_data_encoding', 'bits_per_sample',
 
 AUDIOINFO_KEYS = ['duration', 'num_channels']
 
+ALLOW_UNAV = ['audio_data_encoding', 'codec_creator_app',
+              'codec_creator_app_version', 'codec_name',
+              'duration', 'num_channels']
+ALLOW_ZERO = ['bits_per_sample', 'data_rate', 'sampling_frequency']
 
 def parse_arguments(arguments):
     """Parse arguments commandline arguments."""
@@ -77,12 +81,31 @@ class AudiomdCreator(AmdCreator):
         super(AudiomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
+def check_missing_metadata(streams, filename):
+    """If an element is none, use value (:unav) if allowed in the
+    specifications. Otherwise raise exception.
+    """
+    for index, stream in streams.iteritems():
+        for key, element in stream.iteritems():
+            if element is None:
+                if key in ALLOW_UNAV:
+                    stream[index][key] = '(:unav)'
+                if key in ALLOW_ZERO:
+                    stream[index][key] = '0'
+                else:
+                    raise ValueError('Missing metadata value for key %s in '
+                                     'index %s for file %s' % (
+                                        key, str(index), filename))
+    return streams
+
+
 def create_audiomd(filename, filerel=None, workspace=None):
     """Creates and returns list of audioMD XML sections.
     :filename: Audio file path
     :returns: List of AudioMD XML sections.
     """
     streams = scrape_file(filename, filerel=filerel, workspace=workspace)
+    streams = check_missing_metadata(streams, filename)
 
     audiomd_dict = {}
     for index, stream_md in streams.iteritems():

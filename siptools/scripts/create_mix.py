@@ -12,7 +12,6 @@ SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
                      'I': '1', 'F': '1'}
 
-
 def str_to_unicode(string):
     """Convert string to unicode string. Assumes that string encoding is the
     encoding of filesystem (unicode() assumes ASCII by default).
@@ -72,15 +71,9 @@ class MixCreator(AmdCreator):
         """
 
         # Create MIX metadata
-        mix_dict = create_mix(filepath, filerel, self.workspace)
-
-        for index in mix_dict.keys():
-            if '0' in mix_dict and len(mix_dict) == 1:
-                self.add_md(mix_dict[index],
-                            filerel if filerel else filepath)
-            else:
-                self.add_md(mix_dict[index],
-                            filerel if filerel else filepath, index)
+        mix = create_mix(filepath, filerel, self.workspace)
+        if mix is not None:
+            self.add_md(mix, filerel if filerel else filepath)
 
     # Change the default write parameters
     def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None):
@@ -94,46 +87,47 @@ def create_mix(filename, filerel=None, workspace=None):
     :returns: MIX XML element
     """
     streams = scrape_file(filename, filerel=filerel, workspace=workspace)
+    stream_md = streams[0]
 
-    mix_dict = {}
-    for index, stream_md in streams.iteritems():
-        if stream_md['stream_type'] != 'image':
-            continue
+    if stream_md['stream_type'] != 'image':
+        print "This is not an image file. No MIX metadata created."
+        return None
+    if len(streams) > 1:
+        raise ValueError('File containing multiple images not supported. '
+                         'File: %s' % filename)
 
-        mix_compression = nisomix.mix.mix_Compression(
-            compressionScheme=stream_md["compression"])
+    mix_compression = nisomix.mix.mix_Compression(
+        compressionScheme=stream_md["compression"])
+    if not 'byte_order' in stream_md:
+        if stream_md['mimetype'] == 'image/tiff':
+            raise ValueError('Byte order missing from TIFF image file '
+                             '%s' % filename)
+        byte_order = None
+    else:
+        byte_order = stream_md["byte_order"]
+    basicdigitalobjectinformation \
+        = nisomix.mix.mix_BasicDigitalObjectInformation(
+            byteOrder=byte_order,
+            Compression_elements=[mix_compression])
+    basicimageinformation = nisomix.mix.mix_BasicImageInformation(
+        imageWidth=stream_md["width"],
+        imageHeight=stream_md["height"],
+        colorSpace=stream_md["colorspace"])
+    imageassessmentmetadata = nisomix.mix.mix_ImageAssessmentMetadata(
+        bitsPerSampleValue_elements=stream_md["bps_value"],
+        bitsPerSampleUnit=stream_md["bps_unit"],
+        samplesPerPixel=stream_md["samples_per_pixel"]
+    )
+    mix_root = nisomix.mix.mix_mix(
+        BasicDigitalObjectInformation=basicdigitalobjectinformation,
+        BasicImageInformation=basicimageinformation,
+        ImageAssessmentMetadata=imageassessmentmetadata
+    )
 
-        if not 'byte_order' in stream_md:
-            byte_order = None
-        else:
-            byte_order = stream_md["byte_order"]
-        basicdigitalobjectinformation \
-            = nisomix.mix.mix_BasicDigitalObjectInformation(
-                byteOrder=byte_order,
-                Compression_elements=[mix_compression])
+    if not mix_root:
+        raise ValueError('Image info could not be constructed.')
 
-        basicimageinformation = nisomix.mix.mix_BasicImageInformation(
-            imageWidth=stream_md["width"],
-            imageHeight=stream_md["height"],
-            colorSpace=stream_md["colorspace"])
-
-        imageassessmentmetadata = nisomix.mix.mix_ImageAssessmentMetadata(
-            bitsPerSampleValue_elements=stream_md["bps_value"],
-            bitsPerSampleUnit=stream_md["bps_unit"],
-            samplesPerPixel=stream_md["samples_per_pixel"]
-        )
-
-        mix_root = nisomix.mix.mix_mix(
-            BasicDigitalObjectInformation=basicdigitalobjectinformation,
-            BasicImageInformation=basicimageinformation,
-            ImageAssessmentMetadata=imageassessmentmetadata
-        )
-        mix_dict[str(index)] = mix_root
-
-    if not mix_dict:
-        raise ValueError('Image stream info could not be constructed.')
-
-    return mix_dict
+    return mix_root
 
 
 if __name__ == '__main__':
