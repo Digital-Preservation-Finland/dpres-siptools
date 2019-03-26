@@ -146,20 +146,12 @@ def create_streams(streams, premis_file):
     :fname: Digital object file path
     :premis_file: Created PREMIS XML file for the digital object file
     """
-    if streams[0]['stream_type'] not in ['videocontainer', 'image']:
+    if len(streams) < 2:
         return None
-
-    if streams[0]['stream_type'] == 'image':
-        image_count = 0
-        for index, stream in streams.iteritems():
-            if stream['stream_type'] == 'image':
-                image_count = image_count + 1
-        if image_count < 2:
-            return None
 
     premis_list = {}
     for index, stream in streams.iteritems():
-        if stream['stream_type'] not in ['video', 'audio', 'image']:
+        if stream['stream_type'] not in ['video', 'audio']:
             continue
 
         id_value = str(uuid4())
@@ -180,6 +172,23 @@ def create_streams(streams, premis_file):
             premis.relationship('structural', 'includes', el_premis_object))
 
     return premis_list
+
+
+def check_metadata(format_name, format_version, streams, fname):
+    """Check that we will not get None values"""
+    if format_name is None:
+        raise ValueError('Mimetype could not be identified for '
+                         'file %s' % fname)
+    if format_version is None:
+        raise ValueError('File format version could not be identified for '
+                         'file ' % fname)
+    if streams[0]['stream_type'] not in ['videocontainer'] and \
+            len(streams) > 1:
+        raise ValueError('The file contains multiple streams which '
+                         'is supported only for video containers.')
+    elif streams[0]['stream_type'] in ['videocontainer'] and \
+            len(streams) < 2:
+        raise ValueError('Video container format without contained streams found.')
 
 
 def create_premis_object(fname, scraper,
@@ -205,8 +214,11 @@ def create_premis_object(fname, scraper,
         if format_name in DEFAULT_VERSIONS:
             format_version = DEFAULT_VERSIONS[format_name]
 
-    if not charset and 'charset' in scraper.streams[0]:
+    if not charset and scraper.streams[0]['stream_type'] == 'text':
         charset = scraper.streams[0]['charset']
+
+    check_metadata(format_name, format_version, scraper.streams, fname)
+
     if charset:
         if charset not in ALLOWED_CHARSETS:
             raise ValueError('Invalid charset.')

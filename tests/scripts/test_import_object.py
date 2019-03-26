@@ -163,7 +163,8 @@ def test_import_object_format_registry(testpath):
     assert return_code == 0
 
 
-@pytest.mark.skipif('jhove' not in sys.modules, reason='Requires jhove')
+@pytest.mark.skipif('file-scraper-full' not in sys.modules,
+                    reason='Requires full file scarper')
 def test_import_object_validate_pdf_ok(testpath):
     """Test PDF validation in import_object.main funciton."""
     input_file = 'tests/data/test_import.pdf'
@@ -213,6 +214,8 @@ def test_import_object_utf8(testpath):
                           namespaces=NAMESPACES)) == 1
 
 
+@pytest.mark.skipif('file-scraper-full' not in sys.modules,
+                    reason='Requires full file scarper')
 @pytest.mark.parametrize('input_file', ['tests/data/valid_tiff.tif'])
 def test_import_object_validate_tiff_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_tiff.tif']
@@ -235,6 +238,8 @@ def test_import_object_validate_tiff_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('file-scraper-full' not in sys.modules,
+                    reason='Requires full file scarper')
 @pytest.mark.parametrize('input_file', ['tests/data/valid_jpeg.jpeg'])
 def test_import_object_validate_jpeg_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_jpeg.jpeg']
@@ -257,6 +262,8 @@ def test_import_object_validate_jpeg_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('file-scraper-full' not in sys.modules,
+                    reason='Requires full file scarper')
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_validate_text_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/text-file.txt']
@@ -279,6 +286,8 @@ def test_import_object_validate_text_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('file-scraper-full' not in sys.modules,
+                    reason='Requires full file scarper')
 @pytest.mark.parametrize('input_file', ['tests/data/csvfile.csv'])
 def test_import_object_validate_csv_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/csvfile.csv']
@@ -301,6 +310,8 @@ def test_import_object_validate_csv_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('file-scraper-full' not in sys.modules,
+                    reason='Requires full file scarper')
 @pytest.mark.parametrize('input_file', ['tests/data/mets_valid_minimal.xml'])
 def test_import_object_validate_mets_xml_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/mets_valid_minimal.xml']
@@ -323,6 +334,8 @@ def test_import_object_validate_mets_xml_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('file-scraper-full' not in sys.modules,
+                    reason='Requires full file scarper')
 @pytest.mark.parametrize('input_file', ['tests/data/ODF_Text_Document.odt'])
 def test_import_object_validate_odt_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/ODF_Text_Document.odt']
@@ -345,8 +358,8 @@ def test_import_object_validate_odt_ok(input_file, testpath):
     assert return_code == 0
 
 
-@pytest.mark.skipif(not os.path.exists('/opt/file-5.30/lib64/libmagic.so.1'),
-                    reason='Requires file-5.30')
+@pytest.mark.skipif('file-scraper-full' not in sys.modules,
+                    reason='Requires full file scarper')
 @pytest.mark.parametrize('input_file', ['tests/data/MS_Excel_97-2003.xls'])
 def test_import_object_validate_msexcel_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/MS_Excel_97-2003.xls']
@@ -366,8 +379,8 @@ def test_import_object_validate_msexcel_ok(input_file, testpath):
     assert return_code == 0
 
 
-@pytest.mark.skipif(not os.path.exists('/opt/file-5.30/lib64/libmagic.so.1'),
-                    reason='Requires file-5.30')
+@pytest.mark.skipif('file-scraper-full' not in sys.modules,
+                    reason='Requires full file scarper')
 @pytest.mark.parametrize('input_file',
                          ['tests/data/MS_Word_2007-2013_XML.docx'])
 def test_import_object_validate_msword_ok(input_file, testpath):
@@ -391,6 +404,8 @@ def test_import_object_validate_msword_ok(input_file, testpath):
     assert return_code == 0
 
 
+@pytest.mark.skipif('file-scraper-full' not in sys.modules,
+                    reason='Requires full file scarper')
 @pytest.mark.parametrize('input_file, version',
                          [('tests/data/audio/valid-bwf.wav', '2'),
                           ('tests/data/audio/valid-wav.wav', '')])

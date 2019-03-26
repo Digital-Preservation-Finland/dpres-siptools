@@ -8,8 +8,10 @@ lxml
 scandir
 file-magic
 pymediainfo
-wand
+wand>=0.5.1
 Pillow
+six
+olefile
 opf-fido
 git+https://gitlab.csc.fi/dpres/xml-helpers.git@develop#egg=xml_helpers
 git+https://gitlab.csc.fi/dpres/mets.git@develop#egg=mets
