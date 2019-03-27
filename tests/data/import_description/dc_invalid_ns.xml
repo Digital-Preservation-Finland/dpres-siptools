@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+
+<metadata
+	xmlns="http://localhost/myapp/"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://localhost/myapp/ http://localhost/myapp/schema.xsd"
+	xmlns:dc="http://localhost/dc/elements/1.1/wrong-namespace">
+
+	<dc:title>
+		Some title
+	</dc:title>
+	<dc:description>
+		Description about something
+	</dc:description>
+	<dc:publisher>
+		CSC
+	</dc:publisher>
+	<dc:identifier>
+		id-1234
+	</dc:identifier>
+
+</metadata>

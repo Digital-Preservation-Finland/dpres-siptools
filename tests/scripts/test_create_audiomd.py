@@ -16,7 +16,7 @@ def test_create_audiomd_elem():
     """
 
     audiomd = create_audiomd.create_audiomd(
-        "tests/data/audio/valid-wav.wav")["0"]
+        "tests/data/audio/valid__wav.wav")["0"]
 
     file_data = "/amd:AUDIOMD/amd:fileData"
     audio_info = "/amd:AUDIOMD/amd:audioInfo"
@@ -32,7 +32,7 @@ def test_create_audiomd_elem():
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PCM'
 
     path = "%s/amd:bitsPerSample" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '16'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '8'
 
     path = "%s/amd:compression/amd:codecCreatorApp" % file_data
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == \
@@ -48,19 +48,19 @@ def test_create_audiomd_elem():
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossless'
 
     path = "%s/amd:dataRate" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '768'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '705.6'
 
     path = "%s/amd:dataRateMode" % file_data
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Fixed'
 
     path = "%s/amd:samplingFrequency" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '48'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '44.1'
 
     path = "%s/amd:duration" % audio_info
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT0.77S'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT0.86S'
 
     path = "%s/amd:numChannels" % audio_info
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '1'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '2'
 
 
 def test_stream():
@@ -68,7 +68,7 @@ def test_stream():
        video container.
     """
     audiomd = create_audiomd.create_audiomd(
-        "tests/data/video/mp4.mp4")["2"]
+        "tests/data/video/valid__h264_aac.mp4")["2"]
 
     file_data = "/amd:AUDIOMD/amd:fileData"
     audio_info = "/amd:AUDIOMD/amd:audioInfo"
@@ -80,10 +80,11 @@ def test_stream():
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '0'
 
     path = "%s/amd:compression/amd:codecCreatorApp" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Lavf53.24.2'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == \
+        'Lavf56.40.101'
 
     path = "%s/amd:compression/amd:codecCreatorAppVersion" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '53.24.2'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '56.40.101'
 
     path = "%s/amd:compression/amd:codecName" % file_data
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'AAC'
@@ -92,19 +93,19 @@ def test_stream():
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossy'
 
     path = "%s/amd:dataRate" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '384'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '135.233'
 
     path = "%s/amd:dataRateMode" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Variable'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Fixed'
 
     path = "%s/amd:samplingFrequency" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '48'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '44.1'
 
     path = "%s/amd:duration" % audio_info
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT5.31S'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT0.86S'
 
     path = "%s/amd:numChannels" % audio_info
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '6'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '2'
 
 
 def test_invalid_wav_file():
@@ -123,13 +124,13 @@ def test_create_audiomd(testpath):
 
     # Debug print
     print "\n\n%s" % ET.tostring(
-        create_audiomd.create_audiomd("tests/data/audio/valid-wav.wav")["0"],
+        create_audiomd.create_audiomd("tests/data/audio/valid__wav.wav")["0"],
         pretty_print=True
     )
 
     # Append WAV and broadcast WAV files with identical metadata
-    creator.add_audiomd_md("tests/data/audio/valid-wav.wav")
-    creator.add_audiomd_md("tests/data/audio/valid-bwf.wav")
+    creator.add_audiomd_md("tests/data/audio/valid__wav.wav")
+    creator.add_audiomd_md("tests/data/audio/valid_2_bwf.wav")
 
     creator.write()
 
@@ -137,7 +138,7 @@ def test_create_audiomd(testpath):
     assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
 
     filepath = os.path.join(
-        testpath, 'f85dc91ce342e4d7067552b9d13613f2-AudioMD-amd.xml'
+        testpath, 'eeca492963963af467f844701ad28104-AudioMD-amd.xml'
         # testpath, '704fbd57169eac3af9388e03c89dd919-AudioMD-amd.xml'
         # testpath, '4dab7d9d5bab960188ea0f25e478cb17-AudioMD-amd.xml'
     )
@@ -150,8 +151,8 @@ def test_existing_scraper_result(testpath):
     We just need to check duration, since it's different from the real
     duration.
     """
-    amdid = 'f85dc91ce342e4d7067552b9d13613f2'
-    file_ = 'tests/data/audio/valid-wav.wav'
+    amdid = 'eeca492963963af467f844701ad28104'
+    file_ = 'tests/data/audio/valid__wav.wav'
     xml = """<?xml version='1.0' encoding='UTF-8'?>
           <amdReferences>
           <amdReference file="%s">_%s</amdReference>
@@ -179,11 +180,11 @@ def test_existing_scraper_result(testpath):
 
 
 @pytest.mark.parametrize("file, base_path", [
-    ('tests/data/audio/valid-wav.wav', ''),
-    ('./tests/data/audio/valid-wav.wav', ''),
-    ('audio/valid-wav.wav', 'tests/data'),
-    ('./audio/valid-wav.wav', './tests/data'),
-    ('data/audio/valid-wav.wav', 'absolute')
+    ('tests/data/audio/valid__wav.wav', ''),
+    ('./tests/data/audio/valid__wav.wav', ''),
+    ('audio/valid__wav.wav', 'tests/data'),
+    ('./audio/valid__wav.wav', './tests/data'),
+    ('data/audio/valid__wav.wav', 'absolute')
 ])
 def test_paths(testpath, file, base_path):
     """ Test the following path arguments:

@@ -15,7 +15,7 @@ def test_create_videomd_elem():
     """
 
     videomd = create_videomd.create_videomd(
-        "tests/data/video/mpg1.mpg")["0"]
+        "tests/data/video/valid_1.m1v")["0"]
 
     file_data = "/vmd:VIDEOMD/vmd:fileData"
 
@@ -43,10 +43,10 @@ def test_create_videomd_elem():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossy'
 
     path = "%s/vmd:dataRate" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '0.32'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '0.171304'
 
     path = "%s/vmd:dataRateMode" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Fixed'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Variable'
 
     path = "%s/vmd:color" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Color'
@@ -55,19 +55,19 @@ def test_create_videomd_elem():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '320'
 
     path = "%s/vmd:frame/vmd:pixelsVertical" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '240'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '180'
 
     path = "%s/vmd:frame/vmd:PAR" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1'
 
     path = "%s/vmd:frame/vmd:DAR" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1.333'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1.778'
 
     path = "%s/vmd:sampling" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '4:2:0'
 
     path = "%s/vmd:duration" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT19.02S'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT1S'
 
     path = "%s/vmd:signalFormat" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unap)'
@@ -82,7 +82,7 @@ def test_stream():
     """
 
     videomd = create_videomd.create_videomd(
-        "tests/data/video/mp4.mp4")["1"]
+        "tests/data/video/valid__h264_aac.mp4")["1"]
 
     file_data = "/vmd:VIDEOMD/vmd:fileData"
 
@@ -90,10 +90,11 @@ def test_stream():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '8'
 
     path = "%s/vmd:compression/vmd:codecCreatorApp" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Lavf53.24.2'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == \
+        'Lavf56.40.101'
 
     path = "%s/vmd:compression/vmd:codecCreatorAppVersion" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '53.24.2'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '56.40.101'
 
     path = "%s/vmd:compression/vmd:codecName" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'AVC'
@@ -102,7 +103,7 @@ def test_stream():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossy'
 
     path = "%s/vmd:dataRate" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1.205959'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '0.048704'
 
     path = "%s/vmd:dataRateMode" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Variable'
@@ -111,10 +112,10 @@ def test_stream():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Color'
 
     path = "%s/vmd:frame/vmd:pixelsHorizontal" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1280'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '320'
 
     path = "%s/vmd:frame/vmd:pixelsVertical" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '720'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '180'
 
     path = "%s/vmd:frame/vmd:PAR" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '1'
@@ -126,7 +127,7 @@ def test_stream():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '4:2:0'
 
     path = "%s/vmd:duration" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT5.28S'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT1S'
 
     path = "%s/vmd:signalFormat" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unap)'
@@ -151,13 +152,13 @@ def test_create_videomd(testpath):
 
     # Debug print
     print "\n\n%s" % ET.tostring(
-        create_videomd.create_videomd("tests/data/video/mpg1.mpg")["0"],
+        create_videomd.create_videomd("tests/data/video/valid_1.m1v")["0"],
         pretty_print=True
     )
 
     # Append same file twice
-    creator.add_videomd_md("tests/data/video/mpg1.mpg")
-    creator.add_videomd_md("tests/data/video/mpg1.mpg")
+    creator.add_videomd_md("tests/data/video/valid_1.m1v")
+    creator.add_videomd_md("tests/data/video/valid_1.m1v")
 
     creator.write()
 
@@ -165,7 +166,7 @@ def test_create_videomd(testpath):
     assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
 
     filepath = os.path.join(
-        testpath, '1276adbe0c85be09d0416ce04fbc1e87-VideoMD-amd.xml'
+        testpath, '36260c626dac2f82359d7c22ef378392-VideoMD-amd.xml'
     )
 
     assert os.path.isfile(filepath)
@@ -176,8 +177,8 @@ def test_existing_scraper_result(testpath):
     We just need to check duration, since it's different from the real
     duration.
     """
-    amdid = '1276adbe0c85be09d0416ce04fbc1e87'
-    file_ = 'tests/data/video/mpg1.mpg'
+    amdid = '36260c626dac2f82359d7c22ef378392'
+    file_ = 'tests/data/video/valid_1.m1v'
     xml = """<?xml version='1.0' encoding='UTF-8'?>
           <amdReferences>
           <amdReference file="%s">_%s</amdReference>
@@ -206,11 +207,11 @@ def test_existing_scraper_result(testpath):
 
 
 @pytest.mark.parametrize("file, base_path", [
-    ('tests/data/video/mpg1.mpg', ''),
-    ('./tests/data/video/mpg1.mpg', ''),
-    ('video/mpg1.mpg', 'tests/data'),
-    ('./video/mpg1.mpg', './tests/data'),
-    ('data/video/mpg1.mpg', 'absolute')
+    ('tests/data/video/valid_1.m1v', ''),
+    ('./tests/data/video/valid_1.m1v', ''),
+    ('video/valid_1.m1v', 'tests/data'),
+    ('./video/valid_1.m1v', './tests/data'),
+    ('data/video/valid_1.m1v', 'absolute')
 ])
 def test_paths(testpath, file, base_path):
     """ Test the following path arguments:

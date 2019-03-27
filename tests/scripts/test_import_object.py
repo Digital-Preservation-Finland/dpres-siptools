@@ -407,8 +407,8 @@ def test_import_object_validate_msword_ok(input_file, testpath):
 @pytest.mark.skipif('file-scraper-full' not in sys.modules,
                     reason='Requires full file scarper')
 @pytest.mark.parametrize('input_file, version',
-                         [('tests/data/audio/valid-bwf.wav', '2'),
-                          ('tests/data/audio/valid-wav.wav', '')])
+                         [('tests/data/audio/valid_2_bwf.wav', '2'),
+                          ('tests/data/audio/valid__wav.wav', '')])
 def test_import_object_validate_wav_ok(input_file, version, testpath):
     arguments = ['--workspace', testpath, input_file]
     return_code = import_object.main(arguments)
@@ -452,7 +452,7 @@ def test_streams(testpath):
     """Test with streams, the test file contains one video and one audio
        stream.
     """
-    input_file = 'tests/data/video/mp4.mp4'
+    input_file = 'tests/data/video/valid__h264_aac.mp4'
     arguments = ['--workspace', testpath, '--skip_inspection', input_file]
     return_code = import_object.main(arguments)
 
