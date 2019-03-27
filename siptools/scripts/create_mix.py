@@ -80,6 +80,19 @@ class MixCreator(AmdCreator):
         super(MixCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
+def check_missing_metadata(stream, filename):
+    """If an element is none, use value (:unav) if allowed in the
+    specifications. Otherwise raise exception.
+    """
+    for key, element in stream.iteritems():
+        if key in ['mimetype', 'stream_type', 'index', 'version']:
+            continue
+        if element in [None, '(:unav)']:
+            raise ValueError('Missing metadata value for key %s '
+                             'for file %s' % (
+                                key, filename))
+
+
 def create_mix(filename, filerel=None, workspace=None):
     """Create MIX metadata XML element for an image file.
 
@@ -88,6 +101,8 @@ def create_mix(filename, filerel=None, workspace=None):
     """
     streams = scrape_file(filename, filerel=filerel, workspace=workspace)
     stream_md = streams[0]
+    check_missing_metadata(stream_md, filename)
+    
 
     if stream_md['stream_type'] != 'image':
         print "This is not an image file. No MIX metadata created."

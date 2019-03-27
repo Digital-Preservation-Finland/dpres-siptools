@@ -81,22 +81,23 @@ class AudiomdCreator(AmdCreator):
         super(AudiomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
-def check_missing_metadata(streams, filename):
+def fix_missing_metadata(streams, filename):
     """If an element is none, use value (:unav) if allowed in the
     specifications. Otherwise raise exception.
     """
     for index, stream in streams.iteritems():
         for key, element in stream.iteritems():
-            if element is None:
+            if key in ['mimetype', 'stream_type', 'index', 'version']:
+                continue
+            if element in [None, '(:unav)']:
                 if key in ALLOW_UNAV:
-                    stream[index][key] = '(:unav)'
-                if key in ALLOW_ZERO:
-                    stream[index][key] = '0'
+                    stream[key] = '(:unav)'
+                elif key in ALLOW_ZERO:
+                    stream[key] = '0'
                 else:
                     raise ValueError('Missing metadata value for key %s in '
                                      'index %s for file %s' % (
                                         key, str(index), filename))
-    return streams
 
 
 def create_audiomd(filename, filerel=None, workspace=None):
@@ -105,7 +106,7 @@ def create_audiomd(filename, filerel=None, workspace=None):
     :returns: List of AudioMD XML sections.
     """
     streams = scrape_file(filename, filerel=filerel, workspace=workspace)
-    streams = check_missing_metadata(streams, filename)
+    fix_missing_metadata(streams, filename)
 
     audiomd_dict = {}
     for index, stream_md in streams.iteritems():

@@ -201,6 +201,9 @@ def create_premis_object(fname, scraper,
     if scraper.info[0]['class'] == 'FileExists' and \
             scraper.well_formed is False:
         raise IOError('File not found.')
+    for _, info in scraper.info.iteritems():
+        if info['class'] == 'ScraperNotFound':
+            raise ValueError('File format is not supported.')
 
     if message_digest is None or digest_algorithm is None:
         message_digest = scraper.checksum(algorithm='md5')
