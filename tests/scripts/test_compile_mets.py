@@ -32,7 +32,7 @@ def create_test_data(workspace):
 
     #create technical metadata
     import_object.main(['--workspace', workspace,
-                        '--skip_inspection',
+                        '--skip_validation',
                         'tests/data/structured/Software files/koodi.java'])
 
     #create structural metadata

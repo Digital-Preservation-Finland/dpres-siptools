@@ -14,7 +14,7 @@ from siptools.scripts import import_description
 
 def create_test_data(workspace):
     """Create technical metadata test data."""
-    import_object.main(['--workspace', workspace, '--skip_inspection',
+    import_object.main(['--workspace', workspace, '--skip_validation',
                         'tests/data/structured/Software files/koodi.java'])
     premis_event.main(['creation', '2016-10-13T12:30:55',
                        '--event_detail', 'Testing', '--event_outcome',
@@ -54,7 +54,7 @@ def test_compile_structmap_dmdsecid(testpath):
     included in structMap.
     """
     # Create -premis-amd.xml and dmdsec.xml files in workspace
-    import_object.main(['--workspace', testpath, '--skip_inspection',
+    import_object.main(['--workspace', testpath, '--skip_validation',
                         'tests/data/structured/Software files/koodi.java'])
     dmdsec = import_description.create_mets(
         'tests/data/import_description/metadata/dc_description.xml',
@@ -87,7 +87,7 @@ def test_compile_structmap_not_ok(testpath):
 
 def test_file_and_dir(testpath):
     """Test the cmpile_structmap with a file and directory case."""
-    import_object.main(['--workspace', testpath, '--skip_inspection',
+    import_object.main(['--workspace', testpath, '--skip_validation',
                         'tests/data/file_and_dir'])
     return_code = compile_structmap.main(['--workspace', testpath])
     output_structmap = os.path.join(testpath, 'structmap.xml')
@@ -189,7 +189,7 @@ def test_compile_structmap_directory(testpath):
 def test_compile_structmap_order(testpath):
     """Test the compile_structmap script."""
     import_object.main(['--workspace', testpath,
-                        '--skip_inspection',
+                        '--skip_validation',
                         '--order', '5',
                         'tests/data/structured/Software files/koodi.java'])
 

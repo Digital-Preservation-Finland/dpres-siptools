@@ -22,7 +22,7 @@ def test_end_to_end(testpath):
     environment['PYTHONPATH'] = '.'
 
     command = ['python', 'siptools/scripts/import_object.py',
-               '--workspace', testpath, objects, '--skip_inspection',
+               '--workspace', testpath, objects, '--skip_validation',
                '--format_name', 'text/plain', '--format_version', '1.0',
                '--digest_algorithm', 'MD5', '--message_digest',
                '1qw87geiewgwe9', '--date_created', '2017-01-11T10:14:13',

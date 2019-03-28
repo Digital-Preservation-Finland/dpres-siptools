@@ -105,9 +105,6 @@ VideoMD metadata for a video stream file can be created by running::
 
     python siptools/scripts/create_videomd.py path/to/video/video.wav --workspace ./workspace
 
-If the file is an A/V container, parameter --streams is required in the above
-AudioMD and VideoMD scripts.
-
 An example how to create digital provenance metadata for mets.xml.
 Values for the parameters --event_outcome and --event_type are predefined lists::
 
@@ -161,29 +158,8 @@ For a short description about other optional arguments which are not listed here
 
 Additional requirements and notes
 ---------------------------------
-The following software is required for proper detection of certain file formats:
-
-        * for MS Office: file, version 5.30 or greater
-        * for audio and video files: ffmpeg
-
-The software listed above needs to be installed separately.
-
-The Pre-Ingest Tool might produce some metadata elements incorrectly with
-some file formats. We are working on with this issue, and the support for
-new file formats will be available in future versions. Please contact to the
-Digital Preservation Services for more information.
-The following file formats are currently supported: 
-text/plain, text/xml, text/csv, image/tiff, image/jpeg,
-application/vnd.oasis.opendocument.text,
-application/vnd.oasis.opendocument.spreadsheet, 
-application/vnd.oasis.opendocument.presentation,
-application/vnd.oasis.opendocument.graphics,
-application/vnd.oasis.opendocument.formula,
-application/vnd.openxmlformats-officedocument.wordprocessingml.document,
-application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
-application/vnd.openxmlformats-officedocument.presentationml.presentation,
-application/msword, application/vnd.ms-excel,
-application/vnd.ms-powerpoint, audio/x-wav
+See the readme from file-scraper repository for additional requirements:
+https://github.com/Digital-Preservation-Finland/file-scraper/blob/master/README.rst
 
 
 Copyright

@@ -39,8 +39,8 @@ def parse_arguments(arguments):
         '--workspace', type=str, default='./workspace/',
         help="Workspace directory for the metadata files.")
     parser.add_argument(
-        '--skip_inspection', action='store_true',
-        help='Skip file wellformed check and give technical metadata as parameters')
+        '--skip_validation', action='store_true',
+        help='Skip file format well-formed check')
     parser.add_argument(
         '--format_name', dest='format_name', type=str,
         help='Mimetype of a file')
@@ -89,7 +89,7 @@ def main(arguments=None):
             filerel = filename
 
         scraper = Scraper(filename)
-        if not args.skip_inspection:
+        if not args.skip_validation:
              scraper.scrape(True)
         else:
              scraper.scrape(False)

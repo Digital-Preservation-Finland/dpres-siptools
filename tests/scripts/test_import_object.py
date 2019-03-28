@@ -31,7 +31,7 @@ def get_amd_file(path, input_file, stream=None):
 def test_import_object_ok(testpath):
     """Test import_object.main funtion with valid test data."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_inspection', input_file]
+    arguments = ['--workspace', testpath, '--skip_validation', input_file]
     return_code = import_object.main(arguments)
 
     output = get_amd_file(testpath, input_file)
@@ -44,10 +44,10 @@ def test_import_object_ok(testpath):
     assert return_code == 0
 
 
-def test_import_object_skip_inspection_ok(testpath):
+def test_import_object_skip_validation_ok(testpath):
     """Test import_object.main function --skip-inspection argument."""
     input_file = 'tests/data/text-file.txt'
-    arguments = ['--workspace', testpath, input_file, '--skip_inspection',
+    arguments = ['--workspace', testpath, input_file, '--skip_validation',
                  '--format_name', 'image/dpx', '--format_version', '1.0',
                  '--digest_algorithm', 'MD5', '--message_digest',
                  '1qw87geiewgwe9',
@@ -64,10 +64,10 @@ def test_import_object_skip_inspection_ok(testpath):
     assert return_code == 0
 
 
-def test_import_object_skip_inspection_nodate_ok(testpath):
+def test_import_object_skip_validation_nodate_ok(testpath):
     """Test import_object.main function without --date_created argument."""
     input_file = 'tests/data/text-file.txt'
-    arguments = ['--workspace', testpath, input_file, '--skip_inspection',
+    arguments = ['--workspace', testpath, input_file, '--skip_validation',
                  '--format_name', 'image/dpx', '--format_version', '1.0',
                  '--digest_algorithm', 'MD5', '--message_digest',
                  '1qw87geiewgwe9']
@@ -89,7 +89,7 @@ def test_import_object_structured_ok(testpath):
                                              'tests/data/structured'))
     test_file = ""
     for element in iterate_files(test_data):
-        arguments = ['--workspace', workspace, '--skip_inspection',
+        arguments = ['--workspace', workspace, '--skip_validation',
                      os.path.relpath(element, os.curdir)]
         return_code = import_object.main(arguments)
         test_file = os.path.relpath(element, os.curdir)
@@ -106,7 +106,7 @@ def test_import_object_structured_ok(testpath):
 def test_import_object_order(testpath):
     """Test file order"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_inspection',
+    arguments = ['--workspace', testpath, '--skip_validation',
                  '--order', '5', input_file]
     return_code = import_object.main(arguments)
     output = get_amd_file(testpath, input_file)
@@ -128,7 +128,7 @@ def test_import_object_order(testpath):
 def test_import_object_identifier(testpath):
     """Test digital object identifier argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_inspection',
+    arguments = ['--workspace', testpath, '--skip_validation',
                  '--identifier', 'local', 'test-id', input_file]
     return_code = import_object.main(arguments)
 
@@ -147,7 +147,7 @@ def test_import_object_identifier(testpath):
 def test_import_object_format_registry(testpath):
     """Test digital object format registry argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_inspection',
+    arguments = ['--workspace', testpath, '--skip_validation',
                  '--format_registry', 'local', 'test-key', input_file]
     return_code = import_object.main(arguments)
 
@@ -203,7 +203,7 @@ def test_import_object_utf8(testpath):
         file_.write('Voi änkeröinen.')
 
     # Run function
-    assert import_object.main(['--workspace', testpath, '--skip_inspection',
+    assert import_object.main(['--workspace', testpath, '--skip_validation',
                                utf8_file]) == 0
 
     # Check output
@@ -453,7 +453,7 @@ def test_streams(testpath):
        stream.
     """
     input_file = 'tests/data/video/valid__h264_aac.mp4'
-    arguments = ['--workspace', testpath, '--skip_inspection', input_file]
+    arguments = ['--workspace', testpath, '--skip_validation', input_file]
     return_code = import_object.main(arguments)
 
     # Streams
