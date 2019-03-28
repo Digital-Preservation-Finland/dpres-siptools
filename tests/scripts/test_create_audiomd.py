@@ -1,9 +1,10 @@
+# encoding: utf-8
 """Tests for ``siptools.scripts.create_audiomd`` module"""
-
+import sys
 import os.path
 import pytest
 import lxml.etree as ET
-
+import shutil
 import pickle
 import siptools.scripts.create_audiomd as create_audiomd
 
@@ -144,6 +145,28 @@ def test_create_audiomd(testpath):
     )
 
     assert os.path.isfile(filepath)
+
+
+def test_main_utf8_files(testpath):
+    """Test for ``main`` function with filenames that contain non-ascii
+    characters.
+    """
+    # Create sample data directory with file that has non-ascii characters in
+    # filename
+    os.makedirs(os.path.join(testpath, 'data'))
+    relative_path = os.path.join('data', u'äöå.wav')
+    full_path = os.path.join(testpath, relative_path)
+    shutil.copy('tests/data/audio/valid__wav.wav', full_path)
+
+    # Call main function with encoded filename as parameter
+    create_audiomd.main(
+        ['--workspace', testpath, '--base_path', testpath,
+         relative_path.encode(sys.getfilesystemencoding())]
+    )
+
+    # Check that filename is found in amd-reference file.
+    xml = ET.parse(os.path.join(testpath, 'amd-references.xml'))
+    assert len(xml.xpath(u'//amdReference[@file="data/äöå.wav"]')) == 1
 
 
 def test_existing_scraper_result(testpath):

@@ -110,6 +110,7 @@ def create_videomd(filename, filerel=None, workspace=None):
     for index, stream_md in streams.iteritems():
         if stream_md['stream_type'] != 'video':
             continue
+
         file_data_elem = _get_stream_data(stream_md)
 
         videomd_elem = videomd.create_videomd(

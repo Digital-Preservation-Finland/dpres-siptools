@@ -6,7 +6,8 @@ import subprocess
 import pytest
 
 
-@pytest.mark.skipif('ipt' not in sys.modules, reason='Requires ipt')
+@pytest.mark.skipif('file-scraper-full' not in sys.modules,
+                    reason='Requires file-scraper-full')
 def test_end_to_end(testpath):
     """Test creation of SIP and asserting the validity
     of the created mets document with validation tools.

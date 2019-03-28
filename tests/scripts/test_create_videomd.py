@@ -1,9 +1,11 @@
+# encoding: utf-8
 """Tests for ``siptools.scripts.create_videomd`` module"""
-
+import sys
 import os.path
 import pytest
 import lxml.etree as ET
 import pickle
+import shutil
 import siptools.scripts.create_videomd as create_videomd
 
 VIDEOMD_NS = 'http://www.loc.gov/videoMD/'
@@ -170,6 +172,28 @@ def test_create_videomd(testpath):
     )
 
     assert os.path.isfile(filepath)
+
+
+def test_main_utf8_files(testpath):
+    """Test for ``main`` function with filenames that contain non-ascii
+    characters.
+    """
+    # Create sample data directory with file that has non-ascii characters in
+    # filename
+    os.makedirs(os.path.join(testpath, 'data'))
+    relative_path = os.path.join('data', u'äöå.m1v')
+    full_path = os.path.join(testpath, relative_path)
+    shutil.copy('tests/data/video/valid_1.m1v', full_path)
+
+    # Call main function with encoded filename as parameter
+    create_videomd.main(
+        ['--workspace', testpath, '--base_path', testpath,
+         relative_path.encode(sys.getfilesystemencoding())]
+    )
+
+    # Check that filename is found in amd-reference file.
+    xml = ET.parse(os.path.join(testpath, 'amd-references.xml'))
+    assert len(xml.xpath(u'//amdReference[@file="data/äöå.m1v"]')) == 1
 
 
 def test_existing_scraper_result(testpath):

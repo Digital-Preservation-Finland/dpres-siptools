@@ -53,18 +53,11 @@ def test_main_utf8_files(testpath):
     image_full_path = os.path.join(testpath, image_relative_path)
     shutil.copy('tests/data/images/tiff1.tif', image_full_path)
 
-    # Run main function inside testpath. Siptools does not work if data is not
-    # in current working directory
-    last_path = os.getcwd()
-    os.chdir(testpath)
-    try:
-        # Call main function with encoded filename as parameter
-        create_mix.main(
-            ['--workspace', testpath,
-             image_relative_path.encode(sys.getfilesystemencoding())]
-        )
-    finally:
-        os.chdir(last_path)
+    # Call main function with encoded filename as parameter
+    create_mix.main(
+        ['--workspace', testpath, '--base_path', testpath,
+         image_relative_path.encode(sys.getfilesystemencoding())]
+    )
 
     # Check that filename is found in amd-reference file.
     xml = lxml.etree.parse(os.path.join(testpath, 'amd-references.xml'))
