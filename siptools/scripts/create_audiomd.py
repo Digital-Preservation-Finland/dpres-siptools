@@ -1,7 +1,7 @@
 """Command line tool for creating audioMD metadata."""
 import sys
 import os
-import argparse
+import click
 import pickle
 import audiomd
 from siptools.utils import AmdCreator, scrape_file
@@ -16,41 +16,29 @@ ALLOW_UNAV = ['audio_data_encoding', 'codec_creator_app',
               'duration', 'num_channels']
 ALLOW_ZERO = ['bits_per_sample', 'data_rate', 'sampling_frequency']
 
-def parse_arguments(arguments):
-    """Parse arguments commandline arguments."""
 
-    parser = argparse.ArgumentParser(
-        description="Tool for creating audioMD metadata for an audio or "
-                    "video file. The audioMD metadata is written to "
-                    "<hash>-AudioMD-amd.xml METS XML file in the "
-                    "workspace directory. The audioMD techMD reference is "
-                    "written to amd-references.xml. "
-                    "If the same audioMD metadata is already found in "
-                    "workspace, just the new file name or stream is appended "
-                    "the the existing metadata."
-    )
+@click.command()
+@click.argument(
+    'filename', type=str)
+@click.option(
+    '--workspace', type=click.Path(exists=True), default='./workspace/',
+    help="Workspace directory for the metadata files.")
+@click.option(
+    '--base_path', type=click.Path(exists=True), default='.',
+    help="Source base path of digital objects. If used, give path to "
+         "the file in relation to this base path.")
+def main(workspace, base_bath, filename):
+    """
+    Write audioMD metadata for an audio file or streams.
 
-    parser.add_argument('file', type=str, help="Path to the audio file")
-    parser.add_argument(
-        '--workspace', type=str, default='./workspace/',
-        help="Workspace directory for the metadata files.")
-    parser.add_argument(
-        '--base_path', type=str, default='',
-        help="Source base path of digital objects. If used, give path to "
-             "the audio file in relation to this base path.")
+    FILENAME: Relative path to the file from current directory
+              or from --base_path.
+    """
 
-    return parser.parse_args(arguments)
+    filerel = os.path.normpath(filename)
+    filepath = os.path.normpath(os.path.join(base_path, filename))
 
-
-def main(arguments=None):
-    """Write audioMD metadata for an audio file."""
-
-    args = parse_arguments(arguments)
-
-    filerel = os.path.normpath(args.file)
-    filepath = os.path.normpath(os.path.join(args.base_path, args.file))
-
-    creator = AudiomdCreator(args.workspace)
+    creator = AudiomdCreator(workspace)
     creator.add_audiomd_md(filepath, filerel)
     creator.write()
 

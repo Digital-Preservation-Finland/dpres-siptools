@@ -4,6 +4,7 @@ import sys
 import os.path
 import datetime
 import pickle
+from click.testing import CliRunner
 import lxml.etree as ET
 import pytest
 from siptools.scripts import import_object
@@ -32,7 +33,8 @@ def test_import_object_ok(testpath):
     """Test import_object.main funtion with valid test data."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_validation', input_file]
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -41,18 +43,18 @@ def test_import_object_ok(testpath):
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_import_object_skip_validation_ok(testpath):
     """Test import_object.main function --skip-inspection argument."""
     input_file = 'tests/data/text-file.txt'
     arguments = ['--workspace', testpath, input_file, '--skip_validation',
-                 '--format_name', 'image/dpx', '--format_version', '1.0',
-                 '--digest_algorithm', 'MD5', '--message_digest',
-                 '1qw87geiewgwe9',
+                 '--file_format', 'image/dpx', '1.0',
+                 '--checksum', 'MD5', '1qw87geiewgwe9',
                  '--date_created', datetime.datetime.utcnow().isoformat()]
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -61,17 +63,17 @@ def test_import_object_skip_validation_ok(testpath):
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_import_object_skip_validation_nodate_ok(testpath):
     """Test import_object.main function without --date_created argument."""
     input_file = 'tests/data/text-file.txt'
     arguments = ['--workspace', testpath, input_file, '--skip_validation',
-                 '--format_name', 'image/dpx', '--format_version', '1.0',
-                 '--digest_algorithm', 'MD5', '--message_digest',
-                 '1qw87geiewgwe9']
-    return_code = import_object.main(arguments)
+                 '--file_format', 'image/dpx', '1.0',
+                 '--checksum', 'MD5', '1qw87geiewgwe9']
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -79,7 +81,7 @@ def test_import_object_skip_validation_nodate_ok(testpath):
 
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_import_object_structured_ok(testpath):
@@ -91,7 +93,8 @@ def test_import_object_structured_ok(testpath):
     for element in iterate_files(test_data):
         arguments = ['--workspace', workspace, '--skip_validation',
                      os.path.relpath(element, os.curdir)]
-        return_code = import_object.main(arguments)
+        runner = CliRunner()
+        result = runner.invoke(import_object.main, arguments)
         test_file = os.path.relpath(element, os.curdir)
 
         output = get_amd_file(testpath, test_file)
@@ -100,7 +103,7 @@ def test_import_object_structured_ok(testpath):
 
         assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                               namespaces=NAMESPACES)) == 1
-        assert return_code == 0
+        assert result.exit_code == 0
 
 
 def test_import_object_order(testpath):
@@ -108,7 +111,8 @@ def test_import_object_order(testpath):
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_validation',
                  '--order', '5', input_file]
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
     path = output.replace('-PREMIS%3AOBJECT-amd.xml',
                           '-scraper.pkl')
@@ -122,7 +126,7 @@ def test_import_object_order(testpath):
     assert 'order' in streams[0]['properties']
     assert streams[0]['properties']['order'] == '5'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_import_object_identifier(testpath):
@@ -130,7 +134,8 @@ def test_import_object_identifier(testpath):
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_validation',
                  '--identifier', 'local', 'test-id', input_file]
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -141,7 +146,7 @@ def test_import_object_identifier(testpath):
     assert root.xpath('//premis:objectIdentifierValue',
                       namespaces=NAMESPACES)[0].text == 'test-id'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_import_object_format_registry(testpath):
@@ -149,7 +154,8 @@ def test_import_object_format_registry(testpath):
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_validation',
                  '--format_registry', 'local', 'test-key', input_file]
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -160,7 +166,7 @@ def test_import_object_format_registry(testpath):
     assert root.xpath('//premis:formatRegistryKey',
                       namespaces=NAMESPACES)[0].text == 'test-key'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 @pytest.mark.skipif('file-scraper-full' not in sys.modules,
@@ -169,7 +175,8 @@ def test_import_object_validate_pdf_ok(testpath):
     """Test PDF validation in import_object.main funciton."""
     input_file = 'tests/data/test_import.pdf'
     arguments = ['--workspace', testpath, 'tests/data/test_import.pdf']
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -182,7 +189,7 @@ def test_import_object_validate_pdf_ok(testpath):
     assert root.xpath('//premis:formatVersion/text()',
                       namespaces=NAMESPACES)[0] == '1.4'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_import_object_utf8(testpath):
@@ -203,8 +210,10 @@ def test_import_object_utf8(testpath):
         file_.write('Voi änkeröinen.')
 
     # Run function
-    assert import_object.main(['--workspace', testpath, '--skip_validation',
-                               utf8_file]) == 0
+    arguments = ['--workspace', testpath, '--skip_validation', utf8_file]
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
+    assert result.exit_code == 0
 
     # Check output
     output = get_amd_file(testpath, utf8_file)
@@ -219,7 +228,8 @@ def test_import_object_utf8(testpath):
 @pytest.mark.parametrize('input_file', ['tests/data/valid_tiff.tif'])
 def test_import_object_validate_tiff_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_tiff.tif']
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -235,7 +245,7 @@ def test_import_object_validate_tiff_ok(input_file, testpath):
         '//premis:formatVersion/text()',
         namespaces=NAMESPACES)[0] == '6.0'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 @pytest.mark.skipif('file-scraper-full' not in sys.modules,
@@ -243,7 +253,8 @@ def test_import_object_validate_tiff_ok(input_file, testpath):
 @pytest.mark.parametrize('input_file', ['tests/data/valid_jpeg.jpeg'])
 def test_import_object_validate_jpeg_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_jpeg.jpeg']
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -259,7 +270,7 @@ def test_import_object_validate_jpeg_ok(input_file, testpath):
         '//premis:formatVersion/text()',
         namespaces=NAMESPACES)[0] in ['1.0', '1.01', '1.02']
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 @pytest.mark.skipif('file-scraper-full' not in sys.modules,
@@ -267,7 +278,8 @@ def test_import_object_validate_jpeg_ok(input_file, testpath):
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_validate_text_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/text-file.txt']
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -283,7 +295,7 @@ def test_import_object_validate_text_ok(input_file, testpath):
         '//premis:formatVersion/text()',
         namespaces=NAMESPACES)) == 0
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 @pytest.mark.skipif('file-scraper-full' not in sys.modules,
@@ -291,7 +303,8 @@ def test_import_object_validate_text_ok(input_file, testpath):
 @pytest.mark.parametrize('input_file', ['tests/data/csvfile.csv'])
 def test_import_object_validate_csv_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/csvfile.csv']
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -307,7 +320,7 @@ def test_import_object_validate_csv_ok(input_file, testpath):
         '//premis:formatVersion/text()',
         namespaces=NAMESPACES)) == 0
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 @pytest.mark.skipif('file-scraper-full' not in sys.modules,
@@ -315,7 +328,8 @@ def test_import_object_validate_csv_ok(input_file, testpath):
 @pytest.mark.parametrize('input_file', ['tests/data/mets_valid_minimal.xml'])
 def test_import_object_validate_mets_xml_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/mets_valid_minimal.xml']
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -331,7 +345,7 @@ def test_import_object_validate_mets_xml_ok(input_file, testpath):
         '//premis:formatVersion/text()',
         namespaces=NAMESPACES)[0] == '1.0'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 @pytest.mark.skipif('file-scraper-full' not in sys.modules,
@@ -339,7 +353,8 @@ def test_import_object_validate_mets_xml_ok(input_file, testpath):
 @pytest.mark.parametrize('input_file', ['tests/data/ODF_Text_Document.odt'])
 def test_import_object_validate_odt_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/ODF_Text_Document.odt']
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -355,7 +370,7 @@ def test_import_object_validate_odt_ok(input_file, testpath):
         '//premis:formatVersion/text()',
         namespaces=NAMESPACES)[0] == '1.1'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 @pytest.mark.skipif('file-scraper-full' not in sys.modules,
@@ -363,7 +378,8 @@ def test_import_object_validate_odt_ok(input_file, testpath):
 @pytest.mark.parametrize('input_file', ['tests/data/MS_Excel_97-2003.xls'])
 def test_import_object_validate_msexcel_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/MS_Excel_97-2003.xls']
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -376,7 +392,7 @@ def test_import_object_validate_msexcel_ok(input_file, testpath):
     assert root.xpath('//premis:formatVersion/text()',
                       namespaces=NAMESPACES)[0] == '11.0'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 @pytest.mark.skipif('file-scraper-full' not in sys.modules,
@@ -386,7 +402,8 @@ def test_import_object_validate_msexcel_ok(input_file, testpath):
 def test_import_object_validate_msword_ok(input_file, testpath):
     arguments = ['--workspace', testpath,
                  'tests/data/MS_Word_2007-2013_XML.docx']
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -401,7 +418,7 @@ def test_import_object_validate_msword_ok(input_file, testpath):
     assert root.xpath('//premis:formatVersion/text()',
                       namespaces=NAMESPACES)[0] == '15.0'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 @pytest.mark.skipif('file-scraper-full' not in sys.modules,
@@ -411,7 +428,8 @@ def test_import_object_validate_msword_ok(input_file, testpath):
                           ('tests/data/audio/valid__wav.wav', '')])
 def test_import_object_validate_wav_ok(input_file, version, testpath):
     arguments = ['--workspace', testpath, input_file]
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -428,7 +446,7 @@ def test_import_object_validate_wav_ok(input_file, version, testpath):
         assert root.xpath('//premis:formatVersion/text()',
                           namespaces=NAMESPACES)[0] == '2'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_import_object_fail():
@@ -436,9 +454,9 @@ def test_import_object_fail():
     exist
     """
     input_file = 'tests/data/missing-file'
-    with pytest.raises(IOError):
-        arguments = [input_file]
-        import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, ['tests/data/missing-file'])
+    assert result.exception
 
 
 def iterate_files(path):
@@ -454,7 +472,8 @@ def test_streams(testpath):
     """
     input_file = 'tests/data/video/valid__h264_aac.mp4'
     arguments = ['--workspace', testpath, '--skip_validation', input_file]
-    return_code = import_object.main(arguments)
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
 
     # Streams
     stream_id = []
@@ -500,4 +519,4 @@ def test_streams(testpath):
         '//premis:relatedObjectIdentifierValue[.="%s"]' % stream_id[1],
         namespaces=NAMESPACES)) == 1
 
-    assert return_code == 0
+    assert result.exit_code == 0

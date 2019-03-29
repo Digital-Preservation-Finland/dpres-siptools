@@ -6,8 +6,8 @@ import subprocess
 import pytest
 
 
-@pytest.mark.skipif('file-scraper-full' not in sys.modules,
-                    reason='Requires file-scraper-full')
+@pytest.mark.skipif('ipt' not in sys.modules,
+                    reason='Requires ipt')
 def test_end_to_end(testpath):
     """Test creation of SIP and asserting the validity
     of the created mets document with validation tools.
@@ -24,9 +24,9 @@ def test_end_to_end(testpath):
 
     command = ['python', 'siptools/scripts/import_object.py',
                '--workspace', testpath, objects, '--skip_validation',
-               '--format_name', 'text/plain', '--format_version', '1.0',
-               '--digest_algorithm', 'MD5', '--message_digest',
-               '1qw87geiewgwe9', '--date_created', '2017-01-11T10:14:13',
+               '--file_format', 'text/plain', '1.0',
+               '--checksum', 'MD5', '1qw87geiewgwe9',
+               '--date_created', '2017-01-11T10:14:13',
                '--charset', 'ISO-8859-15']
     child = subprocess.Popen(command, env=environment)
     child.communicate()

@@ -6,7 +6,7 @@ import fnmatch
 from uuid import uuid4
 import datetime
 import platform
-import argparse
+import click
 from file_scraper.scraper import Scraper
 import premis
 from siptools.utils import AmdCreator, encode_path, scrape_file
@@ -25,112 +25,134 @@ DEFAULT_VERSIONS = {
     'application/vnd.openxmlformats-'
     'officedocument.wordprocessingml.document': '15.0'}
 
-def parse_arguments(arguments):
-    """ Create arguments parser and return parsed command line argumets"""
-    parser = argparse.ArgumentParser(
-        description="Tool for importing files to generate digital objects")
-    parser.add_argument('files', nargs='+',
-                        help="Digital objects to be imported")
-    parser.add_argument(
-        '--base_path', type=str, default='',
+
+@click.command()
+@click.argument('filepaths', nargs=-1, type=str)
+@click.option(
+        '--base_path', type=click.Path(exists=True), default='.',
+        metavar='<BASE PATH>',
         help="Source base path of digital objects. If used, give objects in"
         "relation to this base path.")
-    parser.add_argument(
-        '--workspace', type=str, default='./workspace/',
+@click.option(
+        '--workspace', type=click.Path(exists=True), default='./workspace/',
+        metavar='<WORKSPACE PATH>',
         help="Workspace directory for the metadata files.")
-    parser.add_argument(
-        '--skip_validation', action='store_true',
+@click.option(
+        '--skip_validation', is_flag=True,
         help='Skip file format well-formed check')
-    parser.add_argument(
-        '--format_name', dest='format_name', type=str,
-        help='Mimetype of a file')
-    parser.add_argument(
-        '--charset', dest='charset', type=str, help='Charset of a file')
-    parser.add_argument(
-        '--format_version', dest='format_version', type=str,
-        help='Version of fileformat')
-    parser.add_argument(
-        '--digest_algorithm', dest='digest_algorithm', type=str,
-        help='Message digest algorithm')
-    parser.add_argument(
-        '--message_digest', dest='message_digest', type=str,
-        help='Message digest of a file')
-    parser.add_argument(
-        '--date_created', dest='date_created', type=str,
+@click.option(
+        '--charset', type=str,
+        metavar='<CHARSET>',
+        help='Charset encoding of a file')
+@click.option(
+        '--file_format', nargs=2, type=str,
+        metavar='<MIMETYPE> <FORMAT VERSION>',
+        help='Mimetype and file format version of a file')
+@click.option(
+        '--identifier', nargs=2, type=str,
+        metavar='<IDENTIFIER TYPE> <IDENTIFIER VALUE>',
+        help='The identifier type and value of a digital object')
+@click.option(
+        '--checksum', nargs=2, type=str,
+        metavar='<CHECKSUM ALGORITHM> <CHECKSUM VALUE>',
+        help='Checksum algorithm and value of a given file')
+@click.option(
+        '--date_created', type=str,
+        metavar='<TIMESTAMP>',
         help='The actual or approximate date and time the object was created')
-    parser.add_argument(
-        '--identifier', dest='identifier', type=str, nargs=2,
-        metavar=('IDENTIFIER_TYPE', 'IDENTIFIER_VALUE'),
-        help='The identifier type and value of the digital object')
-    parser.add_argument(
-        '--format_registry', dest='format_registry', type=str, nargs=2,
-        metavar=('REGISTRY_NAME', 'REGISTRY_KEY'),
+@click.option(
+        '--format_registry', type=str, nargs=2,
+        metavar='<REGISTRY NAME> <REGISTRY KEY>',
         help='The format registry name and key of the digital object')
-    parser.add_argument(
-        '--order', dest='order', type=int,
+@click.option(
+        '--order', type=int,
+        metavar='<ORDER NUMBER>',
         help='Order number of the digital object')
-    parser.add_argument('--stdout', help='Print output to stdout')
-    return parser.parse_args(arguments)
+@click.option('--stdout', is_flag=True,
+              help='Print result also to stdout')
+def main(workspace, base_path, skip_validation, charset, file_format,
+         checksum, date_created, identifier, format_registry, order,
+         stdout,  filepaths):
+    """
+    Import digital objects to Submission Imformation Package.
 
+    FILEPATHS: One or more files to add as a list, or a directory.
 
-def main(arguments=None):
-    """The main method for argparser"""
-    args = parse_arguments(arguments)
+    """
 
     # Loop files and create premis objects
-    files = collect_filepaths(dirs=args.files, base=args.base_path)
-    for filename in files:
-
-        premis_list = {}
-
-        if args.base_path != '':
-            filerel = os.path.relpath(filename, args.base_path)
+    files = collect_filepaths(dirs=filepaths, base=base_path)
+    for filepath in filepaths:
+        if base_path not in ['.']:
+            filerel = os.path.relpath(filepath, base_path)
         else:
-            filerel = filename
-
-        scraper = Scraper(filename)
-        if not args.skip_validation:
-             scraper.scrape(True)
-        else:
-             scraper.scrape(False)
-
-        premis_elem = create_premis_object(
-            filename, scraper, args.format_name,
-            args.format_version, args.digest_algorithm,
-            args.message_digest, args.date_created, args.charset,
-            args.identifier, args.format_registry)
-
-        creator = PremisCreator(args.workspace)
-        creator.add_md(premis_elem, filerel)
-
-        premis_list = create_streams(scraper.streams, premis_elem)
-
-        if premis_list is not None:
-            for index, premis_stream in premis_list.iteritems():
-                creator.add_md(premis_stream, filerel, index)
+            filerel = filepath
 
         properties = {}
-        if args.order:
-            properties['order'] = str(args.order)
+        if order:
+            properties['order'] = str(order)
         # Add new properties of a file for other script files, e.g. structMap
 
-        streams_dict = None
-        if properties:
-            scraper.streams[0]['properties'] = properties
-            streams_dict = scraper.streams
-        if scraper.streams[0]['stream_type'] in [
-                'videocontainer', 'video', 'audio', 'image']:
-            streams_dict = scraper.streams
-
-        creator.write(stdout=args.stdout, scraper_streams=streams_dict)
+        creator = PremisCreator(workspace)
+        streams_dict = creator.add_premis_md(
+            filepath, filerel, skip_validation, charset, file_format, checksum,
+            date_created, identifier, format_registry, stdout, properties)
+        creator.write(stdout=stdout, scraper_streams=streams_dict)
 
     return 0
+
+
+def modify_streams(streams, properties):
+    streams_dict = None
+    if properties:
+        streams[0]['properties'] = properties
+        return streams
+    if streams[0]['stream_type'] in [
+            'videocontainer', 'video', 'audio', 'image']:
+        return streams
+    return None
+
+
+def check_tuple_arguments(argument, error):
+    if argument is not None:
+        if len(argument) < 2:
+            raise ValueError(error)
+    return argument
 
 
 class PremisCreator(AmdCreator):
     """Subclass of AmdCreator, which generates PREMIS metadata
     for files and streams.
     """
+
+    def add_premis_md(self, filepath, filerel=None, skip_validation=False,
+                      charset=None, file_format=None, checksum=None,
+                      date_created=None, identifier=None,
+                      format_registry=None, stdout=False,
+                      properties=None):
+
+        scraper = Scraper(filepath)
+        if not skip_validation:
+            scraper.scrape(True)
+        else:
+            scraper.scrape(False)
+
+        streams_dict = modify_streams(scraper.streams, properties)
+
+        premis_elem = create_premis_object(
+            filepath, scraper, file_format, checksum, date_created, charset,
+            identifier, format_registry)
+
+        self.add_md(premis_elem, filerel)
+
+        premis_list = create_streams(scraper.streams, premis_elem)
+
+        if premis_list is not None:
+            for index, premis_stream in premis_list.iteritems():
+                self.add_md(premis_stream, filerel, index)
+
+        return streams_dict
+
 
     def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3",
               othermdtype=None, section=None, stdout=False,
@@ -192,30 +214,33 @@ def check_metadata(format_name, format_version, streams, fname):
 
 
 def create_premis_object(fname, scraper,
-                         format_name=None, format_version=None,
-                         digest_algorithm='MD5', message_digest=None,
+                         file_format=None, checksum=None,
                          date_created=None, charset=None,
                          identifier=None, format_registry=None):
     """Create Premis object for given file."""
 
     if scraper.info[0]['class'] == 'FileExists' and \
-            scraper.well_formed is False:
-        raise IOError('File not found.')
+            len(scraper.info[0]['errors']) > 0:
+        raise IOError('File does not exist.')
     for _, info in scraper.info.iteritems():
         if info['class'] == 'ScraperNotFound':
             raise ValueError('File format is not supported.')
 
-    if message_digest is None or digest_algorithm is None:
+    if checksum in [None, ()]:
         message_digest = scraper.checksum(algorithm='md5')
         digest_algorithm = 'MD5'
+    else:
+        message_digest = checksum[1]
+        digest_algorithm = checksum[0]
 
-    if format_name is None:
+    if file_format in [None, ()]:
         format_name = scraper.mimetype
-
-    if format_version is None:
         format_version = scraper.version
         if format_name in DEFAULT_VERSIONS:
             format_version = DEFAULT_VERSIONS[format_name]
+    else:
+        format_name = file_format[0]
+        format_version = file_format[1]
 
     if not charset and scraper.streams[0]['stream_type'] == 'text':
         charset = scraper.streams[0]['charset']
@@ -230,7 +255,7 @@ def create_premis_object(fname, scraper,
     if date_created is None:
         date_created = creation_date(fname)
 
-    if identifier is None:
+    if identifier in [None, ()]:
         object_identifier = premis.identifier(
             identifier_type='UUID',
             identifier_value=str(uuid4()))
@@ -241,7 +266,7 @@ def create_premis_object(fname, scraper,
 
     premis_fixity = premis.fixity(message_digest, digest_algorithm)
     premis_format_des = premis.format_designation(format_name, format_version)
-    if format_registry is None:
+    if format_registry in [None, ()]:
         premis_format = premis.format(child_elements=[premis_format_des])
     else:
         premis_registry = premis.format_registry(format_registry[0],
@@ -303,6 +328,6 @@ def creation_date(path_to_file):
             return datetime.datetime.fromtimestamp(stat.st_mtime).isoformat()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     RETVAL = main()
     sys.exit(RETVAL)

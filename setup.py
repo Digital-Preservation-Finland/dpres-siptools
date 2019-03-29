@@ -34,9 +34,13 @@ def main():
             "lxml",
             "scandir",
             "file-magic",
-            "wand",
+            "pymediainfo",
+            "wand>=0.5.1",
             "Pillow",
-            "ffmpeg-python",
+            "six",
+            "olefile",
+            "opf-fido",
+            "click",
             'xml_helpers@git+https://gitlab.csc.fi/dpres/xml-helpers.git'
             '@develop',
             'mets@git+https://gitlab.csc.fi/dpres/mets.git@develop',
@@ -46,7 +50,9 @@ def main():
             'nisomix@git+https://gitlab.csc.fi/dpres/nisomix.git@develop',
             'addml@git+https://gitlab.csc.fi/dpres/addml.git@develop',
             'audiomd@git+https://gitlab.csc.fi/dpres/audiomd.git@develop',
-            'videomd@git+https://gitlab.csc.fi/dpres/videomd.git@develop'
+            'videomd@git+https://gitlab.csc.fi/dpres/videomd.git@develop',
+            'file_scraper@git+https://gitlab.csc.fi/dpres/file-scraper.'
+            'git@develop'
         ],
         entry_points={'console_scripts': scripts_list()}
 

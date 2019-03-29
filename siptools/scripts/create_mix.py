@@ -3,7 +3,7 @@
 
 import os
 import sys
-import argparse
+import click
 import pickle
 import nisomix.mix
 from siptools.utils import AmdCreator, scrape_file
@@ -22,35 +22,26 @@ def str_to_unicode(string):
     return unicode(string, sys.getfilesystemencoding())
 
 
-def parse_arguments(arguments):
-    """Parse arguments commandline arguments."""
-    parser = argparse.ArgumentParser(
-        description="Tool for creating mix metadata for an image. The MIX "
-                    "metadata is written to <hash>-NISOIMG-amd.xml METS "
-                    "XML file in the workspace directory. The MIX techMD "
-                    "reference is written to amd-references.xml. If "
-                    "similar MIX metadata is already found in workspace, the "
-                    "file will not be rewritten."
-    )
-    parser.add_argument('file', type=str_to_unicode,
-                        help="Path to the image file")
-    parser.add_argument('--workspace', type=str_to_unicode,
-                        default='./workspace/',
-                        help="Workspace directory for the metadata files.")
-    parser.add_argument('--base_path', type=str, default='',
-                        help="Source base path of digital objects. If used, "
-                             "give path to the image file in relation to "
-                             "this base path.")
+@click.command()
+@click.argument(
+    'filename', type=str)
+@click.option(
+    '--workspace', type=str, default='./workspace/',
+    help="Workspace directory for the metadata files.")
+@click.option(
+    '--base_path', type=str, default='',
+    help="Source base path of digital objects. If used, give path to "
+         "the file in relation to this base path.")
+def main(workspace, base_bath, filename):
+    """
+    Write MIX metadata for an image file.
 
-    return parser.parse_args(arguments)
+    FILENAME: Relative path to the file from current directory
+              or from --base_path.
+    """
 
-
-def main(arguments=None):
-    """Write MIX metadata for a image file."""
-    args = parse_arguments(arguments)
-
-    filerel = os.path.normpath(args.file)
-    filepath = os.path.normpath(os.path.join(args.base_path, args.file))
+    filerel = os.path.normpath(filename)
+    filepath = os.path.normpath(os.path.join(base_path, filename))
 
     creator = MixCreator(args.workspace)
     creator.add_mix_md(filepath, filerel)

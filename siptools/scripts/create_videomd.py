@@ -1,7 +1,7 @@
 """Command line tool for creating videoMD metadata."""
 import sys
 import os
-import argparse
+import click
 import pickle
 import videomd
 from siptools.utils import AmdCreator, scrape_file
@@ -17,40 +17,28 @@ ALLOW_ZERO = ['data_rate', 'bits_per_sample', 'frame_rate', 'width',
               'height', 'par']
 
 
-def parse_arguments(arguments):
-    """Parse arguments commandline arguments."""
+@click.command()
+@click.argument(
+    'filename', type=str)
+@click.option(
+    '--workspace', type=click.Path(exists=True), default='./workspace/',
+    help="Workspace directory for the metadata files.")
+@click.option(
+    '--base_path', type=click.Path(exists=True), default='.',
+    help="Source base path of digital objects. If used, give path to "
+         "the file in relation to this base path.")
+def main(workspace, base_bath, filename):
+    """
+    Write videoMD metadata for a video file or streams.
 
-    parser = argparse.ArgumentParser(
-        description="Tool for creating videoMD metadata for a video file. The "
-                    "videoMD metadata is written to <hash>-VideoMD-amd.xml "
-                    "METS XML file in the workspace directory. The videoMD "
-                    "techMD reference is written to amd-references.xml. "
-                    "If the same videoMD metadata is already found in "
-                    "workspace, just the new file or stream is appended to "
-                    "the existing metadata."
-    )
+    FILENAME: Relative path to the file from current directory
+              or from --base_path.
+    """
 
-    parser.add_argument('file', type=str, help="Path to the video file")
-    parser.add_argument(
-        '--workspace', type=str, default='./workspace/',
-        help="Workspace directory for the metadata files.")
-    parser.add_argument(
-        '--base_path', type=str, default='',
-        help="Source base path of digital objects. If used, give path to "
-             "the video file in relation to this base path.")
+    filerel = os.path.normpath(filename)
+    filepath = os.path.normpath(os.path.join(base_path, filename))
 
-    return parser.parse_args(arguments)
-
-
-def main(arguments=None):
-    """Write videoMD metadata for a video file."""
-
-    args = parse_arguments(arguments)
-
-    filerel = os.path.normpath(args.file)
-    filepath = os.path.normpath(os.path.join(args.base_path, args.file))
-
-    creator = VideomdCreator(args.workspace)
+    creator = VideomdCreator(workspace)
     creator.add_videomd_md(filepath, filerel)
     creator.write()
 
