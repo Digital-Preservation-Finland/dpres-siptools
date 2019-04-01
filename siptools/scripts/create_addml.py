@@ -1,64 +1,42 @@
 """Command line tool for creating ADDML metadata."""
 
 import os
-import argparse
+import click
 import lxml.etree as ET
 
 import addml
 from siptools.utils import AmdCreator, encode_path
 
 
-def parse_arguments(arguments):
-    """Parse arguments commandline arguments."""
-
-    parser = argparse.ArgumentParser(
-        description="Tool for creating ADDML metadata for a CSV file. The "
-                    "ADDML metadata is written to <hash>-ADDML-amd.xml "
-                    "METS XML file in the workspace directory. The ADDML "
-                    "techMD reference is written to amd-references.xml. "
-                    "If similar ADDML metadata is already found in workspace, "
-                    "just the new CSV file name is appended to the existing "
-                    "metadata."
-    )
-
-    parser.add_argument('file', type=str, help="Path to the CSV file")
-    parser.add_argument('--delim', type=str, required=True,
-                        help="Delimiter character used in the CSV file")
-    parser.add_argument('--header', dest='header', action='store_true',
-                        help="Use if the CSV file contains a header")
-    parser.add_argument('--no-header', dest='header', action='store_false',
-                        help="Use if the CSV doesn't contain a header")
-    parser.set_defaults(header=False)
-    parser.add_argument('--charset', type=str, required=True,
-                        help="Character set used in the CSV file")
-    parser.add_argument('--sep', type=str, required=True,
-                        help="Record separating character used in the CSV "
-                             "file")
-    parser.add_argument('--quot', type=str, required=True,
-                        help="Quoting character used in the CSV file")
-    parser.add_argument('--workspace', type=str, default='./workspace/',
-                        help="Workspace directory for the metadata files.")
-    parser.add_argument('--base_path', type=str, default='',
-                        help="Source base path of digital objects. If used, "
-                             "give path to the CSV file in relation to this "
-                             "base path.")
-
-    return parser.parse_args(arguments)
-
-
-def main(arguments=None):
+@click.command()
+@click.argument('filepath', type=str)
+@click.option('--header', is_flag=True,
+              help="Use if the CSV file contains a header")
+@click.option('--charset', type=str, required=True,
+              help="Character encoding used in the CSV file")
+@click.option('--delim', type=str, required=True,
+              help="Delimiter character used in the CSV file")
+@click.option('--sep', type=str, required=True,
+              help="Record separating character used in the CSV file")
+@click.option('--quot', type=str, required=True,
+              help="Quoting character used in the CSV file")
+@click.option('--workspace', type=str, default='./workspace/',
+              help="Workspace directory for the metadata files.")
+@click.option('--base_path', type=str, default='',
+              help="Source base path of digital objects. If used, "
+                   "give path to the CSV file in relation to this "
+                   "base path.")
+def main(filepath, header, charset, delim, sep, quot, workspace, base_path):
     """Write ADDML metadata for a CSV file."""
 
-    args = parse_arguments(arguments)
+    filerel = os.path.normpath(filepath)
+    filepath = os.path.normpath(os.path.join(base_path, filepath))
 
-    filerel = os.path.normpath(args.file)
-    filepath = os.path.normpath(os.path.join(args.base_path, args.file))
-
-    creator = AddmlCreator(args.workspace)
+    creator = AddmlCreator(workspace)
     creator.add_addml_md(
-        filepath, args.delim,
-        args.header, args.charset,
-        args.sep, args.quot
+        filepath, delim,
+        header, charset,
+        sep, quot
     )
     creator.write(filerel=filerel)
 
@@ -315,4 +293,5 @@ def create_addml(
 
 
 if __name__ == '__main__':
-    main()
+    RETVAL = main()
+    sys.exit(RETVAL)

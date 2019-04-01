@@ -32,7 +32,7 @@ def str_to_unicode(string):
     '--base_path', type=str, default='',
     help="Source base path of digital objects. If used, give path to "
          "the file in relation to this base path.")
-def main(workspace, base_bath, filename):
+def main(workspace, base_path, filename):
     """
     Write MIX metadata for an image file.
 
@@ -43,7 +43,7 @@ def main(workspace, base_bath, filename):
     filerel = os.path.normpath(filename)
     filepath = os.path.normpath(os.path.join(base_path, filename))
 
-    creator = MixCreator(args.workspace)
+    creator = MixCreator(workspace)
     creator.add_mix_md(filepath, filerel)
     creator.write()
 
@@ -130,11 +130,12 @@ def create_mix(filename, filerel=None, workspace=None):
         ImageAssessmentMetadata=imageassessmentmetadata
     )
 
-    if not mix_root:
+    if mix_root is None:
         raise ValueError('Image info could not be constructed.')
 
     return mix_root
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    RETVAL = main()
+    sys.exit(RETVAL)

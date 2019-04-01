@@ -27,7 +27,7 @@ ALLOW_ZERO = ['data_rate', 'bits_per_sample', 'frame_rate', 'width',
     '--base_path', type=click.Path(exists=True), default='.',
     help="Source base path of digital objects. If used, give path to "
          "the file in relation to this base path.")
-def main(workspace, base_bath, filename):
+def main(workspace, base_path, filename):
     """
     Write videoMD metadata for a video file or streams.
 
@@ -54,13 +54,13 @@ class VideomdCreator(AmdCreator):
 
         # Create videoMD metadata
         videomd_dict = create_videomd(filepath, filerel, self.workspace)
-        for index in videomd_dict.keys():
-            if '0' in videomd_dict and len(videomd_dict) == 1:
+        if '0' in videomd_dict and len(videomd_dict) == 1:
+            self.add_md(videomd_dict['0'],
+                filerel if filerel else filepath)
+        else:
+            for index in videomd_dict.keys():
                 self.add_md(videomd_dict[index],
                             filerel if filerel else filepath, index)
-            else:
-                self.add_md(videomd_dict[index],
-                            filerel if filerel else filepath)
 
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="VideoMD"):
@@ -141,4 +141,5 @@ def _get_stream_data(stream_dict):
 
 
 if __name__ == '__main__':
-    main()
+    RETVAL = main()
+    sys.exit(RETVAL)

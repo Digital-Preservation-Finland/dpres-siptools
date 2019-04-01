@@ -1,6 +1,7 @@
 """Tests the compile_structmap module with ead3 metadata."""
 
 import os
+from click.testing import CliRunner
 import lxml.etree as ET
 from siptools.scripts import compile_structmap
 from siptools.scripts import import_object
@@ -9,11 +10,14 @@ from siptools.xml.mets import NAMESPACES
 
 def create_test_data(workspace):
     """Create technical metadata test data."""
-    import_object.main(['--workspace', workspace, '--skip_validation',
-                        'tests/data/structured/Software files/koodi.java'])
-    import_object.main(
-        ['--workspace', workspace, '--skip_validation',
-         'tests/data/structured/Publication files/publication.txt'])
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, [
+        '--workspace', workspace, '--skip_validation',
+        'tests/data/structured/Software files/koodi.java'])
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, [
+        '--workspace', workspace, '--skip_validation',
+        'tests/data/structured/Publication files/publication.txt'])
 
 
 def test_compile_structmap_ok(testpath):
@@ -23,10 +27,12 @@ def test_compile_structmap_ok(testpath):
     are allowed.
     """
     create_test_data(testpath)
-    return_code = compile_structmap.main(
-        ['--dmdsec_struct', 'ead3', '--dmdsec_loc',
-         'tests/data/import_description/metadata/ead3_test.xml', '--workspace',
-         testpath])
+    arguments = [
+        '--type_structmap', 'EAD3-logical', '--dmdsec_loc',
+        'tests/data/import_description/metadata/ead3_test.xml', '--workspace',
+        testpath]
+    runner = CliRunner()
+    result = runner.invoke(compile_structmap.main, arguments)
 
     output_structmap = os.path.join(testpath, 'structmap.xml')
     sm_tree = ET.parse(output_structmap)
@@ -51,4 +57,4 @@ def test_compile_structmap_ok(testpath):
     assert len(sm_root.xpath(
         '//mets:div[@LABEL="fonds"]', namespaces=NAMESPACES)) == 1
 
-    assert return_code == 0
+    assert result.exit_code == 0

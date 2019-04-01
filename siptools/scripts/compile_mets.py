@@ -4,7 +4,7 @@ directory.
 
 import os
 import sys
-import argparse
+import click
 import datetime
 import uuid
 from shutil import copyfile
@@ -28,97 +28,77 @@ def _dict2str(dictionary):
     return ", ".join(items[:-1]) + ", and " + items[-1]
 
 
-def parse_arguments(arguments):
-    """Parse arguments"""
-    parser = argparse.ArgumentParser(
-        description="Merge partial METS documents in workspace directory into "
-                    "one METS document."
-    )
-    parser.add_argument('mets_profile',
-                        metavar='mets_profile',
-                        type=str,
-                        choices=METS_PROFILE,
-                        help='METS profile. Allowed values are: ' +
-                        _dict2str(METS_PROFILE) + '.')
-    parser.add_argument('organization_name',
-                        type=str,
-                        help='Creator name (organization)')
-    parser.add_argument('contractid',
-                        type=str,
-                        help='Digital Preservation Contract identifier')
-    parser.add_argument('--objid',
-                        type=str,
-                        default=str(uuid.uuid4()),
-                        help='Organizations unique identifier for the package')
-    parser.add_argument('--label',
-                        type=str,
-                        help='Short description of the information package')
-    parser.add_argument('--contentid',
-                        type=str,
-                        help='Identifier for SIP Content')
-    parser.add_argument('--create_date',
-                        type=str,
-                        default=datetime.datetime.utcnow().isoformat(),
-                        help='SIP create datetime formatted as '
-                             'yyyy-mm-ddThh:mm:ss. Defaults to current time.')
-    parser.add_argument('--last_moddate',
-                        type=str,
-                        help='Last modification datetime formatted as '
-                             'yyyy-mm-ddThh:mm:ss')
-    parser.add_argument('--record_status',
-                        choices=RECORD_STATUS_TYPES,
-                        type=str,
-                        default='submission',
-                        help='Record status. Defaults to "submission".')
-    parser.add_argument('--workspace',
-                        type=str,
-                        default='./workspace',
-                        help='Workspace directory. Defaults to "./workspace".')
-    parser.add_argument('--clean',
-                        action='store_true',
-                        help='Remove partial METS documents from workspace '
-                             'directory')
-    parser.add_argument('--copy_files',
-                        action='store_true',
-                        help='Copy digital objects from base path to '
-                             'workspace')
-    parser.add_argument('--base_path',
-                        type=str,
-                        default='./',
-                        help='Base path of the digital objects')
-    parser.add_argument('--stdout',
-                        action='store_true',
-                        help='Print output to stdout.')
-    parser.add_argument('--packagingservice',
-                        type=str,
-                        help='If defined, add packaging service as CREATOR '
-                             'agent to METS Header.')
-    return parser.parse_args(arguments)
-
-
-def main(arguments=None):
+@click.command()
+@click.argument('mets_profile', type=click.Choice(METS_PROFILE))
+@click.argument('organization_name', type=str)
+@click.argument('contractid', type=str)
+@click.option('--objid', type=str,
+              default=str(uuid.uuid4()),
+              help='Organizations unique identifier for the package')
+@click.option('--label',
+              type=str,
+              help='Short description of the information package')
+@click.option('--contentid',
+              type=str,
+              help='Identifier for content, useful for the case where '
+                   'content is divided in several SIPs.')
+@click.option('--create_date',
+              type=str,
+              default=datetime.datetime.utcnow().isoformat(),
+              help='SIP create datetime formatted as '
+                   'yyyy-mm-ddThh:mm:ss. Defaults to current time.')
+@click.option('--last_moddate',
+              type=str,
+              help='Last modification datetime formatted as '
+                   'yyyy-mm-ddThh:mm:ss')
+@click.option('--record_status',
+              type=click.Choice(RECORD_STATUS_TYPES),
+              default='submission',
+              help='Record status. Defaults to "submission".')
+@click.option('--workspace',
+              type=str,
+              default='./workspace',
+              help='Workspace directory. Defaults to "./workspace".')
+@click.option('--clean',
+              is_flag=True,
+              help='Remove partial METS documents from workspace directory')
+@click.option('--copy_files',
+              is_flag=True,
+              help='Copy digital objects from base path to workspace')
+@click.option('--base_path',
+              type=str,
+              default='./',
+              help='Base path of the digital objects')
+@click.option('--stdout',
+              is_flag=True,
+              help='Print output to stdout.')
+@click.option('--packagingservice',
+              type=str,
+              help='If defined, add packaging service as CREATOR '
+                   'agent to METS Header.')
+def main(mets_profile, organization_name, contractid, objid, label,
+         contentid, create_date, last_moddate, record_status, workspace,
+         clean, copy_files, base_path, stdout, packagingservice):
     """The main method
     """
-    args = parse_arguments(arguments)
-
     mets_document = create_mets(
-        args.workspace,
-        mets_attributes={'PROFILE': args.mets_profile,
-                         'OBJID': args.objid,
-                         'LABEL': args.label,
-                         "CONTENTID": args.contentid,
-                         "CONTRACTID": args.contractid},
-        metshdr_attributes={"CREATEDATE": args.create_date,
-                            "LASTMODDATE": args.last_moddate,
-                            "RECORDSTATUS": args.record_status},
-        organization=args.organization_name,
-        packagingservice=args.packagingservice
+        workspace,
+        mets_attributes={'PROFILE': mets_profile,
+                         'OBJID': objid,
+                         'LABEL': label,
+                         "CONTENTID": contentid,
+                         "CONTRACTID": contractid},
+        metshdr_attributes={"CREATEDATE": create_date,
+                            "LASTMODDATE": last_moddate,
+                            "RECORDSTATUS": record_status},
+        organization=organization_name,
+        packagingservice=packagingservice
     )
 
-    if args.stdout:
+    if stdout:
         print h.serialize(mets_document.getroot())
 
-    output_file = os.path.join(args.workspace, 'mets.xml')
+    output_file = os.path.join(workspace, 'mets.xml')
 
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
@@ -128,13 +108,13 @@ def main(arguments=None):
 
     print "compile_mets created file: %s" % output_file
 
-    if args.copy_files:
-        copy_files(args.workspace, args.base_path)
+    if copy_files:
+        copy_objects(workspace, base_path)
         print "compile_mets copied objects from %s to workspace" % \
-            args.base_path
+            base_path
 
-    if args.clean:
-        clean_metsparts(args.workspace)
+    if clean:
+        clean_metsparts(workspace)
         print "compile_mets cleaned work files from workspace"
 
     return 0
@@ -219,7 +199,7 @@ def clean_metsparts(path):
                 os.remove(os.path.join(root, name))
 
 
-def copy_files(workspace, data_dir):
+def copy_objects(workspace, data_dir):
     """Copy digital objects to workspace
     """
     files = get_objectlist(workspace)

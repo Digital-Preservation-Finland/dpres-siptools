@@ -27,7 +27,7 @@ ALLOW_ZERO = ['bits_per_sample', 'data_rate', 'sampling_frequency']
     '--base_path', type=click.Path(exists=True), default='.',
     help="Source base path of digital objects. If used, give path to "
          "the file in relation to this base path.")
-def main(workspace, base_bath, filename):
+def main(workspace, base_path, filename):
     """
     Write audioMD metadata for an audio file or streams.
 
@@ -147,4 +147,5 @@ def _get_audio_info(stream_dict):
 
 
 if __name__ == '__main__':
-    main()
+    RETVAL = main()
+    sys.exit(RETVAL)

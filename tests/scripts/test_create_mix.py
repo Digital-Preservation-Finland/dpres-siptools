@@ -6,6 +6,7 @@ import shutil
 import pytest
 import lxml.etree
 import pickle
+from click.testing import CliRunner
 import siptools.scripts.create_mix as create_mix
 
 
@@ -54,9 +55,10 @@ def test_main_utf8_files(testpath):
     shutil.copy('tests/data/images/tiff1.tif', image_full_path)
 
     # Call main function with encoded filename as parameter
-    create_mix.main(
-        ['--workspace', testpath, '--base_path', testpath,
-         image_relative_path.encode(sys.getfilesystemencoding())]
+    runner = CliRunner()
+    result = runner.invoke(create_mix.main, [
+        '--workspace', testpath, '--base_path', testpath,
+        image_relative_path.encode(sys.getfilesystemencoding())]
     )
 
     # Check that filename is found in amd-reference file.
@@ -168,11 +170,13 @@ def test_paths(testpath, file, base_path):
     if 'absolute' in base_path:
         base_path = os.path.join(os.getcwd(), 'tests')
 
+    runner = CliRunner()
     if base_path != '':
-        create_mix.main(['--workspace', testpath, '--base_path',
-                         base_path, file])
+        result = runner.invoke(create_mix.main, [
+            '--workspace', testpath, '--base_path', base_path, file])
     else:
-        create_mix.main(['--workspace', testpath, file])
+        result = runner.invoke(create_mix.main, [
+            '--workspace', testpath, file])
 
     assert "file=\"" + os.path.normpath(file) + "\"" in \
         open(os.path.join(testpath, 'amd-references.xml')).read()

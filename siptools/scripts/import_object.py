@@ -82,7 +82,7 @@ def main(workspace, base_path, skip_validation, charset, file_format,
 
     # Loop files and create premis objects
     files = collect_filepaths(dirs=filepaths, base=base_path)
-    for filepath in filepaths:
+    for filepath in files:
         if base_path not in ['.']:
             filerel = os.path.relpath(filepath, base_path)
         else:
@@ -134,6 +134,13 @@ class PremisCreator(AmdCreator):
         scraper = Scraper(filepath)
         if not skip_validation:
             scraper.scrape(True)
+            errors = ''
+            for _, info in scraper.info.iteritems():
+                if len(info['errors']) > 0:
+                    errors = "%s\n%s" % (errors, info['errors']) \
+                        if len(errors) > 0 else info['errors']
+            if len(errors) > 0:
+                raise ValueError(errors)
         else:
             scraper.scrape(False)
 
@@ -221,7 +228,7 @@ def create_premis_object(fname, scraper,
 
     if scraper.info[0]['class'] == 'FileExists' and \
             len(scraper.info[0]['errors']) > 0:
-        raise IOError('File does not exist.')
+        raise IOError(scraper.info[0]['errors'])
     for _, info in scraper.info.iteritems():
         if info['class'] == 'ScraperNotFound':
             raise ValueError('File format is not supported.')

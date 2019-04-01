@@ -5,6 +5,8 @@ import shutil
 import pytest
 import lxml.etree
 import mets
+import time
+from click.testing import CliRunner
 from siptools.xml.mets import NAMESPACES
 from siptools.scripts import compile_structmap
 from siptools.scripts import import_object
@@ -14,18 +16,22 @@ from siptools.scripts import import_description
 
 def create_test_data(workspace):
     """Create technical metadata test data."""
-    import_object.main(['--workspace', workspace, '--skip_validation',
-                        'tests/data/structured/Software files/koodi.java'])
-    premis_event.main(['creation', '2016-10-13T12:30:55',
-                       '--event_detail', 'Testing', '--event_outcome',
-                       'success', '--workspace', workspace, '--event_target',
-                       'tests/data/structured/Software files'])
+    runner = CliRunner()
+    result = runner.invoke(import_object.main,[
+        '--workspace', workspace, '--skip_validation',
+        'tests/data/structured/Software files/koodi.java'])
+    result = runner.invoke(premis_event.main,[
+        'creation', '2016-10-13T12:30:55',
+        '--event_detail', 'Testing', '--event_outcome',
+        'success', '--workspace', workspace, '--event_target',
+        'tests/data/structured/Software files'])
 
 
 def test_compile_structmap_ok(testpath):
     """Test the compile_structmap script."""
     create_test_data(testpath)
-    return_code = compile_structmap.main(['--workspace', testpath])
+    runner = CliRunner()
+    result = runner.invoke(compile_structmap.main, ['--workspace', testpath])
 
     output_structmap = os.path.join(testpath, 'structmap.xml')
     sm_tree = lxml.etree.parse(output_structmap)
@@ -45,7 +51,7 @@ def test_compile_structmap_ok(testpath):
     assert len(sm_root.xpath('//mets:div[@TYPE="Software files"]',
                              namespaces=NAMESPACES)) == 1
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_compile_structmap_dmdsecid(testpath):
@@ -54,8 +60,10 @@ def test_compile_structmap_dmdsecid(testpath):
     included in structMap.
     """
     # Create -premis-amd.xml and dmdsec.xml files in workspace
-    import_object.main(['--workspace', testpath, '--skip_validation',
-                        'tests/data/structured/Software files/koodi.java'])
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, [
+        '--workspace', testpath, '--skip_validation',
+        'tests/data/structured/Software files/koodi.java'])
     dmdsec = import_description.create_mets(
         'tests/data/import_description/metadata/dc_description.xml',
         'dmdsec.xml'
@@ -63,7 +71,7 @@ def test_compile_structmap_dmdsecid(testpath):
     dmdsec.write(os.path.join(testpath, 'dmdsec.xml'))
 
     # Create structmap
-    compile_structmap.main(['--workspace', testpath])
+    result = runner.invoke(compile_structmap.main, ['--workspace', testpath])
 
     # The root div of structMap should have reference to dmdSec element in
     # dmdsec.xml
@@ -80,16 +88,19 @@ def test_compile_structmap_dmdsecid(testpath):
 
 def test_compile_structmap_not_ok(testpath):
     """Test that error is raised for non-existent folders."""
-    with pytest.raises(SystemExit):
-        compile_structmap.main(['tests/data/notfound', '--workspace',
-                                testpath])
+    runner = CliRunner()
+    result = runner.invoke(compile_structmap.main, [
+        'tests/data/notfound', '--workspace', testpath])
+    assert type(result.exception) == SystemExit
 
 
 def test_file_and_dir(testpath):
     """Test the cmpile_structmap with a file and directory case."""
-    import_object.main(['--workspace', testpath, '--skip_validation',
-                        'tests/data/file_and_dir'])
-    return_code = compile_structmap.main(['--workspace', testpath])
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, [
+        '--workspace', testpath, '--skip_validation',
+        'tests/data/file_and_dir'])
+    result = runner.invoke(compile_structmap.main, ['--workspace', testpath])
     output_structmap = os.path.join(testpath, 'structmap.xml')
     sm_tree = lxml.etree.parse(output_structmap)
     sm_root = sm_tree.getroot()
@@ -98,7 +109,7 @@ def test_file_and_dir(testpath):
         namespaces=NAMESPACES)
     assert elementlist[0].tag == '{%s}fptr' % NAMESPACES['mets']
     assert elementlist[1].tag == '{%s}div' % NAMESPACES['mets']
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_get_amd_references(testpath):
@@ -125,7 +136,8 @@ def test_othermd_references(testpath):
     shutil.copytree('tests/data/compile_structmap_workspace', workspace)
 
     # Compile structmap
-    compile_structmap.main(['--workspace', workspace])
+    runner = CliRunner()
+    result = runner.invoke(compile_structmap.main, ['--workspace', workspace])
 
     # Read filesec.xml
     mets_document = lxml.etree.parse(os.path.join(workspace, 'filesec.xml'))
@@ -166,10 +178,10 @@ def test_compile_structmap_directory(testpath):
     element.
     """
     create_test_data(testpath)
-    return_code = compile_structmap.main(
-        ['--workspace', testpath, '--type_attr', 'Directory-physical']
-    )
-
+    runner = CliRunner()
+    result = runner.invoke(compile_structmap.main, [
+        '--workspace', testpath, '--type_structmap', 'Directory-physical'
+    ])
     output_structmap = os.path.join(testpath, 'structmap.xml')
     sm_tree = lxml.etree.parse(output_structmap)
     sm_root = sm_tree.getroot()
@@ -183,17 +195,19 @@ def test_compile_structmap_directory(testpath):
         namespaces=NAMESPACES)[0].get(
         'ADMID') == '_47244c09fb49dfd4d0577d29820bfa6c'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_compile_structmap_order(testpath):
     """Test the compile_structmap script."""
-    import_object.main(['--workspace', testpath,
-                        '--skip_validation',
-                        '--order', '5',
-                        'tests/data/structured/Software files/koodi.java'])
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, [
+        '--workspace', testpath,
+        '--skip_validation',
+        '--order', '5',
+        'tests/data/structured/Software files/koodi.java'])
 
-    compile_structmap.main(['--workspace', testpath])
+    result = runner.invoke(compile_structmap.main, ['--workspace', testpath])
 
     output_structmap = os.path.join(testpath, 'structmap.xml')
     sm_tree = lxml.etree.parse(output_structmap)

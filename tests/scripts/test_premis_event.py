@@ -3,6 +3,7 @@ import os
 import sys
 import lxml.etree as ET
 import pytest
+from click.testing import CliRunner
 from siptools.scripts import premis_event
 
 
@@ -10,23 +11,21 @@ def test_premis_event_ok(testpath):
     """Test that main function produces event.xml and agent.xml files with
     correct elements.
     """
-
-    return_code = premis_event.main(
-        [
-            'creation',
-            '2016-10-13T12:30:55',
-            '--event_target', 'tests/data/structured',
-            '--event_detail', 'Testing',
-            '--event_outcome', 'success',
-            '--event_outcome_detail', 'Outcome detail',
-            '--workspace', testpath,
-            '--agent_name', 'Demo Application',
-            '--agent_type', 'software'
-        ]
-    )
+    runner = CliRunner()
+    result = runner.invoke(premis_event.main, [
+        'creation',
+        '2016-10-13T12:30:55',
+        '--event_target', 'tests/data/structured',
+        '--event_detail', 'Testing',
+        '--event_outcome', 'success',
+        '--event_outcome_detail', 'Outcome detail',
+        '--workspace', testpath,
+        '--agent_name', 'Demo Application',
+        '--agent_type', 'software'
+    ])
 
     # Main function should return 0
-    assert return_code == 0
+    assert result.exit_code == 0
 
     # Read output files
     event_xml = ET.parse(
@@ -79,18 +78,17 @@ def test_amd_links_root(testpath):
     """Tests that premis_event script writes reference links correctly
     to the amd-references file.
     """
-    return_code = premis_event.main(
-        [
-            'creation',
-            '2016-10-13T12:30:55',
-            '--event_detail', 'Testing',
-            '--event_outcome', 'success',
-            '--workspace', testpath
-        ]
-    )
+    runner = CliRunner()
+    result = runner.invoke(premis_event.main, [
+        'creation',
+        '2016-10-13T12:30:55',
+        '--event_detail', 'Testing',
+        '--event_outcome', 'success',
+        '--workspace', testpath
+    ])
 
     # Main function should return 0
-    assert return_code == 0
+    assert result.exit_code == 0
 
     ref = os.path.join(testpath, 'amd-references.xml')
     assert os.path.isfile(ref)
@@ -105,19 +103,18 @@ def test_amd_links_file(testpath):
     to the amd-references file with a proper file target.
     """
     target = 'tests/data/test_import.pdf'
-    return_code = premis_event.main(
-        [
-            'creation',
-            '2016-10-13T12:30:55',
-            '--event_detail', 'Testing',
-            '--event_outcome', 'success',
-            '--workspace', testpath,
-            '--event_target', target
-        ]
-    )
+    runner = CliRunner()
+    result = runner.invoke(premis_event.main, [
+        'creation',
+        '2016-10-13T12:30:55',
+        '--event_detail', 'Testing',
+        '--event_outcome', 'success',
+        '--workspace', testpath,
+        '--event_target', target
+    ])
 
     # Main function should return 0
-    assert return_code == 0
+    assert result.exit_code == 0
 
     ref = os.path.join(testpath, 'amd-references.xml')
     assert os.path.isfile(ref)
@@ -132,19 +129,18 @@ def test_amd_links_dir(testpath):
     to the amd-references file with a directory target.
     """
     target = 'tests/data'
-    return_code = premis_event.main(
-        [
-            'creation',
-            '2016-10-13T12:30:55',
-            '--event_detail', 'Testing',
-            '--event_outcome', 'success',
-            '--workspace', testpath,
-            '--event_target', target
-        ]
-    )
+    runner = CliRunner()
+    result = runner.invoke(premis_event.main, [
+        'creation',
+        '2016-10-13T12:30:55',
+        '--event_detail', 'Testing',
+        '--event_outcome', 'success',
+        '--workspace', testpath,
+        '--event_target', target
+    ])
 
     # Main function should return 0
-    assert return_code == 0
+    assert result.exit_code == 0
 
     ref = os.path.join(testpath, 'amd-references.xml')
     assert os.path.isfile(ref)
@@ -158,16 +154,15 @@ def test_premis_event_fail(testpath):
     """Test that main function raises `SystemExit` if `event_outcome`
     parameter is incorrect."""
 
-    with pytest.raises(SystemExit):
-        premis_event.main(
-            [
-                'creation', '2016-10-13T12:30:55',
-                '--event_detail', 'Testing',
-                '--event_outcome', 'nonsense',
-                '--event_outcome_detail', 'Outcome detail',
-                '--workspace', testpath
-            ]
-        )
+    runner = CliRunner()
+    result = runner.invoke(premis_event.main, [
+        'creation', '2016-10-13T12:30:55',
+        '--event_detail', 'Testing',
+        '--event_outcome', 'nonsense',
+        '--event_outcome_detail', 'Outcome detail',
+        '--workspace', testpath
+    ])
+    assert type(result.exception) == SystemExit
 
 
 def test_create_premis_event_file_ok(testpath):

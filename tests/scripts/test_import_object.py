@@ -430,7 +430,7 @@ def test_import_object_validate_wav_ok(input_file, version, testpath):
     arguments = ['--workspace', testpath, input_file]
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
-
+    print result
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()

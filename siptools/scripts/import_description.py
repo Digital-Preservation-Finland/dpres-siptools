@@ -3,7 +3,7 @@ file
 """
 
 import sys
-import argparse
+import click
 import os
 
 import lxml.etree
@@ -13,21 +13,33 @@ from siptools.xml.mets import METS_MDTYPES
 from siptools.utils import encode_path, encode_id
 
 
-def main(arguments=None):
+@click.command()
+@click.argument('dmdsec_location', type=str)
+@click.option('--dmdsec_target',
+              type=str,
+              help='Target of descriptive metadata. '
+                   'Default is the root of dataset.')
+@click.option('--workspace', type=str,
+              default='./workspace',
+              help="directory where output is created")
+@click.option('--desc_root', is_flag=True,
+              help='import only child elements from descriptive '
+                   'metadata file')
+@click.option('--stdout', is_flag=True,
+              help='print output to stdout')
+def main(dmdsec_location, dmdsec_target, workspace, desc_root, stdout):
     """The main method for import_description"""
-    args = parse_arguments(arguments)
-
-    if args.dmdsec_target:
-        filename = encode_path(args.dmdsec_target, suffix='-dmdsec.xml')
+    if dmdsec_target:
+        filename = encode_path(dmdsec_target, suffix='-dmdsec.xml')
     else:
         filename = 'dmdsec.xml'
 
-    _mets = create_mets(args.dmdsec_location, filename, args.desc_root)
+    _mets = create_mets(dmdsec_location, filename, desc_root)
 
-    if args.stdout:
+    if stdout:
         print lxml.etree.tostring(_mets, pretty_print=True)
 
-    output_file = os.path.join(args.workspace, filename)
+    output_file = os.path.join(workspace, filename)
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
 
@@ -81,37 +93,6 @@ def create_mets(input_file, filename, remove_root=False):
     tree = lxml.etree.ElementTree(mets_element)
     lxml.etree.cleanup_namespaces(tree)
     return tree
-
-
-def parse_arguments(arguments):
-    """Create arguments parser and return parsed command line argumets"""
-    parser = argparse.ArgumentParser(
-        description="Create METS documents that contains descriptive metadata "
-                    "imported from XML file."
-    )
-    parser.add_argument('dmdsec_location',
-                        type=str,
-                        help='path to XML file that contains descriptive '
-                             'metadata')
-    parser.add_argument('--dmdsec_target',
-                        dest='dmdsec_target',
-                        type=str,
-                        help='Target of descriptive metadata. '
-                             'Default is the root of dataset.')
-    parser.add_argument('--workspace',
-                        dest='workspace',
-                        type=str,
-                        default='./workspace',
-                        help="directory where output is created")
-    parser.add_argument('--desc_root',
-                        action='store_true',
-                        help='import only child elements from descriptive '
-                             'metadata file')
-    parser.add_argument('--stdout',
-                        action='store_true',
-                        help='print output to stdout')
-
-    return parser.parse_args(arguments)
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 document."""
 
 import sys
-import argparse
+import click
 import os
 import json
 from uuid import uuid4
@@ -22,48 +22,28 @@ def ead3_ns(tag):
     return path
 
 
-def parse_arguments(arguments):
-    """Create arguments parser and return parsed command line argumets"""
-
-    parser = argparse.ArgumentParser(
-        description="Tool for generating METS fileSec and structMap based on "
-                    "administrative metada files (-premis-amd.xml -suffix) "
-                    "and descriptive metadata files (-dmdsec.xml -suffix) "
-                    "found in the workspace directory. Outputs two XML files: "
-                    "filesec.xml and structmap.xml"
-    )
-    parser.add_argument('--dmdsec_struct',
-                        type=str,
-                        help="Use structured descriptive metadata for "
-                             "creating structMap divs")
-    parser.add_argument('--dmdsec_loc',
-                        type=str,
-                        help="Location of structured descriptive metadata")
-    parser.add_argument('--type_attr',
-                        type=str,
-                        help="Type of structmap e.g. 'Fairdata-physical'"
-                             " or 'Directory-physical'")
-    parser.add_argument('--root_type',
-                        type=str,
-                        help="Type of root div")
-    parser.add_argument('--workspace',
-                        type=str,
-                        default='./workspace/',
-                        help="Destination directory for output files. "
-                             "Defaults to ./workspace/")
-    parser.add_argument('--stdout',
-                        action='store_true',
-                        help='Print output also to stdout.')
-    return parser.parse_args(arguments)
-
-
-def main(arguments=None):
+@click.command()
+@click.option('--workspace',
+              type=str, default='./workspace/',
+              help="Destination directory for output files. "
+                   "Defaults to ./workspace/")
+@click.option('--type_structmap',
+              type=str,
+              help="Type of structmap e.g. 'Fairdata-physical', "
+                   "'EAD3-logical', or 'Directory-physical'")
+@click.option('--root_type',
+              type=str, help="Type of root div")
+@click.option('--dmdsec_loc',
+              type=str,
+              help="Location of structured descriptive metadata")
+@click.option('--stdout',
+              is_flag=True,
+              help='Print output also to stdout.')
+def main(workspace, type_structmap, root_type, dmdsec_loc, stdout):
     """The main method for compile_structmap"""
-    args = parse_arguments(arguments)
+    filelist = get_objectlist(workspace)
 
-    filelist = get_objectlist(args.workspace)
-
-    if args.dmdsec_struct == 'ead3':
+    if type_structmap == 'EAD3-logical':
         # If structured descriptive metadata for structMap divs is used, also
         # the fileSec element (apparently?) is different. The
         # create_ead3_structmap function populates the fileGrp element.
@@ -71,19 +51,19 @@ def main(arguments=None):
         filesec_element = mets.filesec(child_elements=[filegrp])
         filesec = mets.mets(child_elements=[filesec_element])
 
-        structmap = create_ead3_structmap(args.dmdsec_loc, args.workspace,
-                                          filegrp, filelist, args.type_attr)
+        structmap = create_ead3_structmap(dmdsec_loc, workspace,
+                                          filegrp, filelist, type_structmap)
     else:
-        filesec = create_filesec(args.workspace, filelist)
-        structmap = create_structmap(args.workspace, filesec.getroot(),
-                                     filelist, args.type_attr, args.root_type)
+        filesec = create_filesec(workspace, filelist)
+        structmap = create_structmap(workspace, filesec.getroot(),
+                                     filelist, type_structmap, root_type)
 
-    if args.stdout:
+    if stdout:
         print h.serialize(filesec)
         print h.serialize(structmap)
 
-    output_sm_file = os.path.join(args.workspace, 'structmap.xml')
-    output_fs_file = os.path.join(args.workspace, 'filesec.xml')
+    output_sm_file = os.path.join(workspace, 'structmap.xml')
+    output_fs_file = os.path.join(workspace, 'filesec.xml')
 
     if not os.path.exists(os.path.dirname(output_sm_file)):
         os.makedirs(os.path.dirname(output_sm_file))

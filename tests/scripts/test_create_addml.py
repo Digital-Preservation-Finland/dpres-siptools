@@ -3,7 +3,7 @@
 import os
 import pytest
 import lxml.etree as ET
-
+from click.testing import CliRunner
 import siptools.scripts.create_addml as create_addml
 from siptools.utils import decode_path
 
@@ -146,15 +146,17 @@ def test_paths(testpath, file, base_path):
     if 'absolute' in base_path:
         base_path = os.path.join(os.getcwd(), 'tests')
 
+    runner = CliRunner()
     if base_path != '':
-        create_addml.main(['--delim', DELIMITER, '--charset', CHARSET,
-                           '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
-                           '--workspace', testpath, '--base_path',
-                           base_path, file])
+        result = runner.invoke(create_addml.main, [
+            '--delim', DELIMITER, '--charset', CHARSET,
+            '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
+            '--workspace', testpath, '--base_path', base_path, file])
     else:
-        create_addml.main(['--delim', DELIMITER, '--charset', CHARSET,
-                           '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
-                           '--workspace', testpath, file])
+        result = runner.invoke(create_addml.main, [
+            '--delim', DELIMITER, '--charset', CHARSET,
+            '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
+            '--workspace', testpath, file])
 
     assert "file=\"" + os.path.normpath(file) + "\"" in \
         open(os.path.join(testpath, 'amd-references.xml')).read()

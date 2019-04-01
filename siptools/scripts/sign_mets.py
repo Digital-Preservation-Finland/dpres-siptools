@@ -2,33 +2,22 @@
 
 import sys
 import os
-import argparse
+import click
 import dpres_signature.signature
 
-
-def main(arguments=None):
-    """The main method for sign_mets"""
-    args = parse_arguments(arguments)
-    signature = sign_mets(args.workspace, args.sign_key)
-    print "sign_mets created file: %s" % signature
-
-    return 0
-
-
-def parse_arguments(arguments):
-    """Create arguments parser and return parsed command line argumets"""
-    parser = argparse.ArgumentParser(
-        description="Create digital signature (signature.sig) for METS file.")
-
-    parser.add_argument(
-        "--workspace", default="workspace",
+@click.command()
+@click.option(
+        "--workspace", default="./workspace",
         help="Workspace directory that contains mets.xml file and where "
              "signature.sig is written."
     )
-    parser.add_argument("sign_key", help="Path for private key")
+@click.argument("sign_key", type=str)
+def main(workspace, sign_key):
+    """The main method for sign_mets"""
+    signature = sign_mets(workspace, sign_key)
+    print "sign_mets created file: %s" % signature
 
-    return parser.parse_args(arguments)
-
+    return 0
 
 def sign_mets(workspace, key_path):
     """Sign mets.xml file in workspace

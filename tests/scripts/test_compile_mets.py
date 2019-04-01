@@ -2,6 +2,7 @@
 import os
 import lxml.etree as ET
 import pytest
+from click.testing import CliRunner
 from siptools.xml.mets import NAMESPACES
 from siptools.scripts.import_description import main
 from siptools.scripts import compile_mets
@@ -13,46 +14,51 @@ from siptools.scripts import compile_structmap
 def create_test_data(workspace):
     # TODO: Missing docstring
     # create descriptive metadata
+    runner = CliRunner()
     dmdsec_location \
         = 'tests/data/import_description/metadata/dc_description.xml'
     dmdsec_target = 'tests/data/structured/Software files'
 
-    main([dmdsec_location, '--dmdsec_target', dmdsec_target, '--workspace',
-          workspace, '--desc_root'])
+    arguments = [dmdsec_location, '--dmdsec_target', dmdsec_target,
+                 '--workspace', workspace, '--desc_root']
+    result = runner.invoke(main, arguments)
+
 
     # create provenance metadata
-    premis_event.main(['creation', '2016-10-13T12:30:55',
-                       '--event_target', 'tests/data/structured',
-                       '--event_detail', 'Testing',
-                       '--event_outcome', 'success',
-                       '--event_outcome_detail', 'Outcome detail',
-                       '--workspace', workspace,
-                       '--agent_name', 'Demo Application',
-                       '--agent_type', 'software'])
+    arguments = ['creation', '2016-10-13T12:30:55',
+                 '--event_target', 'tests/data/structured',
+                 '--event_detail', 'Testing',
+                 '--event_outcome', 'success',
+                 '--event_outcome_detail', 'Outcome detail',
+                 '--workspace', workspace,
+                 '--agent_name', 'Demo Application',
+                 '--agent_type', 'software']
+    result = runner.invoke(premis_event.main, arguments)
 
     #create technical metadata
-    import_object.main(['--workspace', workspace,
-                        '--skip_validation',
-                        'tests/data/structured/Software files/koodi.java'])
+    arguments = ['--workspace', workspace, '--skip_validation',
+                 'tests/data/structured/Software files/koodi.java']
+    result = runner.invoke(import_object.main, arguments)
 
     #create structural metadata
-    compile_structmap.main(['--workspace', workspace])
-
+    result = runner.invoke(import_object.main, ['--workspace', workspace])
 
 def test_compile_mets_ok(testpath):
     # TODO: Missing docstring
     create_test_data(testpath)
-    return_code = compile_mets.main(['ch',
-                                     'CSC',
-                                     'contract-id-1234',
-                                     '--objid', 'ABC-123',
-                                     '--label', 'Test SIP',
-                                     '--contentid', 'Aineisto-123',
-                                     '--create_date', '2016-10-28T09:30:55',
-                                     '--last_moddate', '2016-10-28T09:30:55',
-                                     '--record_status', 'submission',
-                                     '--packagingservice', 'Pekka Paketoija',
-                                     '--workspace', testpath])
+    arguments = ['ch',
+                 'CSC',
+                 'contract-id-1234',
+                 '--objid', 'ABC-123',
+                 '--label', 'Test SIP',
+                 '--contentid', 'Aineisto-123',
+                 '--create_date', '2016-10-28T09:30:55',
+                 '--last_moddate', '2016-10-28T09:30:55',
+                 '--record_status', 'submission',
+                 '--packagingservice', 'Pekka Paketoija',
+                 '--workspace', testpath]
+    runner = CliRunner()
+    result = runner.invoke(compile_mets.main, arguments)
 
     output_file = os.path.join(testpath, 'mets.xml')
     tree = ET.parse(output_file)
@@ -97,23 +103,25 @@ def test_compile_mets_ok(testpath):
     assert root.xpath("/mets:mets/mets:metsHdr/mets:agent/mets:name",
                       namespaces=NAMESPACES)[1].text == 'Pekka Paketoija'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_compile_mets_cleanup_ok(testpath):
     #TODO: Missing docstring
     create_test_data(testpath)
-    return_code = compile_mets.main(['ch',
-                                     'CSC',
-                                     'contract-id-1234',
-                                     '--objid', 'ABC-123',
-                                     '--label', 'Test SIP',
-                                     '--contentid', 'Aineisto-123',
-                                     '--create_date', '2016-10-28T09:30:55',
-                                     '--last_moddate', '2016-10-28T09:30:55',
-                                     '--record_status', 'submission',
-                                     '--workspace', testpath,
-                                     '--clean'])
+    arguments = ['ch',
+                 'CSC',
+                 'contract-id-1234',
+                 '--objid', 'ABC-123',
+                 '--label', 'Test SIP',
+                 '--contentid', 'Aineisto-123',
+                 '--create_date', '2016-10-28T09:30:55',
+                 '--last_moddate', '2016-10-28T09:30:55',
+                 '--record_status', 'submission',
+                 '--workspace', testpath,
+                 '--clean']
+    runner = CliRunner()
+    result = runner.invoke(compile_mets.main, arguments)
 
     output_file = os.path.join(testpath, 'mets.xml')
     tree = ET.parse(output_file)
@@ -152,19 +160,21 @@ def test_compile_mets_cleanup_ok(testpath):
     assert root.xpath("/mets:mets/mets:metsHdr/mets:agent/mets:name",
                       namespaces=NAMESPACES)[0].text == 'CSC'
 
-    assert return_code == 0
+    assert result.exit_code == 0
 
 
 def test_compile_mets_fail(testpath):
     #TODO: Missing docstring
-    with pytest.raises(SystemExit):
-        compile_mets.main(['ch',
-                           'CSC',
-                           'contract-id-1234',
-                           '--objid', 'ABC-123',
-                           '--label', 'Test SIP',
-                           '--contentid', 'Aineisto-123',
-                           '--create_date', '2016-10-28T09:30:55',
-                           '--last_moddate', '2016-10-28T09:30:55',
-                           '--record_status', 'nonsense',
-                           '--workspace', testpath])
+    arguments = ['ch',
+                 'CSC',
+                 'contract-id-1234',
+                 '--objid', 'ABC-123',
+                 '--label', 'Test SIP',
+                 '--contentid', 'Aineisto-123',
+                 '--create_date', '2016-10-28T09:30:55',
+                 '--last_moddate', '2016-10-28T09:30:55',
+                 '--record_status', 'nonsense',
+                 '--workspace', testpath]
+    runner = CliRunner()
+    result = runner.invoke(compile_mets.main, arguments)
+    assert type(result.exception) == SystemExit

@@ -6,6 +6,7 @@ import pytest
 import lxml.etree as ET
 import shutil
 import pickle
+from click.testing import CliRunner
 import siptools.scripts.create_audiomd as create_audiomd
 
 AUDIOMD_NS = 'http://www.loc.gov/audioMD/'
@@ -159,8 +160,9 @@ def test_main_utf8_files(testpath):
     shutil.copy('tests/data/audio/valid__wav.wav', full_path)
 
     # Call main function with encoded filename as parameter
-    create_audiomd.main(
-        ['--workspace', testpath, '--base_path', testpath,
+    runner = CliRunner()
+    result = runner.invoke(create_audiomd.main, [
+        '--workspace', testpath, '--base_path', testpath,
          relative_path.encode(sys.getfilesystemencoding())]
     )
 
@@ -219,12 +221,13 @@ def test_paths(testpath, file, base_path):
     """
     if 'absolute' in base_path:
         base_path = os.path.join(os.getcwd(), 'tests')
-
+    runner = CliRunner()
     if base_path != '':
-        create_audiomd.main(['--workspace', testpath, '--base_path',
-                             base_path, file])
+        result = runner.invoke(create_audiomd.main, [
+            '--workspace', testpath, '--base_path', base_path, file])
     else:
-        create_audiomd.main(['--workspace', testpath, file])
+        result = runner.invoke(create_audiomd.main, [
+            '--workspace', testpath, file])
 
     assert "file=\"" + os.path.normpath(file) + "\"" in \
         open(os.path.join(testpath, 'amd-references.xml')).read()
