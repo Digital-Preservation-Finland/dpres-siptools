@@ -35,13 +35,13 @@ from siptools.utils import get_objectlist
               help='Identifier for content, useful for the case where '
                    'content is divided in several SIPs.')
 @click.option('--create_date',
-              type=click.DateTime(formats=['%Y-%m-%dT%H:%M:%S']),
-              default=datetime.datetime.utcnow(),
+              type=str,
+              default=datetime.datetime.utcnow().isoformat(),
               metavar='<CREATION DATE>',
               help='SIP create datetime formatted as '
                    'yyyy-mm-ddThh:mm:ss. Defaults to current time.')
 @click.option('--last_moddate',
-              type=click.DateTime(formats=['%Y-%m-%dT%H:%M:%S']),
+              type=str,
               metavar='<LAST MODIFICATION DATE>',
               help='Last modification datetime formatted as '
                    'yyyy-mm-ddThh:mm:ss')
@@ -86,11 +86,6 @@ def main(mets_profile, organization_name, contractid, objid, label,
     CONTRACTID: Contract ID given by the Digital Preservation Service
 
     """
-    created = create_date.isoformat()
-    if last_moddate is not None:
-        modified = last_moddate.isoformat()
-    else:
-        modified = None
     contract = "urn:uuid:%s" % str(contractid)
 
     mets_document = create_mets(
@@ -100,8 +95,8 @@ def main(mets_profile, organization_name, contractid, objid, label,
                          'LABEL': label,
                          "CONTENTID": contentid,
                          "CONTRACTID": contract},
-        metshdr_attributes={"CREATEDATE": created,
-                            "LASTMODDATE": modified,
+        metshdr_attributes={"CREATEDATE": create_date,
+                            "LASTMODDATE": last_moddate,
                             "RECORDSTATUS": record_status},
         organization=organization_name,
         packagingservice=packagingservice

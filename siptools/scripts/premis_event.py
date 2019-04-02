@@ -27,7 +27,7 @@ def _list2str(lst):
 @click.argument('event_type',
                 type=click.Choice(PREMIS_EVENT_TYPES))
 @click.argument('event_datetime', required=True,
-                type=click.DateTime(formats=['%Y-%m-%dT%H:%M:%S']))
+                type=str)
 @click.option('--event_detail',
               type=str, required=True,
               metavar='<EVENT DETAIL>',
@@ -81,8 +81,6 @@ def main(event_type, event_datetime, event_detail, event_outcome,
     EVENT_DATETIME: Timestamp of the event.
 
     """
-    event_date = event_datetime.isoformat()
-
     event_file = None
     directory = None
 
@@ -109,7 +107,7 @@ def main(event_type, event_datetime, event_detail, event_outcome,
 
     event = create_premis_event(
         event_type,
-        event_date,
+        event_datetime,
         event_detail,
         event_outcome,
         event_outcome_detail,
