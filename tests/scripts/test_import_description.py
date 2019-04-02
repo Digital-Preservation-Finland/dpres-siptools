@@ -18,8 +18,7 @@ def test_import_description_valid_file(testpath):
     runner = CliRunner()
     result = runner.invoke(main, [
         dmdsec_location, '--dmdsec_target', dmdsec_target,
-        '--workspace', testpath, '--desc_root'])
-
+        '--workspace', testpath, '--remove_root'])
     output_file = os.path.join(testpath, url_location)
     tree = ET.parse(output_file)
     root = tree.getroot()
@@ -33,9 +32,9 @@ def test_import_description_file_not_found(testpath):
 
     runner = CliRunner()
     result = runner.invoke(main, [
-        dmdsec_location, '--workspace', dmdsec_target,
+        dmdsec_location, '--dmdsec_target', dmdsec_target,
         '--workspace', testpath])
-    assert type(result.exception) == IOError
+    assert type(result.exception) == SystemExit
 
 
 def test_import_description_no_xml(testpath):

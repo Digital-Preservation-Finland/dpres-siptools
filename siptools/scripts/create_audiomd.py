@@ -21,18 +21,21 @@ ALLOW_ZERO = ['bits_per_sample', 'data_rate', 'sampling_frequency']
 @click.argument(
     'filename', type=str)
 @click.option(
-    '--workspace', type=click.Path(exists=True), default='./workspace/',
+    '--workspace', type=click.Path(exists=True),
+    default='./workspace/',
+    metavar='<WORKSPACE PATH>',
     help="Workspace directory for the metadata files.")
 @click.option(
     '--base_path', type=click.Path(exists=True), default='.',
+    metavar='<BASE PATH>',
     help="Source base path of digital objects. If used, give path to "
          "the file in relation to this base path.")
 def main(workspace, base_path, filename):
     """
     Write audioMD metadata for an audio file or streams.
 
-    FILENAME: Relative path to the file from current directory
-              or from --base_path.
+    FILENAME: Relative path to the file from current directory or from
+              --base_path.
     """
 
     filerel = os.path.normpath(filename)

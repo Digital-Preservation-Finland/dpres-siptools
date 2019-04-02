@@ -23,7 +23,7 @@ def test_end_to_end(testpath):
     environment['PYTHONPATH'] = '.'
 
     command = ['python', 'siptools/scripts/import_object.py',
-               '--workspace', testpath, objects, '--skip_validation',
+               '--workspace', testpath, objects, '--skip_wellformed_check',
                '--file_format', 'text/plain', '1.0',
                '--checksum', 'MD5', '1qw87geiewgwe9',
                '--date_created', '2017-01-11T10:14:13',
@@ -44,7 +44,7 @@ def test_end_to_end(testpath):
 
     command = ['python', 'siptools/scripts/import_description.py', dmd_file,
                '--workspace', testpath, '--dmdsec_target', dmd_target,
-               '--desc_root']
+               '--remove_root']
     child = subprocess.Popen(command, env=environment)
     child.communicate()
     assert child.returncode == 0
@@ -57,7 +57,8 @@ def test_end_to_end(testpath):
 
     command = ['python', 'siptools/scripts/compile_mets.py',
                '--workspace', testpath, 'ch', 'CSC',
-               'contract-id-1234', '--create_date', '2017-01-11T10:14:13',
+               'urn:uuid:89e92a4f-f0e4-4768-b785-4781d3299b20',
+               '--create_date', '2017-01-11T10:14:13',
                '--copy_files', '--clean']
     child = subprocess.Popen(command, env=environment)
     child.communicate()

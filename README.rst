@@ -82,18 +82,15 @@ tests/data/structured followingly::
 
     python siptools/scripts/import_object.py --workspace ./workspace 'tests/data/structured'
 
-Parameter´--streams is required if the file is an A/V container.
-
 If your dataset contains image data, create also MIX metadata for each of the image files::
 
     python siptools/scripts/create_mix.py path/to/images/image.tif --workspace ./workspace
     
 ADDML metadata for a CSV file can be created by running::
     
-    python siptools/scripts/create_addml.py path/to/csv_file.csv --no-header --charset 'UTF8' --sep 'CR+LF' --quot '"' --delim ';' --workspace ./workspace
+    python siptools/scripts/create_addml.py path/to/csv_file.csv --charset 'UTF8' --sep 'CR+LF' --quot '"' --delim ';' --workspace ./workspace
 
-Flags --header and --no-header define whether or not the CSV file has headers. If neither
-is given, CSV file is assumed not to have headers. --sep flag defines the character used to 
+A flag --header should be given if CSV file has headers. --sep flag defines the character used to 
 separate records and --delim the character used to separate fields. --quot defines the 
 quotation character used.
 
@@ -118,9 +115,9 @@ not created.
 
 Script creates an xml file containing the descriptive metadata. Metadata must be in accepted format::
 
-    python siptools/scripts/import_description.py 'tests/data/import_description/metadata/dc_description.xml' --workspace ./workspace --desc_root remove --dmdsec_target 'tests/data/structured'
+    python siptools/scripts/import_description.py 'tests/data/import_description/metadata/dc_description.xml' --workspace ./workspace --remove_root --dmdsec_target 'tests/data/structured'
 
-Argument '--desc_root remove' removes the root element from the given descriptive metadata.
+Argument '--remove_root' removes the root element from the given descriptive metadata.
 This may be needed, if the metadata is given in a container element belonging to another metadata format.
 If the argument is not given, the descriptive metadata is fully included. The argument
 '--dmdsec_target  <target>' is the directory where the descriptive metadata applies.
@@ -134,7 +131,7 @@ The folder structure of a dataset is turned into a file containing the structmap
 Optionally, the structural map can be created based on given EAD3 structure instead of folder structure,
 and here a valid EAD3 file is given with --dmdsec_loc argument::
 
-    python siptools/scripts/compile_structmap.py --workspace ./workspace --dmdsec_struct ead3 --dmdsec_loc tests/data/import_description/metadata/ead3_test.xml
+    python siptools/scripts/compile_structmap.py --workspace ./workspace --type_structmap 'EAD3-logical' --dmdsec_loc tests/data/import_description/metadata/ead3_test.xml
 
 Compile a mets.xml file from the previous results::
 
@@ -158,8 +155,19 @@ For a short description about other optional arguments which are not listed here
 
 Additional requirements and notes
 ---------------------------------
-See the readme from file-scraper repository for additional requirements:
+See the readme from file-scraper repository for additional installation requirements:
 https://github.com/Digital-Preservation-Finland/file-scraper/blob/master/README.rst
+
+This software is able to collect metadata and check well-formedness of a limited set of file
+formats. Please see the file-scraper repository for more imformation.
+
+Even if file-scraper repository is able to check well-formedness of a file in the following cases:
+
+    * text/csv file
+    * text/xml file against XML schema or schematron files
+
+it is currently unsupported in dpres-siptools. Should you append these files to your workspace, those must
+be added with --skip_wellformed_check argument.
 
 
 Copyright

@@ -24,23 +24,33 @@ def ead3_ns(tag):
 
 @click.command()
 @click.option('--workspace',
-              type=str, default='./workspace/',
-              help="Destination directory for output files. "
-                   "Defaults to ./workspace/")
+              type=click.Path(exists=True), default='./workspace/',
+              metavar='<WORKSPACE PATH>',
+              help="Workspace directory. Defaults to ./workspace/")
 @click.option('--type_structmap',
               type=str,
+              metavar='<STRUCTMAP TYPE>',
               help="Type of structmap e.g. 'Fairdata-physical', "
                    "'EAD3-logical', or 'Directory-physical'")
 @click.option('--root_type',
+              metavar='<ROOT TYPE>',
               type=str, help="Type of root div")
 @click.option('--dmdsec_loc',
               type=str,
-              help="Location of structured descriptive metadata")
+              metavar='<DMD LOCATION>',
+              help="Location of structured descriptive metadata, "
+                   "if applicable.")
 @click.option('--stdout',
               is_flag=True,
               help='Print output also to stdout.')
 def main(workspace, type_structmap, root_type, dmdsec_loc, stdout):
-    """The main method for compile_structmap"""
+    """
+    Tool for generating METS fileSec and structMap based on
+    administrative metada files (-premis-amd.xml -suffix)
+    and descriptive metadata files (-dmdsec.xml -suffix)
+    found in the workspace directory. Outputs two XML files:
+    filesec.xml and structmap.xml
+    """
     filelist = get_objectlist(workspace)
 
     if type_structmap == 'EAD3-logical':

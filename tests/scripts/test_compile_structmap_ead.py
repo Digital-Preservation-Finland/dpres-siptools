@@ -12,11 +12,11 @@ def create_test_data(workspace):
     """Create technical metadata test data."""
     runner = CliRunner()
     result = runner.invoke(import_object.main, [
-        '--workspace', workspace, '--skip_validation',
+        '--workspace', workspace, '--skip_wellformed_check',
         'tests/data/structured/Software files/koodi.java'])
     runner = CliRunner()
     result = runner.invoke(import_object.main, [
-        '--workspace', workspace, '--skip_validation',
+        '--workspace', workspace, '--skip_wellformed_check',
         'tests/data/structured/Publication files/publication.txt'])
 
 

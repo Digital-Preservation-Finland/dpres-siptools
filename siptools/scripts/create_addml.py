@@ -13,21 +13,39 @@ from siptools.utils import AmdCreator, encode_path
 @click.option('--header', is_flag=True,
               help="Use if the CSV file contains a header")
 @click.option('--charset', type=str, required=True,
+              metavar='<CHARSET>',
               help="Character encoding used in the CSV file")
 @click.option('--delim', type=str, required=True,
+              metavar='<DELIMITER CHAR>',
               help="Delimiter character used in the CSV file")
 @click.option('--sep', type=str, required=True,
+              metavar='<SEPARATOR CHAR>',
               help="Record separating character used in the CSV file")
 @click.option('--quot', type=str, required=True,
+              metavar='<QUOTING CHAR>',
               help="Quoting character used in the CSV file")
-@click.option('--workspace', type=str, default='./workspace/',
+@click.option('--workspace', type=click.Path(exists=True),
+              default='./workspace/',
+              metavar='<WORKSPACE PATH>',
               help="Workspace directory for the metadata files.")
-@click.option('--base_path', type=str, default='',
+@click.option('--base_path', type=click.Path(exists=True), default='.',
+              metavar='<BASE PATH>',
               help="Source base path of digital objects. If used, "
                    "give path to the CSV file in relation to this "
                    "base path.")
 def main(filepath, header, charset, delim, sep, quot, workspace, base_path):
-    """Write ADDML metadata for a CSV file."""
+    """
+    Tool for creating ADDML metadata for a CSV file. The
+    ADDML metadata is written to <hash>-ADDML-amd.xml
+    METS XML file in the workspace directory. The ADDML
+    techMD reference is written to amd-references.xml.
+    If similar ADDML metadata is already found in workspace,
+    just the new CSV file name is appended to the existing
+    metadata.
+
+    FILEPATH: Path to the CSV file.
+
+    """
 
     filerel = os.path.normpath(filepath)
     filepath = os.path.normpath(os.path.join(base_path, filepath))

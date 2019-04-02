@@ -26,47 +26,62 @@ def _list2str(lst):
 @click.command()
 @click.argument('event_type',
                 type=click.Choice(PREMIS_EVENT_TYPES))
-@click.argument('event_datetime',
-                type=str)
+@click.argument('event_datetime', required=True,
+                type=click.DateTime(formats=['%Y-%m-%dT%H:%M:%S']))
 @click.option('--event_detail',
               type=str, required=True,
-              help='Event detail')
+              metavar='<EVENT DETAIL>',
+              help='Short information about the event')
 @click.option('--event_outcome',
               type=click.Choice(PREMIS_EVENT_OUTCOME_TYPES),
               required=True,
+              metavar='<EVENT OUTCOME>',
               help=('Event outcome type. Possible values are: ' +
                     _list2str(PREMIS_EVENT_OUTCOME_TYPES)))
 @click.option('--event_outcome_detail',
               type=str,
-              help='Event outcome detail')
+              metavar='<EVENT OUTCOME DETAIL>',
+              help='Detailed information about the event outcome.')
 @click.option('--workspace',
-              type=str,
+              type=click.Path(exists=True),
               default='./workspace',
+              metavar='<WORKSPACE PATH>',
               help=("Directory where files are created. Default "
                     "is ./workspace"))
 @click.option('--agent_name',
               required='--agent_type' in sys.argv,
               type=str,
+              metavar='<AGENT NAME>',
               help='Agent name')
 @click.option('--agent_type',
               required='--agent_name' in sys.argv,
               type=str,
+              metavar='<AGENT TYPE>',
               help='Agent type')
 @click.option('--stdout',
               is_flag=True,
               help='Print output to stdout')
 @click.option('--event_target',
               type=str,
+              metavar='<EVENT TARGET PATH>',
               help=('Target for the event. Default is the root of '
                     'digital objects.'))
 def main(event_type, event_datetime, event_detail, event_outcome,
          event_outcome_detail, workspace, agent_name, agent_type, stdout,
          event_target):
-    """The main method for premis_event.
-
-    :arguments: list of commandline arguments
-    :returns: 0
     """
+    Create METS document that contains PREMIS event element. Another
+    METS document that contains PREMIS agent element is created if
+    optional parameters \"agent_type\" and \"agent_name\" are used.
+    The PREMIS agent element is linked to PREMIS event element by
+    unique identifier. The digiprovMD elements get identifiers based
+    on the METS document filename.
+
+    EVENT_TYPE: Type of the event.
+    EVENT_DATETIME: Timestamp of the event.
+
+    """
+    event_date = event_datetime.isoformat()
 
     event_file = None
     directory = None
@@ -94,7 +109,7 @@ def main(event_type, event_datetime, event_detail, event_outcome,
 
     event = create_premis_event(
         event_type,
-        event_datetime,
+        event_date,
         event_detail,
         event_outcome,
         event_outcome_detail,

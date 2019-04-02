@@ -32,7 +32,7 @@ def get_amd_file(path, input_file, stream=None):
 def test_import_object_ok(testpath):
     """Test import_object.main funtion with valid test data."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_validation', input_file]
+    arguments = ['--workspace', testpath, '--skip_wellformed_check', input_file]
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
 
@@ -46,10 +46,10 @@ def test_import_object_ok(testpath):
     assert result.exit_code == 0
 
 
-def test_import_object_skip_validation_ok(testpath):
+def test_import_object_skip_wellformed_check_ok(testpath):
     """Test import_object.main function --skip-inspection argument."""
     input_file = 'tests/data/text-file.txt'
-    arguments = ['--workspace', testpath, input_file, '--skip_validation',
+    arguments = ['--workspace', testpath, input_file, '--skip_wellformed_check',
                  '--file_format', 'image/dpx', '1.0',
                  '--checksum', 'MD5', '1qw87geiewgwe9',
                  '--date_created', datetime.datetime.utcnow().isoformat()]
@@ -66,10 +66,10 @@ def test_import_object_skip_validation_ok(testpath):
     assert result.exit_code == 0
 
 
-def test_import_object_skip_validation_nodate_ok(testpath):
+def test_import_object_skip_wellformed_check_nodate_ok(testpath):
     """Test import_object.main function without --date_created argument."""
     input_file = 'tests/data/text-file.txt'
-    arguments = ['--workspace', testpath, input_file, '--skip_validation',
+    arguments = ['--workspace', testpath, input_file, '--skip_wellformed_check',
                  '--file_format', 'image/dpx', '1.0',
                  '--checksum', 'MD5', '1qw87geiewgwe9']
     runner = CliRunner()
@@ -91,7 +91,7 @@ def test_import_object_structured_ok(testpath):
                                              'tests/data/structured'))
     test_file = ""
     for element in iterate_files(test_data):
-        arguments = ['--workspace', workspace, '--skip_validation',
+        arguments = ['--workspace', workspace, '--skip_wellformed_check',
                      os.path.relpath(element, os.curdir)]
         runner = CliRunner()
         result = runner.invoke(import_object.main, arguments)
@@ -109,7 +109,7 @@ def test_import_object_structured_ok(testpath):
 def test_import_object_order(testpath):
     """Test file order"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_validation',
+    arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  '--order', '5', input_file]
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
@@ -132,7 +132,7 @@ def test_import_object_order(testpath):
 def test_import_object_identifier(testpath):
     """Test digital object identifier argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_validation',
+    arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  '--identifier', 'local', 'test-id', input_file]
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
@@ -152,7 +152,7 @@ def test_import_object_identifier(testpath):
 def test_import_object_format_registry(testpath):
     """Test digital object format registry argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_validation',
+    arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  '--format_registry', 'local', 'test-key', input_file]
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
@@ -210,7 +210,7 @@ def test_import_object_utf8(testpath):
         file_.write('Voi änkeröinen.')
 
     # Run function
-    arguments = ['--workspace', testpath, '--skip_validation', utf8_file]
+    arguments = ['--workspace', testpath, '--skip_wellformed_check', utf8_file]
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
     assert result.exit_code == 0
@@ -430,7 +430,6 @@ def test_import_object_validate_wav_ok(input_file, version, testpath):
     arguments = ['--workspace', testpath, input_file]
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
-    print result
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
@@ -471,7 +470,7 @@ def test_streams(testpath):
        stream.
     """
     input_file = 'tests/data/video/valid__h264_aac.mp4'
-    arguments = ['--workspace', testpath, '--skip_validation', input_file]
+    arguments = ['--workspace', testpath, '--skip_wellformed_check', input_file]
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
 

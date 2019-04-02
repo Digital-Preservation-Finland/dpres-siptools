@@ -38,7 +38,7 @@ DEFAULT_VERSIONS = {
         metavar='<WORKSPACE PATH>',
         help="Workspace directory for the metadata files.")
 @click.option(
-        '--skip_validation', is_flag=True,
+        '--skip_wellformed_check', is_flag=True,
         help='Skip file format well-formed check')
 @click.option(
         '--charset', type=str,
@@ -70,13 +70,13 @@ DEFAULT_VERSIONS = {
         help='Order number of the digital object')
 @click.option('--stdout', is_flag=True,
               help='Print result also to stdout')
-def main(workspace, base_path, skip_validation, charset, file_format,
+def main(workspace, base_path, skip_wellformed_check, charset, file_format,
          checksum, date_created, identifier, format_registry, order,
          stdout,  filepaths):
     """
-    Import digital objects to Submission Imformation Package.
+    Import files to generate digital objects.
 
-    FILEPATHS: One or more files to add as a list, or a directory.
+    FILEPATHS: Files or a directory to import.
 
     """
 
@@ -95,8 +95,9 @@ def main(workspace, base_path, skip_validation, charset, file_format,
 
         creator = PremisCreator(workspace)
         streams_dict = creator.add_premis_md(
-            filepath, filerel, skip_validation, charset, file_format, checksum,
-            date_created, identifier, format_registry, stdout, properties)
+            filepath, filerel, skip_wellformed_check, charset, file_format,
+            checksum, date_created, identifier, format_registry, stdout,
+            properties)
         creator.write(stdout=stdout, scraper_streams=streams_dict)
 
     return 0
@@ -125,14 +126,14 @@ class PremisCreator(AmdCreator):
     for files and streams.
     """
 
-    def add_premis_md(self, filepath, filerel=None, skip_validation=False,
+    def add_premis_md(self, filepath, filerel=None, skip_well_check=False,
                       charset=None, file_format=None, checksum=None,
                       date_created=None, identifier=None,
                       format_registry=None, stdout=False,
                       properties=None):
 
         scraper = Scraper(filepath)
-        if not skip_validation:
+        if not skip_well_check:
             scraper.scrape(True)
             errors = ''
             for _, info in scraper.info.iteritems():

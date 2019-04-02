@@ -14,27 +14,36 @@ from siptools.utils import encode_path, encode_id
 
 
 @click.command()
-@click.argument('dmdsec_location', type=str)
+@click.argument('dmdsec_location', type=click.Path(exists=True),
+                metavar='DMDLOCATION')
 @click.option('--dmdsec_target',
               type=str,
+              metavar='<DMD TARGET>',
               help='Target of descriptive metadata. '
                    'Default is the root of dataset.')
-@click.option('--workspace', type=str,
+@click.option('--workspace', type=click.Path(exists=True),
+              metavar='<WORKSPACE PATH>',
               default='./workspace',
-              help="directory where output is created")
-@click.option('--desc_root', is_flag=True,
-              help='import only child elements from descriptive '
+              help="Directory where output is created")
+@click.option('--remove_root', is_flag=True,
+              help='Import only child elements from descriptive '
                    'metadata file')
 @click.option('--stdout', is_flag=True,
-              help='print output to stdout')
-def main(dmdsec_location, dmdsec_target, workspace, desc_root, stdout):
-    """The main method for import_description"""
+              help='Print output to stdout')
+def main(dmdsec_location, dmdsec_target, workspace, remove_root, stdout):
+    """
+    Create METS documents that contains descriptive metadata
+    imported from XML file.
+
+    DMDLOCATION: Path to XML file that contains descriptive metadata.
+
+    """
     if dmdsec_target:
         filename = encode_path(dmdsec_target, suffix='-dmdsec.xml')
     else:
         filename = 'dmdsec.xml'
 
-    _mets = create_mets(dmdsec_location, filename, desc_root)
+    _mets = create_mets(dmdsec_location, filename, remove_root)
 
     if stdout:
         print lxml.etree.tostring(_mets, pretty_print=True)

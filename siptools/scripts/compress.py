@@ -6,12 +6,17 @@ import subprocess
 
 
 @click.command()
-@click.argument('dir_to_tar', type=str)
+@click.argument('dir_to_tar', type=click.Path(exists=True))
 @click.option(
     '--tar_filename', type=str, default='sip.tar',
+    metavar='<TAR FILE>',
     help="Filename for tar. Default is sip.tar")
 def main(dir_to_tar, tar_filename):
-    """The main method for compress"""
+    """Create tar file from SIP directory.
+
+    DIR_TO_TAR: Directory to be added in the TAR file.
+
+    """
     command = 'cd %s' % dir_to_tar
     command2 = 'tar -cvvf %s *' % tar_filename
     proc = subprocess.Popen(

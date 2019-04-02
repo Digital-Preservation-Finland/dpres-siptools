@@ -17,47 +17,43 @@ from siptools.xml.mets import NAMESPACES, METS_PROFILE, METS_CATALOG, \
 from siptools.utils import get_objectlist
 
 
-def _dict2str(dictionary):
-    """Create a human readable list of words and their explanations from
-    dictionary.
-
-    :param dictionary: list of strings
-    :returns: dictionary formatted as single string
-    """
-    items = ['"%s" (%s)' % (item, dictionary[item]) for item in dictionary]
-    return ", ".join(items[:-1]) + ", and " + items[-1]
-
-
 @click.command()
 @click.argument('mets_profile', type=click.Choice(METS_PROFILE))
 @click.argument('organization_name', type=str)
-@click.argument('contractid', type=str)
+@click.argument('contractid', type=click.UUID)
 @click.option('--objid', type=str,
               default=str(uuid.uuid4()),
+              metavar='<OBJID>',
               help='Organizations unique identifier for the package')
 @click.option('--label',
               type=str,
+              metavar='<LABEL>',
               help='Short description of the information package')
 @click.option('--contentid',
               type=str,
+              metavar='<CONTENTID>',
               help='Identifier for content, useful for the case where '
                    'content is divided in several SIPs.')
 @click.option('--create_date',
-              type=str,
-              default=datetime.datetime.utcnow().isoformat(),
+              type=click.DateTime(formats=['%Y-%m-%dT%H:%M:%S']),
+              default=datetime.datetime.utcnow(),
+              metavar='<CREATION DATE>',
               help='SIP create datetime formatted as '
                    'yyyy-mm-ddThh:mm:ss. Defaults to current time.')
 @click.option('--last_moddate',
-              type=str,
+              type=click.DateTime(formats=['%Y-%m-%dT%H:%M:%S']),
+              metavar='<LAST MODIFICATION DATE>',
               help='Last modification datetime formatted as '
                    'yyyy-mm-ddThh:mm:ss')
 @click.option('--record_status',
               type=click.Choice(RECORD_STATUS_TYPES),
               default='submission',
+              metavar='<RECORD STATUS>',
               help='Record status. Defaults to "submission".')
 @click.option('--workspace',
-              type=str,
+              type=click.Path(exists=True),
               default='./workspace',
+              metavar='<WORKSPACE PATH>',
               help='Workspace directory. Defaults to "./workspace".')
 @click.option('--clean',
               is_flag=True,
@@ -66,30 +62,46 @@ def _dict2str(dictionary):
               is_flag=True,
               help='Copy digital objects from base path to workspace')
 @click.option('--base_path',
-              type=str,
-              default='./',
+              metavar='<BASE PATH>',
+              type=click.Path(exists=True),
+              default='.',
               help='Base path of the digital objects')
 @click.option('--stdout',
               is_flag=True,
               help='Print output to stdout.')
 @click.option('--packagingservice',
               type=str,
+              metavar='<PACKAGING SERVICE>',
               help='If defined, add packaging service as CREATOR '
                    'agent to METS Header.')
 def main(mets_profile, organization_name, contractid, objid, label,
          contentid, create_date, last_moddate, record_status, workspace,
          clean, copy_files, base_path, stdout, packagingservice):
-    """The main method
+    """Merge partial METS documents in workspace directory into
+    one METS document.
+
+    \b
+    METS_PROFILE: METS profile.
+    ORGANIZATION_NAME: Creator name (organization)
+    CONTRACTID: Contract ID given by the Digital Preservation Service
+
     """
+    created = create_date.isoformat()
+    if last_moddate is not None:
+        modified = last_moddate.isoformat()
+    else:
+        modified = None
+    contract = "urn:uuid:%s" % str(contractid)
+
     mets_document = create_mets(
         workspace,
         mets_attributes={'PROFILE': mets_profile,
                          'OBJID': objid,
                          'LABEL': label,
                          "CONTENTID": contentid,
-                         "CONTRACTID": contractid},
-        metshdr_attributes={"CREATEDATE": create_date,
-                            "LASTMODDATE": last_moddate,
+                         "CONTRACTID": contract},
+        metshdr_attributes={"CREATEDATE": created,
+                            "LASTMODDATE": modified,
                             "RECORDSTATUS": record_status},
         organization=organization_name,
         packagingservice=packagingservice
