@@ -4,7 +4,7 @@
 import os
 import sys
 import click
-import nisomix.mix
+import nisomix
 from siptools.utils import AmdCreator, scrape_file
 
 SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
@@ -105,8 +105,8 @@ def create_mix(filename, filerel=None, workspace=None):
         raise ValueError('File containing multiple images not supported. '
                          'File: %s' % filename)
 
-    mix_compression = nisomix.mix.mix_Compression(
-        compressionScheme=stream_md["compression"])
+    mix_compression = nisomix.compression(
+        compression_scheme=stream_md["compression"])
     if not 'byte_order' in stream_md:
         if stream_md['mimetype'] == 'image/tiff':
             raise ValueError('Byte order missing from TIFF image file '
@@ -114,24 +114,25 @@ def create_mix(filename, filerel=None, workspace=None):
         byte_order = None
     else:
         byte_order = stream_md["byte_order"]
-    basicdigitalobjectinformation \
-        = nisomix.mix.mix_BasicDigitalObjectInformation(
-            byteOrder=byte_order,
-            Compression_elements=[mix_compression])
-    basicimageinformation = nisomix.mix.mix_BasicImageInformation(
-        imageWidth=stream_md["width"],
-        imageHeight=stream_md["height"],
-        colorSpace=stream_md["colorspace"])
-    imageassessmentmetadata = nisomix.mix.mix_ImageAssessmentMetadata(
-        bitsPerSampleValue_elements=stream_md["bps_value"],
-        bitsPerSampleUnit=stream_md["bps_unit"],
-        samplesPerPixel=stream_md["samples_per_pixel"]
-    )
-    mix_root = nisomix.mix.mix_mix(
-        BasicDigitalObjectInformation=basicdigitalobjectinformation,
-        BasicImageInformation=basicimageinformation,
-        ImageAssessmentMetadata=imageassessmentmetadata
-    )
+    basic_do_info = nisomix.digital_object_information(
+        byte_order=byte_order, child_elements=[mix_compression])
+    photom_interpret = nisomix.photometric_interpretation(
+        color_space=stream_md["colorspace"])
+    img_characteristics = nisomix.image_characteristics(
+        width=stream_md["width"], height=stream_md["height"],
+        child_elements=[photom_interpret])
+    img_info = nisomix.image_information(
+        child_elements=[img_characteristics])
+    bit_depth = nisomix.bits_per_sample(
+        sample_values=stream_md["bps_value"],
+        sample_unit=stream_md["bps_unit"])
+    color_encoding = nisomix.color_encoding(
+        samples_pixel=stream_md["samples_per_pixel"],
+        child_elements=[bit_depth])
+    img_assessment = nisomix.image_assessment_metadata(
+        child_elements=[color_encoding])
+    mix_root = nisomix.mix_mix(
+        child_elements=[basic_do_info, img_info, img_assessment])
 
     if mix_root is None:
         raise ValueError('Image info could not be constructed.')
