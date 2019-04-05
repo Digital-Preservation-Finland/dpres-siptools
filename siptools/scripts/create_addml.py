@@ -1,5 +1,5 @@
 """Command line tool for creating ADDML metadata."""
-
+import sys
 import os
 import click
 import lxml.etree as ET
@@ -57,6 +57,8 @@ def main(filepath, header, charset, delim, sep, quot, workspace, base_path):
         sep, quot
     )
     creator.write(filerel=filerel)
+
+    return 0
 
 
 class AddmlCreator(AmdCreator):
@@ -116,7 +118,8 @@ class AddmlCreator(AmdCreator):
         self.filenames[key] = [csv_file]
 
     def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML",
-              filerel=None):
+              filerel=None, section=None, stdout=False,
+              scraper_streams=None):
         """ Write all the METS XML files and amd-reference file.
         Base class write is overwritten to handle the references
         correctly and add flatFile fields to METS XML files.
@@ -311,5 +314,5 @@ def create_addml(
 
 
 if __name__ == '__main__':
-    RETVAL = main()
+    RETVAL = main()  # pylint: disable=no-value-for-parameter
     sys.exit(RETVAL)

@@ -3,9 +3,9 @@ file
 """
 
 import sys
-import click
 import os
 
+import click
 import lxml.etree
 import mets
 
@@ -105,5 +105,5 @@ def create_mets(input_file, filename, remove_root=False):
 
 
 if __name__ == '__main__':
-    RETVAL = main()
+    RETVAL = main()  # pylint: disable=no-value-for-parameter
     sys.exit(RETVAL)

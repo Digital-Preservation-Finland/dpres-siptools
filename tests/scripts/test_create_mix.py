@@ -3,9 +3,9 @@
 import os
 import sys
 import shutil
+import pickle
 import pytest
 import lxml.etree
-import pickle
 from click.testing import CliRunner
 import siptools.scripts.create_mix as create_mix
 
@@ -56,9 +56,11 @@ def test_main_utf8_files(testpath):
 
     # Call main function with encoded filename as parameter
     runner = CliRunner()
-    result = runner.invoke(create_mix.main, [
-        '--workspace', testpath, '--base_path', testpath,
-        image_relative_path.encode(sys.getfilesystemencoding())]
+    runner.invoke(
+        create_mix.main, [
+            '--workspace', testpath, '--base_path', testpath,
+            image_relative_path.encode(sys.getfilesystemencoding())
+        ]
     )
 
     # Check that filename is found in amd-reference file.
@@ -159,7 +161,7 @@ def test_mix_multiple_images():
     ('./images/tiff1.tif', './tests/data'),
     ('data/images/tiff1.tif', 'absolute')
 ])
-def test_paths(testpath, file, base_path):
+def test_paths(testpath, file_, base_path):
     """ Test the following path arguments:
     (1) Path without base_path
     (2) Path without base bath, but with './'
@@ -172,13 +174,13 @@ def test_paths(testpath, file, base_path):
 
     runner = CliRunner()
     if base_path != '':
-        result = runner.invoke(create_mix.main, [
-            '--workspace', testpath, '--base_path', base_path, file])
+        runner.invoke(create_mix.main, [
+            '--workspace', testpath, '--base_path', base_path, file_])
     else:
-        result = runner.invoke(create_mix.main, [
-            '--workspace', testpath, file])
+        runner.invoke(create_mix.main, [
+            '--workspace', testpath, file_])
 
-    assert "file=\"" + os.path.normpath(file) + "\"" in \
+    assert "file=\"" + os.path.normpath(file_) + "\"" in \
         open(os.path.join(testpath, 'amd-references.xml')).read()
 
-    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))
+    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

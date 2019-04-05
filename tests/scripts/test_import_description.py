@@ -2,13 +2,13 @@
 import os
 from urllib import quote_plus
 import lxml.etree as ET
-import pytest
 from click.testing import CliRunner
 from siptools.scripts.import_description import main
 
 
 def test_import_description_valid_file(testpath):
     """ Test case for single valid xml-file"""
+    # TODO: This test does not assert anything?
     dmdsec_location = 'tests/data/import_description/metadata/' \
         'dc_description.xml'
     dmdsec_target = 'tests/data/structured/'
@@ -16,7 +16,7 @@ def test_import_description_valid_file(testpath):
     url_location = quote_plus(dmdsec_target, safe='') + '-dmdsec.xml'
 
     runner = CliRunner()
-    result = runner.invoke(main, [
+    runner.invoke(main, [
         dmdsec_location, '--dmdsec_target', dmdsec_target,
         '--workspace', testpath, '--remove_root'])
     output_file = os.path.join(testpath, url_location)
@@ -34,7 +34,7 @@ def test_import_description_file_not_found(testpath):
     result = runner.invoke(main, [
         dmdsec_location, '--dmdsec_target', dmdsec_target,
         '--workspace', testpath])
-    assert type(result.exception) == SystemExit
+    assert isinstance(result.exception, SystemExit)
 
 
 def test_import_description_no_xml(testpath):
@@ -46,7 +46,7 @@ def test_import_description_no_xml(testpath):
     result = runner.invoke(main, [
         dmdsec_location, '--workspace', dmdsec_target,
         '--workspace', testpath])
-    assert type(result.exception) == ET.XMLSyntaxError
+    assert isinstance(result.exception, ET.XMLSyntaxError)
 
 
 def test_import_description_invalid_namespace(testpath):
@@ -58,4 +58,4 @@ def test_import_description_invalid_namespace(testpath):
     result = runner.invoke(main, [
         dmdsec_location, '--workspace', dmdsec_target,
         '--workspace', testpath])
-    assert type(result.exception) == TypeError
+    assert isinstance(result.exception, TypeError)

@@ -299,5 +299,5 @@ def _create_mets(premis_element, digiprovmd_id, mdtype):
 
 
 if __name__ == '__main__':
-    RETVAL = main()
+    RETVAL = main()  # pylint: disable=no-value-for-parameter
     sys.exit(RETVAL)

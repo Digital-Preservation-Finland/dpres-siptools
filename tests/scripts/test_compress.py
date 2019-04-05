@@ -1,7 +1,6 @@
 import os
 import time
 import subprocess
-import pytest
 from click.testing import CliRunner
 import siptools.scripts.compress
 
@@ -20,5 +19,5 @@ def test_compress(testpath):
     time.sleep(2)
     command = ['tar', '-xf', output, '-C', testpath]
     child = subprocess.Popen(command)
-    streamdata = child.communicate()[0]
+    child.communicate()
     assert child.returncode == 0

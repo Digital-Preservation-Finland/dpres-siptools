@@ -32,7 +32,8 @@ def get_amd_file(path, input_file, stream=None):
 def test_import_object_ok(testpath):
     """Test import_object.main funtion with valid test data."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_wellformed_check', input_file]
+    arguments = ['--workspace', testpath, '--skip_wellformed_check',
+                 input_file]
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
 
@@ -49,7 +50,8 @@ def test_import_object_ok(testpath):
 def test_import_object_skip_wellformed_check_ok(testpath):
     """Test import_object.main function --skip-inspection argument."""
     input_file = 'tests/data/text-file.txt'
-    arguments = ['--workspace', testpath, input_file, '--skip_wellformed_check',
+    arguments = ['--workspace', testpath, input_file,
+                 '--skip_wellformed_check',
                  '--file_format', 'image/dpx', '1.0',
                  '--checksum', 'MD5', '1qw87geiewgwe9',
                  '--date_created', datetime.datetime.utcnow().isoformat()]
@@ -69,7 +71,8 @@ def test_import_object_skip_wellformed_check_ok(testpath):
 def test_import_object_skip_wellformed_check_nodate_ok(testpath):
     """Test import_object.main function without --date_created argument."""
     input_file = 'tests/data/text-file.txt'
-    arguments = ['--workspace', testpath, input_file, '--skip_wellformed_check',
+    arguments = ['--workspace', testpath, input_file,
+                 '--skip_wellformed_check',
                  '--file_format', 'image/dpx', '1.0',
                  '--checksum', 'MD5', '1qw87geiewgwe9']
     runner = CliRunner()
@@ -452,7 +455,6 @@ def test_import_object_fail():
     """Test that import_object.main raises error if target file does not
     exist
     """
-    input_file = 'tests/data/missing-file'
     runner = CliRunner()
     result = runner.invoke(import_object.main, ['tests/data/missing-file'])
     assert result.exception
@@ -470,7 +472,8 @@ def test_streams(testpath):
        stream.
     """
     input_file = 'tests/data/video/valid__h264_aac.mp4'
-    arguments = ['--workspace', testpath, '--skip_wellformed_check', input_file]
+    arguments = ['--workspace', testpath, '--skip_wellformed_check',
+                 input_file]
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
 

@@ -5,13 +5,14 @@ import os
 import click
 import dpres_signature.signature
 
+
 @click.command()
 @click.option(
-        "--workspace", default="./workspace",
-        type=click.Path(exists=True),
-        metavar='<WORKSPACE PATH>',
-        help="Workspace directory that contains mets.xml file and where "
-             "signature.sig is written."
+    "--workspace", default="./workspace",
+    type=click.Path(exists=True),
+    metavar='<WORKSPACE PATH>',
+    help="Workspace directory that contains mets.xml file and where "
+         "signature.sig is written."
     )
 @click.argument("sign_key", type=click.Path(exists=True))
 def main(workspace, sign_key):
@@ -20,6 +21,7 @@ def main(workspace, sign_key):
     print "sign_mets created file: %s" % signature
 
     return 0
+
 
 def sign_mets(workspace, key_path):
     """
@@ -40,5 +42,5 @@ def sign_mets(workspace, key_path):
 
 
 if __name__ == '__main__':
-    RETVAL = main()
+    RETVAL = main()  # pylint: disable=no-value-for-parameter
     sys.exit(RETVAL)

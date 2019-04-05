@@ -2,13 +2,12 @@
 document."""
 
 import sys
-import click
 import os
-import json
 from uuid import uuid4
+import pickle
+import click
 import scandir
 import lxml.etree as ET
-import pickle
 import mets
 import xml_helpers.utils as h
 from siptools.xml.mets import NAMESPACES
@@ -420,7 +419,7 @@ def add_file_properties(workspace, path, fptr, stream=None):
     """
 
     amdref = next(iter(get_amd_references(workspace, path=path,
-                       stream=stream)))
+                                          stream=stream)))
     pkl_name = os.path.join(workspace, '%s-scraper.pkl' % amdref[1:])
 
     if not os.path.isfile(pkl_name):
@@ -481,5 +480,5 @@ def ids_for_files(workspace, path, idtype, dash_count=0):
 
 
 if __name__ == '__main__':
-    RETVAL = main()
+    RETVAL = main()  # pylint: disable=no-value-for-parameter
     sys.exit(RETVAL)

@@ -4,10 +4,10 @@ directory.
 
 import os
 import sys
-import click
 import datetime
 import uuid
 from shutil import copyfile
+import click
 from scandir import scandir
 import lxml.etree
 import mets
@@ -218,5 +218,5 @@ def copy_objects(workspace, data_dir):
 
 
 if __name__ == '__main__':
-    RETVAL = main()
+    RETVAL = main()  # pylint: disable=no-value-for-parameter
     sys.exit(RETVAL)

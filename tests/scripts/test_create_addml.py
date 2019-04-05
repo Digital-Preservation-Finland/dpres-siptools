@@ -135,7 +135,7 @@ def test_create_addml_creator(testpath):
     ('./csvfile.csv', './tests/data'),
     ('data/csvfile.csv', 'absolute')
 ])
-def test_paths(testpath, file, base_path):
+def test_paths(testpath, file_, base_path):
     """ Test the following path arguments:
     (1) Path without base_path
     (2) Path without base bath, but with './'
@@ -148,17 +148,17 @@ def test_paths(testpath, file, base_path):
 
     runner = CliRunner()
     if base_path != '':
-        result = runner.invoke(create_addml.main, [
+        runner.invoke(create_addml.main, [
             '--delim', DELIMITER, '--charset', CHARSET,
             '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
-            '--workspace', testpath, '--base_path', base_path, file])
+            '--workspace', testpath, '--base_path', base_path, file_])
     else:
-        result = runner.invoke(create_addml.main, [
+        runner.invoke(create_addml.main, [
             '--delim', DELIMITER, '--charset', CHARSET,
             '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
-            '--workspace', testpath, file])
+            '--workspace', testpath, file_])
 
-    assert "file=\"" + os.path.normpath(file) + "\"" in \
+    assert "file=\"" + os.path.normpath(file_) + "\"" in \
         open(os.path.join(testpath, 'amd-references.xml')).read()
 
-    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))
+    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

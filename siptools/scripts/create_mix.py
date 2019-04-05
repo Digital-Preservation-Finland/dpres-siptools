@@ -4,13 +4,13 @@
 import os
 import sys
 import click
-import pickle
 import nisomix.mix
 from siptools.utils import AmdCreator, scrape_file
 
 SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
                      'I': '1', 'F': '1'}
+
 
 def str_to_unicode(string):
     """Convert string to unicode string. Assumes that string encoding is the
@@ -70,7 +70,8 @@ class MixCreator(AmdCreator):
             self.add_md(mix, filerel if filerel else filepath)
 
     # Change the default write parameters
-    def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None):
+    def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None,
+              section=None, stdout=False, scraper_streams=None):
         super(MixCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
@@ -82,9 +83,9 @@ def check_missing_metadata(stream, filename):
         if key in ['mimetype', 'stream_type', 'index', 'version']:
             continue
         if element in [None, '(:unav)']:
-            raise ValueError('Missing metadata value for key %s '
-                             'for file %s' % (
-                                key, filename))
+            raise ValueError(
+                'Missing metadata value for key %s '
+                'for file %s' % (key, filename))
 
 
 def create_mix(filename, filerel=None, workspace=None):
@@ -96,7 +97,6 @@ def create_mix(filename, filerel=None, workspace=None):
     streams = scrape_file(filename, filerel=filerel, workspace=workspace)
     stream_md = streams[0]
     check_missing_metadata(stream_md, filename)
-    
 
     if stream_md['stream_type'] != 'image':
         print "This is not an image file. No MIX metadata created."
@@ -140,5 +140,5 @@ def create_mix(filename, filerel=None, workspace=None):
 
 
 if __name__ == '__main__':
-    RETVAL = main()
+    RETVAL = main()  # pylint: disable=no-value-for-parameter
     sys.exit(RETVAL)

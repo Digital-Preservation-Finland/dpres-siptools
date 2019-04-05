@@ -2,10 +2,10 @@
 """Tests for ``siptools.scripts.create_videomd`` module"""
 import sys
 import os.path
+import shutil
+import pickle
 import pytest
 import lxml.etree as ET
-import pickle
-import shutil
 from click.testing import CliRunner
 import siptools.scripts.create_videomd as create_videomd
 
@@ -188,9 +188,11 @@ def test_main_utf8_files(testpath):
 
     # Call main function with encoded filename as parameter
     runner = CliRunner()
-    result = runner.invoke(create_videomd.main, [
-        '--workspace', testpath, '--base_path', testpath,
-         relative_path.encode(sys.getfilesystemencoding())]
+    runner.invoke(
+        create_videomd.main, [
+            '--workspace', testpath, '--base_path', testpath,
+            relative_path.encode(sys.getfilesystemencoding())
+        ]
     )
 
     # Check that filename is found in amd-reference file.
@@ -215,7 +217,7 @@ def test_existing_scraper_result(testpath):
     stream_dict = {0: {
         'mimetype': 'video/mpeg', 'index': 0, 'par': '1', 'frame_rate': '30',
         'data_rate': '0.171304', 'bits_per_sample': '8',
-        'data_rate_mode':'Variable', 'color': 'Color',
+        'data_rate_mode': 'Variable', 'color': 'Color',
         'codec_quality': 'lossy', 'signal_format': '(:unap)', 'dar': '1.778',
         'height': '180', 'sound': 'No', 'version': '1',
         'codec_name': 'MPEG Video',
@@ -239,7 +241,7 @@ def test_existing_scraper_result(testpath):
     ('./video/valid_1.m1v', './tests/data'),
     ('data/video/valid_1.m1v', 'absolute')
 ])
-def test_paths(testpath, file, base_path):
+def test_paths(testpath, file_, base_path):
     """ Test the following path arguments:
     (1) Path without base_path
     (2) Path without base bath, but with './'
@@ -252,13 +254,13 @@ def test_paths(testpath, file, base_path):
 
     runner = CliRunner()
     if base_path != '':
-        result = runner.invoke(create_videomd.main, [
-            '--workspace', testpath, '--base_path', base_path, file])
+        runner.invoke(create_videomd.main, [
+            '--workspace', testpath, '--base_path', base_path, file_])
     else:
-        result = runner.invoke(create_videomd.main, [
-            '--workspace', testpath, file])
+        runner.invoke(create_videomd.main, [
+            '--workspace', testpath, file_])
 
-    assert "file=\"" + os.path.normpath(file) + "\"" in \
+    assert "file=\"" + os.path.normpath(file_) + "\"" in \
         open(os.path.join(testpath, 'amd-references.xml')).read()
 
-    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))
+    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

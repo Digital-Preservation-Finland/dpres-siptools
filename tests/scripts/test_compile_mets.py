@@ -1,14 +1,12 @@
 """Tests for ``siptools.scripts.compile_mets`` module"""
 import os
 import lxml.etree as ET
-import pytest
 from click.testing import CliRunner
 from siptools.xml.mets import NAMESPACES
 from siptools.scripts.import_description import main
 from siptools.scripts import compile_mets
 from siptools.scripts import premis_event
 from siptools.scripts import import_object
-from siptools.scripts import compile_structmap
 
 
 def create_test_data(workspace):
@@ -21,8 +19,7 @@ def create_test_data(workspace):
 
     arguments = [dmdsec_location, '--dmdsec_target', dmdsec_target,
                  '--workspace', workspace, '--remove_root']
-    result = runner.invoke(main, arguments)
-
+    runner.invoke(main, arguments)
 
     # create provenance metadata
     arguments = ['creation', '2016-10-13T12:30:55',
@@ -33,15 +30,16 @@ def create_test_data(workspace):
                  '--workspace', workspace,
                  '--agent_name', 'Demo Application',
                  '--agent_type', 'software']
-    result = runner.invoke(premis_event.main, arguments)
+    runner.invoke(premis_event.main, arguments)
 
     #create technical metadata
     arguments = ['--workspace', workspace, '--skip_wellformed_check',
                  'tests/data/structured/Software files/koodi.java']
-    result = runner.invoke(import_object.main, arguments)
+    runner.invoke(import_object.main, arguments)
 
     #create structural metadata
-    result = runner.invoke(import_object.main, ['--workspace', workspace])
+    runner.invoke(import_object.main, ['--workspace', workspace])
+
 
 def test_compile_mets_ok(testpath):
     # TODO: Missing docstring
@@ -178,4 +176,4 @@ def test_compile_mets_fail(testpath):
                  '--workspace', testpath]
     runner = CliRunner()
     result = runner.invoke(compile_mets.main, arguments)
-    assert type(result.exception) == SystemExit
+    assert isinstance(result.exception, SystemExit)

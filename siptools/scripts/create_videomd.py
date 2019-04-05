@@ -2,9 +2,8 @@
 import sys
 import os
 import click
-import pickle
 import videomd
-from siptools.utils import AmdCreator, scrape_file
+from siptools.utils import AmdCreator, scrape_file, fix_missing_metadata
 
 
 FILEDATA_KEYS = [
@@ -57,35 +56,15 @@ class VideomdCreator(AmdCreator):
         # Create videoMD metadata
         videomd_dict = create_videomd(filepath, filerel, self.workspace)
         if '0' in videomd_dict and len(videomd_dict) == 1:
-            self.add_md(videomd_dict['0'],
-                filerel if filerel else filepath)
+            self.add_md(videomd_dict['0'], filerel if filerel else filepath)
         else:
-            for index in videomd_dict.keys():
-                self.add_md(videomd_dict[index],
-                            filerel if filerel else filepath, index)
+            for index, video in videomd_dict.iteritems():
+                self.add_md(video, filerel if filerel else filepath, index)
 
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
-              othermdtype="VideoMD"):
+              othermdtype="VideoMD", section=None, stdout=False,
+              scraper_streams=None):
         super(VideomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
-
-
-def fix_missing_metadata(streams, filename):
-    """If an element is none, use value (:unav) if allowed in the
-    specifications. Otherwise raise exception.
-    """
-    for index, stream in streams.iteritems():
-        for key, element in stream.iteritems():
-            if key in ['mimetype', 'stream_type', 'index', 'version']:
-                continue
-            if element in [None, '(:unav)']:
-                if key in ALLOW_UNAV:
-                    stream[key] = '(:unav)'
-                elif key in ALLOW_ZERO:
-                    stream[key] = '0'
-                else:
-                    raise ValueError('Missing metadata value for key %s in '
-                                     'index %s for file %s' % (
-                                        key, str(index), filename))
 
 
 def create_videomd(filename, filerel=None, workspace=None):
@@ -94,7 +73,7 @@ def create_videomd(filename, filerel=None, workspace=None):
     :returns: List of VideoMD XML sections.
     """
     streams = scrape_file(filename, filerel=filerel, workspace=workspace)
-    fix_missing_metadata(streams, filename)
+    fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     videomd_dict = {}
     for index, stream_md in streams.iteritems():
@@ -143,5 +122,5 @@ def _get_stream_data(stream_dict):
 
 
 if __name__ == '__main__':
-    RETVAL = main()
+    RETVAL = main()  # pylint: disable=no-value-for-parameter
     sys.exit(RETVAL)

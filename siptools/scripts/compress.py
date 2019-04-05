@@ -1,8 +1,8 @@
 """Command line tool for creating tar file from SIP directory"""
 
 import sys
-import click
 import subprocess
+import click
 
 
 @click.command()
@@ -24,14 +24,14 @@ def main(dir_to_tar, tar_filename):
         stdin=subprocess.PIPE, stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT, close_fds=True)
 
-    (out, err) = proc.communicate()
+    proc.communicate()
     returncode = proc.returncode
 
     print "created tar file: %s" % tar_filename
 
-    return 0
+    return returncode
 
 
 if __name__ == '__main__':
-    RETVAL = main()
+    RETVAL = main()  # pylint: disable=no-value-for-parameter
     sys.exit(RETVAL)

@@ -9,13 +9,13 @@ import platform
 import click
 from file_scraper.scraper import Scraper
 import premis
-from siptools.utils import AmdCreator, encode_path, scrape_file
+from siptools.utils import AmdCreator
 
 
 ALLOWED_CHARSETS = ['ISO-8859-15', 'UTF-8', 'UTF-16', 'UTF-32']
 
 DEFAULT_VERSIONS = {
-    'application/msword': '11.0', 
+    'application/msword': '11.0',
     'application/vnd.ms-excel': '11.0',
     'application/vnd.ms-powerpoint': '11.0',
     'application/vnd.openxmlformats-'
@@ -29,50 +29,49 @@ DEFAULT_VERSIONS = {
 @click.command()
 @click.argument('filepaths', nargs=-1, type=str)
 @click.option(
-        '--base_path', type=click.Path(exists=True), default='.',
-        metavar='<BASE PATH>',
-        help="Source base path of digital objects. If used, give objects in"
-        "relation to this base path.")
+    '--base_path', type=click.Path(exists=True), default='.',
+    metavar='<BASE PATH>',
+    help="Source base path of digital objects. If used, give objects in "
+         "relation to this base path.")
 @click.option(
-        '--workspace', type=click.Path(exists=True), default='./workspace/',
-        metavar='<WORKSPACE PATH>',
-        help="Workspace directory for the metadata files.")
+    '--workspace', type=click.Path(exists=True), default='./workspace/',
+    metavar='<WORKSPACE PATH>',
+    help="Workspace directory for the metadata files.")
 @click.option(
-        '--skip_wellformed_check', is_flag=True,
-        help='Skip file format well-formed check')
+    '--skip_wellformed_check', is_flag=True,
+    help='Skip file format well-formed check')
 @click.option(
-        '--charset', type=str,
-        metavar='<CHARSET>',
-        help='Charset encoding of a file')
+    '--charset', type=str, metavar='<CHARSET>',
+    help='Charset encoding of a file')
 @click.option(
-        '--file_format', nargs=2, type=str,
-        metavar='<MIMETYPE> <FORMAT VERSION>',
-        help='Mimetype and file format version of a file')
+    '--file_format', nargs=2, type=str,
+    metavar='<MIMETYPE> <FORMAT VERSION>',
+    help='Mimetype and file format version of a file')
 @click.option(
-        '--identifier', nargs=2, type=str,
-        metavar='<IDENTIFIER TYPE> <IDENTIFIER VALUE>',
-        help='The identifier type and value of a digital object')
+    '--identifier', nargs=2, type=str,
+    metavar='<IDENTIFIER TYPE> <IDENTIFIER VALUE>',
+    help='The identifier type and value of a digital object')
 @click.option(
-        '--checksum', nargs=2, type=str,
-        metavar='<CHECKSUM ALGORITHM> <CHECKSUM VALUE>',
-        help='Checksum algorithm and value of a given file')
+    '--checksum', nargs=2, type=str,
+    metavar='<CHECKSUM ALGORITHM> <CHECKSUM VALUE>',
+    help='Checksum algorithm and value of a given file')
 @click.option(
-        '--date_created', type=str,
-        metavar='<TIMESTAMP>',
-        help='The actual or approximate date and time the object was created')
+    '--date_created', type=str,
+    metavar='<TIMESTAMP>',
+    help='The actual or approximate date and time the object was created')
 @click.option(
-        '--format_registry', type=str, nargs=2,
-        metavar='<REGISTRY NAME> <REGISTRY KEY>',
-        help='The format registry name and key of the digital object')
+    '--format_registry', type=str, nargs=2,
+    metavar='<REGISTRY NAME> <REGISTRY KEY>',
+    help='The format registry name and key of the digital object')
 @click.option(
-        '--order', type=int,
-        metavar='<ORDER NUMBER>',
-        help='Order number of the digital object')
-@click.option('--stdout', is_flag=True,
-              help='Print result also to stdout')
+    '--order', type=int,
+    metavar='<ORDER NUMBER>',
+    help='Order number of the digital object')
+@click.option(
+    '--stdout', is_flag=True, help='Print result also to stdout')
 def main(workspace, base_path, skip_wellformed_check, charset, file_format,
          checksum, date_created, identifier, format_registry, order,
-         stdout,  filepaths):
+         stdout, filepaths):
     """
     Import files to generate digital objects.
 
@@ -96,15 +95,14 @@ def main(workspace, base_path, skip_wellformed_check, charset, file_format,
         creator = PremisCreator(workspace)
         streams_dict = creator.add_premis_md(
             filepath, filerel, skip_wellformed_check, charset, file_format,
-            checksum, date_created, identifier, format_registry, stdout,
-            properties)
+            checksum, date_created, identifier, format_registry, properties)
         creator.write(stdout=stdout, scraper_streams=streams_dict)
 
     return 0
 
 
 def modify_streams(streams, properties):
-    streams_dict = None
+    """Add argument properties to stream dict, if given."""
     if properties:
         streams[0]['properties'] = properties
         return streams
@@ -112,13 +110,6 @@ def modify_streams(streams, properties):
             'videocontainer', 'video', 'audio', 'image']:
         return streams
     return None
-
-
-def check_tuple_arguments(argument, error):
-    if argument is not None:
-        if len(argument) < 2:
-            raise ValueError(error)
-    return argument
 
 
 class PremisCreator(AmdCreator):
@@ -129,19 +120,18 @@ class PremisCreator(AmdCreator):
     def add_premis_md(self, filepath, filerel=None, skip_well_check=False,
                       charset=None, file_format=None, checksum=None,
                       date_created=None, identifier=None,
-                      format_registry=None, stdout=False,
-                      properties=None):
+                      format_registry=None, properties=None):
 
         scraper = Scraper(filepath)
         if not skip_well_check:
             scraper.scrape(True)
-            errors = ''
-            for _, info in scraper.info.iteritems():
-                if len(info['errors']) > 0:
-                    errors = "%s\n%s" % (errors, info['errors']) \
-                        if len(errors) > 0 else info['errors']
-            if len(errors) > 0:
-                raise ValueError(errors)
+            if not scraper.well_formed:
+                errors = []
+                for _, info in scraper.info.iteritems():
+                    if len(info['errors']) > 0:
+                        errors.append(info['errors'])
+                error_str = "\n".join(errors)
+                raise ValueError(error_str)
         else:
             scraper.scrape(False)
 
@@ -160,7 +150,6 @@ class PremisCreator(AmdCreator):
                 self.add_md(premis_stream, filerel, index)
 
         return streams_dict
-
 
     def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3",
               othermdtype=None, section=None, stdout=False,
@@ -218,7 +207,8 @@ def check_metadata(format_name, format_version, streams, fname):
                          'is supported only for video containers.')
     elif streams[0]['stream_type'] in ['videocontainer'] and \
             len(streams) < 2:
-        raise ValueError('Video container format without contained streams found.')
+        raise ValueError('Video container format without contained streams '
+                         'found.')
 
 
 def create_premis_object(fname, scraper,
@@ -337,5 +327,5 @@ def creation_date(path_to_file):
 
 
 if __name__ == "__main__":
-    RETVAL = main()
+    RETVAL = main()  # pylint: disable=no-value-for-parameter
     sys.exit(RETVAL)

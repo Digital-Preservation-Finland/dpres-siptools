@@ -2,10 +2,10 @@
 """Tests for ``siptools.scripts.create_audiomd`` module"""
 import sys
 import os.path
-import pytest
-import lxml.etree as ET
 import shutil
 import pickle
+import pytest
+import lxml.etree as ET
 from click.testing import CliRunner
 import siptools.scripts.create_audiomd as create_audiomd
 
@@ -161,9 +161,11 @@ def test_main_utf8_files(testpath):
 
     # Call main function with encoded filename as parameter
     runner = CliRunner()
-    result = runner.invoke(create_audiomd.main, [
-        '--workspace', testpath, '--base_path', testpath,
-         relative_path.encode(sys.getfilesystemencoding())]
+    runner.invoke(
+        create_audiomd.main, [
+            '--workspace', testpath, '--base_path', testpath,
+            relative_path.encode(sys.getfilesystemencoding())
+        ]
     )
 
     # Check that filename is found in amd-reference file.
@@ -211,7 +213,7 @@ def test_existing_scraper_result(testpath):
     ('./audio/valid__wav.wav', './tests/data'),
     ('data/audio/valid__wav.wav', 'absolute')
 ])
-def test_paths(testpath, file, base_path):
+def test_paths(testpath, file_, base_path):
     """ Test the following path arguments:
     (1) Path without base_path
     (2) Path without base bath, but with './'
@@ -223,13 +225,13 @@ def test_paths(testpath, file, base_path):
         base_path = os.path.join(os.getcwd(), 'tests')
     runner = CliRunner()
     if base_path != '':
-        result = runner.invoke(create_audiomd.main, [
-            '--workspace', testpath, '--base_path', base_path, file])
+        runner.invoke(create_audiomd.main, [
+            '--workspace', testpath, '--base_path', base_path, file_])
     else:
-        result = runner.invoke(create_audiomd.main, [
-            '--workspace', testpath, file])
+        runner.invoke(create_audiomd.main, [
+            '--workspace', testpath, file_])
 
-    assert "file=\"" + os.path.normpath(file) + "\"" in \
+    assert "file=\"" + os.path.normpath(file_) + "\"" in \
         open(os.path.join(testpath, 'amd-references.xml')).read()
 
-    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file)))
+    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

@@ -8,8 +8,8 @@ import hashlib
 import os
 from urllib import quote_plus, unquote_plus
 import copy
-import lxml.etree
 import pickle
+import lxml.etree
 from file_scraper.scraper import Scraper
 import xml_helpers
 import mets
@@ -50,6 +50,25 @@ def scrape_file(filename, filerel=None, workspace=None):
         streams = scraper.streams
 
     return streams
+
+
+def fix_missing_metadata(streams, filenamei, allow_unav, allow_zero):
+    """If an element is none, use value (:unav) if allowed in the
+    specifications. Otherwise raise exception.
+    """
+    for index, stream in streams.iteritems():
+        for key, element in stream.iteritems():
+            if key in ['mimetype', 'stream_type', 'index', 'version']:
+                continue
+            if element in [None, '(:unav)']:
+                if key in allow_unav:
+                    stream[key] = '(:unav)'
+                elif key in allow_zero:
+                    stream[key] = '0'
+                else:
+                    raise ValueError(
+                        'Missing metadata value for key %s in '
+                        'index %s for file %s' % (key, str(index), filename))
 
 
 def encode_path(path, suffix='', prefix='', safe=None):
@@ -389,7 +408,7 @@ class AmdCreator(object):
                 metadata, mdtype, mdtypeversion, othermdtype=othermdtype,
                 section=section, stdout=stdout
             )
-            if scraper_streams and stream == None:
+            if scraper_streams and stream is None:
                 self.write_dict(scraper_streams, amd_id)
             self.add_reference(amd_id, filename, stream, directory)
 

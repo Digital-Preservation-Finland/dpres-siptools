@@ -1,8 +1,6 @@
 """Tests for :mod:`siptools.scripts.premis_event` module"""
 import os
-import sys
 import lxml.etree as ET
-import pytest
 from click.testing import CliRunner
 from siptools.scripts import premis_event
 
@@ -162,7 +160,7 @@ def test_premis_event_fail(testpath):
         '--event_outcome_detail', 'Outcome detail',
         '--workspace', testpath
     ])
-    assert type(result.exception) == SystemExit
+    assert isinstance(result.exception, SystemExit)
 
 
 def test_create_premis_event_file_ok(testpath):

@@ -2,12 +2,11 @@
 import sys
 import os
 import click
-import pickle
 import audiomd
-from siptools.utils import AmdCreator, scrape_file
+from siptools.utils import AmdCreator, scrape_file, fix_missing_metadata
 
 FILEDATA_KEYS = ['audio_data_encoding', 'bits_per_sample',
-    'data_rate', 'data_rate_mode', 'sampling_frequency']
+                 'data_rate', 'data_rate_mode', 'sampling_frequency']
 
 AUDIOINFO_KEYS = ['duration', 'num_channels']
 
@@ -45,6 +44,8 @@ def main(workspace, base_path, filename):
     creator.add_audiomd_md(filepath, filerel)
     creator.write()
 
+    return 0
+
 
 class AudiomdCreator(AmdCreator):
     """Subclass of AmdCreator, which generates audioMD metadata
@@ -59,36 +60,16 @@ class AudiomdCreator(AmdCreator):
         # Create audioMD metadata
         audiomd_dict = create_audiomd(filepath, filerel, self.workspace)
 
-        for index in audiomd_dict.keys():
-            if '0' in audiomd_dict and len(audiomd_dict) == 1:
-                self.add_md(audiomd_dict[index],
-                            filerel if filerel else filepath)
-            else:
-                self.add_md(audiomd_dict[index],
-                            filerel if filerel else filepath, index)
+        if '0' in audiomd_dict and len(audiomd_dict) == 1:
+            self.add_md(audiomd_dict['0'], filerel if filerel else filepath)
+        else:
+            for index, audio in audiomd_dict.iteritems():
+                self.add_md(audio, filerel if filerel else filepath, index)
 
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
-              othermdtype="AudioMD"):
+              othermdtype="AudioMD", section=None, stdout=False,
+              scraper_streams=None):
         super(AudiomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
-
-
-def fix_missing_metadata(streams, filename):
-    """If an element is none, use value (:unav) if allowed in the
-    specifications. Otherwise raise exception.
-    """
-    for index, stream in streams.iteritems():
-        for key, element in stream.iteritems():
-            if key in ['mimetype', 'stream_type', 'index', 'version']:
-                continue
-            if element in [None, '(:unav)']:
-                if key in ALLOW_UNAV:
-                    stream[key] = '(:unav)'
-                elif key in ALLOW_ZERO:
-                    stream[key] = '0'
-                else:
-                    raise ValueError('Missing metadata value for key %s in '
-                                     'index %s for file %s' % (
-                                        key, str(index), filename))
 
 
 def create_audiomd(filename, filerel=None, workspace=None):
@@ -97,7 +78,7 @@ def create_audiomd(filename, filerel=None, workspace=None):
     :returns: List of AudioMD XML sections.
     """
     streams = scrape_file(filename, filerel=filerel, workspace=workspace)
-    fix_missing_metadata(streams, filename)
+    fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     audiomd_dict = {}
     for index, stream_md in streams.iteritems():
@@ -150,5 +131,5 @@ def _get_audio_info(stream_dict):
 
 
 if __name__ == '__main__':
-    RETVAL = main()
+    RETVAL = main()  # pylint: disable=no-value-for-parameter
     sys.exit(RETVAL)
