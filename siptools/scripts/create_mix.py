@@ -131,7 +131,7 @@ def create_mix(filename, filerel=None, workspace=None):
         child_elements=[bit_depth])
     img_assessment = nisomix.image_assessment_metadata(
         child_elements=[color_encoding])
-    mix_root = nisomix.mix_mix(
+    mix_root = nisomix.mix(
         child_elements=[basic_do_info, img_info, img_assessment])
 
     if mix_root is None:
