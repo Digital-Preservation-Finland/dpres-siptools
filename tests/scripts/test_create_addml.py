@@ -128,7 +128,7 @@ def test_create_addml_creator(testpath):
     assert path3 == "tests/data/csvfile.csv"
 
 
-@pytest.mark.parametrize("file, base_path", [
+@pytest.mark.parametrize("file_, base_path", [
     ('tests/data/csvfile.csv', ''),
     ('./tests/data/csvfile.csv', ''),
     ('csvfile.csv', 'tests/data'),

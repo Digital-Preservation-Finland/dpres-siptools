@@ -206,7 +206,7 @@ def test_existing_scraper_result(testpath):
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT50S'
 
 
-@pytest.mark.parametrize("file, base_path", [
+@pytest.mark.parametrize("file_, base_path", [
     ('tests/data/audio/valid__wav.wav', ''),
     ('./tests/data/audio/valid__wav.wav', ''),
     ('audio/valid__wav.wav', 'tests/data'),

@@ -154,7 +154,7 @@ def test_mix_multiple_images():
         create_mix.create_mix("tests/data/images/multiple_images.tif")
 
 
-@pytest.mark.parametrize("file, base_path", [
+@pytest.mark.parametrize("file_, base_path", [
     ('tests/data/images/tiff1.tif', ''),
     ('./tests/data/images/tiff1.tif', ''),
     ('images/tiff1.tif', 'tests/data'),

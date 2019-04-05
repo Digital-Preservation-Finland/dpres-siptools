@@ -234,7 +234,7 @@ def test_existing_scraper_result(testpath):
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT50S'
 
 
-@pytest.mark.parametrize("file, base_path", [
+@pytest.mark.parametrize("file_, base_path", [
     ('tests/data/video/valid_1.m1v', ''),
     ('./tests/data/video/valid_1.m1v', ''),
     ('video/valid_1.m1v', 'tests/data'),
