@@ -107,15 +107,17 @@ def create_mix(filename, filerel=None, workspace=None):
 
     mix_compression = nisomix.compression(
         compression_scheme=stream_md["compression"])
-    if not 'byte_order' in stream_md:
+    if 'byte_order' not in stream_md:
         if stream_md['mimetype'] == 'image/tiff':
             raise ValueError('Byte order missing from TIFF image file '
                              '%s' % filename)
         byte_order = None
     else:
         byte_order = stream_md["byte_order"]
+
     basic_do_info = nisomix.digital_object_information(
         byte_order=byte_order, child_elements=[mix_compression])
+
     photom_interpret = nisomix.photometric_interpretation(
         color_space=stream_md["colorspace"])
     img_characteristics = nisomix.image_characteristics(
@@ -123,6 +125,7 @@ def create_mix(filename, filerel=None, workspace=None):
         child_elements=[photom_interpret])
     img_info = nisomix.image_information(
         child_elements=[img_characteristics])
+
     bit_depth = nisomix.bits_per_sample(
         sample_values=stream_md["bps_value"],
         sample_unit=stream_md["bps_unit"])
@@ -131,6 +134,7 @@ def create_mix(filename, filerel=None, workspace=None):
         child_elements=[bit_depth])
     img_assessment = nisomix.image_assessment_metadata(
         child_elements=[color_encoding])
+
     mix_root = nisomix.mix(
         child_elements=[basic_do_info, img_info, img_assessment])
 
