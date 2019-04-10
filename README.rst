@@ -22,6 +22,7 @@ This version of the tool is not backward-compatible with older versions. The non
 
         * ``--skip_inspection`` is changed to ``--skip_wellformed_check``.
         * ``--digest_algorithm`` and ``--message_digest`` have been combined to ``--checksum``.
+        * ``--format_name`` and ``--format_version`` have been combined to ``--file_format``.
         
     * create_addml.py
 
