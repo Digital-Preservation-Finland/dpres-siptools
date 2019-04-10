@@ -28,7 +28,7 @@ def test_compile_structmap_ok(testpath):
     """
     create_test_data(testpath)
     arguments = [
-        '--type_structmap', 'EAD3-logical', '--dmdsec_loc',
+        '--structmap_type', 'EAD3-logical', '--dmdsec_loc',
         'tests/data/import_description/metadata/ead3_test.xml', '--workspace',
         testpath]
     runner = CliRunner()

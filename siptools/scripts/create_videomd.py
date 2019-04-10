@@ -43,6 +43,8 @@ def main(workspace, base_path, filename):
     creator.add_videomd_md(filepath, filerel)
     creator.write()
 
+    return 0
+
 
 class VideomdCreator(AmdCreator):
     """Subclass of AmdCreator, which generates videoMD metadata
@@ -51,19 +53,26 @@ class VideomdCreator(AmdCreator):
 
     def add_videomd_md(self, filepath, filerel=None):
         """Create videoMD metadata and append it to self.md_elements.
+
+        If a file is not a video container, then the video stream metadata is
+        processed in file level. Video container includes streams which need
+        to be processed separately one at a time.
         """
 
         # Create videoMD metadata
         videomd_dict = create_videomd(filepath, filerel, self.workspace)
         if '0' in videomd_dict and len(videomd_dict) == 1:
-            self.add_md(videomd_dict['0'], filerel if filerel else filepath)
+            self.add_md(metadata=videomd_dict['0'],
+                        filename=(filerel if filerel else filepath))
         else:
             for index, video in videomd_dict.iteritems():
-                self.add_md(video, filerel if filerel else filepath, index)
+                self.add_md(metadata=video,
+                            filename=(filerel if filerel else filepath),
+                            stream=index)
 
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="VideoMD", section=None, stdout=False,
-              scraper_streams=None):
+              file_metadata_dict=None):
         super(VideomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 

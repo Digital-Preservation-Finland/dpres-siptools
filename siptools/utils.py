@@ -33,23 +33,20 @@ def scrape_file(filename, filerel=None, workspace=None):
         root = lxml.etree.parse(ref).getroot()
         amdref = root.xpath("/amdReferences/amdReference[not(@stream) "
                             "and @file='%s']" % filerel.decode(
-                                sys.getfilesystemencoding()))[0]
-        pkl_name = os.path.join(workspace, '%s-scraper.pkl' % amdref.text[1:])
+                                sys.getfilesystemencoding()))
+        pkl_name = None
+        if amdref:
+            pkl_name = os.path.join(
+                workspace, '{}-scraper.pkl'.format(amdref[0].text[1:]))
 
         streams = None
-        if not os.path.isfile(pkl_name):
-            scraper = Scraper(filename)
-            scraper.scrape(False)
-            streams = scraper.streams
-        else:
+        if pkl_name and os.path.isfile(pkl_name) and amdref:
             with open(pkl_name, 'rb') as pkl_file:
-                streams = pickle.load(pkl_file)
-    else:
-        scraper = Scraper(filename)
-        scraper.scrape(False)
-        streams = scraper.streams
+                return pickle.load(pkl_file)
 
-    return streams
+    scraper = Scraper(filename)
+    scraper.scrape(False)
+    return scraper.streams
 
 
 def fix_missing_metadata(streams, filenamei, allow_unav, allow_zero):
@@ -369,9 +366,9 @@ class AmdCreator(object):
 
         return amd_id, filename
 
-    def write_dict(self, scraper_streams, premis_amd_id):
+    def write_dict(self, file_metadata_dict, premis_amd_id):
         """Write streams to a file for further scripts.
-        :streams: Streams from scraper
+        :file_metadata_dict: File metadata dict
         :premis_amd_id: The AMDID of corresponding premis FILE object
         """
         digest = premis_amd_id[1:]
@@ -380,11 +377,11 @@ class AmdCreator(object):
 
         if not os.path.exists(filename):
             with open(filename, 'wb') as outfile:
-                pickle.dump(scraper_streams, outfile)
+                pickle.dump(file_metadata_dict, outfile)
             print "Wrote technical data to: %s" % (outfile.name)
 
     def write(self, mdtype="type", mdtypeversion="version", othermdtype=None,
-              section=None, stdout=False, scraper_streams=None):
+              section=None, stdout=False, file_metadata_dict=None):
         """Write METS XML and amd-reference files. First, METS XML files are
         written and self.references is appended. Second, amd-references is
         written.
@@ -397,8 +394,9 @@ class AmdCreator(object):
         :mdtype (string): Value of mdWrap MDTYPE attribute
         :mdtypeversion (string): Value of mdWrap MDTYPEVERSION attribute
         :othermdtype (string): Value of mdWrap OTHERMDTYPE attribute
+        :section (string): METS section type
         :stdout (boolean): Print also to stdout
-
+        :file_metadat_dict (dict): File metadata dict
         :returns: None
         """
 
@@ -408,8 +406,8 @@ class AmdCreator(object):
                 metadata, mdtype, mdtypeversion, othermdtype=othermdtype,
                 section=section, stdout=stdout
             )
-            if scraper_streams and stream is None:
-                self.write_dict(scraper_streams, amd_id)
+            if file_metadata_dict and stream is None:
+                self.write_dict(file_metadata_dict, amd_id)
             self.add_reference(amd_id, filename, stream, directory)
 
         # Write amd-references

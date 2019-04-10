@@ -13,6 +13,29 @@ for the digital preservation service can be found in: http://digitalpreservation
 
 The Pre-Ingest Tool currently supports specification version 1.7.1.
 
+Backwards compatibility
+-----------------------
+
+This version of the tool is not backward-compatible with older versions. The non-compatible differences in the script arguments are the following:
+
+    * import_object.py
+
+        * ``--skip_inspection`` is changed to ``--skip_wellformed_check``.
+        * ``--digest_algorithm`` and ``--message_digest`` have been combined to ``--checksum``.
+        
+    * create_addml.py
+
+        * ``--no-header`` has been removed as unnecessary.
+
+    * import_description.py
+
+        * ``--desc_root`` has been changed to ``--remove_root``.
+
+    * compile_structmap.py
+
+        * ``--dmdsec_struct`` is removed and merged to ``--structmap_type``.
+        * ``--type_attr`` is changed to ``--structmap_type``.
+
 Installation
 ------------
 
@@ -32,23 +55,22 @@ Install the required software with command::
 
     pip install -r requirements_github.txt
 
-openssl-devel and gcc packages might be required in your system to install M2Crypto.
+Also, openssl-devel and gcc packages are required in your system to install M2Crypto.
 
-Optional: To make digital object validation possible, install the validation software listed in dpres-ipt README file,
-see: https://github.com/Digital-Preservation-Finland/dpres-ipt
-Otherwise, use argument --skip_inspection in import_object script.
+See the README from file-scraper repository for additional installation requirements:
+https://github.com/Digital-Preservation-Finland/file-scraper/blob/master/README.rst
 
 Scripts
 -------
 
 import_description
-    for creating a file containing descriptive metadata element of mets.xml.
+    for adding a descriptive metadata section.
 
 premis_event
-    for creating digital provenance elements of mets.xml.
+    for creating digital provenance metadata.
 
 import_object
-    for adding all digital objects to mets.xml.
+    for adding the digital objects to a METS document.
 
 create_mix
     for creating MIX metadata for image files.
@@ -63,24 +85,37 @@ create_videomd
     for creating VideoMD metadata for video files.
 
 compile_structmap
-    for creating structural map in mets.xml.
+    for creating file section and structural map.
 
 compile_mets
-    for compiling all previously created files in a mets.xml file.
+    for compiling all previously created metadata files in a METS document.
 
 sign_mets
-    for digitally signing the mets.xml file.
+    for digitally signing the submission information package.
+
+compress
+    for wrapping the created submission information package directory to a TAR file.
 
 Usage
 -----
 
 In order to build a SIP for digital preservation, use the scripts in the following order.
-These scripts produce a digitally signed mets.xml file in the parametrized folder 'workspace'.
+These scripts produce a digitally signed METS document in the parametrized folder 'workspace'.
 
-You can create technical metadata elements of mets.xml from files located in the folder
+For a short description about other optional arguments which are not listed here, see::
+
+    python siptools/scripts/<scriptname>.py --help
+
+**Import digital objects and create general technical metadata**
+
+You can create technical metadata elements of a METS document from files located in the folder
 tests/data/structured followingly::
 
     python siptools/scripts/import_object.py --workspace ./workspace 'tests/data/structured'
+
+You may use this script as many times as needed to import all your digital object.
+
+**Create file format specific technical metadata**
 
 If your dataset contains image data, create also MIX metadata for each of the image files::
 
@@ -102,7 +137,11 @@ VideoMD metadata for a video stream file can be created by running::
 
     python siptools/scripts/create_videomd.py path/to/video/video.wav --workspace ./workspace
 
-An example how to create digital provenance metadata for mets.xml.
+Call the scripts above for each file needed in your data set.
+
+**Create provenance metadata**
+
+An example how to create digital provenance metadata for a METS document.
 Values for the parameters --event_outcome and --event_type are predefined lists::
 
     python siptools/scripts/premis_event.py creation '2016-10-13T12:30:55' --event_detail Testing --event_outcome success --event_outcome_detail 'Outcome detail' --workspace ./workspace --agent_name 'Demo Application' --agent_type software --event_target 'tests/data/structured'
@@ -112,6 +151,10 @@ If the argument is not given, the target is the whole dataset. Do not use argume
 --event_target for directories, if the structural map is created based on EAD3 structure
 with compile_structmap.py. If argument --agent_name is not given, agent metadata is
 not created.
+
+You may call this script several times to create multiple provenance metadata sections.
+
+**Add existing descriptive metadata**
 
 Script creates an xml file containing the descriptive metadata. Metadata must be in accepted format::
 
@@ -124,7 +167,11 @@ If the argument is not given, the descriptive metadata is fully included. The ar
 If the argument is not given, the target is the whole dataset. Do not use argument --dmdsec_target,
 if the structural map is created based on EAD3 structure with compile_structmap.py.
 
-The folder structure of a dataset is turned into a file containing the structmap element of mets.xml::
+You may call this script several times to import multiple descriptive metadata files.
+
+**Compile file section and structural map**
+
+The folder structure of a dataset is turned into files containing the file section and structural map of the METS document::
 
     python siptools/scripts/compile_structmap.py --workspace ./workspace
 
@@ -133,14 +180,16 @@ and here a valid EAD3 file is given with --dmdsec_loc argument::
 
     python siptools/scripts/compile_structmap.py --workspace ./workspace --type_structmap 'EAD3-logical' --dmdsec_loc tests/data/import_description/metadata/ead3_test.xml
 
-Compile a mets.xml file from the previous results::
+**Compile METS document and Submission Information Package**
+
+Compile a METS document file from the previous results::
 
     python siptools/scripts/compile_mets.py --workspace ./workspace ch 'CSC' 'contract-id-1234' --copy_files --clean
 
 The argument --copy_files copies the files to the workspace.
 The argument --clean cleans the workspace from the METS parts created in previous scripts.
 
-Digitally sign the mets.xml::
+Digitally sign the a METS document::
 
     python siptools/scripts/sign_mets.py --workspace ./workspace tests/data/rsa-keys.crt
 
@@ -148,27 +197,17 @@ Create a TAR file::
 
     python siptools/scripts/compress.py --tar_filename sip.tar ./workspace
 
-For a short description about other optional arguments which are not listed here, see::
-
-    python siptools/scripts/<scriptname>.py --help
-
-
-Additional requirements and notes
----------------------------------
-See the readme from file-scraper repository for additional installation requirements:
-https://github.com/Digital-Preservation-Finland/file-scraper/blob/master/README.rst
-
+Additional notes
+----------------
 This software is able to collect metadata and check well-formedness of a limited set of file
-formats. Please see the file-scraper repository for more imformation.
+formats. Please see the file-scraper repository for more information.
 
-Even if file-scraper repository is able to check well-formedness of a file in the following cases:
+The Pre-Ingest Tool does not support well-formedness checks of the following file formats:
 
     * text/csv file
     * text/xml file against XML schema or schematron files
 
-it is currently unsupported in dpres-siptools. Should you append these files to your workspace, those must
-be added with --skip_wellformed_check argument.
-
+Should you append these files to your workspace, use the --skip_wellformed_check argument on them.
 
 Copyright
 ---------

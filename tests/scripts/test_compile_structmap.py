@@ -178,7 +178,7 @@ def test_compile_structmap_directory(testpath):
     create_test_data(testpath)
     runner = CliRunner()
     result = runner.invoke(compile_structmap.main, [
-        '--workspace', testpath, '--type_structmap', 'Directory-physical'
+        '--workspace', testpath, '--structmap_type', 'Directory-physical'
     ])
     output_structmap = os.path.join(testpath, 'structmap.xml')
     sm_tree = lxml.etree.parse(output_structmap)
@@ -190,8 +190,8 @@ def test_compile_structmap_directory(testpath):
 
     assert sm_root.xpath(
         '//mets:div[@TYPE="directory" and @LABEL="Software files"]',
-        namespaces=NAMESPACES)[0].get(
-            'ADMID') == '_47244c09fb49dfd4d0577d29820bfa6c'
+        namespaces=NAMESPACES
+    )[0].get('ADMID') == '_47244c09fb49dfd4d0577d29820bfa6c'
 
     assert result.exit_code == 0
 

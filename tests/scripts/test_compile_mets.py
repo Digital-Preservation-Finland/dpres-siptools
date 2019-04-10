@@ -4,9 +4,8 @@ import lxml.etree as ET
 from click.testing import CliRunner
 from siptools.xml.mets import NAMESPACES
 from siptools.scripts.import_description import main
-from siptools.scripts import compile_mets
-from siptools.scripts import premis_event
-from siptools.scripts import import_object
+from siptools.scripts import compile_mets, premis_event, import_object, \
+    compile_structmap
 
 
 def create_test_data(workspace):
@@ -38,7 +37,7 @@ def create_test_data(workspace):
     runner.invoke(import_object.main, arguments)
 
     #create structural metadata
-    runner.invoke(import_object.main, ['--workspace', workspace])
+    runner.invoke(compile_structmap.main, ['--workspace', workspace])
 
 
 def test_compile_mets_ok(testpath):

@@ -119,7 +119,7 @@ class AddmlCreator(AmdCreator):
 
     def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML",
               filerel=None, section=None, stdout=False,
-              scraper_streams=None):
+              file_metadata_dict=None):
         """ Write all the METS XML files and amd-reference file.
         Base class write is overwritten to handle the references
         correctly and add flatFile fields to METS XML files.

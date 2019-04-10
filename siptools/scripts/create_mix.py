@@ -50,6 +50,8 @@ def main(workspace, base_path, filename):
     creator.add_mix_md(filepath, filerel)
     creator.write()
 
+    return 0
+
 
 class MixCreator(AmdCreator):
     """Subclass of AmdCreator, which generates MIX metadata for image files.
@@ -67,11 +69,12 @@ class MixCreator(AmdCreator):
         # Create MIX metadata
         mix = create_mix(filepath, filerel, self.workspace)
         if mix is not None:
-            self.add_md(mix, filerel if filerel else filepath)
+            self.add_md(metadata=mix,
+                        filename=(filerel if filerel else filepath))
 
     # Change the default write parameters
     def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None,
-              section=None, stdout=False, scraper_streams=None):
+              section=None, stdout=False, file_metadata_dict=None):
         super(MixCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 

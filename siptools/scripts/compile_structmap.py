@@ -1,5 +1,5 @@
-""""Command line tool for creating structure map and file metadata for a METS
-document."""
+""""Command line tool for creating the structural map and file section
+metadata for a METS document."""
 
 import sys
 import os
@@ -26,7 +26,7 @@ def ead3_ns(tag):
               type=click.Path(exists=True), default='./workspace/',
               metavar='<WORKSPACE PATH>',
               help="Workspace directory. Defaults to ./workspace/")
-@click.option('--type_structmap',
+@click.option('--structmap_type',
               type=str,
               metavar='<STRUCTMAP TYPE>',
               help="Type of structmap e.g. 'Fairdata-physical', "
@@ -42,7 +42,7 @@ def ead3_ns(tag):
 @click.option('--stdout',
               is_flag=True,
               help='Print output also to stdout.')
-def main(workspace, type_structmap, root_type, dmdsec_loc, stdout):
+def main(workspace, structmap_type, root_type, dmdsec_loc, stdout):
     """
     Tool for generating METS fileSec and structMap based on
     administrative metada files (-premis-amd.xml -suffix)
@@ -52,7 +52,7 @@ def main(workspace, type_structmap, root_type, dmdsec_loc, stdout):
     """
     filelist = get_objectlist(workspace)
 
-    if type_structmap == 'EAD3-logical':
+    if structmap_type == 'EAD3-logical':
         # If structured descriptive metadata for structMap divs is used, also
         # the fileSec element (apparently?) is different. The
         # create_ead3_structmap function populates the fileGrp element.
@@ -61,11 +61,11 @@ def main(workspace, type_structmap, root_type, dmdsec_loc, stdout):
         filesec = mets.mets(child_elements=[filesec_element])
 
         structmap = create_ead3_structmap(dmdsec_loc, workspace,
-                                          filegrp, filelist, type_structmap)
+                                          filegrp, filelist, structmap_type)
     else:
         filesec = create_filesec(workspace, filelist)
         structmap = create_structmap(workspace, filesec.getroot(),
-                                     filelist, type_structmap, root_type)
+                                     filelist, structmap_type, root_type)
 
     if stdout:
         print h.serialize(filesec)
@@ -408,7 +408,7 @@ def create_filegrp(workspace, filegrp, filelist):
         add_file_to_filesec(workspace, path, filegrp)
 
 
-def add_file_properties(workspace, path, fptr, stream=None):
+def add_file_properties(workspace, path, fptr):
     """Create a div element with file properties
 
     :param properties: File properties
@@ -418,26 +418,21 @@ def add_file_properties(workspace, path, fptr, stream=None):
     :returns: Div element with properties or None
     """
 
-    amdref = next(iter(get_amd_references(workspace, path=path,
-                                          stream=stream)))
-    pkl_name = os.path.join(workspace, '%s-scraper.pkl' % amdref[1:])
+    amdref = next(iter(get_amd_references(workspace, path=path)))
+    pkl_name = os.path.join(
+        workspace, '{}-scraper.pkl'.format(amdref[1:]))
 
     if not os.path.isfile(pkl_name):
         return None
 
-    with open(pkl_name, 'rb') as pkl_file:
-        streams = pickle.load(pkl_file)
-
-    if stream is None:
-        index = 0
-    else:
-        index = int(stream)
+    with open(pkl_name, 'r') as pkl_file:
+        file_metadata_dict = pickle.load(pkl_file)
 
     properties = {}
-    if 'properties' not in streams[index]:
+    if 'properties' not in file_metadata_dict[0]:
         return None
     else:
-        properties = streams[index]['properties']
+        properties = file_metadata_dict[0]['properties']
 
     if 'order' in properties:
         div_el = mets.div(type_attr='file',

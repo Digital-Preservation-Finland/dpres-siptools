@@ -55,20 +55,27 @@ class AudiomdCreator(AmdCreator):
     def add_audiomd_md(self, filepath, filerel=None):
         """Create audioMD metadata for a audio file and append it
         to self.md_elements.
+
+        If a file is not a video container, then the audio stream metadata is
+        processed in file level. Video container includes streams which need
+        to be processed separately one at a time.
         """
 
         # Create audioMD metadata
         audiomd_dict = create_audiomd(filepath, filerel, self.workspace)
 
         if '0' in audiomd_dict and len(audiomd_dict) == 1:
-            self.add_md(audiomd_dict['0'], filerel if filerel else filepath)
+            self.add_md(metadata=audiomd_dict['0'],
+                        filename=(filerel if filerel else filepath))
         else:
             for index, audio in audiomd_dict.iteritems():
-                self.add_md(audio, filerel if filerel else filepath, index)
+                self.add_md(metadata=audio,
+                            filename=(filerel if filerel else filepath),
+                            stream=index)
 
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="AudioMD", section=None, stdout=False,
-              scraper_streams=None):
+              file_metadata_dict=None):
         super(AudiomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
@@ -84,7 +91,7 @@ def create_audiomd(filename, filerel=None, workspace=None):
     for index, stream_md in streams.iteritems():
         if stream_md['stream_type'] != 'audio':
             continue
-        file_data_elem = _get_stream_data(stream_md)
+        file_data_elem = _get_file_data(stream_md)
         audio_info_elem = _get_audio_info(stream_md)
 
         audiomd_elem = audiomd.create_audiomd(
@@ -99,7 +106,7 @@ def create_audiomd(filename, filerel=None, workspace=None):
     return audiomd_dict
 
 
-def _get_stream_data(stream_dict):
+def _get_file_data(stream_dict):
     """Creates and returns the fileData XML element.
     :stream_dict: Stream dictionary given by Scraper
     :returns: AudioMD fileData element

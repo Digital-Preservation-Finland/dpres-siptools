@@ -46,7 +46,8 @@ DEFAULT_VERSIONS = {
 @click.option(
     '--file_format', nargs=2, type=str,
     metavar='<MIMETYPE> <FORMAT VERSION>',
-    help='Mimetype and file format version of a file')
+    help='Mimetype and file format version of a file. Use "" for empty '
+         'version string.')
 @click.option(
     '--identifier', nargs=2, type=str,
     metavar='<IDENTIFIER TYPE> <IDENTIFIER VALUE>',
@@ -57,7 +58,7 @@ DEFAULT_VERSIONS = {
     help='Checksum algorithm and value of a given file')
 @click.option(
     '--date_created', type=str,
-    metavar='<TIMESTAMP>',
+    metavar='<EDTF TIME>',
     help='The actual or approximate date and time the object was created')
 @click.option(
     '--format_registry', type=str, nargs=2,
@@ -70,18 +71,24 @@ DEFAULT_VERSIONS = {
 @click.option(
     '--stdout', is_flag=True, help='Print result also to stdout')
 def main(workspace, base_path, skip_wellformed_check, charset, file_format,
-         checksum, date_created, identifier, format_registry, order,
-         stdout, filepaths):
+         checksum, date_created, identifier, format_registry, order, stdout,
+         filepaths):
     """
     Import files to generate digital objects.
 
-    FILEPATHS: Files or a directory to import.
+    FILEPATHS: Files or a directory to import, relative path in relation to
+               current path or to --base_path.
 
     """
 
     # Loop files and create premis objects
     files = collect_filepaths(dirs=filepaths, base=base_path)
     for filepath in files:
+
+        # If the given path is an absolute path and base_path is current
+        # path (i.e. not given), relpath will return ../../.. sequences, if
+        # current path is not part of the absolute path. In such case we will
+        # use the absolute path for filerel and omit base_path relation.
         if base_path not in ['.']:
             filerel = os.path.relpath(filepath, base_path)
         else:
@@ -93,23 +100,14 @@ def main(workspace, base_path, skip_wellformed_check, charset, file_format,
         # Add new properties of a file for other script files, e.g. structMap
 
         creator = PremisCreator(workspace)
-        streams_dict = creator.add_premis_md(
+        file_metadata_dict = creator.add_premis_md(
             filepath, filerel, skip_wellformed_check, charset, file_format,
-            checksum, date_created, identifier, format_registry, properties)
-        creator.write(stdout=stdout, scraper_streams=streams_dict)
+            checksum, date_created, identifier, format_registry)
+        if properties:
+            file_metadata_dict[0]['properties'] = properties
+        creator.write(stdout=stdout, file_metadata_dict=file_metadata_dict)
 
     return 0
-
-
-def modify_streams(streams, properties):
-    """Add argument properties to stream dict, if given."""
-    if properties:
-        streams[0]['properties'] = properties
-        return streams
-    if streams[0]['stream_type'] in [
-            'videocontainer', 'video', 'audio', 'image']:
-        return streams
-    return None
 
 
 class PremisCreator(AmdCreator):
@@ -117,11 +115,12 @@ class PremisCreator(AmdCreator):
     for files and streams.
     """
 
-    def add_premis_md(self, filepath, filerel=None, skip_well_check=False,
-                      charset=None, file_format=None, checksum=None,
-                      date_created=None, identifier=None,
-                      format_registry=None, properties=None):
-
+    def _scrape_file(self, filepath, skip_well_check):
+        """Scrape file
+        :filepath: Path to file to be scraped
+        :skip_well_check: True, if well-formed check is skipped
+        :returns: scraper with result attributes
+        """
         scraper = Scraper(filepath)
         if not skip_well_check:
             scraper.scrape(True)
@@ -135,34 +134,58 @@ class PremisCreator(AmdCreator):
         else:
             scraper.scrape(False)
 
-        streams_dict = modify_streams(scraper.streams, properties)
+        return scraper
 
+    def _premis_for_file(self, filepath, filerel, scraper, charset,
+                         file_format, checksum, date_created,
+                         identifier, format_registry):
+        """Create PREMIS metadata for a file and add it to amd references"""
         premis_elem = create_premis_object(
-            filepath, scraper, file_format, checksum, date_created, charset,
-            identifier, format_registry)
-
+            filepath, scraper, file_format, checksum,
+            date_created, charset, identifier, format_registry
+        )
         self.add_md(premis_elem, filerel)
+        return premis_elem
 
-        premis_list = create_streams(scraper.streams, premis_elem)
+    def _premis_for_streams(self, filerel, file_metadata_dict, premis_elem):
+        """Create PREMIS metadata for a stream and add it to amd references"""
+        premis_list = create_streams(file_metadata_dict, premis_elem)
 
         if premis_list is not None:
             for index, premis_stream in premis_list.iteritems():
                 self.add_md(premis_stream, filerel, index)
 
-        return streams_dict
+    def add_premis_md(self, filepath, filerel=None, skip_well_check=False,
+                      charset=None, file_format=None, checksum=None,
+                      date_created=None, identifier=None,
+                      format_registry=None):
+        """
+        Metadata creator for PREMIS metadata. This method:
+        - Scrapes a file
+        - Creates PREMIS metadata with amd references for a file
+        - Creates PREMIS metadata with amd references for streams in a file
+        - Returns stream dict from scraper
+        """
+        scraper = self._scrape_file(filepath, skip_well_check)
+        premis_elem = self._premis_for_file(
+            filepath, filerel, scraper, charset, file_format, checksum,
+            date_created, identifier, format_registry
+        )
+        self._premis_for_streams(filerel, scraper.streams, premis_elem)
+        return scraper.streams
 
     def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3",
               othermdtype=None, section=None, stdout=False,
-              scraper_streams=None):
-        super(PremisCreator, self).write(mdtype=mdtype,
-                                         mdtypeversion=mdtypeversion,
-                                         scraper_streams=scraper_streams)
+              file_metadata_dict=None):
+        super(PremisCreator, self).write(
+            mdtype=mdtype, mdtypeversion=mdtypeversion,
+            file_metadata_dict=file_metadata_dict)
 
 
 def create_streams(streams, premis_file):
     """Create PREMIS objects for streams
 
-    :fname: Digital object file path
+    :streams: Stream dict
     :premis_file: Created PREMIS XML file for the digital object file
     """
     if len(streams) < 2:
@@ -284,7 +307,7 @@ def create_premis_object(fname, scraper,
     return el_premis_object
 
 
-def collect_filepaths(dirs=None, pattern='*', base=''):
+def collect_filepaths(dirs=None, pattern='*', base='.'):
     """Collect file paths recursively from given directory. Raises IOError
     if given path does not exist."""
 
