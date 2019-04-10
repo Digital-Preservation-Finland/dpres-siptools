@@ -74,47 +74,47 @@ def test_create_mix():
     """
 
     xml = create_mix.create_mix('tests/data/images/tiff1.tif')
-    namespaces = {'ns0': "http://www.loc.gov/mix/v20"}
+    namespaces = {'mix': "http://www.loc.gov/mix/v20"}
 
     # compression
-    xpath = '/ns0:mix/ns0:BasicDigitalObjectInformation/ns0:Compression/'\
-        'ns0:compressionScheme'
+    xpath = '/mix:mix/mix:BasicDigitalObjectInformation/mix:Compression/'\
+        'mix:compressionScheme'
     # python-wand returns different values for versions 0.4.x and 0.5.x
     assert xml.xpath(xpath, namespaces=namespaces)[0].text in ["b44a", "no"]
 
     # byteorder
-    xpath = '/ns0:mix/ns0:BasicDigitalObjectInformation/ns0:byteOrder'
+    xpath = '/mix:mix/mix:BasicDigitalObjectInformation/mix:byteOrder'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "little endian"
 
     # width
-    xpath = '/ns0:mix/ns0:BasicImageInformation/'\
-        'ns0:BasicImageCharacteristics/ns0:imageWidth'
+    xpath = '/mix:mix/mix:BasicImageInformation/'\
+        'mix:BasicImageCharacteristics/mix:imageWidth'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "2"
 
     # height
-    xpath = '/ns0:mix/ns0:BasicImageInformation/'\
-            'ns0:BasicImageCharacteristics/ns0:imageHeight'
+    xpath = '/mix:mix/mix:BasicImageInformation/'\
+            'mix:BasicImageCharacteristics/mix:imageHeight'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "2"
 
     # colorspace
-    xpath = '/ns0:mix/ns0:BasicImageInformation/'\
-            'ns0:BasicImageCharacteristics/ns0:PhotometricInterpretation/'\
-            'ns0:colorSpace'
+    xpath = '/mix:mix/mix:BasicImageInformation/'\
+            'mix:BasicImageCharacteristics/mix:PhotometricInterpretation/'\
+            'mix:colorSpace'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "srgb"
 
     # bitspresample
-    xpath = '/ns0:mix/ns0:ImageAssessmentMetadata/ns0:ImageColorEncoding/'\
-            'ns0:BitsPerSample/ns0:bitsPerSampleValue'
+    xpath = '/mix:mix/mix:ImageAssessmentMetadata/mix:ImageColorEncoding/'\
+            'mix:BitsPerSample/mix:bitsPerSampleValue'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "8"
 
     # bpsunit
-    xpath = '/ns0:mix/ns0:ImageAssessmentMetadata/ns0:ImageColorEncoding/'\
-            'ns0:BitsPerSample/ns0:bitsPerSampleUnit'
+    xpath = '/mix:mix/mix:ImageAssessmentMetadata/mix:ImageColorEncoding/'\
+            'mix:BitsPerSample/mix:bitsPerSampleUnit'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "integer"
 
     # samplesperpixel
-    xpath = '/ns0:mix/ns0:ImageAssessmentMetadata/ns0:ImageColorEncoding/'\
-            'ns0:samplesPerPixel'
+    xpath = '/mix:mix/mix:ImageAssessmentMetadata/mix:ImageColorEncoding/'\
+            'mix:samplesPerPixel'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "3"
 
 
@@ -124,7 +124,7 @@ def test_existing_scraper_result(testpath):
     """
     amdid = 'f54380dfc2960793badf5e81c9b1627c'
     file_ = 'tests/data/images/tiff1.tif'
-    namespaces = {'ns0': "http://www.loc.gov/mix/v20"}
+    namespaces = {'mix': "http://www.loc.gov/mix/v20"}
     xml = """<?xml version='1.0' encoding='UTF-8'?>
           <amdReferences>
           <amdReference file="%s">_%s</amdReference>
@@ -142,7 +142,7 @@ def test_existing_scraper_result(testpath):
         pickle.dump(stream_dict, outfile)
 
     mix = create_mix.create_mix(file_, workspace=testpath)
-    path = "//ns0:imageWidth"
+    path = "//mix:imageWidth"
     assert mix.xpath(path, namespaces=namespaces)[0].text == '1234'
 
 
