@@ -44,11 +44,10 @@ def ead3_ns(tag):
               help='Print output also to stdout.')
 def main(workspace, structmap_type, root_type, dmdsec_loc, stdout):
     """
-    Tool for generating METS fileSec and structMap based on
-    administrative metada files (-premis-amd.xml -suffix)
-    and descriptive metadata files (-dmdsec.xml -suffix)
-    found in the workspace directory. Outputs two XML files:
-    filesec.xml and structmap.xml
+    Tool for generating METS file section and structural map based on
+    created/imported administrative metada and descriptive metadata.
+    The script will also add order of the file to the structural map
+    (via pickle file), if --order argument was used in import_object script.
     """
     filelist = get_objectlist(workspace)
 

@@ -89,7 +89,7 @@ def create_videomd(filename, filerel=None, workspace=None):
         if stream_md['stream_type'] != 'video':
             continue
 
-        file_data_elem = _get_stream_data(stream_md)
+        file_data_elem = _get_file_data(stream_md)
 
         videomd_elem = videomd.create_videomd(
             file_data=file_data_elem)
@@ -101,7 +101,7 @@ def create_videomd(filename, filerel=None, workspace=None):
     return videomd_dict
 
 
-def _get_stream_data(stream_dict):
+def _get_file_data(stream_dict):
     """Creates and returns the fileData XML element.
     :stream_dict: Stream dictionary from Scraper
     :sound: Value of the sound element
