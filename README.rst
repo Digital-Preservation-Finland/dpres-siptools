@@ -2,21 +2,22 @@ Pre-Ingest Tool
 ===============
 
 This tool is intended to be used for generating an OAIS SIP for digital preservation.
-It produces METS document (mets.xml) that contains metadata for digital preservation
-required by the specifications used in Finnish national digital preservation services.
+It produces a METS document (mets.xml) that contains metadata for digital preservation
+required by the specifications used in the Finnish national Digital Preservation Services.
 The tool contains code for extracting metadata, creating and digitally signing the
 METS document.
 
 The aim is to provide digital preservation services for culture and research to ensure
 the access and use of materials long in the future. Documentation and specifications
-for the digital preservation service can be found in: http://digitalpreservation.fi
+for the digital preservation services can be found in: http://digitalpreservation.fi
 
-The Pre-Ingest Tool currently supports specification version 1.7.1.
+The Pre-Ingest Tool currently supports the specification version 1.7.1.
 
 Backwards compatibility
 -----------------------
 
-This version of the tool is not backward-compatible with older versions. The non-compatible differences in the script arguments are the following:
+This version of the tool is not backward-compatible with older versions. The
+non-compatible differences in the script arguments are following:
 
     * import_object.py
 
@@ -40,7 +41,7 @@ This version of the tool is not backward-compatible with older versions. The non
 Installation
 ------------
 
-Installation and usage require Python 2.7.
+Installation and usage requires Python 2.7.
 The software is tested with Python 2.7 with Centos 7.x / RHEL 7.x releases.
 
 Get python-virtuelenv software::
@@ -65,13 +66,13 @@ Scripts
 -------
 
 import_description
-    for adding a descriptive metadata section.
+    for adding a descriptive metadata section to a METS document.
 
 premis_event
     for creating digital provenance metadata.
 
 import_object
-    for adding the digital objects to a METS document.
+    for adding technical metadata for digital objects to a METS document.
 
 create_mix
     for creating MIX metadata for image files.
@@ -80,13 +81,13 @@ create_addml
     for creating ADDML metadata for csv files.
 
 create_audiomd
-    for creating AudioMD metadata for audio files.
+    for creating AudioMD metadata for audio streams.
 
 create_videomd
-    for creating VideoMD metadata for video files.
+    for creating VideoMD metadata for video streams.
 
 compile_structmap
-    for creating file section and structural map.
+    for creating the file section and structural map.
 
 compile_mets
     for compiling all previously created metadata files in a METS document.
@@ -118,7 +119,7 @@ You may use this script as many times as needed to import all your digital objec
 
 **Create file format specific technical metadata**
 
-If your dataset contains image data, create also MIX metadata for each of the image files::
+If your dataset contains image data, create MIX metadata for each of the image files::
 
     python siptools/scripts/create_mix.py path/to/images/image.tif --workspace ./workspace
     
@@ -133,6 +134,9 @@ quotation character used.
 AudioMD metadata for a audio stream file can be created by running::
 
     python siptools/scripts/create_audiomd.py path/to/audio/audio.wav --workspace ./workspace
+
+If a video container file contains audio stream data, the create_audiomd script
+above needs to be run for all audio streams in video files.
 
 VideoMD metadata for a video stream file can be created by running::
 
@@ -155,13 +159,17 @@ not created.
 
 You may call this script several times to create multiple provenance metadata sections.
 
+If several digital objects are linked to the same event and agent, run the
+script for each object with only the --event_target changed in the parameters.
+This will create links to the same event for each digital object.
+
 **Add existing descriptive metadata**
 
-Script creates an xml file containing the descriptive metadata. Metadata must be in accepted format::
+Script appends descriptive metadata into a METS XML wrapper. Metadata must be in a accepted format::
 
     python siptools/scripts/import_description.py 'tests/data/import_description/metadata/dc_description.xml' --workspace ./workspace --remove_root --dmdsec_target 'tests/data/structured'
 
-Argument '--remove_root' removes the root element from the given descriptive metadata.
+The argument '--remove_root' removes the root element from the given descriptive metadata.
 This may be needed, if the metadata is given in a container element belonging to another metadata format.
 If the argument is not given, the descriptive metadata is fully included. The argument
 '--dmdsec_target  <target>' is the directory where the descriptive metadata applies.
@@ -172,7 +180,8 @@ You may call this script several times to import multiple descriptive metadata f
 
 **Compile file section and structural map**
 
-The folder structure of a dataset is turned into files containing the file section and structural map of the METS document::
+The folder structure of a dataset is turned into files containing the file
+section and structural map of the METS document::
 
     python siptools/scripts/compile_structmap.py --workspace ./workspace
 
