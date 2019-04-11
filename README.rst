@@ -188,13 +188,13 @@ section and structural map of the METS document::
 Optionally, the structural map can be created based on given EAD3 structure instead of folder structure,
 and here a valid EAD3 file is given with --dmdsec_loc argument::
 
-    python siptools/scripts/compile_structmap.py --workspace ./workspace --type_structmap 'EAD3-logical' --dmdsec_loc tests/data/import_description/metadata/ead3_test.xml
+    python siptools/scripts/compile_structmap.py --workspace ./workspace --structmap_type 'EAD3-logical' --dmdsec_loc tests/data/import_description/metadata/ead3_test.xml
 
 **Compile METS document and Submission Information Package**
 
 Compile a METS document file from the previous results::
 
-    python siptools/scripts/compile_mets.py --workspace ./workspace ch 'CSC' 'contract-id-1234' --copy_files --clean
+    python siptools/scripts/compile_mets.py --workspace ./workspace ch 'CSC' 'e48a7051-2247-4d4d-ae90-44c8ee94daca' --copy_files --clean
 
 The argument --copy_files copies the files to the workspace.
 The argument --clean cleans the workspace from the METS parts created in previous scripts.
