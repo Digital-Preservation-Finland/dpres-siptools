@@ -175,14 +175,14 @@ def csv_header(csv_file_path, delimiter, isheader=False, headername='header'):
     """
 
     with open(csv_file_path, 'r') as csv_file:
-        header = csv_file.readline()
+        header = csv_file.readline().rstrip()
 
         if not isheader:
             header_count = header.count(delimiter)
             header = headername + "1"
 
-        for i in range(header_count):
-            header += delimiter + headername + str(i + 2)
+            for i in range(header_count):
+                header += delimiter + headername + str(i + 2)
 
     return header
 

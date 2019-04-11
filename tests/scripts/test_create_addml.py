@@ -10,7 +10,6 @@ from siptools.utils import decode_path
 
 CSV_FILE = "tests/data/csvfile.csv"
 DELIMITER = ";"
-ISHEADER = False
 CHARSET = "UTF-8"
 RECORDSEPARATOR = "CR+LF"
 QUOTINGCHAR = '"'
@@ -18,11 +17,12 @@ QUOTINGCHAR = '"'
 ADDML_NS = './/{http://www.arkivverket.no/standarder/addml}'
 
 
-def test_create_addml():
+@pytest.mark.parametrize('is_header', [False, True])
+def test_create_addml(is_header):
     """Test that ``create_addml`` returns valid addml."""
 
     addml_etree = create_addml.create_addml(
-        CSV_FILE, DELIMITER, ISHEADER,
+        CSV_FILE, DELIMITER, is_header,
         CHARSET, RECORDSEPARATOR, QUOTINGCHAR
     )
 
@@ -51,13 +51,14 @@ def test_create_addml():
     assert len(addml_etree.find(ADDML_NS + "fieldDefinitions")) == 3
 
 
-def test_create_addml_with_flatfile():
+@pytest.mark.parametrize('is_header', [False, True])
+def test_create_addml_with_flatfile(is_header):
     """Tests that ``create_addml`` adds flatFile element if optional
     parameter flatfile_name is provided.
     """
 
     addml_etree = create_addml.create_addml(
-        CSV_FILE, DELIMITER, ISHEADER,
+        CSV_FILE, DELIMITER, is_header,
         CHARSET, RECORDSEPARATOR, QUOTINGCHAR,
         flatfile_name="path/to/test"
     )
@@ -67,7 +68,8 @@ def test_create_addml_with_flatfile():
     assert decode_path(flatfile.get("name")) == "path/to/test"
 
 
-def test_create_addml_creator(testpath):
+@pytest.mark.parametrize('is_header', [False, True])
+def test_create_addml_creator(testpath, is_header):
     """
     Test that ``create_addml`` writes addml file and
     amd-reference file without unnecessary duplication.
@@ -78,29 +80,37 @@ def test_create_addml_creator(testpath):
     # Append two csv files with same
     # metadata, but different filename
     creator.add_addml_md(
-        "tests/data/simple_csv.csv", ',', ISHEADER,
+        "tests/data/simple_csv.csv", ',', is_header,
         CHARSET, RECORDSEPARATOR, QUOTINGCHAR
     )
 
     creator.add_addml_md(
-        "tests/data/simple_csv_2.csv", ',', ISHEADER,
+        "tests/data/simple_csv_2.csv", ',', is_header,
         CHARSET, RECORDSEPARATOR, QUOTINGCHAR
     )
 
     # Append csv file with different metadata
     creator.add_addml_md(
-        CSV_FILE, DELIMITER, ISHEADER, CHARSET,
+        CSV_FILE, DELIMITER, is_header, CHARSET,
         RECORDSEPARATOR, QUOTINGCHAR
     )
 
     creator.write()
 
-    file1 = os.path.join(
-        testpath, 'ec816a14242f3984e483fa23174881d5-ADDML-amd.xml'
-    )
-    file2 = os.path.join(
-        testpath, 'dd678fd96b655fd95efbb9fe4a77483a-ADDML-amd.xml'
-    )
+    if is_header:
+        file1 = os.path.join(
+            testpath, 'f2d98110001385875d56ef940394f826-ADDML-amd.xml'
+        )
+        file2 = os.path.join(
+            testpath, 'c27d34506bd21076849458c6214095c9-ADDML-amd.xml'
+        )
+    else:
+        file1 = os.path.join(
+            testpath, 'ec816a14242f3984e483fa23174881d5-ADDML-amd.xml'
+        )
+        file2 = os.path.join(
+            testpath, 'dd678fd96b655fd95efbb9fe4a77483a-ADDML-amd.xml'
+        )
 
     # Check that amd-reference and the two ADDML-amd files are created
     assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
@@ -126,6 +136,23 @@ def test_create_addml_creator(testpath):
     assert path1 == "tests/data/simple_csv.csv"
     assert path2 == "tests/data/simple_csv_2.csv"
     assert path3 == "tests/data/csvfile.csv"
+
+    field_definitions1 = root1.find(ADDML_NS + "fieldDefinitions")
+    field_definitions2 = root2.find(ADDML_NS + "fieldDefinitions")
+    if is_header:
+        assert field_definitions1[0].get('name') == '1'
+        assert field_definitions1[1].get('name') == '2'
+        assert field_definitions1[2].get('name') == '3'
+        assert field_definitions2[0].get('name') == 'test'
+        assert field_definitions2[1].get('name') == 'test'
+        assert field_definitions2[2].get('name') == 'test'
+    else:
+        assert field_definitions1[0].get('name') == 'header1'
+        assert field_definitions1[1].get('name') == 'header2'
+        assert field_definitions1[2].get('name') == 'header3'
+        assert field_definitions2[0].get('name') == 'header1'
+        assert field_definitions2[1].get('name') == 'header2'
+        assert field_definitions2[2].get('name') == 'header3'
 
 
 @pytest.mark.parametrize("file_, base_path", [
