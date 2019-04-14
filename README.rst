@@ -44,6 +44,9 @@ Installation
 Installation and usage requires Python 2.7.
 The software is tested with Python 2.7 with Centos 7.x / RHEL 7.x releases.
 
+Packages openssl-devel and gcc are required in your system to install M2Crypto,
+which is used for signing the packages with digital signature.
+
 Get python-virtuelenv software::
 
     sudo pip install virtualenv
@@ -56,8 +59,6 @@ Run the following to activate the virtual environment::
 Install the required software with command::
 
     pip install -r requirements_github.txt
-
-Also, openssl-devel and gcc packages are required in your system to install M2Crypto.
 
 See the README from file-scraper repository for additional installation requirements:
 https://github.com/Digital-Preservation-Finland/file-scraper/blob/master/README.rst
@@ -125,7 +126,7 @@ If your dataset contains image data, create MIX metadata for each of the image f
     
 ADDML metadata for a CSV file can be created by running::
     
-    python siptools/scripts/create_addml.py path/to/csv_file.csv --charset 'UTF8' --sep 'CR+LF' --quot '"' --delim ';' --workspace ./workspace
+    python siptools/scripts/create_addml.py path/to/csv_file.csv --workspace ./workspace --charset 'UTF8' --sep 'CR+LF' --quot '"' --delim ';'
 
 A flag --header should be given if CSV file has headers. --sep flag defines the character used to 
 separate records and --delim the character used to separate fields. --quot defines the 
@@ -149,7 +150,7 @@ Call the scripts above for each file needed in your data set.
 An example how to create digital provenance metadata for a METS document.
 Values for the parameters --event_outcome and --event_type are predefined lists::
 
-    python siptools/scripts/premis_event.py creation '2016-10-13T12:30:55' --event_detail Testing --event_outcome success --event_outcome_detail 'Outcome detail' --workspace ./workspace --agent_name 'Demo Application' --agent_type software --event_target 'tests/data/structured'
+    python siptools/scripts/premis_event.py creation '2016-10-13T12:30:55' --workspace ./workspace --event_target 'tests/data/structured' --event_detail Testing --event_outcome success --event_outcome_detail 'Outcome detail' --agent_name 'Demo Application' --agent_type software
 
 The argument --event_target is the object (file or directory) where the event applies.
 If the argument is not given, the target is the whole dataset. Do not use argument
@@ -167,7 +168,7 @@ This will create links to the same event for each digital object.
 
 Script appends descriptive metadata into a METS XML wrapper. Metadata must be in a accepted format::
 
-    python siptools/scripts/import_description.py 'tests/data/import_description/metadata/dc_description.xml' --workspace ./workspace --remove_root --dmdsec_target 'tests/data/structured'
+    python siptools/scripts/import_description.py 'tests/data/import_description/metadata/dc_description.xml' --workspace ./workspace --dmdsec_target 'tests/data/structured' --remove_root
 
 The argument '--remove_root' removes the root element from the given descriptive metadata.
 This may be needed, if the metadata is given in a container element belonging to another metadata format.

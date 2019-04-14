@@ -21,10 +21,20 @@ from siptools.utils import get_objectlist
 @click.argument('mets_profile', type=click.Choice(METS_PROFILE))
 @click.argument('organization_name', type=str)
 @click.argument('contractid', type=click.UUID)
+@click.option('--workspace',
+              type=click.Path(exists=True),
+              default='./workspace',
+              metavar='<WORKSPACE PATH>',
+              help='Workspace directory. Defaults to "./workspace".')
+@click.option('--base_path',
+              metavar='<BASE PATH>',
+              type=click.Path(exists=True),
+              default='.',
+              help='Base path of the digital objects.')
 @click.option('--objid', type=str,
               default=str(uuid.uuid4()),
               metavar='<OBJID>',
-              help='Organizations unique identifier for the package')
+              help='Unique identifier for the package')
 @click.option('--label',
               type=str,
               metavar='<LABEL>',
@@ -50,22 +60,12 @@ from siptools.utils import get_objectlist
               default='submission',
               metavar='<RECORD STATUS>',
               help='Record status. Defaults to "submission".')
-@click.option('--workspace',
-              type=click.Path(exists=True),
-              default='./workspace',
-              metavar='<WORKSPACE PATH>',
-              help='Workspace directory. Defaults to "./workspace".')
 @click.option('--clean',
               is_flag=True,
               help='Remove partial METS documents from workspace directory')
 @click.option('--copy_files',
               is_flag=True,
               help='Copy digital objects from base path to workspace')
-@click.option('--base_path',
-              metavar='<BASE PATH>',
-              type=click.Path(exists=True),
-              default='.',
-              help='Base path of the digital objects')
 @click.option('--stdout',
               is_flag=True,
               help='Print output to stdout.')

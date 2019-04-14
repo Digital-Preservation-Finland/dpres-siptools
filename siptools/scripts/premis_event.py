@@ -28,6 +28,17 @@ def _list2str(lst):
                 type=click.Choice(PREMIS_EVENT_TYPES))
 @click.argument('event_datetime', required=True,
                 type=str)
+@click.option('--workspace',
+              type=click.Path(exists=True),
+              default='./workspace',
+              metavar='<WORKSPACE PATH>',
+              help=("Directory where files are created. Defaults "
+                    "to ./workspace/"))
+@click.option('--event_target',
+              type=str,
+              metavar='<EVENT TARGET PATH>',
+              help=('Target for the event. Default is the root of '
+                    'digital objects.'))
 @click.option('--event_detail',
               type=str, required=True,
               metavar='<EVENT DETAIL>',
@@ -42,12 +53,6 @@ def _list2str(lst):
               type=str,
               metavar='<EVENT OUTCOME DETAIL>',
               help='Detailed information about the event outcome.')
-@click.option('--workspace',
-              type=click.Path(exists=True),
-              default='./workspace',
-              metavar='<WORKSPACE PATH>',
-              help=("Directory where files are created. Default "
-                    "is ./workspace"))
 @click.option('--agent_name',
               required='--agent_type' in sys.argv,
               type=str,
@@ -57,26 +62,18 @@ def _list2str(lst):
               required='--agent_name' in sys.argv,
               type=str,
               metavar='<AGENT TYPE>',
-              help='Agent type')
+              help='Agent type.')
 @click.option('--stdout',
               is_flag=True,
               help='Print output to stdout')
-@click.option('--event_target',
-              type=str,
-              metavar='<EVENT TARGET PATH>',
-              help=('Target for the event. Default is the root of '
-                    'digital objects.'))
 def main(event_type, event_datetime, event_detail, event_outcome,
          event_outcome_detail, workspace, agent_name, agent_type, stdout,
          event_target):
     """
-    Create METS document that contains PREMIS event element. Another
-    METS document that contains PREMIS agent element is created if
-    optional parameters \"agent_type\" and \"agent_name\" are used.
-    The PREMIS agent element is linked to PREMIS event element by
-    unique identifier. The digiprovMD elements get identifiers based
-    on the METS document filename.
+    The script creates provenance metadata for the package. The metadata
+    contains and event and, if given, also agent of the event.
 
+    \b
     EVENT_TYPE: Type of the event.
     EVENT_DATETIME: Timestamp of the event.
 

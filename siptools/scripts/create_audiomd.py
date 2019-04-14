@@ -23,7 +23,8 @@ ALLOW_ZERO = ['bits_per_sample', 'data_rate', 'sampling_frequency']
     '--workspace', type=click.Path(exists=True),
     default='./workspace/',
     metavar='<WORKSPACE PATH>',
-    help="Workspace directory for the metadata files.")
+    help="Workspace directory for the metadata files. "
+         "Defaults to ./workspace/")
 @click.option(
     '--base_path', type=click.Path(exists=True), default='.',
     metavar='<BASE PATH>',

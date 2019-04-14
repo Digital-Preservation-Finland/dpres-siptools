@@ -29,14 +29,15 @@ DEFAULT_VERSIONS = {
 @click.command()
 @click.argument('filepaths', nargs=-1, type=str)
 @click.option(
+    '--workspace', type=click.Path(exists=True), default='./workspace/',
+    metavar='<WORKSPACE PATH>',
+    help="Workspace directory for the metadata files. "
+         "Defaults to ./workspace/")
+@click.option(
     '--base_path', type=click.Path(exists=True), default='.',
     metavar='<BASE PATH>',
     help="Source base path of digital objects. If used, give objects in "
          "relation to this base path.")
-@click.option(
-    '--workspace', type=click.Path(exists=True), default='./workspace/',
-    metavar='<WORKSPACE PATH>',
-    help="Workspace directory for the metadata files.")
 @click.option(
     '--skip_wellformed_check', is_flag=True,
     help='Skip file format well-formed check')
@@ -48,6 +49,10 @@ DEFAULT_VERSIONS = {
     metavar='<MIMETYPE> <FORMAT VERSION>',
     help='Mimetype and file format version of a file. Use "" for empty '
          'version string.')
+@click.option(
+    '--format_registry', type=str, nargs=2,
+    metavar='<REGISTRY NAME> <REGISTRY KEY>',
+    help='The format registry name and key of the digital object')
 @click.option(
     '--identifier', nargs=2, type=str,
     metavar='<IDENTIFIER TYPE> <IDENTIFIER VALUE>',
@@ -61,10 +66,6 @@ DEFAULT_VERSIONS = {
     metavar='<EDTF TIME>',
     help='The actual or approximate date and time the object was created')
 @click.option(
-    '--format_registry', type=str, nargs=2,
-    metavar='<REGISTRY NAME> <REGISTRY KEY>',
-    help='The format registry name and key of the digital object')
-@click.option(
     '--order', type=int,
     metavar='<ORDER NUMBER>',
     help='Order number of the digital object')
@@ -74,11 +75,16 @@ def main(workspace, base_path, skip_wellformed_check, charset, file_format,
          checksum, date_created, identifier, format_registry, order, stdout,
          filepaths):
     """
-    Import files to generate digital objects.
+    Import files to generate digital objects. If parameters --charset,
+    --file_format, --identifier, --checksum or --date_created are not given,
+    then these are created automatically.
 
     FILEPATHS: Files or a directory to import, relative path in relation to
-               current path or to --base_path.
-
+               current direcotry or to --base_path. It depends on your
+               parameters whether you may give several files or a single
+               file. For example --checksum and --identifier are file
+               dependent metadata, and if these are used, then use the script
+               only for one file.
     """
 
     # Loop files and create premis objects

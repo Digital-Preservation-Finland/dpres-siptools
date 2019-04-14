@@ -12,11 +12,15 @@ import dpres_signature.signature
     type=click.Path(exists=True),
     metavar='<WORKSPACE PATH>',
     help="Workspace directory that contains mets.xml file and where "
-         "signature.sig is written."
+         "signature.sig is written. Defaults to ./workspace/"
     )
 @click.argument("sign_key", type=click.Path(exists=True))
 def main(workspace, sign_key):
-    """The main method for sign_mets"""
+    """Script for signing the Submission Information Package with a
+    digital signature. This script creates signature.sig file.
+
+    SIGN_KEY: Private key of the signature keypair.
+    """
     signature = sign_mets(workspace, sign_key)
     print "sign_mets created file: %s" % signature
 
@@ -24,12 +28,7 @@ def main(workspace, sign_key):
 
 
 def sign_mets(workspace, key_path):
-    """
-    Create digital signature (signature.sig) for METS file.
-
-    SIGN_KEY: Path for private key.
-
-    """
+    """Sign METS file, which signs the whole package"""
     signature_path = os.path.join(workspace, 'signature.sig')
     signature = dpres_signature.signature.create_signature(signature_path,
                                                            key_path,

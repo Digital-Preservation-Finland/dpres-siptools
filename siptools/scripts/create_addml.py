@@ -9,7 +9,17 @@ from siptools.utils import AmdCreator, encode_path
 
 
 @click.command()
-@click.argument('filepath', type=str)
+@click.argument('filename', type=str)
+@click.option('--workspace', type=click.Path(exists=True),
+              default='./workspace/',
+              metavar='<WORKSPACE PATH>',
+              help="Workspace directory for the metadata files. "
+                   "Defaults to ./workspace/")
+@click.option('--base_path', type=click.Path(exists=True), default='.',
+              metavar='<BASE PATH>',
+              help="Source base path of digital objects. If used, "
+                   "give path to the CSV file in relation to this "
+                   "base path.")
 @click.option('--header', is_flag=True,
               help="Use if the CSV file contains a header")
 @click.option('--charset', type=str, required=True,
@@ -24,16 +34,7 @@ from siptools.utils import AmdCreator, encode_path
 @click.option('--quot', type=str, required=True,
               metavar='<QUOTING CHAR>',
               help="Quoting character used in the CSV file")
-@click.option('--workspace', type=click.Path(exists=True),
-              default='./workspace/',
-              metavar='<WORKSPACE PATH>',
-              help="Workspace directory for the metadata files.")
-@click.option('--base_path', type=click.Path(exists=True), default='.',
-              metavar='<BASE PATH>',
-              help="Source base path of digital objects. If used, "
-                   "give path to the CSV file in relation to this "
-                   "base path.")
-def main(filepath, header, charset, delim, sep, quot, workspace, base_path):
+def main(filename, header, charset, delim, sep, quot, workspace, base_path):
     """
     Tool for creating ADDML metadata for a CSV file. The
     ADDML metadata is written to <hash>-ADDML-amd.xml
@@ -43,12 +44,12 @@ def main(filepath, header, charset, delim, sep, quot, workspace, base_path):
     just the new CSV file name is appended to the existing
     metadata.
 
-    FILEPATH: Path to the CSV file.
-
+    FILENAME: Relative path to the file from current directory or from
+              --base_path.
     """
 
-    filerel = os.path.normpath(filepath)
-    filepath = os.path.normpath(os.path.join(base_path, filepath))
+    filerel = os.path.normpath(filename)
+    filepath = os.path.normpath(os.path.join(base_path, filename))
 
     creator = AddmlCreator(workspace)
     creator.add_addml_md(

@@ -29,7 +29,8 @@ def str_to_unicode(string):
     '--workspace', type=click.Path(exists=True),
     default='./workspace/',
     metavar='<WORKSPACE PATH>',
-    help="Workspace directory for the metadata files.")
+    help="Workspace directory for the metadata files. "
+         "Defaults to ./workspace/")
 @click.option(
     '--base_path', type=click.Path(exists=True), default='.',
     metavar='<BASE PATH>',

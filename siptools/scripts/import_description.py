@@ -16,15 +16,16 @@ from siptools.utils import encode_path, encode_id
 @click.command()
 @click.argument('dmdsec_location', type=click.Path(exists=True),
                 metavar='DMDLOCATION')
+@click.option('--workspace', type=click.Path(exists=True),
+              metavar='<WORKSPACE PATH>',
+              default='./workspace',
+              help="Workspace directory for the metadata files. "
+                   "Defaults to ./workspace/")
 @click.option('--dmdsec_target',
               type=str,
               metavar='<DMD TARGET>',
               help='Target of descriptive metadata. '
                    'Default is the root of dataset.')
-@click.option('--workspace', type=click.Path(exists=True),
-              metavar='<WORKSPACE PATH>',
-              default='./workspace',
-              help="Directory where output is created")
 @click.option('--remove_root', is_flag=True,
               help='Import only child elements from descriptive '
                    'metadata file')
