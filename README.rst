@@ -19,21 +19,21 @@ Backwards compatibility
 This version of the tool is not backward-compatible with older versions. The
 non-compatible differences in the script arguments are following:
 
-    * import_object.py
+    * import-object
 
         * ``--skip_inspection`` is changed to ``--skip_wellformed_check``.
         * ``--digest_algorithm`` and ``--message_digest`` have been combined to ``--checksum``.
         * ``--format_name`` and ``--format_version`` have been combined to ``--file_format``.
         
-    * create_addml.py
+    * create-addml
 
         * ``--no-header`` has been removed as unnecessary.
 
-    * import_description.py
+    * import-description
 
         * ``--desc_root`` has been changed to ``--remove_root``.
 
-    * compile_structmap.py
+    * compile-structmap
 
         * ``--dmdsec_struct`` is removed and merged to ``--structmap_type``.
         * ``--type_attr`` is changed to ``--structmap_type``.
@@ -49,51 +49,56 @@ which is used for signing the packages with digital signature.
 
 Get python-virtuelenv software::
 
-    sudo pip install virtualenv
+    sudo yum install python-virtualenv
 
 Run the following to activate the virtual environment::
 
-    virtualenv .venv
-    source ./.venv/bin/activate
+    virtualenv venv
+    source venv/bin/activate
 
 Install the required software with command::
 
+    pip install --upgrade pip
     pip install -r requirements_github.txt
+    pip install .
 
 See the README from file-scraper repository for additional installation requirements:
 https://github.com/Digital-Preservation-Finland/file-scraper/blob/master/README.rst
 
+To deactivate the virtual enviroment, run ``deactivate``.
+To reactivate it, run the ``source`` command above.
+
 Scripts
 -------
 
-import_description
+import-description
     for adding a descriptive metadata section to a METS document.
 
-premis_event
+premis-event
     for creating digital provenance metadata.
 
-import_object
+import-object
     for adding technical metadata for digital objects to a METS document.
 
-create_mix
+create-mix
     for creating MIX metadata for image files.
 
-create_addml
+create-addml
     for creating ADDML metadata for csv files.
 
-create_audiomd
+create-audiomd
     for creating AudioMD metadata for audio streams.
 
-create_videomd
+create-videomd
     for creating VideoMD metadata for video streams.
 
-compile_structmap
+compile-structmap
     for creating the file section and structural map.
 
-compile_mets
+compile-mets
     for compiling all previously created metadata files in a METS document.
 
-sign_mets
+sign-mets
     for digitally signing the submission information package.
 
 compress
@@ -107,14 +112,14 @@ These scripts produce a digitally signed METS document in the parametrized folde
 
 For a short description about other optional arguments which are not listed here, see::
 
-    python siptools/scripts/<scriptname>.py --help
+    <scriptname> --help
 
 **Import digital objects and create general technical metadata**
 
 You can create technical metadata elements of a METS document from files located in the folder
 tests/data/structured followingly::
 
-    python siptools/scripts/import_object.py --workspace ./workspace 'tests/data/structured'
+    import-object 'tests/data/structured' --workspace ./workspace
 
 You may use this script as many times as needed to import all your digital object.
 
@@ -122,11 +127,11 @@ You may use this script as many times as needed to import all your digital objec
 
 If your dataset contains image data, create MIX metadata for each of the image files::
 
-    python siptools/scripts/create_mix.py path/to/images/image.tif --workspace ./workspace
+    create-mix path/to/images/image.tif --workspace ./workspace
     
 ADDML metadata for a CSV file can be created by running::
     
-    python siptools/scripts/create_addml.py path/to/csv_file.csv --workspace ./workspace --charset 'UTF8' --sep 'CR+LF' --quot '"' --delim ';'
+    create-addml path/to/csv_file.csv --workspace ./workspace --charset 'UTF8' --sep 'CR+LF' --quot '"' --delim ';'
 
 A flag --header should be given if CSV file has headers. --sep flag defines the character used to 
 separate records and --delim the character used to separate fields. --quot defines the 
@@ -134,14 +139,14 @@ quotation character used.
 
 AudioMD metadata for a audio stream file can be created by running::
 
-    python siptools/scripts/create_audiomd.py path/to/audio/audio.wav --workspace ./workspace
+    create-audiomd path/to/audio/audio.wav --workspace ./workspace
 
 If a video container file contains audio stream data, the create_audiomd script
 above needs to be run for all audio streams in video files.
 
 VideoMD metadata for a video stream file can be created by running::
 
-    python siptools/scripts/create_videomd.py path/to/video/video.wav --workspace ./workspace
+    create-videomd path/to/video/video.wav --workspace ./workspace
 
 Call the scripts above for each file needed in your data set.
 
@@ -150,7 +155,7 @@ Call the scripts above for each file needed in your data set.
 An example how to create digital provenance metadata for a METS document.
 Values for the parameters --event_outcome and --event_type are predefined lists::
 
-    python siptools/scripts/premis_event.py creation '2016-10-13T12:30:55' --workspace ./workspace --event_target 'tests/data/structured' --event_detail Testing --event_outcome success --event_outcome_detail 'Outcome detail' --agent_name 'Demo Application' --agent_type software
+    premis-event creation '2016-10-13T12:30:55' --workspace ./workspace --event_target 'tests/data/structured' --event_detail Testing --event_outcome success --event_outcome_detail 'Outcome detail' --agent_name 'Demo Application' --agent_type software
 
 The argument --event_target is the object (file or directory) where the event applies.
 If the argument is not given, the target is the whole dataset. Do not use argument
@@ -168,7 +173,7 @@ This will create links to the same event for each digital object.
 
 Script appends descriptive metadata into a METS XML wrapper. Metadata must be in a accepted format::
 
-    python siptools/scripts/import_description.py 'tests/data/import_description/metadata/dc_description.xml' --workspace ./workspace --dmdsec_target 'tests/data/structured' --remove_root
+    import-description 'tests/data/import_description/metadata/dc_description.xml' --workspace ./workspace --dmdsec_target 'tests/data/structured' --remove_root
 
 The argument '--remove_root' removes the root element from the given descriptive metadata.
 This may be needed, if the metadata is given in a container element belonging to another metadata format.
@@ -184,29 +189,29 @@ You may call this script several times to import multiple descriptive metadata f
 The folder structure of a dataset is turned into files containing the file
 section and structural map of the METS document::
 
-    python siptools/scripts/compile_structmap.py --workspace ./workspace
+    compile-structmap --workspace ./workspace
 
 Optionally, the structural map can be created based on given EAD3 structure instead of folder structure,
 and here a valid EAD3 file is given with --dmdsec_loc argument::
 
-    python siptools/scripts/compile_structmap.py --workspace ./workspace --structmap_type 'EAD3-logical' --dmdsec_loc tests/data/import_description/metadata/ead3_test.xml
+    compile-structmap --workspace ./workspace --structmap_type 'EAD3-logical' --dmdsec_loc tests/data/import_description/metadata/ead3_test.xml
 
 **Compile METS document and Submission Information Package**
 
 Compile a METS document file from the previous results::
 
-    python siptools/scripts/compile_mets.py --workspace ./workspace ch 'CSC' 'e48a7051-2247-4d4d-ae90-44c8ee94daca' --copy_files --clean
+    compile-mets ch 'CSC' 'e48a7051-2247-4d4d-ae90-44c8ee94daca' --workspace ./workspace --copy_files --clean
 
 The argument --copy_files copies the files to the workspace.
 The argument --clean cleans the workspace from the METS parts created in previous scripts.
 
 Digitally sign the a METS document::
 
-    python siptools/scripts/sign_mets.py --workspace ./workspace tests/data/rsa-keys.crt
+    sign-mets tests/data/rsa-keys.crt --workspace ./workspace
 
 Create a TAR file::
 
-    python siptools/scripts/compress.py --tar_filename sip.tar ./workspace
+    compress ./workspace --tar_filename sip.tar
 
 Additional notes
 ----------------
