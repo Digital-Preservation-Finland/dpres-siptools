@@ -80,11 +80,10 @@ def main(workspace, base_path, skip_wellformed_check, charset, file_format,
     then these are created automatically.
 
     FILEPATHS: Files or a directory to import, relative path in relation to
-               current direcotry or to --base_path. It depends on your
-               parameters whether you may give several files or a single
-               file. For example --checksum and --identifier are file
-               dependent metadata, and if these are used, then use the script
-               only for one file.
+    current direcotry or to --base_path. It depends on your parameters whether
+    you may give several files or a single file. For example --checksum and
+    --identifier are file dependent metadata, and if these are used, then use
+    the script only for one file.
     """
 
     # Loop files and create premis objects
