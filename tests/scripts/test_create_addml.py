@@ -68,91 +68,54 @@ def test_create_addml_with_flatfile(is_header):
     assert decode_path(flatfile.get("name")) == "path/to/test"
 
 
-@pytest.mark.parametrize('is_header', [False, True])
-def test_create_addml_creator(testpath, is_header):
+@pytest.mark.parametrize('isheader, exp_amd_files, exp_fields', [
+    (False,
+     ['ec816a14242f3984e483fa23174881d5-ADDML-amd.xml',
+      'dd678fd96b655fd95efbb9fe4a77483a-ADDML-amd.xml'],
+     [['header1', 'header2', 'header3'], ['header1', 'header2', 'header3']]
+     ),
+    (True,
+     ['f2d98110001385875d56ef940394f826-ADDML-amd.xml',
+      'c27d34506bd21076849458c6214095c9-ADDML-amd.xml'],
+     [['1', '2', '3'], ['test', 'test', 'test']]
+     )
+])
+def test_create_addml_creator(testpath, isheader, exp_amd_files, exp_fields):
     """
-    Test that ``create_addml`` writes addml file and
+    Test that ``create_addml`` creates addml files and
     amd-reference file without unnecessary duplication.
     """
+    # Common expectations
+    exp_csvs = [
+        ['tests/data/simple_csv.csv', 'tests/data/simple_csv_2.csv'],
+        ['tests/data/csvfile.csv']
+    ]
+    exp_flatfiles_child_count = [4, 3]
 
-    creator = create_addml.AddmlCreator(testpath)
+    _create_addml(testpath, isheader)
 
-    # Append two csv files with same
-    # metadata, but different filename
-    creator.add_addml_md(
-        "tests/data/simple_csv.csv", ',', is_header,
-        CHARSET, RECORDSEPARATOR, QUOTINGCHAR
-    )
-
-    creator.add_addml_md(
-        "tests/data/simple_csv_2.csv", ',', is_header,
-        CHARSET, RECORDSEPARATOR, QUOTINGCHAR
-    )
-
-    # Append csv file with different metadata
-    creator.add_addml_md(
-        CSV_FILE, DELIMITER, is_header, CHARSET,
-        RECORDSEPARATOR, QUOTINGCHAR
-    )
-
-    creator.write()
-
-    if is_header:
-        file1 = os.path.join(
-            testpath, 'f2d98110001385875d56ef940394f826-ADDML-amd.xml'
-        )
-        file2 = os.path.join(
-            testpath, 'c27d34506bd21076849458c6214095c9-ADDML-amd.xml'
-        )
-    else:
-        file1 = os.path.join(
-            testpath, 'ec816a14242f3984e483fa23174881d5-ADDML-amd.xml'
-        )
-        file2 = os.path.join(
-            testpath, 'dd678fd96b655fd95efbb9fe4a77483a-ADDML-amd.xml'
-        )
-
-    # Check that amd-reference and the two ADDML-amd files are created
+    # Check that amd-reference and the ADDML-amd files with correct content
+    # are created
     assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
-    assert os.path.isfile(file1)
-    assert os.path.isfile(file2)
 
-    # Parse ADDML-amd files to check that right flatFiles are added
-    root1 = ET.parse(file1)
-    root2 = ET.parse(file2)
+    for amd_file_index, exp_amd_file in enumerate(exp_amd_files):
+        amd_file = os.path.join(testpath, exp_amd_file)
+        assert os.path.isfile(amd_file)
 
-    flat_files1 = root1.find(ADDML_NS + "flatFiles")
-    flat_files2 = root2.find(ADDML_NS + "flatFiles")
+        root = ET.parse(amd_file)
+        flat_files = root.find(ADDML_NS + "flatFiles")
 
-    # Check number of child elements
-    assert len(flat_files1) == 4
-    assert len(flat_files2) == 3
+        # Verify the number of child elements in flatFiles
+        assert len(flat_files) == exp_flatfiles_child_count[amd_file_index]
 
-    # Check flatFile name attributes
-    path1 = decode_path(flat_files1[0].get("name"))
-    path2 = decode_path(flat_files1[1].get("name"))
-    path3 = decode_path(flat_files2[0].get("name"))
+        # Verify that right CSV files are in flatFiles
+        for index, exp_csv in enumerate(exp_csvs[amd_file_index]):
+            assert decode_path(flat_files[index].get('name')) == exp_csv
 
-    assert path1 == "tests/data/simple_csv.csv"
-    assert path2 == "tests/data/simple_csv_2.csv"
-    assert path3 == "tests/data/csvfile.csv"
-
-    field_definitions1 = root1.find(ADDML_NS + "fieldDefinitions")
-    field_definitions2 = root2.find(ADDML_NS + "fieldDefinitions")
-    if is_header:
-        assert field_definitions1[0].get('name') == '1'
-        assert field_definitions1[1].get('name') == '2'
-        assert field_definitions1[2].get('name') == '3'
-        assert field_definitions2[0].get('name') == 'test'
-        assert field_definitions2[1].get('name') == 'test'
-        assert field_definitions2[2].get('name') == 'test'
-    else:
-        assert field_definitions1[0].get('name') == 'header1'
-        assert field_definitions1[1].get('name') == 'header2'
-        assert field_definitions1[2].get('name') == 'header3'
-        assert field_definitions2[0].get('name') == 'header1'
-        assert field_definitions2[1].get('name') == 'header2'
-        assert field_definitions2[2].get('name') == 'header3'
+        # Verify fields within flatFiles
+        field_definitions = root.find(ADDML_NS + "fieldDefinitions")
+        for index, field in enumerate(field_definitions):
+            assert field.get('name') == exp_fields[amd_file_index][index]
 
 
 @pytest.mark.parametrize("file_, base_path", [
@@ -189,3 +152,27 @@ def test_paths(testpath, file_, base_path):
         open(os.path.join(testpath, 'amd-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))
+
+
+def _create_addml(testpath, isheader):
+    creator = create_addml.AddmlCreator(testpath)
+
+    # Append two csv files with same
+    # metadata, but different filename
+    creator.add_addml_md(
+        "tests/data/simple_csv.csv", ',', isheader,
+        CHARSET, RECORDSEPARATOR, QUOTINGCHAR
+    )
+
+    creator.add_addml_md(
+        "tests/data/simple_csv_2.csv", ',', isheader,
+        CHARSET, RECORDSEPARATOR, QUOTINGCHAR
+    )
+
+    # Append csv file with different metadata
+    creator.add_addml_md(
+        CSV_FILE, DELIMITER, isheader, CHARSET,
+        RECORDSEPARATOR, QUOTINGCHAR
+    )
+
+    creator.write()
