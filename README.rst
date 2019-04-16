@@ -182,7 +182,8 @@ If the argument is not given, the descriptive metadata is fully included. The ar
 If the argument is not given, the target is the whole dataset. Do not use argument --dmdsec_target,
 if the structural map is created based on EAD3 structure with compile_structmap.py.
 
-You may call this script several times to import multiple descriptive metadata files.
+Currently importing multiple descriptive metadata files for the same --dmdsec_target is not supported.
+However, it is possible to add multiple descriptive metadata files, when each of these have different targets.
 
 **Compile file section and structural map**
 

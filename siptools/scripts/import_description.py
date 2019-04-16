@@ -50,6 +50,9 @@ def main(dmdsec_location, dmdsec_target, workspace, remove_root, stdout):
         print lxml.etree.tostring(_mets, pretty_print=True)
 
     output_file = os.path.join(workspace, filename)
+    if os.path.isfile(output_file):
+        raise OSError('File {} already exists.'.format(output_file))
+
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
 
