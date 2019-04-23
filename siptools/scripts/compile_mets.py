@@ -84,9 +84,28 @@ def main(mets_profile, organization_name, contractid, objid, label,
     METS_PROFILE: METS profile.
     ORGANIZATION_NAME: Creator name (organization)
     CONTRACTID: Contract ID given by the Digital Preservation Service
-
     """
+
+    run(mets_profile, organization_name, contractid, objid, label,
+        contentid, create_date, last_moddate, record_status, workspace,
+        clean, copy_files, base_path, stdout, packagingservice)
+
+    return 0
+
+
+def run(mets_profile, organization_name, contractid, objid=None, label=None,
+        contentid=None, create_date=None, last_moddate=None,
+        record_status="submission", workspace="./workspace", clean=False,
+        copy_files=False, base_path=".", stdout=False, packagingservice=None):
+    """Merge partial METS documents in workspace directory into
+    one METS document."""
     contract = "urn:uuid:%s" % str(contractid)
+
+    if not objid:
+        objid = uuid.uuid4()
+
+    if not create_date:
+        create_date = datetime.datetime.utcnow().isoformat()
 
     mets_document = create_mets(
         workspace,
@@ -123,8 +142,6 @@ def main(mets_profile, organization_name, contractid, objid, label,
     if clean:
         clean_metsparts(workspace)
         print "compile_mets cleaned work files from workspace"
-
-    return 0
 
 
 def create_mets(workspace, mets_attributes, metshdr_attributes,

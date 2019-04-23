@@ -15,19 +15,26 @@ import dpres_signature.signature
          "signature.sig is written. Defaults to ./workspace/"
     )
 @click.argument("sign_key", type=click.Path(exists=True))
-def main(workspace, sign_key):
+def main(sign_key, workspace):
     """Script for signing the Submission Information Package with a
     digital signature. This script creates signature.sig file.
 
     SIGN_KEY: Private key of the signature keypair.
     """
-    signature = sign_mets(workspace, sign_key)
-    print "sign_mets created file: %s" % signature
+    run(sign_key, workspace)
 
     return 0
 
 
-def sign_mets(workspace, key_path):
+def run(sign_key, workspace="./workspace"):
+    """Script for signing the Submission Information Package with a
+    digital signature. This script creates signature.sig file.
+    """
+    signature = sign_mets(sign_key, workspace)
+    print "sign_mets created file: %s" % signature
+
+
+def sign_mets(key_path, workspace):
     """Sign METS file, which signs the whole package"""
     signature_path = os.path.join(workspace, 'signature.sig')
     signature = dpres_signature.signature.create_signature(signature_path,

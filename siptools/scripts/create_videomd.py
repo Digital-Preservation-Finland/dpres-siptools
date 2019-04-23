@@ -29,22 +29,25 @@ ALLOW_ZERO = ['data_rate', 'bits_per_sample', 'frame_rate', 'width',
     metavar='<BASE PATH>',
     help="Source base path of digital objects. If used, give path to "
          "the file in relation to this base path.")
-def main(workspace, base_path, filename):
-    """
-    Write videoMD metadata for a video file or streams.
+def main(filename, workspace, base_path):
+    """Write videoMD metadata for a video file or streams.
 
     FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
+    run(filename, workspace, base_path)
 
+    return 0
+
+
+def run(filename, workspace="./workspace/", base_path="."):
+    """Write videoMD metadata for a video file or streams."""
     filerel = os.path.normpath(filename)
     filepath = os.path.normpath(os.path.join(base_path, filename))
 
     creator = VideomdCreator(workspace)
     creator.add_videomd_md(filepath, filerel)
     creator.write()
-
-    return 0
 
 
 class VideomdCreator(AmdCreator):

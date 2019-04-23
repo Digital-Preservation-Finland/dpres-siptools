@@ -99,8 +99,7 @@ FILE_VERSION = {
 def main(workspace, base_path, skip_wellformed_check, charset, file_format,
          checksum, date_created, identifier, format_registry, order, stdout,
          filepaths):
-    """
-    Import files to generate digital objects. If parameters --charset,
+    """Import files to generate digital objects. If parameters --charset,
     --file_format, --identifier, --checksum or --date_created are not given,
     then these are created automatically.
 
@@ -110,7 +109,21 @@ def main(workspace, base_path, skip_wellformed_check, charset, file_format,
     --identifier are file dependent metadata, and if these are used, then use
     the script only for one file.
     """
+    run(workspace, base_path, skip_wellformed_check, charset, file_format,
+        checksum, date_created, identifier, format_registry, order, stdout,
+        filepaths)
 
+    return 0
+
+
+def run(workspace="./workspace/", base_path=".", skip_wellformed_check=False,
+        charset=None, file_format=None, checksum=None, date_created=None,
+        identifier=None, format_registry=None, order=None, stdout=False,
+        filepaths=None):
+    """Import files to generate digital objects. If parameters charset,
+    file_format, identifier, checksum or date_created are not given,
+    then these are created automatically.
+    """
     # Loop files and create premis objects
     files = collect_filepaths(dirs=filepaths, base=base_path)
     for filepath in files:
@@ -136,8 +149,6 @@ def main(workspace, base_path, skip_wellformed_check, charset, file_format,
         if properties:
             file_metadata_dict[0]['properties'] = properties
         creator.write(stdout=stdout, file_metadata_dict=file_metadata_dict)
-
-    return 0
 
 
 class PremisCreator(AmdCreator):

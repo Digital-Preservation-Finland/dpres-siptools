@@ -36,7 +36,19 @@ def str_to_unicode(string):
     metavar='<BASE PATH>',
     help="Source base path of digital objects. If used, give path to "
          "the file in relation to this base path.")
-def main(workspace, base_path, filename):
+def main(filename, workspace, base_path):
+    """
+    Write MIX metadata for an image file.
+
+    FILENAME: Relative path to the file from current directory or from
+              --base_path.
+    """
+    run(filename, workspace, base_path)
+
+    return 0
+
+
+def run(filename, workspace="./workspace/", base_path="."):
     """
     Write MIX metadata for an image file.
 
@@ -50,8 +62,6 @@ def main(workspace, base_path, filename):
     creator = MixCreator(workspace)
     creator.add_mix_md(filepath, filerel)
     creator.write()
-
-    return 0
 
 
 class MixCreator(AmdCreator):

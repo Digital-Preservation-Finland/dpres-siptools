@@ -35,8 +35,7 @@ from siptools.utils import AmdCreator, encode_path
               metavar='<QUOTING CHAR>',
               help="Quoting character used in the CSV file")
 def main(filename, header, charset, delim, sep, quot, workspace, base_path):
-    """
-    Tool for creating ADDML metadata for a CSV file. The
+    """Tool for creating ADDML metadata for a CSV file. The
     ADDML metadata is written to <hash>-ADDML-amd.xml
     METS XML file in the workspace directory. The ADDML
     techMD reference is written to amd-references.xml.
@@ -47,7 +46,14 @@ def main(filename, header, charset, delim, sep, quot, workspace, base_path):
     FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
+    run(filename, header, charset, delim, sep, quot, workspace, base_path)
 
+    return 0
+
+
+def run(filename, header, charset, delim, sep, quot,
+        workspace="./workspace/", base_path="."):
+    """Create ADDML metadata for a CSV file."""
     filerel = os.path.normpath(filename)
     filepath = os.path.normpath(os.path.join(base_path, filename))
 
@@ -58,8 +64,6 @@ def main(filename, header, charset, delim, sep, quot, workspace, base_path):
         sep, quot
     )
     creator.write(filerel=filerel)
-
-    return 0
 
 
 class AddmlCreator(AmdCreator):

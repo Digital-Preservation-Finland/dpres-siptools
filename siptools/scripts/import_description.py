@@ -32,12 +32,19 @@ from siptools.utils import encode_path, encode_id
 @click.option('--stdout', is_flag=True,
               help='Print output to stdout')
 def main(dmdsec_location, dmdsec_target, workspace, remove_root, stdout):
-    """
-    Create METS documents that contains descriptive metadata
+    """Create METS documents that contains descriptive metadata
     imported from XML file.
 
     DMDLOCATION: Path to XML file that contains descriptive metadata.
+    """
+    run(dmdsec_location, dmdsec_target, workspace, remove_root, stdout)
+    return 0
 
+
+def run(dmdsec_location, dmdsec_target=None, workspace="./workspace",
+        remove_root=False, stdout=False):
+    """Create METS documents that contains descriptive metadata
+    imported from XML file.
     """
     if dmdsec_target:
         filename = encode_path(dmdsec_target, suffix='-dmdsec.xml')
@@ -62,8 +69,6 @@ def main(dmdsec_location, dmdsec_target, workspace, remove_root, stdout):
                 encoding='UTF-8')
 
     print "import_description created file: %s" % output_file
-
-    return 0
 
 
 def create_mets(input_file, filename, remove_root=False):

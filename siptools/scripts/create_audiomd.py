@@ -30,13 +30,19 @@ ALLOW_ZERO = ['bits_per_sample', 'data_rate', 'sampling_frequency']
     metavar='<BASE PATH>',
     help="Source base path of digital objects. If used, give path to "
          "the file in relation to this base path.")
-def main(workspace, base_path, filename):
-    """
-    Write audioMD metadata for an audio file or streams.
+def main(filename, workspace, base_path):
+    """Write audioMD metadata for an audio file or streams.
 
     FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
+    run(filename, workspace, base_path)
+
+    return 0
+
+
+def run(filename, workspace="./workspace/", base_path="."):
+    """Write audioMD metadata for an audio file or streams."""
 
     filerel = os.path.normpath(filename)
     filepath = os.path.normpath(os.path.join(base_path, filename))
@@ -44,8 +50,6 @@ def main(workspace, base_path, filename):
     creator = AudiomdCreator(workspace)
     creator.add_audiomd_md(filepath, filerel)
     creator.write()
-
-    return 0
 
 
 class AudiomdCreator(AmdCreator):

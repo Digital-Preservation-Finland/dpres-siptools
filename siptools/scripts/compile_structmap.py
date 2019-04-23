@@ -43,11 +43,20 @@ def ead3_ns(tag):
               is_flag=True,
               help='Print output also to stdout.')
 def main(workspace, structmap_type, root_type, dmdsec_loc, stdout):
-    """
-    Tool for generating METS file section and structural map based on
+    """Tool for generating METS file section and structural map based on
     created/imported administrative metada and descriptive metadata.
     The script will also add order of the file to the structural map
     (via pickle file), if --order argument was used in import_object script.
+    """
+    run(workspace, structmap_type, root_type, dmdsec_loc, stdout)
+
+    return 0
+
+
+def run(workspace="./workspace/", structmap_type=None, root_type=None,
+        dmdsec_loc=None, stdout=False):
+    """Generate METS file section and structural map based on
+    created/imported administrative metada and descriptive metadata.
     """
     filelist = get_objectlist(workspace)
 
@@ -87,8 +96,6 @@ def main(workspace, structmap_type, root_type, dmdsec_loc, stdout):
 
     print "compile_structmap created files: %s %s" % (output_sm_file,
                                                       output_fs_file)
-
-    return 0
 
 
 def create_filesec(workspace, filelist):
