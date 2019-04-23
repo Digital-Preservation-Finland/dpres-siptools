@@ -7,6 +7,7 @@ from uuid import uuid4
 import datetime
 import platform
 import click
+import magic
 from file_scraper.scraper import Scraper
 import premis
 from siptools.utils import AmdCreator
@@ -23,7 +24,31 @@ DEFAULT_VERSIONS = {
     'application/vnd.openxmlformats-'
     'officedocument.spreadsheetml.sheet': '15.0',
     'application/vnd.openxmlformats-'
-    'officedocument.wordprocessingml.document': '15.0'}
+    'officedocument.wordprocessingml.document': '15.0'
+}
+
+FILE_VERSION = {
+    'text/xml': '1.0',
+    'text/plain': '',
+    'text/csv': '',
+    'image/tiff': '6.0',
+    'application/vnd.oasis.opendocument.text': '1.0',
+    'application/vnd.oasis.opendocument.spreadsheet': '1.0',
+    'application/vnd.oasis.opendocument.presentation': '1.0',
+    'application/vnd.oasis.opendocument.graphics': '1.0',
+    'application/vnd.oasis.opendocument.formula': '1.0',
+    'application/vnd.openxmlformats-officedocument'
+    '.wordprocessingml.document': '15.0',
+    'application/vnd.openxmlformats-officedocument'
+    '.spreadsheetml.sheet': '15.0',
+    'application/vnd.openxmlformats-officedocument'
+    '.presentationml.presentation': '15.0',
+    'application/msword': '11.0',
+    'application/vnd.ms-excel': '11.0',
+    'application/vnd.ms-powerpoint': '11.0',
+    'audio/x-wav': '',
+    'video/mp4': ''
+}
 
 
 @click.command()
@@ -310,6 +335,129 @@ def create_premis_object(fname, scraper,
         object_identifier, child_elements=[premis_objchar])
 
     return el_premis_object
+
+
+def metadata_info(fname):
+    """Return metadata_info dict for given file."""
+    magic_ = magic.open(magic.MAGIC_MIME_TYPE)
+    magic_.load()
+    mimetype = magic_.file(fname)
+    magic_.close()
+
+    magic_ = magic.open(magic.MAGIC_MIME_ENCODING)
+    magic_.load()
+    charset = magic_.file(fname)
+    magic_.close()
+
+    magic_ = magic.open(magic.MAGIC_NONE)
+    magic_.load()
+    version = magic_.file(fname).split("version ")[-1]
+    magic_.close()
+
+    metadata_info_ = {
+        'filename': fname,
+        'type': 'file',
+        'format': {
+            'mimetype': mimetype,
+            'version': version,
+            'charset': charset
+        }
+    }
+
+    # Return version info from dictionary
+    if mimetype in FILE_VERSION:
+        metadata_info_['format']['version'] = FILE_VERSION[mimetype]
+
+    # If it's an XML-file, return fixed mimetype and version
+    if mimetype == 'application/xml':
+        metadata_info_['format']['mimetype'] = 'text/xml'
+        metadata_info_['format']['version'] = '1.0'
+        mimetype = 'text/xml'
+
+    # Find correct charset
+    if mimetype in ['text/plain', 'text/csv', 'application/xhtml+xml',
+                    'text/xml', 'text/html', 'application/gml+xml',
+                    'application/vnd.google-earth.kml+xml']:
+        metadata_info_['format']['charset'] = return_charset(charset.upper())
+    else:
+        del metadata_info_['format']['charset']
+
+    # If it's a jpeg file, return version
+    if mimetype == 'image/jpeg':
+        versions = ['1.10', '1.01', '1.02']
+        for ver in versions:
+            if ver in version:
+                metadata_info_['format']['version'] = ver
+
+    # If Broadcast WAVE file return version
+    if mimetype == 'audio/x-wav':
+        if is_broadcast_wav(fname):
+            metadata_info_['format']['version'] = '2'
+
+    return metadata_info_
+
+
+def return_charset(charset_raw):
+    """Returns the charset for text files in a correct format. Charset
+    is read from the file using the file command. The function
+    raises a ValueError if the charset is unsupported.
+
+    :charset_raw: Original charset name
+    :returns: the charset in correct format
+    """
+    allowed_charsets = ['ISO-8859-15', 'UTF-8',
+                        'UTF-16', 'UTF-32']
+
+    if charset_raw == 'US-ASCII':
+        charset = 'ISO-8859-15'
+    elif charset_raw == 'ISO-8859-1':
+        charset = 'ISO-8859-15'
+    elif charset_raw == 'UTF-16LE' or charset_raw == 'UTF-16BE':
+        charset = 'UTF-16'
+    else:
+        charset = charset_raw
+
+    if charset not in allowed_charsets:
+        raise ValueError('Invalid charset.')
+
+    return charset
+
+
+def _read_uint(f_in):
+    """Read 4 bytes from f_in and return the corresponding
+    unsigned integer.
+    """
+    uint = 0
+    binary_num = f_in.read(4)
+
+    for i in range(4):
+        uint += ord(binary_num[i]) << (8*i)  # Left shift of 8*i
+
+    return uint
+
+
+def is_broadcast_wav(fname):
+    """Check if file fname is WAV or broadcast WAV file.
+    The function reads all the RIFF chunk IDs and returns
+    True if "bext" chunk is found.
+    """
+    with open(fname) as f_in:
+        f_in.read(4)  # Skip RIFF ID
+        size = _read_uint(f_in) - 4
+        f_in.read(4)  # Skip WAVE ID
+
+        # Iterate all WAVE chunks
+        while size > 0:
+            chunk_id = f_in.read(4)
+            chunk_size = _read_uint(f_in)
+
+            if chunk_id == "bext":
+                return True
+            else:
+                size -= (chunk_size + 8)
+                f_in.seek(chunk_size, 1)
+
+    return False
 
 
 def collect_filepaths(dirs=None, pattern='*', base='.'):
