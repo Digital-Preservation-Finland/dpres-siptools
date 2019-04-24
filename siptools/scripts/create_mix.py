@@ -37,20 +37,18 @@ def str_to_unicode(string):
     help="Source base path of digital objects. If used, give path to "
          "the file in relation to this base path.")
 def main(filename, workspace, base_path):
-    """
-    Write MIX metadata for an image file.
+    """Write MIX metadata for an image file.
 
     FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
-    run(filename, workspace, base_path)
+    create_mix(filename, workspace, base_path)
 
     return 0
 
 
-def run(filename, workspace="./workspace/", base_path="."):
-    """
-    Write MIX metadata for an image file.
+def create_mix(filename, workspace="./workspace/", base_path="."):
+    """Write MIX metadata for an image file.
 
     FILENAME: Relative path to the file from current directory or from
               --base_path.
@@ -78,7 +76,7 @@ class MixCreator(AmdCreator):
         """
 
         # Create MIX metadata
-        mix = create_mix(filepath, filerel, self.workspace)
+        mix = create_mix_metadata(filepath, filerel, self.workspace)
         if mix is not None:
             self.add_md(metadata=mix,
                         filename=(filerel if filerel else filepath))
@@ -102,7 +100,7 @@ def check_missing_metadata(stream, filename):
                 'for file %s' % (key, filename))
 
 
-def create_mix(filename, filerel=None, workspace=None):
+def create_mix_metadata(filename, filerel=None, workspace=None):
     """Create MIX metadata XML element for an image file.
 
     :image: image file

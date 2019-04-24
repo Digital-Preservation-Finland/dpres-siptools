@@ -46,13 +46,14 @@ def main(filename, header, charset, delim, sep, quot, workspace, base_path):
     FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
-    run(filename, header, charset, delim, sep, quot, workspace, base_path)
-
+    create_addml(
+        filename, header, charset, delim, sep, quot, workspace, base_path
+    )
     return 0
 
 
-def run(filename, header, charset, delim, sep, quot,
-        workspace="./workspace/", base_path="."):
+def create_addml(filename, header, charset, delim, sep, quot,
+                 workspace="./workspace/", base_path="."):
     """Create ADDML metadata for a CSV file."""
     filerel = os.path.normpath(filename)
     filepath = os.path.normpath(os.path.join(base_path, filename))
@@ -113,7 +114,7 @@ class AddmlCreator(AmdCreator):
             return
 
         # If similar metadata does not exist, create it
-        metadata = create_addml(
+        metadata = create_addml_metadata(
             csv_file, delimiter,
             isheader, charset,
             record_separator, quoting_char
@@ -219,7 +220,7 @@ def append_lines(fname, xml_elem, append):
                     f_out.write(" " * indent + new_line)
 
 
-def create_addml(
+def create_addml_metadata(
         csv_file, delimiter, isheader, charset,
         record_separator, quoting_char, flatfile_name=None
 ):

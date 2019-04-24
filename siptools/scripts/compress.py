@@ -16,10 +16,10 @@ def main(dir_to_tar, tar_filename):
 
     DIR_TO_TAR: Directory to be added in the TAR file.
     """
-    return run(dir_to_tar, tar_filename)
+    return compress(dir_to_tar, tar_filename)
 
 
-def run(dir_to_tar, tar_filename):
+def compress(dir_to_tar, tar_filename):
     """Create tar file from SIP directory."""
     command = 'cd %s' % dir_to_tar
     command2 = 'tar -cvvf %s *' % tar_filename

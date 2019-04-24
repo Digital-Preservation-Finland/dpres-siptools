@@ -73,7 +73,7 @@ def test_create_mix():
     function and check that result XML element contains expected elements.
     """
 
-    xml = create_mix.create_mix('tests/data/images/tiff1.tif')
+    xml = create_mix.create_mix_metadata('tests/data/images/tiff1.tif')
     namespaces = {'mix': "http://www.loc.gov/mix/v20"}
 
     # compression
@@ -141,7 +141,7 @@ def test_existing_scraper_result(testpath):
             as outfile:
         pickle.dump(stream_dict, outfile)
 
-    mix = create_mix.create_mix(file_, workspace=testpath)
+    mix = create_mix.create_mix_metadata(file_, workspace=testpath)
     path = "//mix:imageWidth"
     assert mix.xpath(path, namespaces=namespaces)[0].text == '1234'
 
@@ -151,7 +151,7 @@ def test_mix_multiple_images():
     images present.
     """
     with pytest.raises(ValueError):
-        create_mix.create_mix("tests/data/images/multiple_images.tif")
+        create_mix.create_mix_metadata("tests/data/images/multiple_images.tif")
 
 
 @pytest.mark.parametrize("file_, base_path", [

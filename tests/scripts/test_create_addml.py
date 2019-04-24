@@ -21,7 +21,7 @@ ADDML_NS = './/{http://www.arkivverket.no/standarder/addml}'
 def test_create_addml(is_header):
     """Test that ``create_addml`` returns valid addml."""
 
-    addml_etree = create_addml.create_addml(
+    addml_etree = create_addml.create_addml_metadata(
         CSV_FILE, DELIMITER, is_header,
         CHARSET, RECORDSEPARATOR, QUOTINGCHAR
     )
@@ -57,7 +57,7 @@ def test_create_addml_with_flatfile(is_header):
     parameter flatfile_name is provided.
     """
 
-    addml_etree = create_addml.create_addml(
+    addml_etree = create_addml.create_addml_metadata(
         CSV_FILE, DELIMITER, is_header,
         CHARSET, RECORDSEPARATOR, QUOTINGCHAR,
         flatfile_name="path/to/test"

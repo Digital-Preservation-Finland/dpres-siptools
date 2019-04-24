@@ -37,12 +37,15 @@ def main(dmdsec_location, dmdsec_target, workspace, remove_root, stdout):
 
     DMDLOCATION: Path to XML file that contains descriptive metadata.
     """
-    run(dmdsec_location, dmdsec_target, workspace, remove_root, stdout)
+    import_description(
+        dmdsec_location, dmdsec_target, workspace, remove_root, stdout
+    )
     return 0
 
 
-def run(dmdsec_location, dmdsec_target=None, workspace="./workspace",
-        remove_root=False, stdout=False):
+def import_description(dmdsec_location, dmdsec_target=None,
+                       workspace="./workspace", remove_root=False,
+                       stdout=False):
     """Create METS documents that contains descriptive metadata
     imported from XML file.
     """

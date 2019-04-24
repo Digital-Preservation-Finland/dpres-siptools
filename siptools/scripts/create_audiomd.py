@@ -36,12 +36,12 @@ def main(filename, workspace, base_path):
     FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
-    run(filename, workspace, base_path)
+    create_audiomd(filename, workspace, base_path)
 
     return 0
 
 
-def run(filename, workspace="./workspace/", base_path="."):
+def create_audiomd(filename, workspace="./workspace/", base_path="."):
     """Write audioMD metadata for an audio file or streams."""
 
     filerel = os.path.normpath(filename)
@@ -67,7 +67,9 @@ class AudiomdCreator(AmdCreator):
         """
 
         # Create audioMD metadata
-        audiomd_dict = create_audiomd(filepath, filerel, self.workspace)
+        audiomd_dict = create_audiomd_metadata(
+            filepath, filerel, self.workspace
+        )
 
         if '0' in audiomd_dict and len(audiomd_dict) == 1:
             self.add_md(metadata=audiomd_dict['0'],
@@ -84,7 +86,7 @@ class AudiomdCreator(AmdCreator):
         super(AudiomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
-def create_audiomd(filename, filerel=None, workspace=None):
+def create_audiomd_metadata(filename, filerel=None, workspace=None):
     """Creates and returns list of audioMD XML sections.
     :filename: Audio file path
     :returns: List of AudioMD XML sections.

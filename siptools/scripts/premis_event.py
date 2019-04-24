@@ -76,16 +76,17 @@ def main(event_type, event_datetime, event_detail, event_outcome,
     EVENT_TYPE: Type of the event.
     EVENT_DATETIME: Timestamp of the event.
     """
-    run(event_type, event_datetime, event_detail, event_outcome,
-        event_outcome_detail, workspace, agent_name, agent_type,
-        stdout, event_target)
+    premis_event(event_type, event_datetime, event_detail, event_outcome,
+                 event_outcome_detail, workspace, agent_name, agent_type,
+                 stdout, event_target)
 
     return 0
 
 
-def run(event_type, event_datetime, event_detail, event_outcome,
-        event_outcome_detail=None, workspace="./workspace", agent_name=None,
-        agent_type=None, stdout=False, event_target=None):
+def premis_event(event_type, event_datetime, event_detail, event_outcome,
+                 event_outcome_detail=None, workspace="./workspace",
+                 agent_name=None, agent_type=None, stdout=False,
+                 event_target=None):
     """The script creates provenance metadata for the package. The metadata
     contains event and, if given, also agent of the event.
     """

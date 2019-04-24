@@ -48,13 +48,13 @@ def main(workspace, structmap_type, root_type, dmdsec_loc, stdout):
     The script will also add order of the file to the structural map
     (via pickle file), if --order argument was used in import_object script.
     """
-    run(workspace, structmap_type, root_type, dmdsec_loc, stdout)
+    compile_structmap(workspace, structmap_type, root_type, dmdsec_loc, stdout)
 
     return 0
 
 
-def run(workspace="./workspace/", structmap_type=None, root_type=None,
-        dmdsec_loc=None, stdout=False):
+def compile_structmap(workspace="./workspace/", structmap_type=None,
+                      root_type=None, dmdsec_loc=None, stdout=False):
     """Generate METS file section and structural map based on
     created/imported administrative metada and descriptive metadata.
     """

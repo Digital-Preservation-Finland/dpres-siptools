@@ -64,7 +64,9 @@ class VideomdCreator(AmdCreator):
         """
 
         # Create videoMD metadata
-        videomd_dict = create_videomd(filepath, filerel, self.workspace)
+        videomd_dict = create_videomd_metadata(
+            filepath, filerel, self.workspace
+        )
         if '0' in videomd_dict and len(videomd_dict) == 1:
             self.add_md(metadata=videomd_dict['0'],
                         filename=(filerel if filerel else filepath))
@@ -80,7 +82,7 @@ class VideomdCreator(AmdCreator):
         super(VideomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
-def create_videomd(filename, filerel=None, workspace=None):
+def create_videomd_metadata(filename, filerel=None, workspace=None):
     """Creates and returns list of videoMD XML sections.
     :filename: Audio file path
     :returns: List of VideoMD XML sections.

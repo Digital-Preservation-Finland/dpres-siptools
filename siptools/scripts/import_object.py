@@ -109,17 +109,19 @@ def main(workspace, base_path, skip_wellformed_check, charset, file_format,
     --identifier are file dependent metadata, and if these are used, then use
     the script only for one file.
     """
-    run(workspace, base_path, skip_wellformed_check, charset, file_format,
+    import_object(
+        workspace, base_path, skip_wellformed_check, charset, file_format,
         checksum, date_created, identifier, format_registry, order, stdout,
-        filepaths)
-
+        filepaths
+    )
     return 0
 
 
-def run(workspace="./workspace/", base_path=".", skip_wellformed_check=False,
-        charset=None, file_format=None, checksum=None, date_created=None,
-        identifier=None, format_registry=None, order=None, stdout=False,
-        filepaths=None):
+def import_object(workspace="./workspace/", base_path=".",
+                  skip_wellformed_check=False, charset=None, file_format=None,
+                  checksum=None, date_created=None, identifier=None,
+                  format_registry=None, order=None, stdout=False,
+                  filepaths=None):
     """Import files to generate digital objects. If parameters charset,
     file_format, identifier, checksum or date_created are not given,
     then these are created automatically.

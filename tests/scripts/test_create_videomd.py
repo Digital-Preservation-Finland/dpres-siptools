@@ -14,10 +14,10 @@ NAMESPACES = {"vmd": VIDEOMD_NS}
 
 
 def test_create_videomd_elem():
-    """Test that ``create_videomd`` returns valid videomd.
+    """Test that ``create_videomd_metadata`` returns valid videomd.
     """
 
-    videomd = create_videomd.create_videomd(
+    videomd = create_videomd.create_videomd_metadata(
         "tests/data/video/valid_1.m1v")["0"]
 
     file_data = "/vmd:VIDEOMD/vmd:fileData"
@@ -80,12 +80,13 @@ def test_create_videomd_elem():
 
 
 def test_stream():
-    """Test that ``create_videomd`` returns valid videomd from a
+    """Test that ``create_videomd_metadata`` returns valid videomd from a
        video container.
     """
 
-    videomd = create_videomd.create_videomd(
-        "tests/data/video/valid__h264_aac.mp4")["1"]
+    videomd = create_videomd.create_videomd_metadata(
+        "tests/data/video/valid__h264_aac.mp4"
+    )["1"]
 
     file_data = "/vmd:VIDEOMD/vmd:fileData"
 
@@ -140,11 +141,11 @@ def test_stream():
 
 
 def test_invalid_file():
-    """Test that calling create_videomd() for file that can not be parsed
+    """Test that calling create_videomd_metadata() for file that can not be parsed
     raises ValueError
     """
     with pytest.raises(ValueError):
-        create_videomd.create_videomd("non-existent.mpg")
+        create_videomd.create_videomd_metadata("non-existent.mpg")
 
 
 def test_create_videomd(testpath):
@@ -155,8 +156,9 @@ def test_create_videomd(testpath):
 
     # Debug print
     print "\n\n%s" % ET.tostring(
-        create_videomd.create_videomd("tests/data/video/valid_1.m1v")["0"],
-        pretty_print=True
+        create_videomd.create_videomd_metadata(
+            "tests/data/video/valid_1.m1v"
+        )["0"], pretty_print=True
     )
 
     # Append same file twice
@@ -228,7 +230,9 @@ def test_existing_scraper_result(testpath):
             as outfile:
         pickle.dump(stream_dict, outfile)
 
-    videomd = create_videomd.create_videomd(file_, workspace=testpath)["0"]
+    videomd = create_videomd.create_videomd_metadata(
+        file_, workspace=testpath
+    )["0"]
 
     path = "/vmd:VIDEOMD/vmd:fileData/vmd:duration"
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT50S'

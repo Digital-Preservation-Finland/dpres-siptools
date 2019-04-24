@@ -17,7 +17,7 @@ def test_create_audiomd_elem():
     """Test that ``create_audiomd`` returns valid audiomd.
     """
 
-    audiomd = create_audiomd.create_audiomd(
+    audiomd = create_audiomd.create_audiomd_metadata(
         "tests/data/audio/valid__wav.wav")["0"]
 
     file_data = "/amd:AUDIOMD/amd:fileData"
@@ -69,7 +69,7 @@ def test_stream():
     """Test that ``create_audiomd`` returns valid audiomd from a
        video container.
     """
-    audiomd = create_audiomd.create_audiomd(
+    audiomd = create_audiomd.create_audiomd_metadata(
         "tests/data/video/valid__h264_aac.mp4")["2"]
 
     file_data = "/amd:AUDIOMD/amd:fileData"
@@ -111,11 +111,11 @@ def test_stream():
 
 
 def test_invalid_wav_file():
-    """Test that calling create_audiomd() for file that can not be parsed
-    raises ValueError
+    """Test that calling create_audiomd_metadata() for file that can not be
+    parsed raises ValueError
     """
     with pytest.raises(ValueError):
-        create_audiomd.create_audiomd("non-existent.wav")
+        create_audiomd.create_audiomd_metadata("non-existent.wav")
 
 
 def test_create_audiomd(testpath):
@@ -126,8 +126,9 @@ def test_create_audiomd(testpath):
 
     # Debug print
     print "\n\n%s" % ET.tostring(
-        create_audiomd.create_audiomd("tests/data/audio/valid__wav.wav")["0"],
-        pretty_print=True
+        create_audiomd.create_audiomd_metadata(
+            "tests/data/audio/valid__wav.wav"
+        )["0"], pretty_print=True
     )
 
     # Append WAV and broadcast WAV files with identical metadata
@@ -199,7 +200,9 @@ def test_existing_scraper_result(testpath):
             as outfile:
         pickle.dump(stream_dict, outfile)
 
-    audiomd = create_audiomd.create_audiomd(file_, workspace=testpath)["0"]
+    audiomd = create_audiomd.create_audiomd_metadata(
+        file_, workspace=testpath
+    )["0"]
 
     audio_info = "/amd:AUDIOMD/amd:audioInfo"
     path = "%s/amd:duration" % audio_info
