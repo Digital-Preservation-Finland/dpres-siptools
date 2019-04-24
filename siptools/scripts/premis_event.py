@@ -194,11 +194,11 @@ def create_premis_event(event_type, event_datetime, event_detail,
         )
         child_elements.append(linking_agent_identifier)
 
-    premis_event = premis.event(event_identifier, event_type,
-                                event_datetime, event_detail,
-                                child_elements=child_elements)
+    premis_event_elem = premis.event(event_identifier, event_type,
+                                     event_datetime, event_detail,
+                                     child_elements=child_elements)
 
-    return premis_event
+    return premis_event_elem
 
 
 def create_premis_agent_file(workspace, event_type, agent_name, agent_type,
@@ -261,12 +261,12 @@ def create_premis_event_file(workspace, event_type, event_datetime,
 
     event_id = encode_id(output_filename)
 
-    premis_event = create_premis_event(
+    premis_event_elem = create_premis_event(
         event_type, event_datetime, event_detail,
         event_outcome, event_outcome_detail, agent_identifier
     )
 
-    event_mets = _create_mets(premis_event, event_id, 'PREMIS:EVENT')
+    event_mets = _create_mets(premis_event_elem, event_id, 'PREMIS:EVENT')
     _write_mets(event_mets, os.path.join(workspace, output_filename))
 
     return (os.path.join(workspace, output_filename),
