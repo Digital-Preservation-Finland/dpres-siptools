@@ -35,12 +35,12 @@ def main(filename, workspace, base_path):
     FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
-    run(filename, workspace, base_path)
+    create_videomd(filename, workspace, base_path)
 
     return 0
 
 
-def run(filename, workspace="./workspace/", base_path="."):
+def create_videomd(filename, workspace="./workspace/", base_path="."):
     """Write videoMD metadata for a video file or streams."""
     filerel = os.path.normpath(filename)
     filepath = os.path.normpath(os.path.join(base_path, filename))
