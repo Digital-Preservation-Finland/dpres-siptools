@@ -123,6 +123,8 @@ def run(workspace="./workspace/", base_path=".", skip_wellformed_check=False,
     """Import files to generate digital objects. If parameters charset,
     file_format, identifier, checksum or date_created are not given,
     then these are created automatically.
+
+    :returns: Dictionary of the scraped file metadata
     """
     # Loop files and create premis objects
     files = collect_filepaths(dirs=filepaths, base=base_path)
@@ -149,6 +151,8 @@ def run(workspace="./workspace/", base_path=".", skip_wellformed_check=False,
         if properties:
             file_metadata_dict[0]['properties'] = properties
         creator.write(stdout=stdout, file_metadata_dict=file_metadata_dict)
+
+    return file_metadata_dict
 
 
 class PremisCreator(AmdCreator):
