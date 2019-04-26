@@ -7,7 +7,6 @@ from uuid import uuid4
 import datetime
 import platform
 import click
-import magic
 from file_scraper.scraper import Scraper
 import premis
 from siptools.utils import AmdCreator
@@ -356,6 +355,8 @@ def create_premis_object(fname, scraper,
 
 def metadata_info(fname):
     """Return metadata_info dict for given file."""
+    import magic
+
     magic_ = magic.open(magic.MAGIC_MIME_TYPE)
     magic_.load()
     mimetype = magic_.file(fname)
