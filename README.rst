@@ -44,7 +44,7 @@ Installation
 Installation and usage requires Python 2.7.
 The software is tested with Python 2.7 with Centos 7.x / RHEL 7.x releases.
 
-Packages openssl-devel and gcc are required in your system to install M2Crypto,
+Packages openssl-devel, swig and gcc are required in your system to install M2Crypto,
 which is used for signing the packages with digital signature.
 
 Get python-virtuelenv software::
