@@ -103,7 +103,7 @@ def compile_mets(mets_profile, organization_name, contractid, objid=None,
     contract = "urn:uuid:%s" % str(contractid)
 
     if not objid:
-        objid = uuid.uuid4()
+        objid = str(uuid.uuid4())
 
     if not create_date:
         create_date = datetime.datetime.utcnow().isoformat()
