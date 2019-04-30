@@ -17,6 +17,40 @@ unit-test:
   except:
     - master
 
+unit-test-python27:
+  stage: local-test
+  tags:
+    - docker
+  script:
+    - 'unit-test-virtualenv.sh'
+  allow_failure: true
+  except:
+    - master
+
+unit-test-python36:
+  stage: local-test
+  tags:
+    - docker
+  script:
+    - 'unit-test-virtualenv.sh python36'
+  allow_failure: true
+  except:
+    - master
+
+e2e-localhost-archives:
+  stage: local-test
+  script:
+    - 'e2e-localhost-archives.sh dpres-siptools-archives'
+  except:
+    - master
+
+e2e-localhost-siptools-research:
+  stage: local-test
+  script:
+    - 'e2e-fairdata-localhost.sh dpres-research-rest-api'
+  except:
+    - master
+
 rpm-stable:
   stage: rpm-stable
   script:
