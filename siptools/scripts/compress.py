@@ -1,6 +1,5 @@
 """Command line tool for creating tar file from SIP directory"""
 
-import os
 import sys
 import subprocess
 import click
