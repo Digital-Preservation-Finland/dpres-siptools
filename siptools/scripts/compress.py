@@ -1,5 +1,6 @@
 """Command line tool for creating tar file from SIP directory"""
 
+import os
 import sys
 import subprocess
 import click
@@ -21,12 +22,12 @@ def main(dir_to_tar, tar_filename):
 
 def compress(dir_to_tar, tar_filename):
     """Create tar file from SIP directory."""
-    command = 'cd %s' % dir_to_tar
-    command2 = 'tar -cvvf %s *' % tar_filename
+    command = ['tar', '-cvvf', tar_filename, '.']
     proc = subprocess.Popen(
-        '{}; {}'.format(command, command2), shell=True,
+        command, cwd=dir_to_tar,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT, close_fds=True)
+        stderr=subprocess.STDOUT, close_fds=True
+    )
 
     proc.communicate()
     returncode = proc.returncode
