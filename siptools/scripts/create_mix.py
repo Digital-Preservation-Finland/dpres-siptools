@@ -22,6 +22,17 @@ def str_to_unicode(string):
     return unicode(string, sys.getfilesystemencoding())
 
 
+class MixGenerationError(ValueError):
+    """Exception raised when mix metadata generation fails."""
+
+    def __init__(self, message, filename=""):
+        super(MixGenerationError, self).__init__(message)
+        self.filename = filename
+
+    def __str__(self):
+        return self.message + self.filename
+
+
 @click.command()
 @click.argument(
     'filename', type=str)
@@ -95,9 +106,9 @@ def check_missing_metadata(stream, filename):
         if key in ['mimetype', 'stream_type', 'index', 'version']:
             continue
         if element in [None, '(:unav)']:
-            raise ValueError(
-                'Missing metadata value for key %s '
-                'for file %s' % (key, filename))
+            raise MixGenerationError(
+                'Missing metadata value for key %s for file ' % key, filename
+            )
 
 
 def create_mix_metadata(filename, filerel=None, workspace=None):
@@ -114,15 +125,17 @@ def create_mix_metadata(filename, filerel=None, workspace=None):
         print "This is not an image file. No MIX metadata created."
         return None
     if len(streams) > 1:
-        raise ValueError('File containing multiple images not supported. '
-                         'File: %s' % filename)
+        raise MixGenerationError(
+            'File containing multiple images not supported. File: ', filename
+        )
 
     mix_compression = nisomix.compression(
         compression_scheme=stream_md["compression"])
     if 'byte_order' not in stream_md:
         if stream_md['mimetype'] == 'image/tiff':
-            raise ValueError('Byte order missing from TIFF image file '
-                             '%s' % filename)
+            raise MixGenerationError(
+                'Byte order missing from TIFF image file ', filename
+            )
         byte_order = None
     else:
         byte_order = stream_md["byte_order"]
@@ -151,7 +164,7 @@ def create_mix_metadata(filename, filerel=None, workspace=None):
         child_elements=[basic_do_info, img_info, img_assessment])
 
     if mix_root is None:
-        raise ValueError('Image info could not be constructed.')
+        raise MixGenerationError('Image info could not be constructed.')
 
     return mix_root
 
