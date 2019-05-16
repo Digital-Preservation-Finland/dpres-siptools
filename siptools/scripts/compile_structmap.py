@@ -14,6 +14,10 @@ from siptools.xml.mets import NAMESPACES
 from siptools.utils import encode_id, encode_path, tree, add, get_objectlist
 
 
+ALLOWED_C_SUBS = ['c', 'c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07',
+                  'c08', 'c09', 'c10', 'c11', 'c12']
+
+
 def ead3_ns(tag):
     """Get tag with EAD3 namespace
     """
@@ -192,13 +196,14 @@ def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
                        admid=amdids)
 
     if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:
-        for ead3_c in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
-            if len(ET.QName(ead3_c.tag).localname) > 1:
-                cnum = str(ET.QName(ead3_c.tag).localname)[-2:]
-            else:
-                cnum = None
-            ead3_c_div(ead3_c, div_ead, filegrp, workspace, filelist,
-                       cnum=cnum)
+        for elem in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
+            if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
+                if len(ET.QName(elem.tag).localname) > 1:
+                    cnum = str(ET.QName(elem.tag).localname)[-2:]
+                else:
+                    cnum = None
+                ead3_c_div(elem, div_ead, filegrp, workspace, filelist,
+                           cnum=cnum)
 
     container_div.append(div_ead)
     structmap.append(container_div)
@@ -220,8 +225,6 @@ def ead3_c_div(parent, structmap, filegrp, workspace, filelist, cnum=None):
     :filelist: Sorted list of digital objects (file paths)
     :cnum: EAD3 c level
     """
-    allowed_c_subs = ['c', 'c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07',
-                      'c08', 'c09', 'c10', 'c11', 'c12']
 
     if parent.xpath("./@otherlevel"):
         level = parent.xpath("./@otherlevel")[0]
@@ -236,7 +239,7 @@ def ead3_c_div(parent, structmap, filegrp, workspace, filelist, cnum=None):
         cnum_sub = None
 
     for elem in parent.findall("./*"):
-        if ET.QName(elem.tag).localname in allowed_c_subs:
+        if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
             ead3_c_div(elem, c_div, filegrp, workspace, filelist,
                        cnum=cnum_sub)
 
