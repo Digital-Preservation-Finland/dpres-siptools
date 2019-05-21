@@ -179,12 +179,12 @@ def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
 
     root = ET.parse(descfile).getroot()
 
-    if root.xpath("//ead3:archdesc/@otherlevel", namespaces=NAMESPACES):
-        level = root.xpath("//ead3:archdesc/@otherlevel",
+    try:
+        label = root.xpath(("//ead3:archdesc/@otherlevel | "
+                            "//ead3:archdesc/@level"),
                            namespaces=NAMESPACES)[0]
-    else:
-        level = root.xpath("//ead3:archdesc/@level",
-                           namespaces=NAMESPACES)[0]
+    except IndexError:
+        label = 'archdesc'
 
     if os.path.isfile(os.path.join(workspace, 'dmdsec.xml')):
         dmdids = [encode_id('dmdsec.xml')]
@@ -192,18 +192,13 @@ def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
         dmdids = None
     amdids = get_amd_references(workspace, directory='.')
 
-    div_ead = mets.div(type_attr='archdesc', label=level, dmdid=dmdids,
+    div_ead = mets.div(type_attr='archdesc', label=label, dmdid=dmdids,
                        admid=amdids)
 
     if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:
         for elem in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
             if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
-                if len(ET.QName(elem.tag).localname) > 1:
-                    cnum = str(ET.QName(elem.tag).localname)[-2:]
-                else:
-                    cnum = None
-                ead3_c_div(elem, div_ead, filegrp, workspace, filelist,
-                           cnum=cnum)
+                ead3_c_div(elem, div_ead, filegrp, workspace, filelist)
 
     container_div.append(div_ead)
     structmap.append(container_div)
@@ -212,7 +207,7 @@ def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
     return ET.ElementTree(mets_element)
 
 
-def ead3_c_div(parent, structmap, filegrp, workspace, filelist, cnum=None):
+def ead3_c_div(parent, structmap, filegrp, workspace, filelist):
     """Create div elements based on ead3 c elements. Fptr elements are
     created based on ead dao elements. The Ead3 elements tags are put
     into @type and the @level or @otherlevel attributes from ead3 will
@@ -223,33 +218,27 @@ def ead3_c_div(parent, structmap, filegrp, workspace, filelist, cnum=None):
     :filegrp: fileGrp element
     :workspace: Workspace path
     :filelist: Sorted list of digital objects (file paths)
-    :cnum: EAD3 c level
     """
 
-    if parent.xpath("./@otherlevel"):
-        level = parent.xpath("./@otherlevel")[0]
-    else:
-        level = parent.xpath("./@level")[0]
+    try:
+        label = parent.xpath(("./@otherlevel | ./@level"),
+                             namespaces=NAMESPACES)[0]
+    except IndexError:
+        label = ET.QName(parent.tag).localname
 
-    if cnum:
-        c_div = mets.div(type_attr=('c' + str(cnum)), label=level)
-        cnum_sub = str('0') + str(int(cnum) + 1)
-    else:
-        c_div = mets.div(type_attr='c', label=level)
-        cnum_sub = None
+    c_div = mets.div(type_attr=(ET.QName(parent.tag).localname), label=label)
 
     for elem in parent.findall("./*"):
         if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
-            ead3_c_div(elem, c_div, filegrp, workspace, filelist,
-                       cnum=cnum_sub)
+            ead3_c_div(elem, c_div, filegrp, workspace, filelist)
 
-    for files in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
-        if ET.QName(files.tag).localname in ['dao', 'daoset']:
-            if ET.QName(files.tag).localname == 'daoset':
-                ead3_file = files.xpath(
+    for elem in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
+        if ET.QName(elem.tag).localname in ['dao', 'daoset']:
+            if ET.QName(elem.tag).localname == 'daoset':
+                ead3_file = elem.xpath(
                     "./ead3:dao/@href", namespaces=NAMESPACES)[0]
             else:
-                ead3_file = files.xpath("./@href")[0]
+                ead3_file = elem.xpath("./@href")[0]
             if ead3_file.startswith('/'):
                 ead3_file = ead3_file[1:]
             amd_file = [x for x in filelist if ead3_file in x][0]

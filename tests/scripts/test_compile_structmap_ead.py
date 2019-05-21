@@ -41,7 +41,6 @@ def test_compile_structmap_ok(testpath):
     output_filesec = os.path.join(testpath, 'filesec.xml')
     fs_tree = ET.parse(output_filesec)
     fs_root = fs_tree.getroot()
-    print ET.tostring(fs_root)
 
     assert len(fs_root.xpath(
         ('/mets:mets/mets:fileSec/mets:fileGrp/*'),
@@ -55,6 +54,20 @@ def test_compile_structmap_ok(testpath):
          '[@xlink:href="file://tests/data/structured/Publication+'
          'files/publication.txt"]'), namespaces=NAMESPACES)) == 1
     assert len(sm_root.xpath(
-        '//mets:div[@LABEL="fonds"]', namespaces=NAMESPACES)) == 1
+        '//mets:div/mets:div[@LABEL="fonds"]', namespaces=NAMESPACES)) == 1
+    assert len(sm_root.xpath(
+        '//mets:div/mets:div/mets:div[@LABEL="subseries"]',
+        namespaces=NAMESPACES)) == 1
+    assert len(sm_root.xpath(
+        '//mets:div/mets:div/mets:div/mets:div[@LABEL="item"]',
+        namespaces=NAMESPACES)) == 1
+    assert len(sm_root.xpath(
+        '//mets:div/mets:div/mets:div/mets:div/mets:div[@LABEL="file"]',
+        namespaces=NAMESPACES)) == 2
+    assert sm_root.xpath(
+        '//mets:div[@LABEL="file"]/*',
+        namespaces=NAMESPACES)[0].tag == '{http://www.loc.gov/METS/}fptr'
+    assert 'FILEID' in sm_root.xpath(
+        '//mets:div[@LABEL="file"]/*', namespaces=NAMESPACES)[0].attrib
 
     assert result.exit_code == 0
