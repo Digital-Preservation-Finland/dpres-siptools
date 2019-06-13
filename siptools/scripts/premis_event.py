@@ -34,6 +34,10 @@ def _list2str(lst):
               metavar='<WORKSPACE PATH>',
               help=("Directory where files are created. Defaults "
                     "to ./workspace/"))
+@click.option('--base_path', type=click.Path(exists=True), default='.',
+              metavar='<BASE PATH>',
+              help=("Source base path of event_target. If used, give "
+                    "event_target in relation to this base path."))
 @click.option('--event_target',
               type=str,
               metavar='<EVENT TARGET PATH>',
@@ -67,7 +71,7 @@ def _list2str(lst):
               is_flag=True,
               help='Print output to stdout')
 def main(event_type, event_datetime, event_detail, event_outcome,
-         event_outcome_detail, workspace, agent_name, agent_type,
+         event_outcome_detail, workspace, base_path, agent_name, agent_type,
          stdout, event_target):
     """The script creates provenance metadata for the package. The metadata
     contains event and, if given, also agent of the event.
@@ -77,28 +81,20 @@ def main(event_type, event_datetime, event_detail, event_outcome,
     EVENT_DATETIME: Timestamp of the event.
     """
     premis_event(event_type, event_datetime, event_detail, event_outcome,
-                 event_outcome_detail, workspace, agent_name, agent_type,
-                 stdout, event_target)
+                 event_outcome_detail, workspace, base_path, agent_name,
+                 agent_type, stdout, event_target)
 
     return 0
 
 
 def premis_event(event_type, event_datetime, event_detail, event_outcome,
                  event_outcome_detail=None, workspace="./workspace",
-                 agent_name=None, agent_type=None, stdout=False,
+                 base_path=".", agent_name=None, agent_type=None, stdout=False,
                  event_target=None):
     """The script creates provenance metadata for the package. The metadata
     contains event and, if given, also agent of the event.
     """
-    event_file = None
-    directory = None
-
-    if event_target and os.path.isdir(event_target):
-        directory = os.path.normpath(event_target)
-    elif event_target and os.path.isfile(event_target):
-        event_file = event_target
-    elif not event_target:
-        directory = '.'
+    (directory, event_file) = event_target_path(base_path, event_target)
 
     if agent_name or agent_type:
         agent_identifier = str(uuid4())
@@ -129,6 +125,38 @@ def premis_event(event_type, event_datetime, event_detail, event_outcome,
 
     if stdout:
         print xml_helpers.utils.serialize(event)
+
+
+def event_target_path(base_path, event_target=None):
+    """Returns the path to the event_target based on the base_path and
+    event_target. If event_target is None, the event concerns the whole
+    package.
+
+    :returns: a tuple of directory and event_file.
+    """
+    event_file = None
+    directory = None
+
+    # If the given path is an absolute path and base_path is current
+    # path (i.e. not given), relpath will return ../../.. sequences, if
+    # current path is not part of the absolute path. In such case we will
+    # use the absolute path for filerel and omit base_path relation.
+    if event_target:
+        if base_path not in ['.']:
+            eventpath = os.path.normpath(os.path.join(base_path, event_target))
+        else:
+            eventpath = event_target
+
+        if os.path.isdir(eventpath):
+            directory = os.path.normpath(event_target)
+        elif os.path.isfile(eventpath):
+            event_file = event_target
+        else:
+            raise IOError
+    else:
+        directory = '.'
+
+    return (directory, event_file)
 
 
 class PremisCreator(AmdCreator):

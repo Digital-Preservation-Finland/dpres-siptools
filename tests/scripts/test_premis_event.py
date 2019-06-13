@@ -1,6 +1,7 @@
 """Tests for :mod:`siptools.scripts.premis_event` module"""
 import os
 import lxml.etree as ET
+import pytest
 from click.testing import CliRunner
 from siptools.scripts import premis_event
 
@@ -161,6 +162,22 @@ def test_premis_event_fail(testpath):
         '--workspace', testpath
     ])
     assert isinstance(result.exception, SystemExit)
+
+
+@pytest.mark.parametrize((
+    'base_path', 'event_target', 'directory', 'event_file'), [
+        ('tests/data/', 'structured', 'structured', None),
+        ('tests/data/',
+         'structured/Access and use rights files/access_file.txt', None,
+         'structured/Access and use rights files/access_file.txt'),
+        ])
+def test_event_target_path(base_path, event_target, directory, event_file):
+    """Tests the event_target_path function."""
+    (ev_directory, ev_file) = premis_event.event_target_path(
+        base_path, event_target)
+
+    assert ev_directory == directory
+    assert ev_file is event_file
 
 
 def test_create_premis_event_file_ok(testpath):
