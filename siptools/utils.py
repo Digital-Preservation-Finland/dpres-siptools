@@ -39,7 +39,6 @@ def scrape_file(filename, filerel=None, workspace=None):
             pkl_name = os.path.join(
                 workspace, '{}-scraper.pkl'.format(amdref[0].text[1:]))
 
-        streams = None
         if pkl_name and os.path.isfile(pkl_name) and amdref:
             with open(pkl_name, 'rb') as pkl_file:
                 return pickle.load(pkl_file)
@@ -49,7 +48,7 @@ def scrape_file(filename, filerel=None, workspace=None):
     return scraper.streams
 
 
-def fix_missing_metadata(streams, filenamei, allow_unav, allow_zero):
+def fix_missing_metadata(streams, filename, allow_unav, allow_zero):
     """If an element is none, use value (:unav) if allowed in the
     specifications. Otherwise raise exception.
     """
