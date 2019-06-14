@@ -166,7 +166,15 @@ def test_premis_event_fail(testpath):
 
 @pytest.mark.parametrize((
     'base_path', 'event_target', 'directory', 'event_file'), [
+        # No base_path, target is directory
+        ('.', 'tests/data/structured', 'tests/data/structured', None),
+        # No base_path or event_target, target is package root
+        ('.', None, '.', None),
+        # No event_target, target is still package root
+        ('tests/data', None, '.', None),
+        # Target is a directory
         ('tests/data/', 'structured', 'structured', None),
+        # Target is a file
         ('tests/data/',
          'structured/Access and use rights files/access_file.txt', None,
          'structured/Access and use rights files/access_file.txt'),
@@ -178,6 +186,14 @@ def test_event_target_path(base_path, event_target, directory, event_file):
 
     assert ev_directory == directory
     assert ev_file is event_file
+
+
+def test_invalid_event_target_path():
+    """Tests that event_target_path raises IOError if given
+    event_target path doesn't exist.
+    """
+    with pytest.raises(IOError):
+        premis_event.event_target_path('.', 'foo/bar')
 
 
 def test_create_premis_event_file_ok(testpath):
