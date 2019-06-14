@@ -116,22 +116,19 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None):
 
 def _fix_data_rate(stream_dict):
     """Changes the data_rate to an integer if it is of a
-    float type.
+    float type by rounding the number. The value is saved as
+    a string in the dictionary.
     """
-    data_rate = ''
     for key in stream_dict:
         if key == 'data_rate':
             data_rate = stream_dict[key]
 
-    try:
-        data_rate = float(data_rate)
-    except ValueError:
-        pass
-
-    if isinstance(data_rate, float):
-        data_rate = int(round(data_rate))
-
-    stream_dict['data_rate'] = str(data_rate)
+    if data_rate:
+        try:
+            data_rate = float(data_rate)
+            stream_dict['data_rate'] = str(int(round(data_rate)))
+        except ValueError:
+            pass
 
     return stream_dict
 
