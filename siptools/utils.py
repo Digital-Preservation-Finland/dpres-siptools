@@ -226,7 +226,8 @@ class AmdCreator(object):
         self.md_elements = []
         self.references = []
 
-    def add_reference(self, amd_id, filepath, stream=None, directory=None):
+    def add_reference(self, amd_id, filepath, stream=None, directory=None,
+                      ref_type='amd'):
         """Add administrative metadata reference information to the
         references list, which is written into amd-references after
         self.write() is called. amd-references is read by the
@@ -245,6 +246,7 @@ class AmdCreator(object):
         references['file'] = filepath
         references['stream'] = stream
         references['directory'] = directory
+        references['ref_type'] = ref_type
         self.references.append(references)
 
     def add_md(self, metadata, filename=None, stream=None, directory=None):

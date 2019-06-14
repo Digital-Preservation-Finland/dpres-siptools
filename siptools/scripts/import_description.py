@@ -5,12 +5,14 @@ file
 import sys
 import os
 
+from uuid import uuid4
+
 import click
 import lxml.etree
 import mets
 
 from siptools.xml.mets import METS_MDTYPES
-from siptools.utils import encode_path, encode_id
+from siptools.utils import AmdCreator
 
 
 @click.command()
@@ -49,12 +51,13 @@ def import_description(dmdsec_location, dmdsec_target=None,
     """Create METS documents that contains descriptive metadata
     imported from XML file.
     """
-    if dmdsec_target:
-        filename = encode_path(dmdsec_target, suffix='-dmdsec.xml')
-    else:
-        filename = 'dmdsec.xml'
+    dmdfile_id = str(uuid4())
+    dmd_id = '_' + dmdfile_id
+    filename = '%s-dmdsec.xml' % dmdfile_id
 
-    _mets = create_mets(dmdsec_location, filename, remove_root)
+    _mets = create_mets(dmdsec_location, dmd_id, remove_root)
+    creator = DmdCreator(workspace)
+    creator.add_dmdsec(_mets, dmd_id, dmdsec_target)
 
     if stdout:
         print lxml.etree.tostring(_mets, pretty_print=True)
@@ -74,13 +77,33 @@ def import_description(dmdsec_location, dmdsec_target=None,
     print "import_description created file: %s" % output_file
 
 
-def create_mets(input_file, filename, remove_root=False):
+class DmdCreator(AmdCreator):
+    """Subclass of AmdCreator, which generates dmdSec metadata."""
+
+    def add_dmdsec(self, dmd_xml, dmd_id, dmd_target=None):
+        """Create METS element tree that contains dmdSec element.
+        Descriptive metadata is imported from XML file. The whole XML
+        document or just the child elements of root can be imported.
+
+        :param filename: file name for generating dmdSec identifier
+        :returns: METS document element tree
+        """
+
+        if not dmd_target:
+            dmd_target = '.'
+
+        self.add_md(metadata=dmd_xml, directory=dmd_target)
+        self.add_reference(dmd_id, None, directory=dmd_target, ref_type='dmd')
+        self.write_references()
+
+
+def create_mets(input_file, dmd_id, remove_root=False):
     """Create METS element tree that contains dmdSec element. Descriptive
     metadata is imported from XML file. The whole XML document or just the
     child elements of root can be imported.
 
     :param input_file: path to input file
-    :param filename: file name for generating dmdSec identifier
+    :param dmd_id: dmdSec identifier
     :param remove_root: import only child elements
     :returns: METS document element tree
     """
@@ -107,8 +130,7 @@ def create_mets(input_file, filename, remove_root=False):
                                  othermdtype=othermdtype,
                                  mdtypeversion=version,
                                  child_elements=[xmldata_element])
-    dmdsec_element = mets.dmdsec(encode_id(filename),
-                                 child_elements=[mdwrap_element])
+    dmdsec_element = mets.dmdsec(dmd_id, child_elements=[mdwrap_element])
     mets_element = mets.mets(child_elements=[dmdsec_element])
 
     tree = lxml.etree.ElementTree(mets_element)

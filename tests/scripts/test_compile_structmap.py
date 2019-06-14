@@ -62,19 +62,22 @@ def test_compile_structmap_dmdsecid(testpath):
     runner.invoke(import_object.main, [
         '--workspace', testpath, '--skip_wellformed_check',
         'tests/data/structured/Software files/koodi.java'])
-    dmdsec = import_description.create_mets(
+    import_description.import_description(
         'tests/data/import_description/metadata/dc_description.xml',
-        'dmdsec.xml'
-    )
-    dmdsec.write(os.path.join(testpath, 'dmdsec.xml'))
+        workspace=testpath)
 
     # Create structmap
     runner.invoke(compile_structmap.main, ['--workspace', testpath])
 
     # The root div of structMap should have reference to dmdSec element in
     # dmdsec.xml
-    dmdsecid = dmdsec.xpath('/mets:mets/mets:dmdSec',
-                            namespaces=NAMESPACES)[0].attrib['ID']
+
+    ref = os.path.join(testpath, 'amd-references.xml')
+    root = lxml.etree.parse(ref).getroot()
+    dmdref = root.xpath("/amdReferences/amdReference"
+                        "[@directory='.']")[0]
+    dmdsecid = dmdref.text
+
     structmap = lxml.etree.parse(os.path.join(testpath, 'structmap.xml'))
     assert len(
         structmap.xpath(
@@ -110,15 +113,15 @@ def test_file_and_dir(testpath):
     assert result.exit_code == 0
 
 
-def test_get_amd_references(testpath):
-    """Test get_amd_references function. Copies sample MD reference file
+def test_get_md_references(testpath):
+    """Test get_md_references function. Copies sample MD reference file
     to workspace and reads the administrative MD IDs for a file.
     """
     shutil.copy('tests/data/sample_amd-references.xml',
                 os.path.join(testpath, 'amd-references.xml'))
 
     # The sample file contains two references for file2
-    ids = compile_structmap.get_amd_references(testpath, 'path/to/file2')
+    ids = compile_structmap.get_md_references(testpath, 'path/to/file2')
     assert set(ids) == set(['abcd1234', 'efgh5678'])
 
 

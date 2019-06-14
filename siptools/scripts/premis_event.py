@@ -137,10 +137,11 @@ def event_target_path(base_path, event_target=None):
     event_file = None
     directory = None
 
-    # If the given path is an absolute path and base_path is current
-    # path (i.e. not given), relpath will return ../../.. sequences, if
-    # current path is not part of the absolute path. In such case we will
-    # use the absolute path for filerel and omit base_path relation.
+    # If the given target path is an absolute path and base_path is
+    # current path (i.e. not given), relpath will return ../../..
+    # sequences, if current path is not part of the absolute path. In
+    # such case we will use the absolute path for eventpath and omit
+    # base_path relation.
     if event_target:
         if base_path not in ['.']:
             eventpath = os.path.normpath(os.path.join(base_path, event_target))

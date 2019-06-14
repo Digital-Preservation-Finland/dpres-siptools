@@ -185,7 +185,7 @@ def test_event_target_path(base_path, event_target, directory, event_file):
         base_path, event_target)
 
     assert ev_directory == directory
-    assert ev_file is event_file
+    assert ev_file == event_file
 
 
 def test_invalid_event_target_path():

@@ -6,12 +6,11 @@ import os
 from uuid import uuid4
 import pickle
 import click
-import scandir
 import lxml.etree as ET
 import mets
 import xml_helpers.utils as h
 from siptools.xml.mets import NAMESPACES
-from siptools.utils import encode_id, encode_path, tree, add, get_objectlist
+from siptools.utils import encode_path, tree, add, get_objectlist
 
 
 ALLOWED_C_SUBS = ['c', 'c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07',
@@ -127,11 +126,8 @@ def create_structmap(workspace, filesec, filelist, type_attr=None,
     :returns: structural map element
     """
 
-    if os.path.isfile(os.path.join(workspace, 'dmdsec.xml')):
-        dmdids = [encode_id('dmdsec.xml')]
-    else:
-        dmdids = None
-    amdids = get_amd_references(workspace, directory='.')
+    amdids = get_md_references(workspace, directory='.')
+    dmdids = get_md_references(workspace, directory='.', ref_type='dmd')
 
     if type_attr == 'Directory-physical':
         container_div = mets.div(type_attr='directory', label='.',
@@ -172,7 +168,7 @@ def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
     :structmap: Structmap element
     :filegrp: fileGrp element
     :filelist: Sorted list of digital objects (file paths)
-    :dmdsec_id: ID of dmdSec section
+    :type_attr: TYPE attribute of structMap element
     """
     structmap = mets.structmap(type_attr=type_attr)
     container_div = mets.div(type_attr='logical')
@@ -186,11 +182,8 @@ def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
     except IndexError:
         label = 'archdesc'
 
-    if os.path.isfile(os.path.join(workspace, 'dmdsec.xml')):
-        dmdids = [encode_id('dmdsec.xml')]
-    else:
-        dmdids = None
-    amdids = get_amd_references(workspace, directory='.')
+    amdids = get_md_references(workspace, directory='.')
+    dmdids = get_md_references(workspace, directory='.', ref_type='dmd')
 
     div_ead = mets.div(type_attr='archdesc', label=label, dmdid=dmdids,
                        admid=amdids)
@@ -262,7 +255,7 @@ def add_file_to_filesec(workspace, path, filegrp):
     fileid = '_' + str(uuid4())
 
     # Create list of IDs of amdID elements
-    amdids = get_amd_references(workspace, path=path)
+    amdids = get_md_references(workspace, path=path)
 
     # Create XML element and add it to fileGrp
     file_el = mets.file_elem(
@@ -277,8 +270,8 @@ def add_file_to_filesec(workspace, path, filegrp):
     streams = get_objectlist(workspace, path)
     if streams:
         for stream in streams:
-            stream_ids = get_amd_references(workspace, path=path,
-                                            stream=stream)
+            stream_ids = get_md_references(workspace, path=path,
+                                           stream=stream)
             stream_el = mets.stream(admid_elements=stream_ids)
             file_el.append(stream_el)
 
@@ -305,15 +298,18 @@ def get_fileid(filesec, path):
     return element.attrib['ID']
 
 
-def get_amd_references(workspace, path=None, stream=None, directory=None):
-    """If administrative MD reference file exists in workspace, read
+def get_md_references(workspace, path=None, stream=None, directory=None,
+                      ref_type='amd'):
+    """If MD reference file exists in workspace, read
     the MD IDs that should be referenced for the file, stream or
-    directory in question.
+    directory in question. MD reference references to either an
+    administrative metadata section or a descriptove metadata section.
 
     :workspace: path to workspace directory
     :path: path of the file for which MD IDs are read
     :stream: stream index for which MD IDs are read
     :directory: path of the directory for which MD IDs are read
+    :ref_type: type of metadata section, e.g. amd or dmd
     :returns: a set of administrative MD IDs
     """
     reference_file = os.path.join(workspace, 'amd-references.xml')
@@ -324,7 +320,9 @@ def get_amd_references(workspace, path=None, stream=None, directory=None):
         if directory:
             directory = os.path.normpath(directory)
             reference_elements = element_tree.xpath(
-                '/amdReferences/amdReference[@directory="%s"]' % directory
+                '/amdReferences/amdReference'
+                '[@directory="%s" and @ref_type="%s"]' % (
+                    directory, ref_type)
             )
         elif stream is None:
             reference_elements = element_tree.xpath(
@@ -373,8 +371,9 @@ def create_div(workspace, divs, parent, filesec, filelist, path='',
         # It's not a file, lets create a div element
         else:
             div_path = os.path.join(path, div)
-            amdids = get_amd_references(workspace, directory=div_path)
-            dmdsec_id = ids_for_files(workspace, div_path, 'dmdsec.xml')
+            amdids = get_md_references(workspace, directory=div_path)
+            dmdsec_id = get_md_references(workspace, directory=div_path,
+                                          ref_type='dmd')
             if type_attr == 'Directory-physical':
                 div_el = mets.div(type_attr='directory', label=div,
                                   dmdid=dmdsec_id, admid=amdids)
@@ -416,7 +415,7 @@ def add_file_properties(workspace, path, fptr):
     :returns: Div element with properties or None
     """
 
-    amdref = next(iter(get_amd_references(workspace, path=path)))
+    amdref = next(iter(get_md_references(workspace, path=path)))
     pkl_name = os.path.join(
         workspace, '{}-scraper.pkl'.format(amdref[1:]))
 
@@ -439,37 +438,6 @@ def add_file_properties(workspace, path, fptr):
         return div_el
 
     return None
-
-
-def ids_for_files(workspace, path, idtype, dash_count=0):
-    """Search files in workspace based on keywords or number of dashes in
-    filename, and create ID for each found file.
-
-    :param str workspace: Path to directory from which the files are searched
-    :param str path: If not None, False, or 0, only return filenames that
-                     contain this word
-    :param str idtype: Only return filenames that contain this word
-    :param int dash_count: If path is None, False, or 0, return filenames that
-                           have this many dashes
-    :returns (list): List of ids of found files
-    """
-    # Find all files from workspace directory and filter out filenames that do
-    # not contain idtype
-    workspace_filenames = [fname.name for fname in scandir.scandir(workspace)]
-    md_files = [x for x in workspace_filenames if idtype in x]
-
-    if path:
-        # Filter filenames based on path
-        files_result = [x for x in md_files
-                        if encode_path(path) in x and (path+'%2F') not in x]
-    else:
-        # Filter filenames based on number of '-'-characters in filename
-        files_result = [x for x in md_files if x.count('-') == dash_count]
-
-    # Create IDs for files
-    id_result = [encode_id(x) for x in files_result]
-
-    return id_result
 
 
 if __name__ == '__main__':

@@ -1,27 +1,42 @@
 """ Test"""
+import sys
 import os
-from urllib import quote_plus
 import lxml.etree as ET
 from click.testing import CliRunner
 from siptools.scripts.import_description import main
 
 
+def get_md_file(path, input_target):
+    """Get id"""
+    ref = os.path.join(path, 'amd-references.xml')
+
+    root = ET.parse(ref).getroot()
+    amdref = root.xpath("/amdReferences/amdReference"
+                        "[@directory='%s']" % input_target.decode(
+                            sys.getfilesystemencoding()))[0]
+    output = os.path.join(path, amdref.text[1:] +
+                          "-dmdsec.xml")
+    return output
+
+
 def test_import_description_valid_file(testpath):
     """ Test case for single valid xml-file"""
-    # TODO: This test does not assert anything?
     dmdsec_location = 'tests/data/import_description/metadata/' \
         'dc_description.xml'
     dmdsec_target = 'tests/data/structured/'
-
-    url_location = quote_plus(dmdsec_target, safe='') + '-dmdsec.xml'
 
     runner = CliRunner()
     runner.invoke(main, [
         dmdsec_location, '--dmdsec_target', dmdsec_target,
         '--workspace', testpath, '--remove_root'])
-    output_file = os.path.join(testpath, url_location)
-    tree = ET.parse(output_file)
+    output = get_md_file(testpath, dmdsec_target)
+
+    output_path = os.path.join(testpath, output)
+    tree = ET.parse(output_path)
     root = tree.getroot()
+    assert len(root.xpath('./*/*/*/*')) == 4
+    assert root.xpath('./*/*/*/*')[0].tag == \
+        '{http://purl.org/dc/elements/1.1/}title'
 
 
 def test_import_description_file_not_found(testpath):
