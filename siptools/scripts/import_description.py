@@ -114,7 +114,7 @@ class DmdCreator(AmdCreator):
     """Subclass of AmdCreator, which generates dmdSec metadata."""
 
     def write_dmd_ref(self, dmd_xml, dmd_id, dmd_target=None):
-        """Adds references to the dmdSec and writes the to the
+        """Adds references to the dmdSec and writes them to the
         external reference file.
         """
 
