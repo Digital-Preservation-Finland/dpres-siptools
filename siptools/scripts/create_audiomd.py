@@ -98,6 +98,7 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None):
     for index, stream_md in streams.iteritems():
         if stream_md['stream_type'] != 'audio':
             continue
+        stream_md = _fix_data_rate(stream_md)
         file_data_elem = _get_file_data(stream_md)
         audio_info_elem = _get_audio_info(stream_md)
 
@@ -111,6 +112,28 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None):
         raise ValueError('Audio stream info could not be constructed.')
 
     return audiomd_dict
+
+
+def _fix_data_rate(stream_dict):
+    """Changes the data_rate to an integer if it is of a
+    float type.
+    """
+    data_rate = ''
+    for key in stream_dict:
+        if key == 'data_rate':
+            data_rate = stream_dict[key]
+
+    try:
+        data_rate = float(data_rate)
+    except ValueError:
+        pass
+
+    if isinstance(data_rate, float):
+        data_rate = int(round(data_rate))
+
+    stream_dict['data_rate'] = str(data_rate)
+
+    return stream_dict
 
 
 def _get_file_data(stream_dict):

@@ -50,7 +50,7 @@ def test_create_audiomd_elem():
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossless'
 
     path = "%s/amd:dataRate" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '705.6'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '706'
 
     path = "%s/amd:dataRateMode" % file_data
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Fixed'
@@ -95,7 +95,7 @@ def test_stream():
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossy'
 
     path = "%s/amd:dataRate" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '135.233'
+    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '135'
 
     path = "%s/amd:dataRateMode" % file_data
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Fixed'
@@ -140,8 +140,9 @@ def test_create_audiomd(testpath):
     # Check that md-reference and one AudioMD-amd files are created
     assert os.path.isfile(os.path.join(testpath, 'md-references.xml'))
 
+    print os.listdir(testpath)
     filepath = os.path.join(
-        testpath, 'eeca492963963af467f844701ad28104-AudioMD-amd.xml'
+        testpath, 'eae4d239422e21f3a8cfa57bb2afcb9e-AudioMD-amd.xml'
         # testpath, '704fbd57169eac3af9388e03c89dd919-AudioMD-amd.xml'
         # testpath, '4dab7d9d5bab960188ea0f25e478cb17-AudioMD-amd.xml'
     )
