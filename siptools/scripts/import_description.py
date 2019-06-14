@@ -23,6 +23,10 @@ from siptools.utils import AmdCreator
               default='./workspace',
               help="Workspace directory for the metadata files. "
                    "Defaults to ./workspace/")
+@click.option('--base_path', type=click.Path(exists=True), default='.',
+              metavar='<BASE PATH>',
+              help=("Source base path of dmdsec_target. If used, give "
+                    "dmdsec_target in relation to this base path."))
 @click.option('--dmdsec_target',
               type=str,
               metavar='<DMD TARGET>',
@@ -33,31 +37,33 @@ from siptools.utils import AmdCreator
                    'metadata file')
 @click.option('--stdout', is_flag=True,
               help='Print output to stdout')
-def main(dmdsec_location, dmdsec_target, workspace, remove_root, stdout):
+def main(dmdsec_location, base_path, dmdsec_target, workspace, remove_root,
+         stdout):
     """Create METS documents that contains descriptive metadata
     imported from XML file.
 
     DMDLOCATION: Path to XML file that contains descriptive metadata.
     """
     import_description(
-        dmdsec_location, dmdsec_target, workspace, remove_root, stdout
-    )
+        dmdsec_location, base_path, dmdsec_target, workspace, remove_root,
+        stdout)
     return 0
 
 
-def import_description(dmdsec_location, dmdsec_target=None,
+def import_description(dmdsec_location, base_path='.', dmdsec_target=None,
                        workspace="./workspace", remove_root=False,
                        stdout=False):
     """Create METS documents that contains descriptive metadata
     imported from XML file.
     """
+    dmd_target = dmd_target_path(base_path, dmdsec_target)
     dmdfile_id = str(uuid4())
     dmd_id = '_' + dmdfile_id
     filename = '%s-dmdsec.xml' % dmdfile_id
 
     _mets = create_mets(dmdsec_location, dmd_id, remove_root)
     creator = DmdCreator(workspace)
-    creator.add_dmdsec(_mets, dmd_id, dmdsec_target)
+    creator.add_dmdsec(_mets, dmd_id, dmd_target)
 
     if stdout:
         print lxml.etree.tostring(_mets, pretty_print=True)
@@ -75,6 +81,33 @@ def import_description(dmdsec_location, dmdsec_target=None,
                 encoding='UTF-8')
 
     print "import_description created file: %s" % output_file
+
+
+def dmd_target_path(base_path, dmdsec_target=None):
+    """"Returns the path to the dmdsec_target based on the base_path and
+    dmdsec_target. If dmdsec_target is None, the dmdsec concerns the whole
+    package.
+    """
+
+    # If the given target path is an absolute path and base_path is
+    # current path (i.e. not given), relpath will return ../../..
+    # sequences, if current path is not part of the absolute path. In
+    # such case we will use the absolute path for eventpath and omit
+    # base_path relation.
+    if dmdsec_target:
+        if base_path not in ['.']:
+            dmd_target = os.path.normpath(os.path.join(base_path,
+                                                       dmdsec_target))
+        else:
+            dmd_target = dmdsec_target
+
+        if not os.path.isdir(dmd_target):
+            raise IOError
+
+    else:
+        dmdsec_target = '.'
+
+    return os.path.normpath(dmdsec_target)
 
 
 class DmdCreator(AmdCreator):

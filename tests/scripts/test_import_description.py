@@ -2,8 +2,10 @@
 import sys
 import os
 import lxml.etree as ET
+import pytest
 from click.testing import CliRunner
 from siptools.scripts.import_description import main
+from siptools.scripts import import_description
 
 
 def get_md_file(path, input_target):
@@ -23,7 +25,7 @@ def test_import_description_valid_file(testpath):
     """ Test case for single valid xml-file"""
     dmdsec_location = 'tests/data/import_description/metadata/' \
         'dc_description.xml'
-    dmdsec_target = 'tests/data/structured/'
+    dmdsec_target = 'tests/data/structured'
 
     runner = CliRunner()
     runner.invoke(main, [
@@ -37,6 +39,33 @@ def test_import_description_valid_file(testpath):
     assert len(root.xpath('./*/*/*/*')) == 4
     assert root.xpath('./*/*/*/*')[0].tag == \
         '{http://purl.org/dc/elements/1.1/}title'
+
+
+@pytest.mark.parametrize((
+    'base_path', 'dmdsec_target', 'dmd_target'), [
+        # No base_path
+        ('.', 'tests/data/structured', 'tests/data/structured'),
+        # No base_path or dmdsec_target, target is package root
+        ('.', None, '.'),
+        # No dmdsec_target, target is still package root
+        ('tests/data', None, '.'),
+        # Target is a directory
+        ('tests/data/', 'structured', 'structured'),
+        ])
+def test_dmd_target_path(base_path, dmdsec_target, dmd_target):
+    """Tests the dmd_target_path function."""
+    out_target = import_description.dmd_target_path(
+        base_path, dmdsec_target)
+
+    assert out_target == dmd_target
+
+
+def test_invalid_dmd_target_path():
+    """Tests that event_target_path raises IOError if given
+    event_target path doesn't exist.
+    """
+    with pytest.raises(IOError):
+        import_description.dmd_target_path('.', 'foo/bar')
 
 
 def test_import_description_file_not_found(testpath):
