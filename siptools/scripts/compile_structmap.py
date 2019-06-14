@@ -303,7 +303,7 @@ def get_md_references(workspace, path=None, stream=None, directory=None,
     """If MD reference file exists in workspace, read
     the MD IDs that should be referenced for the file, stream or
     directory in question. MD reference references to either an
-    administrative metadata section or a descriptove metadata section.
+    administrative metadata section or a descriptive metadata section.
 
     :workspace: path to workspace directory
     :path: path of the file for which MD IDs are read
