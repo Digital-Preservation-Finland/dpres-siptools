@@ -63,7 +63,7 @@ def import_description(dmdsec_location, base_path='.', dmdsec_target=None,
 
     _mets = create_mets(dmdsec_location, dmd_id, remove_root)
     creator = DmdCreator(workspace)
-    creator.add_dmdsec(_mets, dmd_id, dmd_target)
+    creator.write_dmd_ref(_mets, dmd_id, dmd_target)
 
     if stdout:
         print lxml.etree.tostring(_mets, pretty_print=True)
@@ -113,13 +113,9 @@ def dmd_target_path(base_path, dmdsec_target=None):
 class DmdCreator(AmdCreator):
     """Subclass of AmdCreator, which generates dmdSec metadata."""
 
-    def add_dmdsec(self, dmd_xml, dmd_id, dmd_target=None):
-        """Create METS element tree that contains dmdSec element.
-        Descriptive metadata is imported from XML file. The whole XML
-        document or just the child elements of root can be imported.
-
-        :param filename: file name for generating dmdSec identifier
-        :returns: METS document element tree
+    def write_dmd_ref(self, dmd_xml, dmd_id, dmd_target=None):
+        """Adds references to the dmdSec and writes the to the
+        external reference file.
         """
 
         if not dmd_target:
