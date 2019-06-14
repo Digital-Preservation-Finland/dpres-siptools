@@ -5,7 +5,7 @@ import os
 import sys
 import click
 import nisomix
-from siptools.utils import AmdCreator, scrape_file
+from siptools.utils import MdCreator, scrape_file
 
 SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
@@ -73,8 +73,8 @@ def create_mix(filename, workspace="./workspace/", base_path="."):
     creator.write()
 
 
-class MixCreator(AmdCreator):
-    """Subclass of AmdCreator, which generates MIX metadata for image files.
+class MixCreator(MdCreator):
+    """Subclass of MdCreator, which generates MIX metadata for image files.
     """
 
     def add_mix_md(self, filepath, filerel=None):

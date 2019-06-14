@@ -14,7 +14,7 @@ def test_create_mix_techmdfile(testpath):
     """Test for ``create_mix_techmdfile`` function. Creates MIX techMD for
     three different image files. Two of the image files share the same MIX
     metadata, so only two MIX techMD files should be created in workspace.
-    References to MIX techMD should be written into amd-references.xml file.
+    References to MIX techMD should be written into md-references.xml file.
     """
 
     creator = create_mix.MixCreator(testpath)
@@ -37,10 +37,10 @@ def test_create_mix_techmdfile(testpath):
     files = os.listdir(testpath)
     assert len([x for x in files if x.endswith('NISOIMG-amd.xml')]) == 2
 
-    # Count the references written to amd-reference file. There should be
+    # Count the references written to md-reference file. There should be
     # one reference per image file.
-    xml = lxml.etree.parse(os.path.join(testpath, 'amd-references.xml'))
-    assert len(xml.xpath('//amdReference')) == 3
+    xml = lxml.etree.parse(os.path.join(testpath, 'md-references.xml'))
+    assert len(xml.xpath('//mdReference')) == 3
 
 
 def test_main_utf8_files(testpath):
@@ -63,9 +63,9 @@ def test_main_utf8_files(testpath):
         ]
     )
 
-    # Check that filename is found in amd-reference file.
-    xml = lxml.etree.parse(os.path.join(testpath, 'amd-references.xml'))
-    assert len(xml.xpath(u'//amdReference[@file="data/äöå.tif"]')) == 1
+    # Check that filename is found in md-reference file.
+    xml = lxml.etree.parse(os.path.join(testpath, 'md-references.xml'))
+    assert len(xml.xpath(u'//mdReference[@file="data/äöå.tif"]')) == 1
 
 
 def test_create_mix():
@@ -126,10 +126,10 @@ def test_existing_scraper_result(testpath):
     file_ = 'tests/data/images/tiff1.tif'
     namespaces = {'mix': "http://www.loc.gov/mix/v20"}
     xml = """<?xml version='1.0' encoding='UTF-8'?>
-          <amdReferences>
-          <amdReference file="%s">_%s</amdReference>
-          </amdReferences>""" % (file_, amdid)
-    with open(os.path.join(testpath, 'amd-references.xml'), 'w') as out:
+          <mdReferences>
+          <mdReference file="%s">_%s</mdReference>
+          </mdReferences>""" % (file_, amdid)
+    with open(os.path.join(testpath, 'md-references.xml'), 'w') as out:
         out.write(xml)
 
     stream_dict = {0: {
@@ -181,6 +181,6 @@ def test_paths(testpath, file_, base_path):
             '--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        open(os.path.join(testpath, 'amd-references.xml')).read()
+        open(os.path.join(testpath, 'md-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

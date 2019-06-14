@@ -312,7 +312,7 @@ def get_md_references(workspace, path=None, stream=None, directory=None,
     :ref_type: type of metadata section, e.g. amd or dmd
     :returns: a set of administrative MD IDs
     """
-    reference_file = os.path.join(workspace, 'amd-references.xml')
+    reference_file = os.path.join(workspace, 'md-references.xml')
     amd_ids = []
 
     if os.path.isfile(reference_file):
@@ -320,18 +320,18 @@ def get_md_references(workspace, path=None, stream=None, directory=None,
         if directory:
             directory = os.path.normpath(directory)
             reference_elements = element_tree.xpath(
-                '/amdReferences/amdReference'
+                '/mdReferences/mdReference'
                 '[@directory="%s" and @ref_type="%s"]' % (
                     directory, ref_type)
             )
         elif stream is None:
             reference_elements = element_tree.xpath(
-                '/amdReferences/amdReference[@file="%s" '
+                '/mdReferences/mdReference[@file="%s" '
                 'and not(@stream)]' % path
             )
         else:
             reference_elements = element_tree.xpath(
-                '/amdReferences/amdReference[@file="%s" '
+                '/mdReferences/mdReference[@file="%s" '
                 'and @stream="%s"]' % (path, stream)
             )
         amd_ids = [element.text for element in reference_elements]

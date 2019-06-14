@@ -83,7 +83,7 @@ def test_create_addml_with_flatfile(is_header):
 def test_create_addml_creator(testpath, isheader, exp_amd_files, exp_fields):
     """
     Test that ``create_addml`` creates addml files and
-    amd-reference file without unnecessary duplication.
+    md-reference file without unnecessary duplication.
     """
     # Common expectations
     exp_csvs = [
@@ -94,9 +94,9 @@ def test_create_addml_creator(testpath, isheader, exp_amd_files, exp_fields):
 
     _create_addml(testpath, isheader)
 
-    # Check that amd-reference and the ADDML-amd files with correct content
+    # Check that md-reference and the ADDML-amd files with correct content
     # are created
-    assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
+    assert os.path.isfile(os.path.join(testpath, 'md-references.xml'))
 
     for amd_file_index, exp_amd_file in enumerate(exp_amd_files):
         amd_file = os.path.join(testpath, exp_amd_file)
@@ -149,7 +149,7 @@ def test_paths(testpath, file_, base_path):
             '--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        open(os.path.join(testpath, 'amd-references.xml')).read()
+        open(os.path.join(testpath, 'md-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))
 

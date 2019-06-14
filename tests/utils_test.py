@@ -41,7 +41,7 @@ def test_create_amdfile(testpath):
     workspace. Check that XML file contains expected elements.
     """
 
-    md_creator = utils.AmdCreator(testpath)
+    md_creator = utils.MdCreator(testpath)
 
     sample_data = lxml.etree.Element('sampleData')
     md_creator.write_md(sample_data, 'NISOIMG', '2.0')
@@ -70,12 +70,12 @@ def test_create_amdfile(testpath):
     assert len(sample_data_elements) == 1
 
 
-def test_add_amdreference(testpath):
+def test_add_mdreference(testpath):
     """Test add_reference function. Calls function two times and
-    write the amdreference file.
+    write the mdreference file.
     """
 
-    md_creator = utils.AmdCreator(testpath)
+    md_creator = utils.MdCreator(testpath)
 
     md_creator.add_reference('abcd1234', 'path/to/file1')
     md_creator.add_reference('abcd1234', 'path/to/file2')
@@ -83,13 +83,13 @@ def test_add_amdreference(testpath):
     md_creator.write_references()
 
     # Read created file. Reference should be found for both files
-    etree = lxml.etree.parse(os.path.join(testpath, 'amd-references.xml'))
+    etree = lxml.etree.parse(os.path.join(testpath, 'md-references.xml'))
     reference = etree.xpath(
-        '/amdReferences/amdReference[@file="path/to/file1"]'
+        '/mdReferences/mdReference[@file="path/to/file1"]'
     )
     assert reference[0].text == 'abcd1234'
     reference = etree.xpath(
-        '/amdReferences/amdReference[@file="path/to/file2"]'
+        '/mdReferences/mdReference[@file="path/to/file2"]'
     )
     assert reference[0].text == 'abcd1234'
 
@@ -98,7 +98,7 @@ def test_copy_etree():
     """Test that copy_etree creates a new lxml.etree
     instance with identical data.
     """
-    etree1 = lxml.etree.parse("tests/data/sample_amd-references.xml")
+    etree1 = lxml.etree.parse("tests/data/sample_md-references.xml")
     etree2 = utils.copy_etree(etree1)
 
     assert id(etree1) != id(etree2)
@@ -137,12 +137,12 @@ def test_same_metadata_same_hash():
     """Tests that same metadata produces the same digest.
     """
     root = lxml.etree.parse(
-        "tests/data/sample_amd-references.xml").getroot()
+        "tests/data/sample_md-references.xml").getroot()
     digest = utils.generate_digest(root)
 
     for _ in range(10):
         root = lxml.etree.parse(
-            "tests/data/sample_amd-references.xml").getroot()
+            "tests/data/sample_md-references.xml").getroot()
         assert digest == utils.generate_digest(root)
 
 

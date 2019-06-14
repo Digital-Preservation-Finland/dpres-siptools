@@ -3,7 +3,7 @@ import sys
 import os
 import click
 import audiomd
-from siptools.utils import AmdCreator, scrape_file, fix_missing_metadata
+from siptools.utils import MdCreator, scrape_file, fix_missing_metadata
 
 FILEDATA_KEYS = ['audio_data_encoding', 'bits_per_sample',
                  'data_rate', 'data_rate_mode', 'sampling_frequency']
@@ -52,8 +52,8 @@ def create_audiomd(filename, workspace="./workspace/", base_path="."):
     creator.write()
 
 
-class AudiomdCreator(AmdCreator):
-    """Subclass of AmdCreator, which generates audioMD metadata
+class AudiomdCreator(MdCreator):
+    """Subclass of MdCreator, which generates audioMD metadata
     for audio files.
     """
 

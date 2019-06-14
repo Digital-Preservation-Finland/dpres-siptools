@@ -72,9 +72,9 @@ def test_compile_structmap_dmdsecid(testpath):
     # The root div of structMap should have reference to dmdSec element in
     # dmdsec.xml
 
-    ref = os.path.join(testpath, 'amd-references.xml')
+    ref = os.path.join(testpath, 'md-references.xml')
     root = lxml.etree.parse(ref).getroot()
-    dmdref = root.xpath("/amdReferences/amdReference"
+    dmdref = root.xpath("/mdReferences/mdReference"
                         "[@directory='.']")[0]
     dmdsecid = dmdref.text
 
@@ -117,8 +117,8 @@ def test_get_md_references(testpath):
     """Test get_md_references function. Copies sample MD reference file
     to workspace and reads the administrative MD IDs for a file.
     """
-    shutil.copy('tests/data/sample_amd-references.xml',
-                os.path.join(testpath, 'amd-references.xml'))
+    shutil.copy('tests/data/sample_md-references.xml',
+                os.path.join(testpath, 'md-references.xml'))
 
     # The sample file contains two references for file2
     ids = compile_structmap.get_md_references(testpath, 'path/to/file2')

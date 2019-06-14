@@ -13,15 +13,15 @@ from siptools.xml.mets import NAMESPACES
 
 def get_amd_file(path, input_file, stream=None):
     """Get id"""
-    ref = os.path.join(path, 'amd-references.xml')
+    ref = os.path.join(path, 'md-references.xml')
 
     root = ET.parse(ref).getroot()
     if stream is None:
-        amdref = root.xpath("/amdReferences/amdReference[not(@stream) "
+        amdref = root.xpath("/mdReferences/mdReference[not(@stream) "
                             "and @file='%s']" % input_file.decode(
                                 sys.getfilesystemencoding()))[0]
     else:
-        amdref = root.xpath("/amdReferences/amdReference[@stream='%s' "
+        amdref = root.xpath("/mdReferences/mdReference[@stream='%s' "
                             "and @file='%s']" % (stream, input_file.decode(
                                 sys.getfilesystemencoding())))[0]
     output = os.path.join(path, amdref.text[1:] +

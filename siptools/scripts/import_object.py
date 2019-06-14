@@ -9,7 +9,7 @@ import platform
 import click
 from file_scraper.scraper import Scraper
 import premis
-from siptools.utils import AmdCreator
+from siptools.utils import MdCreator
 
 
 ALLOWED_CHARSETS = ['ISO-8859-15', 'UTF-8', 'UTF-16', 'UTF-32']
@@ -156,8 +156,8 @@ def import_object(workspace="./workspace/", base_path=".",
     return file_metadata_dict
 
 
-class PremisCreator(AmdCreator):
-    """Subclass of AmdCreator, which generates PREMIS metadata
+class PremisCreator(MdCreator):
+    """Subclass of MdCreator, which generates PREMIS metadata
     for files and streams.
     """
 

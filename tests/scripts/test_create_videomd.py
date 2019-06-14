@@ -150,7 +150,7 @@ def test_invalid_file():
 
 def test_create_videomd(testpath):
     """Test that ``create_videomd`` writes VideoMD file and
-    amd-reference file.
+    md-reference file.
     """
     creator = create_videomd.VideomdCreator(testpath)
 
@@ -167,8 +167,8 @@ def test_create_videomd(testpath):
 
     creator.write()
 
-    # Check that amdreference and one VideoMD-amd files are created
-    assert os.path.isfile(os.path.join(testpath, 'amd-references.xml'))
+    # Check that mdreference and one VideoMD-amd files are created
+    assert os.path.isfile(os.path.join(testpath, 'md-references.xml'))
 
     filepath = os.path.join(
         testpath, '36260c626dac2f82359d7c22ef378392-VideoMD-amd.xml'
@@ -197,9 +197,9 @@ def test_main_utf8_files(testpath):
         ]
     )
 
-    # Check that filename is found in amd-reference file.
-    xml = ET.parse(os.path.join(testpath, 'amd-references.xml'))
-    assert len(xml.xpath(u'//amdReference[@file="data/äöå.m1v"]')) == 1
+    # Check that filename is found in md-reference file.
+    xml = ET.parse(os.path.join(testpath, 'md-references.xml'))
+    assert len(xml.xpath(u'//mdReference[@file="data/äöå.m1v"]')) == 1
 
 
 def test_existing_scraper_result(testpath):
@@ -210,10 +210,10 @@ def test_existing_scraper_result(testpath):
     amdid = '36260c626dac2f82359d7c22ef378392'
     file_ = 'tests/data/video/valid_1.m1v'
     xml = """<?xml version='1.0' encoding='UTF-8'?>
-          <amdReferences>
-          <amdReference file="%s">_%s</amdReference>
-          </amdReferences>""" % (file_, amdid)
-    with open(os.path.join(testpath, 'amd-references.xml'), 'w') as out:
+          <mdReferences>
+          <mdReference file="%s">_%s</mdReference>
+          </mdReferences>""" % (file_, amdid)
+    with open(os.path.join(testpath, 'md-references.xml'), 'w') as out:
         out.write(xml)
 
     stream_dict = {0: {
@@ -265,6 +265,6 @@ def test_paths(testpath, file_, base_path):
             '--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        open(os.path.join(testpath, 'amd-references.xml')).read()
+        open(os.path.join(testpath, 'md-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

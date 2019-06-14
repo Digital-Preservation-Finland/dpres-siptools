@@ -75,7 +75,7 @@ def test_premis_event_ok(testpath):
 
 def test_amd_links_root(testpath):
     """Tests that premis_event script writes reference links correctly
-    to the amd-references file.
+    to the md-references file.
     """
     runner = CliRunner()
     result = runner.invoke(premis_event.main, [
@@ -89,17 +89,17 @@ def test_amd_links_root(testpath):
     # Main function should return 0
     assert result.exit_code == 0
 
-    ref = os.path.join(testpath, 'amd-references.xml')
+    ref = os.path.join(testpath, 'md-references.xml')
     assert os.path.isfile(ref)
 
     root = ET.parse(ref).getroot()
-    dir_ref = root.xpath("/amdReferences/amdReference")[0].get('directory')
+    dir_ref = root.xpath("/mdReferences/mdReference")[0].get('directory')
     assert dir_ref == '.'
 
 
 def test_amd_links_file(testpath):
     """Tests that premis_event script writes reference links correctly
-    to the amd-references file with a proper file target.
+    to the md-references file with a proper file target.
     """
     target = 'tests/data/test_import.pdf'
     runner = CliRunner()
@@ -115,17 +115,17 @@ def test_amd_links_file(testpath):
     # Main function should return 0
     assert result.exit_code == 0
 
-    ref = os.path.join(testpath, 'amd-references.xml')
+    ref = os.path.join(testpath, 'md-references.xml')
     assert os.path.isfile(ref)
 
     root = ET.parse(ref).getroot()
-    dir_ref = root.xpath("/amdReferences/amdReference")[0].get('file')
+    dir_ref = root.xpath("/mdReferences/mdReference")[0].get('file')
     assert dir_ref == target
 
 
 def test_amd_links_dir(testpath):
     """Tests that premis_event script writes reference links correctly
-    to the amd-references file with a directory target.
+    to the md-references file with a directory target.
     """
     target = 'tests/data'
     runner = CliRunner()
@@ -141,11 +141,11 @@ def test_amd_links_dir(testpath):
     # Main function should return 0
     assert result.exit_code == 0
 
-    ref = os.path.join(testpath, 'amd-references.xml')
+    ref = os.path.join(testpath, 'md-references.xml')
     assert os.path.isfile(ref)
 
     root = ET.parse(ref).getroot()
-    dir_ref = root.xpath("/amdReferences/amdReference")[0].get('directory')
+    dir_ref = root.xpath("/mdReferences/mdReference")[0].get('directory')
     assert dir_ref == target
 
 

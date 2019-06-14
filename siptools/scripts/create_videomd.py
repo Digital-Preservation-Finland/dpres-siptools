@@ -3,7 +3,7 @@ import sys
 import os
 import click
 import videomd
-from siptools.utils import AmdCreator, scrape_file, fix_missing_metadata
+from siptools.utils import MdCreator, scrape_file, fix_missing_metadata
 
 
 FILEDATA_KEYS = [
@@ -50,8 +50,8 @@ def create_videomd(filename, workspace="./workspace/", base_path="."):
     creator.write()
 
 
-class VideomdCreator(AmdCreator):
-    """Subclass of AmdCreator, which generates videoMD metadata
+class VideomdCreator(MdCreator):
+    """Subclass of MdCreator, which generates videoMD metadata
     for video files.
     """
 

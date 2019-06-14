@@ -12,7 +12,7 @@ import lxml.etree
 import mets
 
 from siptools.xml.mets import METS_MDTYPES
-from siptools.utils import AmdCreator
+from siptools.utils import MdCreator
 
 
 @click.command()
@@ -110,8 +110,8 @@ def dmd_target_path(base_path, dmdsec_target=None):
     return os.path.normpath(dmdsec_target)
 
 
-class DmdCreator(AmdCreator):
-    """Subclass of AmdCreator, which generates dmdSec metadata."""
+class DmdCreator(MdCreator):
+    """Subclass of MdCreator, which generates dmdSec metadata."""
 
     def write_dmd_ref(self, dmd_xml, dmd_id, dmd_target=None):
         """Adds references to the dmdSec and writes them to the

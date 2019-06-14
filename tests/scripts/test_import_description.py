@@ -10,10 +10,10 @@ from siptools.scripts import import_description
 
 def get_md_file(path, input_target):
     """Get id"""
-    ref = os.path.join(path, 'amd-references.xml')
+    ref = os.path.join(path, 'md-references.xml')
 
     root = ET.parse(ref).getroot()
-    amdref = root.xpath("/amdReferences/amdReference"
+    amdref = root.xpath("/mdReferences/mdReference"
                         "[@directory='%s']" % input_target.decode(
                             sys.getfilesystemencoding()))[0]
     output = os.path.join(path, amdref.text[1:] +

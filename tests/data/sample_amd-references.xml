@@ -1,6 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<amdReferences>
-  <amdReference file="path/to/file1">abcd1234</amdReference>
-  <amdReference file="path/to/file2">abcd1234</amdReference>
-  <amdReference file="path/to/file2">efgh5678</amdReference>
-</amdReferences>

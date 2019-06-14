@@ -9,7 +9,7 @@ import mets
 import xml_helpers.utils
 
 from siptools.xml.premis import PREMIS_EVENT_TYPES, PREMIS_EVENT_OUTCOME_TYPES
-from siptools.utils import AmdCreator, encode_path, encode_id
+from siptools.utils import MdCreator, encode_path, encode_id
 
 
 def _list2str(lst):
@@ -160,8 +160,8 @@ def event_target_path(base_path, event_target=None):
     return (directory, event_file)
 
 
-class PremisCreator(AmdCreator):
-    """Subclass of AmdCreator, which generates PREMIS event
+class PremisCreator(MdCreator):
+    """Subclass of MdCreator, which generates PREMIS event
     or agent metadata.
     """
 

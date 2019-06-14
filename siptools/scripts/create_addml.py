@@ -5,7 +5,7 @@ import click
 import lxml.etree as ET
 
 import addml
-from siptools.utils import AmdCreator, encode_path
+from siptools.utils import MdCreator, encode_path
 
 
 @click.command()
@@ -38,7 +38,7 @@ def main(filename, charset, delim, sep, quot, header, workspace, base_path):
     """Tool for creating ADDML metadata for a CSV file. The
     ADDML metadata is written to <hash>-ADDML-amd.xml
     METS XML file in the workspace directory. The ADDML
-    techMD reference is written to amd-references.xml.
+    techMD reference is written to md-references.xml.
     If similar ADDML metadata is already found in workspace,
     just the new CSV file name is appended to the existing
     metadata.
@@ -67,8 +67,8 @@ def create_addml(filename, charset, delim, sep, quot,
     creator.write(filerel=filerel)
 
 
-class AddmlCreator(AmdCreator):
-    """Subclass of AmdCreator, which generates ADDML metadata
+class AddmlCreator(MdCreator):
+    """Subclass of MdCreator, which generates ADDML metadata
     for CSV files.
     """
 
@@ -126,7 +126,7 @@ class AddmlCreator(AmdCreator):
     def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML",
               filerel=None, section=None, stdout=False,
               file_metadata_dict=None):
-        """ Write all the METS XML files and amd-reference file.
+        """ Write all the METS XML files and md-reference file.
         Base class write is overwritten to handle the references
         correctly and add flatFile fields to METS XML files.
 
@@ -152,7 +152,7 @@ class AddmlCreator(AmdCreator):
             ]
             append_lines(amd_fname, "<addml:flatFiles>", append)
 
-        # Write amd-references
+        # Write md-references
         self.write_references()
 
         # Clear filenames and etrees

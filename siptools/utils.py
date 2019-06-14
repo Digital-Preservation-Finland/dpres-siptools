@@ -25,13 +25,13 @@ def scrape_file(filename, filerel=None, workspace=None):
 
     ref_exists = False
     if workspace is not None:
-        ref = os.path.join(workspace, 'amd-references.xml')
+        ref = os.path.join(workspace, 'md-references.xml')
         if os.path.isfile(ref):
             ref_exists = True
 
     if ref_exists:
         root = lxml.etree.parse(ref).getroot()
-        amdref = root.xpath("/amdReferences/amdReference[not(@stream) "
+        amdref = root.xpath("/mdReferences/mdReference[not(@stream) "
                             "and @file='%s']" % filerel.decode(
                                 sys.getfilesystemencoding()))
         pkl_name = None
@@ -188,31 +188,31 @@ def generate_digest(etree):
 
 
 def get_objectlist(workspace, file_path=None):
-    """Get unique and sorted list of files or streams from amd-references.xml
+    """Get unique and sorted list of files or streams from md-references.xml
 
     :workspace: Workspace path
     :file_path: If given, finds streams of the given file.
                 If None, finds a sorted list all file paths.
     :returns: Sorted list of files, or streams of a given file
     """
-    reference_file = os.path.join(workspace, 'amd-references.xml')
+    reference_file = os.path.join(workspace, 'md-references.xml')
     xml = lxml.etree.parse(reference_file)
     objectset = set()
     if file_path is not None:
         streams = xml.xpath(
-            '/amdReferences/amdReference[@file="%s"]/@stream'
+            '/mdReferences/mdReference[@file="%s"]/@stream'
             '' % file_path)
         for stream in streams:
             objectset.add(stream)
     else:
-        files = xml.xpath('/amdReferences/amdReference/@file')
+        files = xml.xpath('/mdReferences/mdReference/@file')
         for path in files:
             objectset.add(path)
     return sorted(objectset)
 
 
-class AmdCreator(object):
-    """ Class for generating METS XML and amd-references files efficiently.
+class MdCreator(object):
+    """ Class for generating METS XML and md-references files efficiently.
     """
 
     def __init__(self, workspace):
@@ -220,29 +220,30 @@ class AmdCreator(object):
         :workspace: Output path
         :md_elements: List of tuples (XML Element, filename, stream,
                       directory)
-        :references: List of tuples (amd_id, filename, stream, directory)
+        :references: List of tuples (md_id, filename, stream, directory)
         """
         self.workspace = workspace
         self.md_elements = []
         self.references = []
 
-    def add_reference(self, amd_id, filepath, stream=None, directory=None,
+    def add_reference(self, md_id, filepath, stream=None, directory=None,
                       ref_type='amd'):
-        """Add administrative metadata reference information to the
-        references list, which is written into amd-references after
-        self.write() is called. amd-references is read by the
-        compile-structmap script when fileSec elements are created for
-        METS XML.
+        """Add metadata reference information to the
+        references list, which is written into md-references after
+        self.write() is called. md-references is read by the
+        compile-structmap script when fileSec and structMap elements
+        are created for METS XML.
 
-        :amd_id: ID of administrative MD element to be referenced
+        :md_id: ID of MD element to be referenced
         :filepath: path of the file linking to the MD element
         :stream: id of the stream linking to the MD element
         :directory: path of the directory linking to the MD element
+        :ref_type: type of MD section, e.g. 'amd' or 'dmd'
 
         :returns: None
         """
         references = {}
-        references['amd_id'] = amd_id
+        references['md_id'] = md_id
         references['file'] = filepath
         references['stream'] = stream
         references['directory'] = directory
@@ -260,7 +261,7 @@ class AmdCreator(object):
         If the metadata can be easily separated without serializing and
         hashing, this function should only be called once for each distinct
         metadata. This should be implemented by the subclasses of
-        AmdCreator.
+        MdCreator.
 
         :metadata: Metadata XML element
         :filename: Path of the file linking to the MD element
@@ -274,12 +275,12 @@ class AmdCreator(object):
         self.md_elements.append(md_element)
 
     def write_references(self):
-        """Write "amd-references.xml" file, which is read by
-        the compile-structmap script when fileSec elements are
-        created for METS XML.
+        """Write "md-references.xml" file, which is read by
+        the compile-structmap script when fileSec and structMap elements
+        are created for METS XML.
         """
 
-        reference_file = os.path.join(self.workspace, 'amd-references.xml')
+        reference_file = os.path.join(self.workspace, 'md-references.xml')
 
         # read existing reference list file or create new file
         if os.path.exists(reference_file):
@@ -289,15 +290,15 @@ class AmdCreator(object):
                 references_tree = lxml.etree.parse(file_, parser)
                 references = references_tree.getroot()
         else:
-            references = lxml.etree.Element('amdReferences')
+            references = lxml.etree.Element('mdReferences')
             references_tree = lxml.etree.ElementTree(references)
 
         # Add all the references
         for ref in self.references:
-            reference = lxml.etree.Element('amdReference')
-            reference.text = ref['amd_id']
+            reference = lxml.etree.Element('mdReference')
+            reference.text = ref['md_id']
             for key in ref:
-                if key == 'amd_id':
+                if key == 'md_id':
                     pass
                 elif isinstance(ref[key], str):
                     reference.set(
@@ -316,8 +317,8 @@ class AmdCreator(object):
 
     def write_md(self, metadata, mdtype, mdtypeversion, othermdtype=None,
                  section=None, stdout=False):
-        """Wraps XML metadata into administrative MD element and writes
-        it to a METS XML file in the workspace. The output filename is
+        """Wraps XML metadata into MD element and writes it to a METS XML
+        file in the workspace. The output filename is
         <mdtype>-<hash>-othermd.xml, where <mdtype> is the type of metadata
         given as parameter and <hash> is a string generated from the metadata.
 
@@ -334,12 +335,12 @@ class AmdCreator(object):
         :section (string): Type of mets metadata section
         :stdout (boolean): Print also to stdout
 
-        :returns: amd_id, filename
+        :returns: md_id, filename
         """
         digest = generate_digest(metadata)
         suffix = othermdtype if othermdtype else mdtype
         filename = encode_path("%s-%s-amd.xml" % (digest, suffix))
-        amd_id = '_' + digest
+        md_id = '_' + digest
         filename = os.path.join(self.workspace, filename)
 
         if not os.path.exists(filename):
@@ -349,9 +350,9 @@ class AmdCreator(object):
             mdwrap = mets.mdwrap(mdtype, mdtypeversion, othermdtype)
             mdwrap.append(xmldata)
             if section == 'digiprovmd':
-                amd = mets.digiprovmd(amd_id)
+                amd = mets.digiprovmd(md_id)
             else:
-                amd = mets.techmd(amd_id)
+                amd = mets.techmd(md_id)
             amd.append(mdwrap)
             amdsec = mets.amdsec()
             amdsec.append(amd)
@@ -365,7 +366,7 @@ class AmdCreator(object):
                 print "Wrote METS %s administrative metadata to file %s" \
                       % (mdtype, outfile.name)
 
-        return amd_id, filename
+        return md_id, filename
 
     def write_dict(self, file_metadata_dict, premis_amd_id):
         """Write streams to a file for further scripts.
@@ -383,8 +384,8 @@ class AmdCreator(object):
 
     def write(self, mdtype="type", mdtypeversion="version", othermdtype=None,
               section=None, stdout=False, file_metadata_dict=None):
-        """Write METS XML and amd-reference files. First, METS XML files are
-        written and self.references is appended. Second, amd-references is
+        """Write METS XML and md-reference files. First, METS XML files are
+        written and self.references is appended. Second, md-references is
         written.
 
         If subclasses is optimized to call add_md once for each metadata type,
@@ -403,15 +404,15 @@ class AmdCreator(object):
 
         # Write METS XML and append self.references
         for metadata, filename, stream, directory in self.md_elements:
-            amd_id, _ = self.write_md(
+            md_id, _ = self.write_md(
                 metadata, mdtype, mdtypeversion, othermdtype=othermdtype,
                 section=section, stdout=stdout
             )
             if file_metadata_dict and stream is None:
-                self.write_dict(file_metadata_dict, amd_id)
-            self.add_reference(amd_id, filename, stream, directory)
+                self.write_dict(file_metadata_dict, md_id)
+            self.add_reference(md_id, filename, stream, directory)
 
-        # Write amd-references
+        # Write md-references
         self.write_references()
 
         # Clear references and md_elements
