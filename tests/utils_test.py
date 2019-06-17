@@ -2,6 +2,7 @@
 
 import os
 import lxml.etree
+import xml_helpers
 import siptools.utils as utils
 
 
@@ -166,3 +167,27 @@ def test_different_ids_same_hash():
     xml2 = lxml.etree.fromstring(event2)
 
     assert utils.generate_digest(xml1) == utils.generate_digest(xml2)
+
+
+def test_remove_dmdsec_references(testpath):
+    """Tests the remove_dmdsec_references function."""
+    xml = ('<mdReferences><mdReference file="sample_images/sample_tiff1.tif">'
+           '_e50655691d21e110a3c4b38da52fb91c</mdReference><mdReference '
+           'file="sample_images/sample_tiff2.tif">'
+           '_e50655691d21e110a3c4b38da52fb91c'
+           '</mdReference><mdReference '
+           'file="sample_images/sample_tiff1_compressed.tif">'
+           '_c08061e439bd40407c9e5332fec6084e</mdReference>'
+           '<mdReference directory="." ref_type="dmd">'
+           'aabbcc</mdReference></mdReferences>')
+
+    with open(os.path.join(testpath, 'md-references.xml'), 'w+') as outfile:
+        outfile.write(xml)
+
+    utils.remove_dmdsec_references(testpath)
+
+    root = lxml.etree.parse(
+        os.path.join(testpath, 'md-references.xml')).getroot()
+
+    assert not root.xpath('/mdReferences/mdReference[@ref_type="dmd"]')
+    assert len(root.xpath('/mdReferences/*')) == 3

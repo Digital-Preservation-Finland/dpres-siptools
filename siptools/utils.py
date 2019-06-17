@@ -417,3 +417,23 @@ class MdCreator(object):
 
         # Clear references and md_elements
         self.__init__(self.workspace)
+
+
+def remove_dmdsec_references(workspace):
+    """
+    Removes the reference to the dmdSecs in the 'md-references.xml'
+    file.
+    """
+    refs_file = os.path.join(workspace, 'md-references.xml')
+    if os.path.exists(refs_file):
+        with open(refs_file) as file_:
+            parser = lxml.etree.XMLParser(remove_blank_text=True)
+            references_tree = lxml.etree.parse(file_, parser)
+            refs = references_tree.getroot()
+        for dmd in refs.xpath('/mdReferences/mdReference[@ref_type="dmd"]'):
+            dmd.getparent().remove(dmd)
+
+        references_tree.write(refs_file,
+                              pretty_print=True,
+                              xml_declaration=True,
+                              encoding="utf-8")
