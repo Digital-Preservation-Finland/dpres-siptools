@@ -13,30 +13,10 @@ for the digital preservation services can be found in: http://digitalpreservatio
 
 The Pre-Ingest Tool currently supports the specification version 1.7.1.
 
-Backwards compatibility
------------------------
+Release notes and backwards compability
+---------------------------------------
 
-This version of the tool is not backward-compatible with older versions. The
-non-compatible differences in the script arguments are following:
-
-    * import-object
-
-        * ``--skip_inspection`` is changed to ``--skip_wellformed_check``.
-        * ``--digest_algorithm`` and ``--message_digest`` have been combined to ``--checksum``.
-        * ``--format_name`` and ``--format_version`` have been combined to ``--file_format``.
-        
-    * create-addml
-
-        * ``--no-header`` has been removed as unnecessary.
-
-    * import-description
-
-        * ``--desc_root`` has been changed to ``--remove_root``.
-
-    * compile-structmap
-
-        * ``--dmdsec_struct`` is removed and merged to ``--structmap_type``.
-        * ``--type_attr`` is changed to ``--structmap_type``.
+See RELEASE-NOTES.rst
 
 Installation
 ------------
