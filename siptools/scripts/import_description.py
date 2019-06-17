@@ -32,34 +32,39 @@ from siptools.utils import MdCreator
               metavar='<DMD TARGET>',
               help='Target of descriptive metadata. '
                    'Default is the root of dataset.')
+@click.option('--without_uuid', is_flag=True,
+              help='Outputs a dmdsec.xml file without UUID prefix.')
 @click.option('--remove_root', is_flag=True,
               help='Import only child elements from descriptive '
                    'metadata file')
 @click.option('--stdout', is_flag=True,
               help='Print output to stdout')
-def main(dmdsec_location, base_path, dmdsec_target, workspace, remove_root,
-         stdout):
+def main(dmdsec_location, base_path, dmdsec_target, workspace, without_uuid,
+         remove_root, stdout):
     """Create METS documents that contains descriptive metadata
     imported from XML file.
 
     DMDLOCATION: Path to XML file that contains descriptive metadata.
     """
     import_description(
-        dmdsec_location, base_path, dmdsec_target, workspace, remove_root,
-        stdout)
+        dmdsec_location, base_path, dmdsec_target, workspace, without_uuid,
+        remove_root, stdout)
     return 0
 
 
 def import_description(dmdsec_location, base_path='.', dmdsec_target=None,
-                       workspace="./workspace", remove_root=False,
-                       stdout=False):
+                       workspace="./workspace", without_uuid=False,
+                       remove_root=False, stdout=False):
     """Create METS documents that contains descriptive metadata
     imported from XML file.
     """
     dmd_target = dmd_target_path(base_path, dmdsec_target)
     dmdfile_id = str(uuid4())
     dmd_id = '_' + dmdfile_id
-    filename = '%s-dmdsec.xml' % dmdfile_id
+    if without_uuid:
+        filename = 'dmdsec.xml'
+    else:
+        filename = '%s-dmdsec.xml' % dmdfile_id
 
     _mets = create_mets(dmdsec_location, dmd_id, remove_root)
     creator = DmdCreator(workspace)
