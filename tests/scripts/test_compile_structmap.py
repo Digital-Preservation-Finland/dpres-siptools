@@ -10,6 +10,7 @@ from siptools.scripts import compile_structmap
 from siptools.scripts import import_object
 from siptools.scripts import premis_event
 from siptools.scripts import import_description
+from siptools.scripts import create_audiomd
 
 
 def create_test_data(workspace):
@@ -206,7 +207,10 @@ def test_compile_structmap_order(testpath):
         '--workspace', testpath,
         '--skip_wellformed_check',
         '--order', '5',
-        'tests/data/structured/Software files/koodi.java'])
+        'tests/data/audio/valid__wav.wav'])
+
+    runner.invoke(create_audiomd.main, [
+        '--workspace', testpath, 'tests/data/audio/valid__wav.wav'])
 
     runner.invoke(compile_structmap.main, ['--workspace', testpath])
 
@@ -220,8 +224,7 @@ def test_compile_structmap_order(testpath):
 
     assert len(fs_root.xpath(
         '/mets:mets/mets:fileSec/mets:fileGrp/mets:file/'
-        'mets:FLocat[@xlink:href="file://tests/data/structured/'
-        'Software+files/koodi.java"]',
+        'mets:FLocat[@xlink:href="file://tests/data/audio/valid__wav.wav"]',
         namespaces=NAMESPACES
     )) == 1
 

@@ -415,11 +415,14 @@ def add_file_properties(workspace, path, fptr):
     :returns: Div element with properties or None
     """
 
-    amdref = next(iter(get_md_references(workspace, path=path)))
-    pkl_name = os.path.join(
-        workspace, '{}-scraper.pkl'.format(amdref[1:]))
+    pkl_name = None
+    for amdref in iter(get_md_references(workspace, path=path)):
+        pkl_name = os.path.join(
+            workspace, '{}-scraper.pkl'.format(amdref[1:]))
+        if os.path.isfile(pkl_name):
+            break
 
-    if not os.path.isfile(pkl_name):
+    if pkl_name is None or not os.path.isfile(pkl_name):
         return None
 
     with open(pkl_name, 'r') as pkl_file:
