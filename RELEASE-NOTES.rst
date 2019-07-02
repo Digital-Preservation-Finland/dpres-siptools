@@ -4,6 +4,11 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Bugfix in v0.28:
+
+    * ``--order`` attribute value (given in import-object) was handled
+      inadequately compile-structmap.
+
 New features added in v0.27:
 
     * import-description
