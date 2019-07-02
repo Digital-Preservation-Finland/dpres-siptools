@@ -416,7 +416,7 @@ def add_file_properties(workspace, path, fptr):
     """
 
     pkl_name = None
-    for amdref in iter(get_md_references(workspace, path=path)):
+    for amdref in get_md_references(workspace, path=path):
         pkl_name = os.path.join(
             workspace, '{}-scraper.pkl'.format(amdref[1:]))
         if os.path.isfile(pkl_name):
