@@ -16,19 +16,13 @@ def get_amd_file(path, input_file, stream=None):
     ref = os.path.join(path, 'md-references.xml')
 
     root = ET.parse(ref).getroot()
+    decoded_input_file = input_file.decode(sys.getfilesystemencoding())
     if stream is None:
-        amdref = root.xpath((
-            "/mdReferences/mdReference[not(@stream) "
-            "and @file='{input_file}']"
-        ).format(
-            input_file=input_file.decode(sys.getfilesystemencoding())))[0]
+        amdref = root.xpath("/mdReferences/mdReference[not(@stream) and "
+                            "@file='%s']" % decoded_input_file)[0]
     else:
-        amdref = root.xpath((
-            "/mdReferences/mdReference[@stream='{stream}' "
-            "and @file='{input_file}']"
-        ).format(
-            stream=stream,
-            input_file=input_file.decode(sys.getfilesystemencoding())))[0]
+        amdref = root.xpath("/mdReferences/mdReference[@stream='%s' and "
+                            "@file='%s']" % (stream, decoded_input_file))[0]
     output = os.path.join(path, amdref.text[1:] +
                           "-PREMIS%3AOBJECT-amd.xml")
     return output
