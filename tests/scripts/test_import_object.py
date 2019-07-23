@@ -17,13 +17,18 @@ def get_amd_file(path, input_file, stream=None):
 
     root = ET.parse(ref).getroot()
     if stream is None:
-        amdref = root.xpath("/mdReferences/mdReference[not(@stream) "
-                            "and @file='%s']" % input_file.decode(
-                                sys.getfilesystemencoding()))[0]
+        amdref = root.xpath((
+            "/mdReferences/mdReference[not(@stream) "
+            "and @file='{input_file}']"
+        ).format(
+            input_file=input_file.decode(sys.getfilesystemencoding())))[0]
     else:
-        amdref = root.xpath("/mdReferences/mdReference[@stream='%s' "
-                            "and @file='%s']" % (stream, input_file.decode(
-                                sys.getfilesystemencoding())))[0]
+        amdref = root.xpath((
+            "/mdReferences/mdReference[@stream='{stream}' "
+            "and @file='{input_file}']"
+        ).format(
+            stream=stream,
+            input_file=input_file.decode(sys.getfilesystemencoding())))[0]
     output = os.path.join(path, amdref.text[1:] +
                           "-PREMIS%3AOBJECT-amd.xml")
     return output
@@ -88,7 +93,7 @@ def test_import_object_skip_wellformed_check_nodate_ok(testpath):
 
 
 def test_import_object_structured_ok(testpath):
-    #TODO: Missing function docstring. What is the purpose of this test?
+    # TODO: Missing function docstring. What is the purpose of this test?
     workspace = os.path.abspath(testpath)
     test_data = os.path.abspath(os.path.join(os.curdir,
                                              'tests/data/structured'))
@@ -172,8 +177,7 @@ def test_import_object_format_registry(testpath):
     assert result.exit_code == 0
 
 
-@pytest.mark.skipif('file-scraper-full' not in sys.modules,
-                    reason='Requires full file scarper')
+@pytest.mark.validation
 def test_import_object_validate_pdf_ok(testpath):
     """Test PDF validation in import_object.main funciton."""
     input_file = 'tests/data/test_import.pdf'
@@ -226,8 +230,7 @@ def test_import_object_utf8(testpath):
                           namespaces=NAMESPACES)) == 1
 
 
-@pytest.mark.skipif('file-scraper-full' not in sys.modules,
-                    reason='Requires full file scarper')
+@pytest.mark.validation
 @pytest.mark.parametrize('input_file', ['tests/data/valid_tiff.tif'])
 def test_import_object_validate_tiff_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_tiff.tif']
@@ -251,8 +254,7 @@ def test_import_object_validate_tiff_ok(input_file, testpath):
     assert result.exit_code == 0
 
 
-@pytest.mark.skipif('file-scraper-full' not in sys.modules,
-                    reason='Requires full file scarper')
+@pytest.mark.validation
 @pytest.mark.parametrize('input_file', ['tests/data/valid_jpeg.jpeg'])
 def test_import_object_validate_jpeg_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/valid_jpeg.jpeg']
@@ -276,8 +278,7 @@ def test_import_object_validate_jpeg_ok(input_file, testpath):
     assert result.exit_code == 0
 
 
-@pytest.mark.skipif('file-scraper-full' not in sys.modules,
-                    reason='Requires full file scarper')
+@pytest.mark.validation
 @pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
 def test_import_object_validate_text_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/text-file.txt']
@@ -301,8 +302,7 @@ def test_import_object_validate_text_ok(input_file, testpath):
     assert result.exit_code == 0
 
 
-@pytest.mark.skipif('file-scraper-full' not in sys.modules,
-                    reason='Requires full file scarper')
+@pytest.mark.validation
 @pytest.mark.parametrize('input_file', ['tests/data/csvfile.csv'])
 def test_import_object_validate_csv_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/csvfile.csv']
@@ -326,8 +326,7 @@ def test_import_object_validate_csv_ok(input_file, testpath):
     assert result.exit_code == 0
 
 
-@pytest.mark.skipif('file-scraper-full' not in sys.modules,
-                    reason='Requires full file scarper')
+@pytest.mark.validation
 @pytest.mark.parametrize('input_file', ['tests/data/mets_valid_minimal.xml'])
 def test_import_object_validate_mets_xml_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/mets_valid_minimal.xml']
@@ -351,8 +350,7 @@ def test_import_object_validate_mets_xml_ok(input_file, testpath):
     assert result.exit_code == 0
 
 
-@pytest.mark.skipif('file-scraper-full' not in sys.modules,
-                    reason='Requires full file scarper')
+@pytest.mark.validation
 @pytest.mark.parametrize('input_file', ['tests/data/ODF_Text_Document.odt'])
 def test_import_object_validate_odt_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/ODF_Text_Document.odt']
@@ -376,8 +374,7 @@ def test_import_object_validate_odt_ok(input_file, testpath):
     assert result.exit_code == 0
 
 
-@pytest.mark.skipif('file-scraper-full' not in sys.modules,
-                    reason='Requires full file scarper')
+@pytest.mark.validation
 @pytest.mark.parametrize('input_file', ['tests/data/MS_Excel_97-2003.xls'])
 def test_import_object_validate_msexcel_ok(input_file, testpath):
     arguments = ['--workspace', testpath, 'tests/data/MS_Excel_97-2003.xls']
@@ -398,8 +395,7 @@ def test_import_object_validate_msexcel_ok(input_file, testpath):
     assert result.exit_code == 0
 
 
-@pytest.mark.skipif('file-scraper-full' not in sys.modules,
-                    reason='Requires full file scarper')
+@pytest.mark.validation
 @pytest.mark.parametrize('input_file',
                          ['tests/data/MS_Word_2007-2013_XML.docx'])
 def test_import_object_validate_msword_ok(input_file, testpath):
@@ -414,18 +410,17 @@ def test_import_object_validate_msword_ok(input_file, testpath):
 
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
+    mimetype = ('application/vnd.openxmlformats-officedocument'
+                '.wordprocessingml.document')
     assert root.xpath('//premis:formatName/text()',
-                      namespaces=NAMESPACES)[0] == \
-        ('application/vnd.openxmlformats-officedocument.wordprocessingml.'
-         'document')
+                      namespaces=NAMESPACES)[0] == mimetype
     assert root.xpath('//premis:formatVersion/text()',
                       namespaces=NAMESPACES)[0] == '15.0'
 
     assert result.exit_code == 0
 
 
-@pytest.mark.skipif('file-scraper-full' not in sys.modules,
-                    reason='Requires full file scarper')
+@pytest.mark.validation
 @pytest.mark.parametrize('input_file, version',
                          [('tests/data/audio/valid_2_bwf.wav', '2'),
                           ('tests/data/audio/valid__wav.wav', '')])
