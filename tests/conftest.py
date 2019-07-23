@@ -12,6 +12,38 @@ sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                 '..'))
 
 
+def pytest_addoption(parser):
+    """Add additional options to pytest."""
+    parser.addoption(
+        "--validation",
+        action="store_true",
+        default=False,
+        help="Also run validation tests (requires file-scraper-full package)"
+    )
+
+
+def pytest_configure(config):
+    """Add additional configuration to pytest."""
+    config.addinivalue_line(
+        "markers",
+        "validation: Tests intended to be run with file-scraper-full package"
+    )
+
+
+def pytest_runtest_setup(item):
+    """Setting up to skip the tests with specific markers if
+    appropriate option has not been evoked.
+    """
+
+    skip_tests = ['validation']
+
+    for keyword in skip_tests:
+        if keyword in item.keywords:
+            if not item.config.getoption("--%s" % keyword):
+                pytest.skip(
+                    "Use option --%s to run additional tests" % keyword)
+
+
 @pytest.fixture(scope="function")
 def testpath(request):
     """Creates temporary directory and clean up after testing.
