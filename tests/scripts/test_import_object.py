@@ -171,28 +171,6 @@ def test_import_object_format_registry(testpath):
     assert result.exit_code == 0
 
 
-@pytest.mark.validation
-def test_import_object_validate_pdf_ok(testpath):
-    """Test PDF validation in import_object.main funciton."""
-    input_file = 'tests/data/test_import.pdf'
-    arguments = ['--workspace', testpath, 'tests/data/test_import.pdf']
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
-
-    output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
-    root = tree.getroot()
-
-    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
-                          namespaces=NAMESPACES)) == 1
-    assert root.xpath('//premis:formatName/text()',
-                      namespaces=NAMESPACES)[0] == 'application/pdf'
-    assert root.xpath('//premis:formatVersion/text()',
-                      namespaces=NAMESPACES)[0] == '1.4'
-
-    assert result.exit_code == 0
-
-
 def test_import_object_utf8(testpath):
     """Test importing works for file that:
 
@@ -225,200 +203,42 @@ def test_import_object_utf8(testpath):
 
 
 @pytest.mark.validation
-@pytest.mark.parametrize('input_file', ['tests/data/valid_tiff.tif'])
-def test_import_object_validate_tiff_ok(input_file, testpath):
-    arguments = ['--workspace', testpath, 'tests/data/valid_tiff.tif']
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
-
-    output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
-    root = tree.getroot()
-
-    assert len(root.xpath(
-        '/mets:mets/mets:amdSec/mets:techMD',
-        namespaces=NAMESPACES)) == 1
-    assert root.xpath(
-        '//premis:formatName/text()',
-        namespaces=NAMESPACES)[0] == 'image/tiff'
-    assert root.xpath(
-        '//premis:formatVersion/text()',
-        namespaces=NAMESPACES)[0] == '6.0'
-
-    assert result.exit_code == 0
-
-
-@pytest.mark.validation
-@pytest.mark.parametrize('input_file', ['tests/data/valid_jpeg.jpeg'])
-def test_import_object_validate_jpeg_ok(input_file, testpath):
-    arguments = ['--workspace', testpath, 'tests/data/valid_jpeg.jpeg']
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
-
-    output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
-    root = tree.getroot()
-
-    assert len(root.xpath(
-        '/mets:mets/mets:amdSec/mets:techMD',
-        namespaces=NAMESPACES)) == 1
-    assert root.xpath(
-        '//premis:formatName/text()',
-        namespaces=NAMESPACES)[0] == 'image/jpeg'
-    assert root.xpath(
-        '//premis:formatVersion/text()',
-        namespaces=NAMESPACES)[0] in ['1.0', '1.01', '1.02']
-
-    assert result.exit_code == 0
-
-
-@pytest.mark.validation
-@pytest.mark.parametrize('input_file', ['tests/data/text-file.txt'])
-def test_import_object_validate_text_ok(input_file, testpath):
-    arguments = ['--workspace', testpath, 'tests/data/text-file.txt']
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
-
-    output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
-    root = tree.getroot()
-
-    assert len(root.xpath(
-        '/mets:mets/mets:amdSec/mets:techMD',
-        namespaces=NAMESPACES)) == 1
-    assert root.xpath(
-        '//premis:formatName/text()',
-        namespaces=NAMESPACES)[0] == 'text/plain; charset=UTF-8'
-    assert len(root.xpath(
-        '//premis:formatVersion/text()',
-        namespaces=NAMESPACES)) == 0
-
-    assert result.exit_code == 0
-
-
-@pytest.mark.validation
-@pytest.mark.parametrize('input_file', ['tests/data/csvfile.csv'])
-def test_import_object_validate_csv_ok(input_file, testpath):
-    arguments = ['--workspace', testpath, 'tests/data/csvfile.csv']
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
-
-    output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
-    root = tree.getroot()
-
-    assert len(root.xpath(
-        '/mets:mets/mets:amdSec/mets:techMD',
-        namespaces=NAMESPACES)) == 1
-    assert root.xpath(
-        '//premis:formatName/text()',
-        namespaces=NAMESPACES)[0] == 'text/plain; charset=UTF-8'
-    assert len(root.xpath(
-        '//premis:formatVersion/text()',
-        namespaces=NAMESPACES)) == 0
-
-    assert result.exit_code == 0
-
-
-@pytest.mark.validation
-@pytest.mark.parametrize('input_file', ['tests/data/mets_valid_minimal.xml'])
-def test_import_object_validate_mets_xml_ok(input_file, testpath):
-    arguments = ['--workspace', testpath, 'tests/data/mets_valid_minimal.xml']
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
-
-    output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
-    root = tree.getroot()
-
-    assert len(root.xpath(
-        '/mets:mets/mets:amdSec/mets:techMD',
-        namespaces=NAMESPACES)) == 1
-    assert root.xpath(
-        '//premis:formatName/text()',
-        namespaces=NAMESPACES)[0] == 'text/xml; charset=UTF-8'
-    assert root.xpath(
-        '//premis:formatVersion/text()',
-        namespaces=NAMESPACES)[0] == '1.0'
-
-    assert result.exit_code == 0
-
-
-@pytest.mark.validation
-@pytest.mark.parametrize('input_file', ['tests/data/ODF_Text_Document.odt'])
-def test_import_object_validate_odt_ok(input_file, testpath):
-    arguments = ['--workspace', testpath, 'tests/data/ODF_Text_Document.odt']
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
-
-    output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
-    root = tree.getroot()
-
-    assert len(root.xpath(
-        '/mets:mets/mets:amdSec/mets:techMD',
-        namespaces=NAMESPACES)) == 1
-    assert root.xpath(
-        '//premis:formatName/text()',
-        namespaces=NAMESPACES)[0] == 'application/vnd.oasis.opendocument.text'
-    assert root.xpath(
-        '//premis:formatVersion/text()',
-        namespaces=NAMESPACES)[0] == '1.1'
-
-    assert result.exit_code == 0
-
-
-@pytest.mark.validation
-@pytest.mark.parametrize('input_file', ['tests/data/MS_Excel_97-2003.xls'])
-def test_import_object_validate_msexcel_ok(input_file, testpath):
-    arguments = ['--workspace', testpath, 'tests/data/MS_Excel_97-2003.xls']
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
-
-    output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
-    root = tree.getroot()
-
-    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
-                          namespaces=NAMESPACES)) == 1
-    assert root.xpath('//premis:formatName/text()',
-                      namespaces=NAMESPACES)[0] == 'application/vnd.ms-excel'
-    assert root.xpath('//premis:formatVersion/text()',
-                      namespaces=NAMESPACES)[0] == '11.0'
-
-    assert result.exit_code == 0
-
-
-@pytest.mark.validation
-@pytest.mark.parametrize('input_file',
-                         ['tests/data/MS_Word_2007-2013_XML.docx'])
-def test_import_object_validate_msword_ok(input_file, testpath):
-    arguments = ['--workspace', testpath,
-                 'tests/data/MS_Word_2007-2013_XML.docx']
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
-
-    output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
-    root = tree.getroot()
-
-    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
-                          namespaces=NAMESPACES)) == 1
-    mimetype = ('application/vnd.openxmlformats-officedocument'
-                '.wordprocessingml.document')
-    assert root.xpath('//premis:formatName/text()',
-                      namespaces=NAMESPACES)[0] == mimetype
-    assert root.xpath('//premis:formatVersion/text()',
-                      namespaces=NAMESPACES)[0] == '15.0'
-
-    assert result.exit_code == 0
-
-
-@pytest.mark.validation
-@pytest.mark.parametrize('input_file, version',
-                         [('tests/data/audio/valid_2_bwf.wav', '2'),
-                          ('tests/data/audio/valid__wav.wav', '')])
-def test_import_object_validate_wav_ok(input_file, version, testpath):
+@pytest.mark.parametrize(
+    ('input_file', 'expected_mimetype', 'expected_version'), [
+        pytest.param('tests/data/test_import.pdf', 'application/pdf', '1.4',
+                     id='pdf'),
+        pytest.param('tests/data/valid_tiff.tif', 'image/tiff', '6.0',
+                     id='tiff'),
+        pytest.param('tests/data/valid_jpeg.jpeg', 'image/jpeg',
+                     ('1.0', '1.01', '1.02'), id='jpeg'),
+        pytest.param('tests/data/text-file.txt', 'text/plain; charset=UTF-8',
+                     None, id='text'),
+        pytest.param('tests/data/csvfile.csv', 'text/plain; charset=UTF-8',
+                     None, id='csv'),
+        pytest.param('tests/data/mets_valid_minimal.xml',
+                     'text/xml; charset=UTF-8',
+                     '1.0', id='xml'),
+        pytest.param('tests/data/ODF_Text_Document.odt',
+                     'application/vnd.oasis.opendocument.text',
+                     '1.1', id='odt'),
+        pytest.param('tests/data/MS_Excel_97-2003.xls',
+                     'application/vnd.ms-excel',
+                     '11.0', id='excel'),
+        pytest.param('tests/data/MS_Word_2007-2013_XML.docx',
+                     'application/vnd.openxmlformats-officedocument.'
+                     'wordprocessingml.document',
+                     '15.0', id='word docx'),
+        pytest.param('tests/data/audio/valid__wav.wav',
+                     'audio/x-wav', None, id='audio wav no version'),
+        pytest.param('tests/data/audio/valid_2_bwf.wav',
+                     'audio/x-wav', '2', id='audio wav v2'),
+    ]
+)
+def test_import_object_validation_cases(testpath, input_file, expected_mimetype,
+                                        expected_version):
+    """Test validation wtih import_object.main function when run as terminal
+    client.
+    """
     arguments = ['--workspace', testpath, input_file]
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
@@ -426,16 +246,22 @@ def test_import_object_validate_wav_ok(input_file, version, testpath):
     tree = ET.parse(output)
     root = tree.getroot()
 
+    comparison = {
+        str: lambda element, expected: element[0] == expected,
+        tuple: lambda element, expected: element[0] in expected,
+        None.__class__: lambda element, expected: not element
+    }
+
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
     assert root.xpath('//premis:formatName/text()',
-                      namespaces=NAMESPACES)[0] == 'audio/x-wav'
-    if version == '':
-        assert len(root.xpath('//premis:formatVersion/text()',
-                              namespaces=NAMESPACES)) == 0
-    else:
-        assert root.xpath('//premis:formatVersion/text()',
-                          namespaces=NAMESPACES)[0] == '2'
+                      namespaces=NAMESPACES)[0] == expected_mimetype
+
+    assert comparison[expected_version.__class__](
+        root.xpath('//premis:formatVersion/text()',
+                   namespaces=NAMESPACES),
+        expected_version
+    )
 
     assert result.exit_code == 0
 
