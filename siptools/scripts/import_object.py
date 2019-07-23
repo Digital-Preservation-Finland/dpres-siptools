@@ -269,7 +269,7 @@ def check_metadata(format_name, format_version, streams, fname):
                          'file %s' % fname)
     if format_version is None:
         raise ValueError('File format version could not be identified for '
-                         'file ' % fname)
+                         'file %s' % fname)
     if streams[0]['stream_type'] not in ['videocontainer'] and \
             len(streams) > 1:
         raise ValueError('The file contains multiple streams which '
