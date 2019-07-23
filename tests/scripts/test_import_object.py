@@ -202,7 +202,6 @@ def test_import_object_utf8(testpath):
                           namespaces=NAMESPACES)) == 1
 
 
-@pytest.mark.validation
 @pytest.mark.parametrize(
     ('input_file', 'expected_mimetype', 'expected_version'), [
         pytest.param('tests/data/test_import.pdf', 'application/pdf', '1.4',
@@ -234,12 +233,18 @@ def test_import_object_utf8(testpath):
                      'audio/x-wav', '2', id='audio wav v2'),
     ]
 )
-def test_import_object_validation_cases(testpath, input_file, expected_mimetype,
-                                        expected_version):
+@pytest.mark.parametrize('skip_wellformed', [
+    pytest.param(False, marks=pytest.mark.validation, id='Validation'),
+    pytest.param(True, id='Metadata info')
+])
+def test_import_object_cases(testpath, input_file, expected_mimetype,
+                             expected_version, skip_wellformed):
     """Test validation wtih import_object.main function when run as terminal
     client.
     """
     arguments = ['--workspace', testpath, input_file]
+    if skip_wellformed:
+        arguments.append('--skip_wellformed_check')
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
