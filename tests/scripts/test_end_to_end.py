@@ -1,13 +1,11 @@
 """End to end test for the siptools package."""
 
-import sys
 import os
 import subprocess
 import pytest
 
 
-@pytest.mark.skipif('ipt' not in sys.modules,
-                    reason='Requires ipt')
+@pytest.mark.e2e
 def test_end_to_end(testpath):
     """Test creation of SIP and asserting the validity
     of the created mets document with validation tools.

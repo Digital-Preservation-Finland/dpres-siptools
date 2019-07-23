@@ -15,6 +15,12 @@ sys.path.insert(0, os.path.join(os.path.abspath(os.path.dirname(__file__)),
 def pytest_addoption(parser):
     """Add additional options to pytest."""
     parser.addoption(
+        "--e2e",
+        action="store_true",
+        default=False,
+        help="Also run end-to-end tests (requires ipt package)"
+    )
+    parser.addoption(
         "--validation",
         action="store_true",
         default=False,
@@ -26,6 +32,10 @@ def pytest_configure(config):
     """Add additional configuration to pytest."""
     config.addinivalue_line(
         "markers",
+        "e2e: End-to-end tests intended to be run with ipt package"
+    )
+    config.addinivalue_line(
+        "markers",
         "validation: Tests intended to be run with file-scraper-full package"
     )
 
@@ -35,7 +45,7 @@ def pytest_runtest_setup(item):
     appropriate option has not been evoked.
     """
 
-    skip_tests = ['validation']
+    skip_tests = ['validation', 'e2e']
 
     for keyword in skip_tests:
         if keyword in item.keywords:
