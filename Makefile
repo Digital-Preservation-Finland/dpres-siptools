@@ -18,7 +18,7 @@ install:
 
 
 test:
-	py.test -svvvv --validation --junitprefix=dpres-siptools --junitxml=junit.xml tests
+	py.test -svvvv --validation --e2e --junitprefix=dpres-siptools --junitxml=junit.xml tests
 
 coverage:
 	py.test tests --cov=siptools --cov-report=html
