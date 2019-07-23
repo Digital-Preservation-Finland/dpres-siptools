@@ -202,47 +202,98 @@ def test_import_object_utf8(testpath):
                           namespaces=NAMESPACES)) == 1
 
 
+# TODO: Combine this test with test_import_object_cases_for_lite once we're
+#       using version that pytest supports pytest.param.
+# TODO: Replace with pytest.param(*args, id=test_case) once we're using the
+#       version that pytest supports it so that we'll have easier time to see
+#       what each parametrize test case is testing.
+@pytest.mark.validate
 @pytest.mark.parametrize(
-    ('input_file', 'expected_mimetype', 'expected_version'), [
-        pytest.param('tests/data/test_import.pdf', 'application/pdf', '1.4',
-                     id='pdf'),
-        pytest.param('tests/data/valid_tiff.tif', 'image/tiff', '6.0',
-                     id='tiff'),
-        pytest.param('tests/data/valid_jpeg.jpeg', 'image/jpeg',
-                     ('1.0', '1.01', '1.02'), id='jpeg'),
-        pytest.param('tests/data/text-file.txt', 'text/plain; charset=UTF-8',
-                     None, id='text'),
-        pytest.param('tests/data/csvfile.csv', 'text/plain; charset=UTF-8',
-                     None, id='csv'),
-        pytest.param('tests/data/mets_valid_minimal.xml',
-                     'text/xml; charset=UTF-8',
-                     '1.0', id='xml'),
-        pytest.param('tests/data/ODF_Text_Document.odt',
-                     'application/vnd.oasis.opendocument.text',
-                     '1.1', id='odt'),
-        pytest.param('tests/data/MS_Excel_97-2003.xls',
-                     'application/vnd.ms-excel',
-                     '11.0', id='excel'),
-        pytest.param('tests/data/MS_Word_2007-2013_XML.docx',
-                     'application/vnd.openxmlformats-officedocument.'
-                     'wordprocessingml.document',
-                     '15.0', id='word docx'),
-        pytest.param('tests/data/audio/valid__wav.wav',
-                     'audio/x-wav', None, id='audio wav no version'),
-        pytest.param('tests/data/audio/valid_2_bwf.wav',
-                     'audio/x-wav', '2', id='audio wav v2'),
+    ('input_file', 'expected_mimetype', 'expected_version', 'case_name'), [
+        ('tests/data/test_import.pdf', 'application/pdf', '1.4', 'pdf'),
+        ('tests/data/valid_tiff.tif', 'image/tiff', '6.0', 'tiff'),
+        ('tests/data/valid_jpeg.jpeg', 'image/jpeg', ('1.0', '1.01', '1.02'),
+         'jpeg'),
+        ('tests/data/text-file.txt', 'text/plain; charset=UTF-8', None, 'text'),
+        ('tests/data/csvfile.csv', 'text/plain; charset=UTF-8', None, 'csv'),
+        ('tests/data/mets_valid_minimal.xml', 'text/xml; charset=UTF-8', '1.0',
+         'xml'),
+        ('tests/data/ODF_Text_Document.odt',
+         'application/vnd.oasis.opendocument.text', '1.1', 'odt'),
+        ('tests/data/MS_Excel_97-2003.xls', 'application/vnd.ms-excel',
+         '11.0', 'excel'),
+        ('tests/data/MS_Word_2007-2013_XML.docx',
+         'application/vnd.openxmlformats-officedocument.'
+         'wordprocessingml.document', '15.0', 'word docx'),
+        ('tests/data/audio/valid__wav.wav', 'audio/x-wav', None,
+         'audio wav no version'),
+        ('tests/data/audio/valid_2_bwf.wav', 'audio/x-wav', '2',
+         'audio wav v2'),
     ]
 )
-@pytest.mark.parametrize('skip_wellformed', [
-    pytest.param(False, marks=pytest.mark.validation, id='Validation'),
-    pytest.param(True, id='Metadata info')
-])
 def test_import_object_cases(testpath, input_file, expected_mimetype,
-                             expected_version, skip_wellformed):
-    """Test the import_object toolfunction when run as terminal client."""
+                             expected_version, case_name):
+    """Test the import_object tool function when run as terminal client.
+    In addition to getting the metadata, we're also validating.
+    """
+    _ = case_name
     arguments = ['--workspace', testpath, input_file]
-    if skip_wellformed:
-        arguments.append('--skip_wellformed_check')
+    runner = CliRunner()
+    result = runner.invoke(import_object.main, arguments)
+    output = get_amd_file(testpath, input_file)
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    comparison = {
+        str: lambda element, expected: element[0] == expected,
+        tuple: lambda element, expected: element[0] in expected,
+        None.__class__: lambda element, expected: not element
+    }
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+                          namespaces=NAMESPACES)) == 1
+    assert root.xpath('//premis:formatName/text()',
+                      namespaces=NAMESPACES)[0] == expected_mimetype
+
+    assert comparison[expected_version.__class__](
+        root.xpath('//premis:formatVersion/text()',
+                   namespaces=NAMESPACES),
+        expected_version
+    )
+
+    assert result.exit_code == 0
+
+
+@pytest.mark.parametrize(
+    ('input_file', 'expected_mimetype', 'expected_version', 'case_name'), [
+        ('tests/data/test_import.pdf', 'application/pdf', '1.4', 'pdf'),
+        ('tests/data/valid_tiff.tif', 'image/tiff', '6.0', 'tiff'),
+        ('tests/data/valid_jpeg.jpeg', 'image/jpeg', ('1.0', '1.01', '1.02'),
+         'jpeg'),
+        ('tests/data/text-file.txt', 'text/plain; charset=UTF-8', None, 'text'),
+        ('tests/data/csvfile.csv', 'text/plain; charset=UTF-8', None, 'csv'),
+        ('tests/data/mets_valid_minimal.xml', 'text/xml; charset=UTF-8', '1.0',
+         'xml'),
+        ('tests/data/ODF_Text_Document.odt',
+         'application/vnd.oasis.opendocument.text', '1.1', 'odt'),
+        ('tests/data/MS_Excel_97-2003.xls', 'application/vnd.ms-excel',
+         '11.0', 'excel'),
+        ('tests/data/MS_Word_2007-2013_XML.docx',
+         'application/vnd.openxmlformats-officedocument.'
+         'wordprocessingml.document', '15.0', 'word docx'),
+        ('tests/data/audio/valid__wav.wav', 'audio/x-wav', None,
+         'audio wav no version'),
+        ('tests/data/audio/valid_2_bwf.wav', 'audio/x-wav', '2',
+         'audio wav v2'),
+    ]
+)
+def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
+                                      expected_version, case_name):
+    """Test the import_object tool function when run as terminal client
+    to see if we could fetch the metadata.
+    """
+    _ = case_name
+    arguments = ['--workspace', testpath, input_file, '--skip_wellformed_check']
     runner = CliRunner()
     result = runner.invoke(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
