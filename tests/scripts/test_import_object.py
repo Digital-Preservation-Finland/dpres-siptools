@@ -239,9 +239,7 @@ def test_import_object_utf8(testpath):
 ])
 def test_import_object_cases(testpath, input_file, expected_mimetype,
                              expected_version, skip_wellformed):
-    """Test validation wtih import_object.main function when run as terminal
-    client.
-    """
+    """Test the import_object toolfunction when run as terminal client."""
     arguments = ['--workspace', testpath, input_file]
     if skip_wellformed:
         arguments.append('--skip_wellformed_check')
