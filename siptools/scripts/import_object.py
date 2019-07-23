@@ -11,22 +11,9 @@ from file_scraper.scraper import Scraper
 import premis
 from siptools.utils import MdCreator
 
-
 ALLOWED_CHARSETS = ['ISO-8859-15', 'UTF-8', 'UTF-16', 'UTF-32']
 
 DEFAULT_VERSIONS = {
-    'application/msword': '11.0',
-    'application/vnd.ms-excel': '11.0',
-    'application/vnd.ms-powerpoint': '11.0',
-    'application/vnd.openxmlformats-'
-    'officedocument.presentationml.presentation': '15.0',
-    'application/vnd.openxmlformats-'
-    'officedocument.spreadsheetml.sheet': '15.0',
-    'application/vnd.openxmlformats-'
-    'officedocument.wordprocessingml.document': '15.0'
-}
-
-FILE_VERSION = {
     'text/xml': '1.0',
     'text/plain': '',
     'text/csv': '',
@@ -48,6 +35,9 @@ FILE_VERSION = {
     'audio/x-wav': '',
     'video/mp4': ''
 }
+
+# For mimetypes that has no version applicable for them.
+NO_VERSION = '(:unap)'
 
 
 @click.command()
@@ -302,9 +292,21 @@ def create_premis_object(fname, scraper,
 
     if file_format in [None, ()]:
         format_name = scraper.mimetype
-        format_version = scraper.version
-        if format_name in DEFAULT_VERSIONS:
+
+        # Set the default version for predefined mimetypes.
+        try:
             format_version = DEFAULT_VERSIONS[format_name]
+        except KeyError:
+            format_version = None
+
+        # Scraper's version information will override the version
+        # information if any is found.
+        if scraper.version:
+            format_version = scraper.version
+
+        # Case for unapplicable versions where version information don't exist.
+        if format_version in NO_VERSION:
+            format_version = ''
     else:
         format_name = file_format[0]
         format_version = file_format[1]
@@ -383,8 +385,8 @@ def metadata_info(fname):
     }
 
     # Return version info from dictionary
-    if mimetype in FILE_VERSION:
-        metadata_info_['format']['version'] = FILE_VERSION[mimetype]
+    if mimetype in DEFAULT_VERSIONS:
+        metadata_info_['format']['version'] = DEFAULT_VERSIONS[mimetype]
 
     # If it's an XML-file, return fixed mimetype and version
     if mimetype == 'application/xml':
@@ -449,7 +451,7 @@ def _read_uint(f_in):
     binary_num = f_in.read(4)
 
     for i in range(4):
-        uint += ord(binary_num[i]) << (8*i)  # Left shift of 8*i
+        uint += ord(binary_num[i]) << (8 * i)  # Left shift of 8*i
 
     return uint
 
