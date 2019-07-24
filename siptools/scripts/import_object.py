@@ -305,7 +305,7 @@ def create_premis_object(fname, scraper,
             format_version = scraper.version
 
         # Case for unapplicable versions where version information don't exist.
-        if format_version in NO_VERSION:
+        if format_version == NO_VERSION:
             format_version = ''
     else:
         format_name = file_format[0]
