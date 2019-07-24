@@ -294,10 +294,7 @@ def create_premis_object(fname, scraper,
         format_name = scraper.mimetype
 
         # Set the default version for predefined mimetypes.
-        try:
-            format_version = DEFAULT_VERSIONS[format_name]
-        except KeyError:
-            format_version = None
+        format_version = DEFAULT_VERSIONS.get(format_name, None)
 
         # Scraper's version information will override the version
         # information if any is found.
