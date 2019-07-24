@@ -204,6 +204,8 @@ def test_import_object_utf8(testpath):
 
 # TODO: Combine this test with test_import_object_cases_for_lite once we're
 #       using version that pytest supports pytest.param.
+#       This test is identical to it except no additional option is provided
+#       and this test is marked "validate"
 # TODO: Replace with pytest.param(*args, id=test_case) once we're using the
 #       version that pytest supports it so that we'll have easier time to see
 #       what each parametrize test case is testing.
@@ -235,6 +237,12 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
                              expected_version, case_name):
     """Test the import_object tool function when run as terminal client.
     In addition to getting the metadata, we're also validating.
+
+    :param expected_version: Depending on the type of value provided,
+        comparison logic differs for version comparison:
+            - string: exact match is expected.
+            - tuple: premis version must match any of the value provided.
+            - NoneType: premis version must not empty falsey value.
     """
     _ = case_name
     arguments = ['--workspace', testpath, input_file]
@@ -263,7 +271,10 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
 
     assert result.exit_code == 0
 
-
+# TODO: Once pytest version is upgraded, combine this test with above
+#       test_import_object_cases. This test is identical to it except
+#       "--skip_wellformed_check" option is provided and this is not marked
+#       as "validate".
 @pytest.mark.parametrize(
     ('input_file', 'expected_mimetype', 'expected_version', 'case_name'), [
         ('tests/data/test_import.pdf', 'application/pdf', '1.4', 'pdf'),
@@ -291,6 +302,12 @@ def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
                                       expected_version, case_name):
     """Test the import_object tool function when run as terminal client
     to see if we could fetch the metadata.
+
+    :param expected_version: Depending on the type of value provided,
+        comparison logic differs for version comparison:
+            - string: exact match is expected.
+            - tuple: premis version must match any of the value provided.
+            - NoneType: premis version must not empty falsey value.
     """
     _ = case_name
     arguments = ['--workspace', testpath, input_file, '--skip_wellformed_check']
