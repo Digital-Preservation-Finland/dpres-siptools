@@ -3,6 +3,9 @@
 # changes really need to be made, see the instructions in
 # https://gitlab.csc.fi/dpres/gitlab-ci-pipeline/blob/master/README.rst
 
+variables:
+  ANSIBLE_REPOSITORY: 'ansible-preservation-system'
+
 stages:
   - rpm-package
   - local-test
