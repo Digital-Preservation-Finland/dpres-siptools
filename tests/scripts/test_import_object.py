@@ -242,7 +242,7 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
         comparison logic differs for version comparison:
             - string: exact match is expected.
             - tuple: premis version must match any of the value provided.
-            - NoneType: premis version must not empty falsey value.
+            - None: premis version must be a falsy value.
     """
     _ = case_name
     arguments = ['--workspace', testpath, input_file]
@@ -307,7 +307,7 @@ def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
         comparison logic differs for version comparison:
             - string: exact match is expected.
             - tuple: premis version must match any of the value provided.
-            - NoneType: premis version must not empty falsey value.
+            - None: premis version must be a falsy value.
     """
     _ = case_name
     arguments = ['--workspace', testpath, input_file, '--skip_wellformed_check']
