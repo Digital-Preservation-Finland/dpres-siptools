@@ -1,20 +1,26 @@
 """Command line tool for creating METS document and copying files to workspace
 directory.
 """
+from __future__ import unicode_literals
 
+import datetime
 import os
 import sys
-import datetime
 import uuid
 from shutil import copyfile
+
 import click
-from scandir import scandir
+import six
+
 import lxml.etree
 import mets
-import xml_helpers.utils as h
-from siptools.xml.mets import NAMESPACES, METS_PROFILE, METS_CATALOG, \
-    METS_SPECIFICATION, RECORD_STATUS_TYPES, mets_extend
+import xml_helpers.utils as xml_utils
+from scandir import scandir
 from siptools.utils import get_objectlist
+from siptools.xml.mets import (METS_CATALOG, METS_PROFILE, METS_SPECIFICATION,
+                               NAMESPACES, RECORD_STATUS_TYPES, mets_extend)
+
+click.disable_unicode_literals_warning = True
 
 
 @click.command()
@@ -32,7 +38,7 @@ from siptools.utils import get_objectlist
               default='.',
               help='Base path of the digital objects.')
 @click.option('--objid', type=str,
-              default=str(uuid.uuid4()),
+              default=six.text_type(uuid.uuid4()),
               metavar='<OBJID>',
               help='Unique identifier for the package')
 @click.option('--label',
@@ -100,10 +106,10 @@ def compile_mets(mets_profile, organization_name, contractid, objid=None,
                  base_path=".", stdout=False, packagingservice=None):
     """Merge partial METS documents in workspace directory into
     one METS document."""
-    contract = "urn:uuid:%s" % str(contractid)
+    contract = "urn:uuid:%s" % contractid
 
     if not objid:
-        objid = str(uuid.uuid4())
+        objid = six.text_type(uuid.uuid4())
 
     if not create_date:
         create_date = datetime.datetime.utcnow().isoformat()
@@ -123,26 +129,25 @@ def compile_mets(mets_profile, organization_name, contractid, objid=None,
     )
 
     if stdout:
-        print h.serialize(mets_document.getroot())
+        print(xml_utils.serialize(mets_document.getroot()))
 
     output_file = os.path.join(workspace, 'mets.xml')
 
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
 
-    with open(output_file, 'w+') as outfile:
-        outfile.write(h.serialize(mets_document.getroot()))
+    with open(output_file, 'wb+') as outfile:
+        outfile.write(xml_utils.serialize(mets_document.getroot()))
 
-    print "compile_mets created file: %s" % output_file
+    print("compile_mets created file: %s" % output_file)
 
     if copy_files:
         copy_objects(workspace, base_path)
-        print "compile_mets copied objects from %s to workspace" % \
-            base_path
+        print("compile_mets copied objects from %s to workspace" % base_path)
 
     if clean:
         clean_metsparts(workspace)
-        print "compile_mets cleaned work files from workspace"
+        print("compile_mets cleaned work files from workspace")
 
 
 def create_mets(workspace, mets_attributes, metshdr_attributes,

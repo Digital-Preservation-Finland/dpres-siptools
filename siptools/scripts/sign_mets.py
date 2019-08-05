@@ -1,9 +1,14 @@
 """Command line tool for creating digital signatures for SIP"""
+from __future__ import unicode_literals
 
-import sys
 import os
+import sys
+
 import click
+
 import dpres_signature.signature
+
+click.disable_unicode_literals_warning = True
 
 
 @click.command()
@@ -35,10 +40,10 @@ def sign_mets(sign_key, workspace="./workspace"):
         signature_path, sign_key, ['mets.xml']
     )
 
-    with open(signature_path, 'w') as outfile:
+    with open(signature_path, 'wb') as outfile:
         outfile.write(signature)
 
-    print "sign_mets created file: %s" % signature_path
+    print("sign_mets created file: %s" % signature_path)
 
 
 if __name__ == '__main__':

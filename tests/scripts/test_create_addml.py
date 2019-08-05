@@ -1,12 +1,14 @@
 """Tests for ``siptools.scripts.create_addml`` module"""
+from __future__ import unicode_literals
 
 import os
+
 import pytest
-import lxml.etree as ET
 from click.testing import CliRunner
+
+import lxml.etree as ET
 import siptools.scripts.create_addml as create_addml
 from siptools.utils import decode_path
-
 
 CSV_FILE = "tests/data/csvfile.csv"
 DELIMITER = ";"

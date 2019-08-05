@@ -1,12 +1,17 @@
 # encoding: utf-8
 """Tests for ``siptools.scripts.create_mix`` module"""
+from __future__ import unicode_literals
+
+import io
 import os
-import sys
-import shutil
 import pickle
+import shutil
+import sys
+
 import pytest
-import lxml.etree
 from click.testing import CliRunner
+
+import lxml.etree
 import siptools.scripts.create_mix as create_mix
 
 
@@ -50,7 +55,7 @@ def test_main_utf8_files(testpath):
     # Create sample data directory with image that has non-ascii characters in
     # filename
     os.makedirs(os.path.join(testpath, 'data'))
-    image_relative_path = os.path.join('data', u'äöå.tif')
+    image_relative_path = os.path.join('data', 'äöå.tif')
     image_full_path = os.path.join(testpath, image_relative_path)
     shutil.copy('tests/data/images/tiff1.tif', image_full_path)
 
@@ -65,7 +70,7 @@ def test_main_utf8_files(testpath):
 
     # Check that filename is found in md-reference file.
     xml = lxml.etree.parse(os.path.join(testpath, 'md-references.xml'))
-    assert len(xml.xpath(u'//mdReference[@file="data/äöå.tif"]')) == 1
+    assert len(xml.xpath('//mdReference[@file="data/äöå.tif"]')) == 1
 
 
 def test_create_mix():
@@ -127,9 +132,9 @@ def test_existing_scraper_result(testpath):
     namespaces = {'mix': "http://www.loc.gov/mix/v20"}
     xml = """<?xml version='1.0' encoding='UTF-8'?>
           <mdReferences>
-          <mdReference file="%s">_%s</mdReference>
-          </mdReferences>""" % (file_, amdid)
-    with open(os.path.join(testpath, 'md-references.xml'), 'w') as out:
+          <mdReference file="{}">_{}</mdReference>
+          </mdReferences>""".format(file_, amdid).encode("utf-8")
+    with open(os.path.join(testpath, 'md-references.xml'), 'wb') as out:
         out.write(xml)
 
     stream_dict = {0: {
@@ -181,6 +186,6 @@ def test_paths(testpath, file_, base_path):
             '--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        open(os.path.join(testpath, 'md-references.xml')).read()
+        io.open(os.path.join(testpath, 'md-references.xml'), "rt").read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

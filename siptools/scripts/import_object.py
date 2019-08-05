@@ -1,15 +1,21 @@
 """Command line tool for importing digital objects"""
+from __future__ import unicode_literals
 
-import os
-import sys
-import fnmatch
-from uuid import uuid4
 import datetime
+import fnmatch
+import os
 import platform
+import sys
+from uuid import uuid4
+
 import click
-from file_scraper.scraper import Scraper
+import six
+
 import premis
+from file_scraper.scraper import Scraper
 from siptools.utils import MdCreator
+
+click.disable_unicode_literals_warning = True
 
 ALLOWED_CHARSETS = ['ISO-8859-15', 'UTF-8', 'UTF-16', 'UTF-32']
 
@@ -135,7 +141,7 @@ def import_object(workspace="./workspace/", base_path=".",
 
         properties = {}
         if order:
-            properties['order'] = str(order)
+            properties['order'] = six.text_type(order)
         # Add new properties of a file for other script files, e.g. structMap
 
         creator = PremisCreator(workspace)
@@ -165,7 +171,7 @@ class PremisCreator(MdCreator):
             scraper.scrape(True)
             if not scraper.well_formed:
                 errors = []
-                for _, info in scraper.info.iteritems():
+                for _, info in six.iteritems(scraper.info):
                     if len(info['errors']) > 0:
                         errors.append(info['errors'])
                 error_str = "\n".join(errors)
@@ -191,7 +197,7 @@ class PremisCreator(MdCreator):
         premis_list = create_streams(file_metadata_dict, premis_elem)
 
         if premis_list is not None:
-            for index, premis_stream in premis_list.iteritems():
+            for index, premis_stream in six.iteritems(premis_list):
                 self.add_md(premis_stream, filerel, index)
 
     def add_premis_md(self, filepath, filerel=None, skip_well_check=False,
@@ -231,11 +237,11 @@ def create_streams(streams, premis_file):
         return None
 
     premis_list = {}
-    for index, stream in streams.iteritems():
+    for index, stream in six.iteritems(streams):
         if stream['stream_type'] not in ['video', 'audio']:
             continue
 
-        id_value = str(uuid4())
+        id_value = six.text_type(uuid4())
         identifier = premis.identifier(
             identifier_type='UUID',
             identifier_value=id_value)
@@ -282,7 +288,7 @@ def create_premis_object(fname, scraper,
     if scraper.info[0]['class'] == 'FileExists' and \
             len(scraper.info[0]['errors']) > 0:
         raise IOError(scraper.info[0]['errors'])
-    for _, info in scraper.info.iteritems():
+    for _, info in six.iteritems(scraper.info):
         if info['class'] == 'ScraperNotFound':
             raise ValueError('File format is not supported.')
 
@@ -319,7 +325,7 @@ def create_premis_object(fname, scraper,
     if charset:
         if charset not in ALLOWED_CHARSETS:
             raise ValueError('Invalid charset.')
-        format_name += '; charset=' + charset
+        format_name += '; charset={}'.format(charset)
 
     if date_created is None:
         date_created = creation_date(fname)
@@ -327,7 +333,7 @@ def create_premis_object(fname, scraper,
     if identifier in [None, ()]:
         object_identifier = premis.identifier(
             identifier_type='UUID',
-            identifier_value=str(uuid4()))
+            identifier_value=six.text_type(uuid4()))
     else:
         object_identifier = premis.identifier(
             identifier_type=identifier[0],
@@ -461,7 +467,7 @@ def is_broadcast_wav(fname):
     The function reads all the RIFF chunk IDs and returns
     True if "bext" chunk is found.
     """
-    with open(fname) as f_in:
+    with open(fname, "rb") as f_in:
         f_in.read(4)  # Skip RIFF ID
         size = _read_uint(f_in) - 4
         f_in.read(4)  # Skip WAVE ID
@@ -471,7 +477,7 @@ def is_broadcast_wav(fname):
             chunk_id = f_in.read(4)
             chunk_size = _read_uint(f_in)
 
-            if chunk_id == "bext":
+            if chunk_id == b"bext":
                 return True
             else:
                 size -= (chunk_size + 8)

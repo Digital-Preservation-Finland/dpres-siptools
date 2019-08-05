@@ -1,11 +1,15 @@
 """Tests for ``siptools.scripts.compile_mets`` module"""
+from __future__ import unicode_literals
+
 import os
-import lxml.etree as ET
+
 from click.testing import CliRunner
-from siptools.xml.mets import NAMESPACES
+
+import lxml.etree as ET
+from siptools.scripts import (compile_mets, compile_structmap, import_object,
+                              premis_event)
 from siptools.scripts.import_description import main
-from siptools.scripts import compile_mets, premis_event, import_object, \
-    compile_structmap
+from siptools.xml.mets import NAMESPACES
 
 
 def create_test_data(workspace):
@@ -105,7 +109,6 @@ def test_compile_mets_ok(testpath):
 
 
 def test_compile_mets_cleanup_ok(testpath):
-    #TODO: Missing docstring
     create_test_data(testpath)
     arguments = ['ch',
                  'CSC',
@@ -162,7 +165,6 @@ def test_compile_mets_cleanup_ok(testpath):
 
 
 def test_compile_mets_fail(testpath):
-    #TODO: Missing docstring
     arguments = ['ch',
                  'CSC',
                  'contract-id-1234',

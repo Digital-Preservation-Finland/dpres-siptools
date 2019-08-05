@@ -2,12 +2,12 @@
 Gets the current version number.
 If in a git repository, it is the current git tag.
 Otherwise it is the one contained in the PKG-INFO file.
- 
+
 To use this script, simply import it in your setup.py file
 and use the results of get_version() as your package version:
- 
-    from version import *
- 
+
+    from version import get_version
+
     setup(
         ...
         version=get_version(),
@@ -27,7 +27,7 @@ version_re = re.compile('^Version: (.+)$', re.M)
 
 def call_git_describe():
     cmd = 'git describe --abbrev --tags --match v[0-9]*'.split()
-    print ' '.join(cmd)
+    print(' '.join(cmd))
     p = Popen(cmd, stdout=PIPE, stderr=PIPE)
     (stdout, stderr) = p.communicate()
     return stdout.strip()
@@ -44,10 +44,14 @@ def write_pkg_info():
     except:
         version = '0.0'
 
-    print "%s: Writing version info to '%s'..." % (__file__, os.path.abspath('PKG-INFO'))
+    print(
+        "{}: Writing version info to '{}'...".format(
+            __file__, os.path.abspath('PKG-INFO')
+        )
+    )
     f = open(os.path.join(d, 'PKG-INFO'), 'w')
     f.write("Metadata-Version: 1.0\n")
-    f.write("Name: information-package-tools\n")
+    f.write("Name: dpres-siptools\n")
     f.write("Version: %s\n" % version)
     f.write("Summary: UNKNOWN\n")
     f.write("Home-page: UNKNOWN\n")
@@ -73,13 +77,13 @@ def get_version():
                 '-'.join(version_git.split('-')[2:])
             )
 
-        print "Version number from GIT repository: " + version
+        print("Version number from GIT repository: {}".format(version))
     else:
         write_pkg_info()
         # Extract the version from the PKG-INFO file.
         with open(os.path.join(d, 'PKG-INFO')) as f:
             version = version_re.search(f.read()).group(1)
-        print "Version number from PKG-INFO: " + version
+        print("Version number from PKG-INFO: {}".format(version))
 
     return version
 

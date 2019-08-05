@@ -1,8 +1,14 @@
 """Command line tool for creating tar file from SIP directory"""
+from __future__ import unicode_literals
 
 import sys
 import subprocess
 import click
+
+from siptools.utils import fsencode_path
+
+
+click.disable_unicode_literals_warning = True
 
 
 @click.command()
@@ -21,7 +27,7 @@ def main(dir_to_tar, tar_filename):
 
 def compress(dir_to_tar, tar_filename):
     """Create tar file from SIP directory."""
-    command = ['tar', '-cvvf', tar_filename, '.']
+    command = ['tar', '-cvvf', fsencode_path(tar_filename), '.']
     proc = subprocess.Popen(
         command, cwd=dir_to_tar,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -31,7 +37,7 @@ def compress(dir_to_tar, tar_filename):
     proc.communicate()
     returncode = proc.returncode
 
-    print "created tar file: %s" % tar_filename
+    print("created tar file: %s" % tar_filename)
 
     return returncode
 

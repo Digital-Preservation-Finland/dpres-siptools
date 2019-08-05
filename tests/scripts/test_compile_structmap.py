@@ -1,16 +1,16 @@
 """Tests for the compile_structmap script."""
+from __future__ import unicode_literals
 
 import os
 import shutil
+
+from click.testing import CliRunner
+
 import lxml.etree
 import mets
-from click.testing import CliRunner
+from siptools.scripts import (compile_structmap, create_audiomd,
+                              import_description, import_object, premis_event)
 from siptools.xml.mets import NAMESPACES
-from siptools.scripts import compile_structmap
-from siptools.scripts import import_object
-from siptools.scripts import premis_event
-from siptools.scripts import import_description
-from siptools.scripts import create_audiomd
 
 
 def create_test_data(workspace):
@@ -242,7 +242,7 @@ def test_get_fileid():
     files = [mets.file_elem(file_id='identifier%s' % num,
                             admid_elements=['foo', 'bar'],
                             loctype='foo',
-                            xlink_href=u'file://path/to/file+name%s' % num,
+                            xlink_href='file://path/to/file+name%s' % num,
                             xlink_type='foo') for num in range(3)]
 
     filegrp = mets.filegrp(child_elements=files)

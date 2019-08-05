@@ -1,13 +1,19 @@
 # encoding: utf-8
 """Tests for ``siptools.scripts.create_videomd`` module"""
-import sys
+from __future__ import unicode_literals
+
+import io
 import os.path
-import shutil
 import pickle
+import shutil
+import sys
+
 import pytest
-import lxml.etree as ET
 from click.testing import CliRunner
+
+import lxml.etree as ET
 import siptools.scripts.create_videomd as create_videomd
+from siptools.utils import fsencode_path
 
 VIDEOMD_NS = 'http://www.loc.gov/videoMD/'
 NAMESPACES = {"vmd": VIDEOMD_NS}
@@ -155,11 +161,11 @@ def test_create_videomd(testpath):
     creator = create_videomd.VideomdCreator(testpath)
 
     # Debug print
-    print "\n\n%s" % ET.tostring(
+    print("\n\n%s" % ET.tostring(
         create_videomd.create_videomd_metadata(
             "tests/data/video/valid_1.m1v"
         )["0"], pretty_print=True
-    )
+    ))
 
     # Append same file twice
     creator.add_videomd_md("tests/data/video/valid_1.m1v")
@@ -184,7 +190,7 @@ def test_main_utf8_files(testpath):
     # Create sample data directory with file that has non-ascii characters in
     # filename
     os.makedirs(os.path.join(testpath, 'data'))
-    relative_path = os.path.join('data', u'äöå.m1v')
+    relative_path = os.path.join('data', 'äöå.m1v')
     full_path = os.path.join(testpath, relative_path)
     shutil.copy('tests/data/video/valid_1.m1v', full_path)
 
@@ -193,7 +199,7 @@ def test_main_utf8_files(testpath):
     runner.invoke(
         create_videomd.main, [
             '--workspace', testpath, '--base_path', testpath,
-            relative_path.encode(sys.getfilesystemencoding())
+            fsencode_path(relative_path)
         ]
     )
 
@@ -211,9 +217,9 @@ def test_existing_scraper_result(testpath):
     file_ = 'tests/data/video/valid_1.m1v'
     xml = """<?xml version='1.0' encoding='UTF-8'?>
           <mdReferences>
-          <mdReference file="%s">_%s</mdReference>
-          </mdReferences>""" % (file_, amdid)
-    with open(os.path.join(testpath, 'md-references.xml'), 'w') as out:
+          <mdReference file="{}">_{}</mdReference>
+          </mdReferences>""".format(file_, amdid).encode("utf-8")
+    with open(os.path.join(testpath, 'md-references.xml'), 'wb') as out:
         out.write(xml)
 
     stream_dict = {0: {
@@ -265,6 +271,6 @@ def test_paths(testpath, file_, base_path):
             '--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        open(os.path.join(testpath, 'md-references.xml')).read()
+        io.open(os.path.join(testpath, 'md-references.xml'), "rt").read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

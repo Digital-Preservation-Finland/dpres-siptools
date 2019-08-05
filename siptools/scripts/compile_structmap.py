@@ -1,17 +1,22 @@
 """"Command line tool for creating the structural map and file section
 metadata for a METS document."""
+from __future__ import unicode_literals
 
-import sys
 import os
-from uuid import uuid4
 import pickle
+import sys
+from uuid import uuid4
+
 import click
+
 import lxml.etree as ET
 import mets
-import xml_helpers.utils as h
+import scandir
+import xml_helpers.utils as xml_utils
+from siptools.utils import add, encode_id, encode_path, get_objectlist, tree
 from siptools.xml.mets import NAMESPACES
-from siptools.utils import encode_path, tree, add, get_objectlist
 
+click.disable_unicode_literals_warning = True
 
 ALLOWED_C_SUBS = ['c', 'c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07',
                   'c08', 'c09', 'c10', 'c11', 'c12']
@@ -79,8 +84,8 @@ def compile_structmap(workspace="./workspace/", structmap_type=None,
                                      filelist, structmap_type, root_type)
 
     if stdout:
-        print h.serialize(filesec)
-        print h.serialize(structmap)
+        print(xml_utils.serialize(filesec).decode("utf-8"))
+        print(xml_utils.serialize(structmap).decode("utf-8"))
 
     output_sm_file = os.path.join(workspace, 'structmap.xml')
     output_fs_file = os.path.join(workspace, 'filesec.xml')
@@ -91,14 +96,14 @@ def compile_structmap(workspace="./workspace/", structmap_type=None,
     if not os.path.exists(os.path.dirname(output_fs_file)):
         os.makedirs(os.path.dirname(output_fs_file))
 
-    with open(output_sm_file, 'w+') as outfile:
-        outfile.write(h.serialize(structmap))
+    with open(output_sm_file, 'wb+') as outfile:
+        outfile.write(xml_utils.serialize(structmap))
 
-    with open(output_fs_file, 'w+') as outfile:
-        outfile.write(h.serialize(filesec))
+    with open(output_fs_file, 'wb+') as outfile:
+        outfile.write(xml_utils.serialize(filesec))
 
-    print "compile_structmap created files: %s %s" % (output_sm_file,
-                                                      output_fs_file)
+    print("compile_structmap created files: %s %s" % (output_sm_file,
+                                                      output_fs_file))
 
 
 def create_filesec(workspace, filelist):
@@ -257,7 +262,7 @@ def add_file_to_filesec(workspace, path, filegrp):
     :param str returns: id of file added to fileGrp
     :returns: unique identifier of file element
     """
-    fileid = '_' + str(uuid4())
+    fileid = '_{}'.format(uuid4())
 
     # Create list of IDs of amdID elements
     amdids = get_md_references(workspace, path=path)
@@ -430,7 +435,7 @@ def add_file_properties(workspace, path, fptr):
     if pkl_name is None or not os.path.isfile(pkl_name):
         return None
 
-    with open(pkl_name, 'r') as pkl_file:
+    with open(pkl_name, 'rb') as pkl_file:
         file_metadata_dict = pickle.load(pkl_file)
 
     properties = {}

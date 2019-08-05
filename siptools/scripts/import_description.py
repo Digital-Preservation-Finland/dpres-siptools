@@ -1,6 +1,7 @@
 """Create METS document that contains descriptive metadata imported from XML
 file
 """
+from __future__ import unicode_literals
 
 import sys
 import os
@@ -13,6 +14,9 @@ import mets
 
 from siptools.xml.mets import METS_MDTYPES
 from siptools.utils import MdCreator
+
+
+click.disable_unicode_literals_warning = True
 
 
 @click.command()
@@ -71,7 +75,7 @@ def import_description(dmdsec_location, base_path='.', dmdsec_target=None,
     creator.write_dmd_ref(_mets, dmd_id, dmd_target)
 
     if stdout:
-        print lxml.etree.tostring(_mets, pretty_print=True)
+        print(lxml.etree.tostring(_mets, pretty_print=True).decode("utf-8"))
 
     output_file = os.path.join(workspace, filename)
     if os.path.isfile(output_file):
@@ -85,7 +89,7 @@ def import_description(dmdsec_location, base_path='.', dmdsec_target=None,
                 xml_declaration=True,
                 encoding='UTF-8')
 
-    print "import_description created file: %s" % output_file
+    print("import_description created file: %s" % output_file)
 
 
 def dmd_target_path(base_path, dmdsec_target=None):

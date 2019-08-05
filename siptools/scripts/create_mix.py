@@ -1,27 +1,26 @@
 # coding=utf-8
 """Command line tool for creating MIX metadata."""
+from __future__ import unicode_literals
 
 import os
 import sys
+
 import click
+import six
+
 import nisomix
 from siptools.utils import MdCreator, scrape_file
+
+
+click.disable_unicode_literals_warning = True
+
 
 SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
                      'I': '1', 'F': '1'}
 
 
-def str_to_unicode(string):
-    """Convert string to unicode string. Assumes that string encoding is the
-    encoding of filesystem (unicode() assumes ASCII by default).
-
-    :param string: encoded string
-    :returns: decoded string
-    """
-    return unicode(string, sys.getfilesystemencoding())
-
-
+@six.python_2_unicode_compatible
 class MixGenerationError(ValueError):
     """Exception raised when mix metadata generation fails."""
 
@@ -102,12 +101,12 @@ def check_missing_metadata(stream, filename):
     """If an element is none, use value (:unav) if allowed in the
     specifications. Otherwise raise exception.
     """
-    for key, element in stream.iteritems():
+    for key, element in six.iteritems(stream):
         if key in ['mimetype', 'stream_type', 'index', 'version']:
             continue
         if element in [None, '(:unav)']:
             raise MixGenerationError(
-                'Missing metadata value for key %s for file ' % key, filename
+                'Missing metadata value for key %s for file %s' % key, filename
             )
 
 
@@ -122,7 +121,7 @@ def create_mix_metadata(filename, filerel=None, workspace=None):
     check_missing_metadata(stream_md, filename)
 
     if stream_md['stream_type'] != 'image':
-        print "This is not an image file. No MIX metadata created."
+        print("This is not an image file. No MIX metadata created.")
         return None
     if len(streams) > 1:
         raise MixGenerationError(

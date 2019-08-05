@@ -1,13 +1,20 @@
 # encoding: utf-8
 """Unit tests for ``siptools.scripts.import_object`` module"""
-import sys
-import os.path
+from __future__ import unicode_literals
+
 import datetime
+import io
+import os.path
 import pickle
-from click.testing import CliRunner
-import lxml.etree as ET
+import sys
+
 import pytest
+import six
+from click.testing import CliRunner
+
+import lxml.etree as ET
 from siptools.scripts import import_object
+from siptools.utils import fsdecode_path
 from siptools.xml.mets import NAMESPACES
 
 
@@ -16,10 +23,10 @@ def get_amd_file(path, input_file, stream=None):
     ref = os.path.join(path, 'md-references.xml')
 
     root = ET.parse(ref).getroot()
-    decoded_input_file = input_file.decode(sys.getfilesystemencoding())
+    decoded_input_file = fsdecode_path(input_file)
     if stream is None:
-        amdref = root.xpath("/mdReferences/mdReference[not(@stream) and "
-                            "@file='%s']" % decoded_input_file)[0]
+        amdref = root.xpath("/mdReferences/mdReference[not(@stream) "
+                            "and @file='%s']" % decoded_input_file)[0]
     else:
         amdref = root.xpath("/mdReferences/mdReference[@stream='%s' and "
                             "@file='%s']" % (stream, decoded_input_file))[0]
@@ -121,7 +128,7 @@ def test_import_object_order(testpath):
     assert os.path.isfile(path)
 
     streams = {}
-    with open(path) as infile:
+    with open(path, "rb") as infile:
         streams = pickle.load(infile)
 
     assert 'properties' in streams[0]
@@ -185,7 +192,7 @@ def test_import_object_utf8(testpath):
     utf8_directory = os.path.join(testpath, 'directory Ä')
     os.mkdir(utf8_directory)
     utf8_file = os.path.join(utf8_directory, 'testfile Ö')
-    with open(utf8_file, 'w') as file_:
+    with io.open(utf8_file, 'wt') as file_:
         file_.write('Voi änkeröinen.')
 
     # Run function
@@ -253,7 +260,7 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
     root = tree.getroot()
 
     comparison = {
-        str: lambda element, expected: element[0] == expected,
+        six.text_type: lambda element, expected: element[0] == expected,
         tuple: lambda element, expected: element[0] in expected,
         None.__class__: lambda element, expected: not element
     }
@@ -270,6 +277,7 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
     )
 
     assert result.exit_code == 0
+
 
 # TODO: Once pytest version is upgraded, combine this test with above
 #       test_import_object_cases. This test is identical to it except
@@ -318,7 +326,7 @@ def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
     root = tree.getroot()
 
     comparison = {
-        str: lambda element, expected: element[0] == expected,
+        six.text_type: lambda element, expected: element[0] == expected,
         tuple: lambda element, expected: element[0] in expected,
         None.__class__: lambda element, expected: not element
     }
@@ -366,7 +374,7 @@ def test_streams(testpath):
     # Streams
     stream_id = []
     for i in [1, 2]:
-        output = get_amd_file(testpath, input_file, str(i))
+        output = get_amd_file(testpath, input_file, six.text_type(i))
         tree = ET.parse(output)
         root = tree.getroot()
         if i == 2:

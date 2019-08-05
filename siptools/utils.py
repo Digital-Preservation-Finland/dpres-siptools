@@ -1,19 +1,27 @@
 """
 Utilities for siptools
 """
+from __future__ import unicode_literals
 
-import sys
-from collections import defaultdict
+import copy
 import hashlib
 import os
-from urllib import quote_plus, unquote_plus
-import copy
 import pickle
+import sys
+from collections import defaultdict
+
+import six
+
 import lxml.etree
-from file_scraper.scraper import Scraper
-import xml_helpers
 import mets
 import premis
+import xml_helpers
+from file_scraper.scraper import Scraper
+
+try:
+    from urllib.parse import quote_plus, unquote_plus
+except ImportError:  # Python 2
+    from urllib import quote_plus, unquote_plus
 
 
 def scrape_file(filename, filerel=None, workspace=None):
@@ -31,9 +39,10 @@ def scrape_file(filename, filerel=None, workspace=None):
 
     if ref_exists:
         root = lxml.etree.parse(ref).getroot()
+        filerel = fsdecode_path(filerel)
+
         amdref = root.xpath("/mdReferences/mdReference[not(@stream) "
-                            "and @file='%s']" % filerel.decode(
-                                sys.getfilesystemencoding()))
+                            "and @file='%s']" % filerel)
         pkl_name = None
         if amdref:
             pkl_name = os.path.join(
@@ -52,8 +61,8 @@ def fix_missing_metadata(streams, filename, allow_unav, allow_zero):
     """If an element is none, use value (:unav) if allowed in the
     specifications. Otherwise raise exception.
     """
-    for index, stream in streams.iteritems():
-        for key, element in stream.iteritems():
+    for index, stream in streams.items():
+        for key, element in stream.items():
             if key in ['mimetype', 'stream_type', 'index', 'version']:
                 continue
             if element in [None, '(:unav)']:
@@ -64,30 +73,58 @@ def fix_missing_metadata(streams, filename, allow_unav, allow_zero):
                 else:
                     raise ValueError(
                         'Missing metadata value for key %s in '
-                        'index %s for file %s' % (key, str(index), filename))
+                        'index %s for file %s' % (key, index, filename))
 
 
-def encode_path(path, suffix='', prefix='', safe=None):
+def encode_path(path, suffix='', prefix='', safe=""):
     """Encode given path to URL encoding with given perfix and suffix
     """
-    if safe:
-        return prefix + quote_plus(path.encode('utf8'), safe=safe) + suffix
-    return prefix + quote_plus(path.encode('utf8')) + suffix
+    if isinstance(path, six.text_type):
+        path = path.encode("utf-8")
+
+    if isinstance(safe, six.text_type):
+        safe = safe.encode("utf-8")
+
+    quoted = quote_plus(path, safe=safe)
+    return "{}{}{}".format(prefix, quoted, suffix)
 
 
 def decode_path(path, suffix=''):
     """Decode given path from URL encoding and remove given suffix
     """
-    path = unquote_plus(path)
+    if six.PY2:
+        path = path.encode("utf-8")
+
+    path = unquote_plus(path).decode("utf-8")
     if path.endswith(suffix):
         path = path.replace(suffix, '', 1)
-    return path.decode('utf8')
+    return path
+
+
+def fsencode_path(filename):
+    """Encode Unicode filenames using the file system encoding"""
+    if isinstance(filename, six.text_type):
+        return filename.encode(encoding=sys.getfilesystemencoding())
+    elif isinstance(filename, six.binary_type):
+        return filename
+
+    raise TypeError("Value is not a (byte) string")
+
+
+def fsdecode_path(filename):
+    """Decode byte filenames using the file system encoding"""
+    if isinstance(filename, six.binary_type):
+        return filename.decode(encoding=sys.getfilesystemencoding())
+    elif isinstance(filename, six.text_type):
+        return filename
+
+    raise TypeError("Value is not a (byte) string")
 
 
 def encode_id(text):
     """Give ID to given text with MD5 calculation
     """
-    return '_' + hashlib.md5(text).hexdigest()
+    return '_{}'.format(hashlib.md5(text.encode("utf-8")).hexdigest())
 
 
 def tree():
@@ -178,13 +215,13 @@ def generate_digest(etree):
         _pop_attributes(attributes, attrib_list, path)
 
     attrib_list.sort()
-    string = xml_helpers.utils.serialize(root)
+    xml_data = xml_helpers.utils.serialize(root)
 
     # Add the sorted attributes at the end of the serialized XML
-    for attribute in attrib_list:
-        string += attribute
+    attr_data = b"".join([attr.encode("utf-8") for attr in attrib_list])
+    xml_data = b"".join([xml_data, attr_data])
 
-    return hashlib.md5(string).hexdigest()
+    return hashlib.md5(xml_data).hexdigest()
 
 
 def get_objectlist(workspace, file_path=None):
@@ -300,13 +337,13 @@ class MdCreator(object):
             for key in ref:
                 if key == 'md_id':
                     pass
-                elif isinstance(ref[key], str):
+                elif isinstance(ref[key], six.binary_type):
                     reference.set(
                         key, ref[key].decode(sys.getfilesystemencoding()))
-                elif isinstance(ref[key], unicode):
+                elif isinstance(ref[key], six.text_type):
                     reference.set(key, ref[key])
                 elif ref[key]:
-                    reference.set(key, str(ref[key]))
+                    reference.set(key, six.text_type(ref[key]))
                 references.append(reference)
 
         # Write reference list file
@@ -340,7 +377,7 @@ class MdCreator(object):
         digest = generate_digest(metadata)
         suffix = othermdtype if othermdtype else mdtype
         filename = encode_path("%s-%s-amd.xml" % (digest, suffix))
-        md_id = '_' + digest
+        md_id = '_{}'.format(digest)
         filename = os.path.join(self.workspace, filename)
 
         if not os.path.exists(filename):
@@ -359,12 +396,14 @@ class MdCreator(object):
             mets_ = mets.mets()
             mets_.append(amdsec)
 
-            with open(filename, 'w+') as outfile:
+            with open(filename, 'wb+') as outfile:
                 outfile.write(xml_helpers.utils.serialize(mets_))
                 if stdout:
-                    print xml_helpers.utils.serialize(mets_)
-                print "Wrote METS %s administrative metadata to file %s" \
-                      % (mdtype, outfile.name)
+                    print(xml_helpers.utils.serialize(mets_).decode("utf-8"))
+                print(
+                    "Wrote METS %s administrative metadata to file %s" %
+                    (mdtype, outfile.name)
+                )
 
         return md_id, filename
 
@@ -379,8 +418,11 @@ class MdCreator(object):
 
         if not os.path.exists(filename):
             with open(filename, 'wb') as outfile:
+                # TODO: pickle is overkill for serializing simple dicts
+                # and might lead to remote code execution if the user
+                # can find a way to modify the pickled file
                 pickle.dump(file_metadata_dict, outfile)
-            print "Wrote technical data to: %s" % (outfile.name)
+            print("Wrote technical data to: %s" % (outfile.name))
 
     def write(self, mdtype="type", mdtypeversion="version", othermdtype=None,
               section=None, stdout=False, file_metadata_dict=None):

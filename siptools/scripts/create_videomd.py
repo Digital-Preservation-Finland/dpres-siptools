@@ -1,9 +1,16 @@
 """Command line tool for creating videoMD metadata."""
-import sys
+from __future__ import unicode_literals
+
 import os
+import sys
+
 import click
+import six
+
 import videomd
-from siptools.utils import MdCreator, scrape_file, fix_missing_metadata
+from siptools.utils import MdCreator, fix_missing_metadata, scrape_file
+
+click.disable_unicode_literals_warning = True
 
 
 FILEDATA_KEYS = [
@@ -71,7 +78,7 @@ class VideomdCreator(MdCreator):
             self.add_md(metadata=videomd_dict['0'],
                         filename=(filerel if filerel else filepath))
         else:
-            for index, video in videomd_dict.iteritems():
+            for index, video in six.iteritems(videomd_dict):
                 self.add_md(metadata=video,
                             filename=(filerel if filerel else filepath),
                             stream=index)
@@ -91,7 +98,7 @@ def create_videomd_metadata(filename, filerel=None, workspace=None):
     fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     videomd_dict = {}
-    for index, stream_md in streams.iteritems():
+    for index, stream_md in six.iteritems(streams):
         if stream_md['stream_type'] != 'video':
             continue
 
@@ -99,7 +106,7 @@ def create_videomd_metadata(filename, filerel=None, workspace=None):
 
         videomd_elem = videomd.create_videomd(
             file_data=file_data_elem)
-        videomd_dict[str(index)] = videomd_elem
+        videomd_dict[six.text_type(index)] = videomd_elem
 
     if not videomd_dict:
         raise ValueError('Video stream info could not be constructed.')
@@ -126,10 +133,12 @@ def _get_file_data(stream_dict):
 
     params['compression'] = videomd.vmd_compression(*compression)
 
-    frame = videomd.vmd_frame(pixels_horizontal=str(stream_dict['width']),
-                              pixels_vertical=str(stream_dict['height']),
-                              par=stream_dict['par'],
-                              dar=stream_dict['dar'])
+    frame = videomd.vmd_frame(
+        pixels_horizontal=six.text_type(stream_dict['width']),
+        pixels_vertical=six.text_type(stream_dict['height']),
+        par=stream_dict['par'],
+        dar=stream_dict['dar']
+    )
 
     params['frame'] = frame
 

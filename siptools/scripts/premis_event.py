@@ -1,15 +1,20 @@
 """Command line tool for creating premis events"""
-import sys
+from __future__ import unicode_literals
+
 import os
+import sys
 from uuid import uuid4
+
 import click
+import six
 
-import premis
 import mets
+import premis
 import xml_helpers.utils
+from siptools.utils import MdCreator, encode_id, encode_path
+from siptools.xml.premis import PREMIS_EVENT_OUTCOME_TYPES, PREMIS_EVENT_TYPES
 
-from siptools.xml.premis import PREMIS_EVENT_TYPES, PREMIS_EVENT_OUTCOME_TYPES
-from siptools.utils import MdCreator, encode_path, encode_id
+click.disable_unicode_literals_warning = True
 
 
 def _list2str(lst):
@@ -18,8 +23,8 @@ def _list2str(lst):
     :param lst: list of strings
     :returns: list formatted as single string
     """
-    first_words = ['"' + string + '"' for string in lst[:-1]]
-    last_word = '"' + lst[-1] + '"'
+    first_words = ['"{}"'.format(string) for string in lst[:-1]]
+    last_word = '"{}"'.format(lst[-1])
     return ', '.join(first_words) + ', and ' + last_word
 
 
@@ -97,7 +102,7 @@ def premis_event(event_type, event_datetime, event_detail, event_outcome,
     (directory, event_file) = event_target_path(base_path, event_target)
 
     if agent_name or agent_type:
-        agent_identifier = str(uuid4())
+        agent_identifier = six.text_type(uuid4())
         agent = create_premis_agent(agent_name,
                                     agent_type, agent_identifier)
 
@@ -106,7 +111,7 @@ def premis_event(event_type, event_datetime, event_detail, event_outcome,
         agent_creator.write(mdtype="PREMIS:AGENT", stdout=stdout)
 
         if stdout:
-            print xml_helpers.utils.serialize(agent)
+            print(xml_helpers.utils.serialize(agent).decode("utf-8"))
     else:
         agent_identifier = None
 
@@ -124,7 +129,7 @@ def premis_event(event_type, event_datetime, event_detail, event_outcome,
     creator.write(mdtype="PREMIS:EVENT", stdout=stdout)
 
     if stdout:
-        print xml_helpers.utils.serialize(event)
+        print(xml_helpers.utils.serialize(event).decode("utf-8"))
 
 
 def event_target_path(base_path, event_target=None):
@@ -205,7 +210,7 @@ def create_premis_event(event_type, event_datetime, event_detail,
     """
     event_identifier = premis.identifier(
         identifier_type='UUID',
-        identifier_value=str(uuid4()),
+        identifier_value=six.text_type(uuid4()),
         prefix='event'
     )
 
@@ -313,7 +318,7 @@ def _write_mets(mets_element, output_file):
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
 
-    with open(output_file, 'w+') as output:
+    with open(output_file, 'wb+') as output:
         output.write(xml_helpers.utils.serialize(mets_element))
 
 

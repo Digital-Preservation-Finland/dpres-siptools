@@ -1,11 +1,21 @@
 """ Test"""
-import sys
+from __future__ import unicode_literals
+
 import os
-import lxml.etree as ET
+import sys
+
 import pytest
 from click.testing import CliRunner
-from siptools.scripts.import_description import main
+
+import lxml.etree as ET
 from siptools.scripts import import_description
+from siptools.scripts.import_description import main
+
+
+try:
+    from urllib import quote_plus
+except ImportError:  # Python 3
+    from urllib.parse import quote_plus
 
 
 def get_md_file(path, input_target):

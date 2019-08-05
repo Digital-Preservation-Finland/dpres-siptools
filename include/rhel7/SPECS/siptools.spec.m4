@@ -20,7 +20,9 @@ Source0:        %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
-Requires:       python dpres-signature xml-helpers mets premis nisomix addml audiomd videomd file-scraper-core python36-click python-click python-magic
+Requires:       python dpres-signature xml-helpers mets premis nisomix addml
+Requires:       audiomd videomd file-scraper-core python36-click python-click
+Requires:       python-magic python-six
 BuildRequires:  python-setuptools file-scraper-full dpres-ipt
 
 %description

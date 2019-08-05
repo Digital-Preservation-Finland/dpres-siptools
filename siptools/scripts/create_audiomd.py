@@ -1,9 +1,16 @@
 """Command line tool for creating audioMD metadata."""
-import sys
+from __future__ import unicode_literals
+
 import os
+import sys
+
 import click
+import six
+
 import audiomd
-from siptools.utils import MdCreator, scrape_file, fix_missing_metadata
+from siptools.utils import MdCreator, fix_missing_metadata, scrape_file
+
+click.disable_unicode_literals_warning = True
 
 FILEDATA_KEYS = ['audio_data_encoding', 'bits_per_sample',
                  'data_rate', 'data_rate_mode', 'sampling_frequency']
@@ -75,7 +82,7 @@ class AudiomdCreator(MdCreator):
             self.add_md(metadata=audiomd_dict['0'],
                         filename=(filerel if filerel else filepath))
         else:
-            for index, audio in audiomd_dict.iteritems():
+            for index, audio in six.iteritems(audiomd_dict):
                 self.add_md(metadata=audio,
                             filename=(filerel if filerel else filepath),
                             stream=index)
@@ -95,7 +102,7 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None):
     fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     audiomd_dict = {}
-    for index, stream_md in streams.iteritems():
+    for index, stream_md in six.iteritems(streams):
         if stream_md['stream_type'] != 'audio':
             continue
         stream_md = _fix_data_rate(stream_md)
@@ -106,7 +113,7 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None):
             file_data=file_data_elem,
             audio_info=audio_info_elem
         )
-        audiomd_dict[str(index)] = audiomd_elem
+        audiomd_dict[six.text_type(index)] = audiomd_elem
 
     if not audiomd_dict:
         raise ValueError('Audio stream info could not be constructed.')
@@ -126,7 +133,7 @@ def _fix_data_rate(stream_dict):
     if data_rate:
         try:
             data_rate = float(data_rate)
-            stream_dict['data_rate'] = str(int(round(data_rate)))
+            stream_dict['data_rate'] = six.text_type(int(round(data_rate)))
         except ValueError:
             pass
 

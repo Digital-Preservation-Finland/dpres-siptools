@@ -1,12 +1,17 @@
 # encoding: utf-8
 """Tests for ``siptools.scripts.create_audiomd`` module"""
-import sys
+from __future__ import unicode_literals
+
+import io
 import os.path
-import shutil
 import pickle
+import shutil
+import sys
+
 import pytest
-import lxml.etree as ET
 from click.testing import CliRunner
+
+import lxml.etree as ET
 import siptools.scripts.create_audiomd as create_audiomd
 
 AUDIOMD_NS = 'http://www.loc.gov/audioMD/'
@@ -125,11 +130,11 @@ def test_create_audiomd(testpath):
     creator = create_audiomd.AudiomdCreator(testpath)
 
     # Debug print
-    print "\n\n%s" % ET.tostring(
+    print("\n\n%s" % ET.tostring(
         create_audiomd.create_audiomd_metadata(
             "tests/data/audio/valid__wav.wav"
         )["0"], pretty_print=True
-    )
+    ))
 
     # Append WAV and broadcast WAV files with identical metadata
     creator.add_audiomd_md("tests/data/audio/valid__wav.wav")
@@ -140,7 +145,6 @@ def test_create_audiomd(testpath):
     # Check that md-reference and one AudioMD-amd files are created
     assert os.path.isfile(os.path.join(testpath, 'md-references.xml'))
 
-    print os.listdir(testpath)
     filepath = os.path.join(
         testpath, 'eae4d239422e21f3a8cfa57bb2afcb9e-AudioMD-amd.xml'
         # testpath, '704fbd57169eac3af9388e03c89dd919-AudioMD-amd.xml'
@@ -157,7 +161,7 @@ def test_main_utf8_files(testpath):
     # Create sample data directory with file that has non-ascii characters in
     # filename
     os.makedirs(os.path.join(testpath, 'data'))
-    relative_path = os.path.join('data', u'äöå.wav')
+    relative_path = os.path.join('data', 'äöå.wav')
     full_path = os.path.join(testpath, relative_path)
     shutil.copy('tests/data/audio/valid__wav.wav', full_path)
 
@@ -170,9 +174,9 @@ def test_main_utf8_files(testpath):
         ]
     )
 
-    # Check that filename is found in md-reference file.
+    # Check that filename is found in amd-reference file.
     xml = ET.parse(os.path.join(testpath, 'md-references.xml'))
-    assert len(xml.xpath(u'//mdReference[@file="data/äöå.wav"]')) == 1
+    assert len(xml.xpath('//mdReference[@file="data/äöå.wav"]')) == 1
 
 
 def test_existing_scraper_result(testpath):
@@ -184,9 +188,9 @@ def test_existing_scraper_result(testpath):
     file_ = 'tests/data/audio/valid__wav.wav'
     xml = """<?xml version='1.0' encoding='UTF-8'?>
           <mdReferences>
-          <mdReference file="%s">_%s</mdReference>
-          </mdReferences>""" % (file_, amdid)
-    with open(os.path.join(testpath, 'md-references.xml'), 'w') as out:
+          <mdReference file="{}">_{}</mdReference>
+          </mdReferences>""".format(file_, amdid).encode("utf-8")
+    with open(os.path.join(testpath, 'md-references.xml'), 'wb') as out:
         out.write(xml)
 
     stream_dict = {0: {
@@ -236,6 +240,6 @@ def test_paths(testpath, file_, base_path):
             '--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        open(os.path.join(testpath, 'md-references.xml')).read()
+        io.open(os.path.join(testpath, 'md-references.xml'), "rt").read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

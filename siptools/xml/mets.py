@@ -1,3 +1,7 @@
+from __future__ import unicode_literals
+
+import six
+
 from xml_helpers.utils import XSI_NS
 
 FI_NS = 'http://digitalpreservation.fi/schemas/mets/fi-extensions'
@@ -109,7 +113,7 @@ def mets_extend(mets_root, catalog=METS_CATALOG,
     if contentid:
         mets_root.set('{%s}CONTENTID' % FI_NS, contentid)
     if contractid:
-        contractstr = contractid + ""
+        contractstr = six.text_type(contractid)
         mets_root.set('{%s}CONTRACTID' % FI_NS, contractstr)
 
     return mets_root

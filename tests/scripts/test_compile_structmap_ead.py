@@ -1,10 +1,12 @@
 """Tests the compile_structmap module with ead3 metadata."""
+from __future__ import unicode_literals
 
 import os
+
 from click.testing import CliRunner
+
 import lxml.etree as ET
-from siptools.scripts import compile_structmap
-from siptools.scripts import import_object
+from siptools.scripts import compile_structmap, import_object
 from siptools.xml.mets import NAMESPACES
 
 

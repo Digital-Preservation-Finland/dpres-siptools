@@ -1,11 +1,17 @@
 """Command line tool for creating ADDML metadata."""
-import sys
+from __future__ import unicode_literals
+
+import io
 import os
+import sys
+
 import click
-import lxml.etree as ET
 
 import addml
+import lxml.etree as ET
 from siptools.utils import MdCreator, encode_path
+
+click.disable_unicode_literals_warning = True
 
 
 @click.command()
@@ -179,7 +185,7 @@ def csv_header(csv_file_path, delimiter, isheader=False, headername='header'):
     Otherwise generates a header and returns it
     """
 
-    with open(csv_file_path, 'r') as csv_file:
+    with io.open(csv_file_path, 'rt') as csv_file:
         header = csv_file.readline().rstrip()
 
         if not isheader:
@@ -187,7 +193,7 @@ def csv_header(csv_file_path, delimiter, isheader=False, headername='header'):
             header = headername + "1"
 
             for i in range(header_count):
-                header += delimiter + headername + str(i + 2)
+                header += "{}{}{}".format(delimiter, headername, i + 2)
 
     return header
 
@@ -204,11 +210,11 @@ def append_lines(fname, xml_elem, append):
     """
 
     # Read all the lines into memory
-    with open(fname, 'r') as f_in:
+    with io.open(fname, 'rt') as f_in:
         lines = f_in.readlines()
 
     # Overwrite the file appending line_content
-    with open(fname, 'w') as f_out:
+    with io.open(fname, 'wt') as f_out:
 
         for line in lines:
             f_out.write(line)

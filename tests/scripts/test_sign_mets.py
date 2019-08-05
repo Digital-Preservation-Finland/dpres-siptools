@@ -1,4 +1,7 @@
 """Tests for ``siptools.scripts.sign_mets`` module"""
+from __future__ import unicode_literals
+
+import io
 import os
 import shutil
 from click.testing import CliRunner
@@ -21,5 +24,5 @@ def test_valid_sign_mets(testpath):
     result = runner.invoke(siptools.scripts.sign_mets.main, arguments)
     assert result.exit_code == 0
 
-    with open(output) as open_file:
+    with io.open(output, "rt") as open_file:
         assert "4ddd69b778405b4072d77762a85f9cf5e8e5ca83" in open_file.read()
