@@ -12,15 +12,15 @@ def test_encode_path():
     """Tests for the encode_path function."""
 
     encoded_path = utils.encode_path('tests/testpath')
-    assert encoded_path == b'tests%2Ftestpath'
+    assert encoded_path == 'tests%2Ftestpath'
 
     encoded_path = utils.encode_path(
         'tests/testpath', suffix='-testsuffix', prefix='testprefix-'
     )
-    assert encoded_path == b'testprefix-tests%2Ftestpath-testsuffix'
+    assert encoded_path == 'testprefix-tests%2Ftestpath-testsuffix'
 
     encoded_path = utils.encode_path('tästs/tøstpath')
-    assert encoded_path == b't%C3%A4sts%2Ft%C3%B8stpath'
+    assert encoded_path == 't%C3%A4sts%2Ft%C3%B8stpath'
 
 
 def test_decode_path():

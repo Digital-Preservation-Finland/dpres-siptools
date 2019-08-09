@@ -3,8 +3,6 @@ from __future__ import unicode_literals
 
 import os
 
-from click.testing import CliRunner
-
 import lxml.etree as ET
 from siptools.scripts import (compile_mets, compile_structmap, import_object,
                               premis_event)
@@ -12,17 +10,15 @@ from siptools.scripts.import_description import main
 from siptools.xml.mets import NAMESPACES
 
 
-def create_test_data(workspace):
-    # TODO: Missing docstring
+def create_test_data(workspace, run_cli):
     # create descriptive metadata
-    runner = CliRunner()
     dmdsec_location \
         = 'tests/data/import_description/metadata/dc_description.xml'
     dmdsec_target = 'tests/data/structured/Software files'
 
     arguments = [dmdsec_location, '--dmdsec_target', dmdsec_target,
                  '--workspace', workspace, '--remove_root']
-    runner.invoke(main, arguments)
+    run_cli(main, arguments)
 
     # create provenance metadata
     arguments = ['creation', '2016-10-13T12:30:55',
@@ -33,20 +29,19 @@ def create_test_data(workspace):
                  '--workspace', workspace,
                  '--agent_name', 'Demo Application',
                  '--agent_type', 'software']
-    runner.invoke(premis_event.main, arguments)
+    run_cli(premis_event.main, arguments)
 
-    #create technical metadata
+    # create technical metadata
     arguments = ['--workspace', workspace, '--skip_wellformed_check',
                  'tests/data/structured/Software files/koodi.java']
-    runner.invoke(import_object.main, arguments)
+    run_cli(import_object.main, arguments)
 
-    #create structural metadata
-    runner.invoke(compile_structmap.main, ['--workspace', workspace])
+    # create structural metadata
+    run_cli(compile_structmap.main, ['--workspace', workspace])
 
 
-def test_compile_mets_ok(testpath):
-    # TODO: Missing docstring
-    create_test_data(testpath)
+def test_compile_mets_ok(testpath, run_cli):
+    create_test_data(testpath, run_cli)
     arguments = ['ch',
                  'CSC',
                  'urn:uuid:89e92a4f-f0e4-4768-b785-4781d3299b20',
@@ -58,8 +53,7 @@ def test_compile_mets_ok(testpath):
                  '--record_status', 'submission',
                  '--packagingservice', 'Pekka Paketoija',
                  '--workspace', testpath]
-    runner = CliRunner()
-    result = runner.invoke(compile_mets.main, arguments)
+    run_cli(compile_mets.main, arguments)
 
     output_file = os.path.join(testpath, 'mets.xml')
     tree = ET.parse(output_file)
@@ -105,11 +99,9 @@ def test_compile_mets_ok(testpath):
     assert root.xpath("/mets:mets/mets:metsHdr/mets:agent/mets:name",
                       namespaces=NAMESPACES)[1].text == 'Pekka Paketoija'
 
-    assert result.exit_code == 0
 
-
-def test_compile_mets_cleanup_ok(testpath):
-    create_test_data(testpath)
+def test_compile_mets_cleanup_ok(testpath, run_cli):
+    create_test_data(testpath, run_cli)
     arguments = ['ch',
                  'CSC',
                  'urn:uuid:89e92a4f-f0e4-4768-b785-4781d3299b20',
@@ -121,8 +113,7 @@ def test_compile_mets_cleanup_ok(testpath):
                  '--record_status', 'submission',
                  '--workspace', testpath,
                  '--clean']
-    runner = CliRunner()
-    result = runner.invoke(compile_mets.main, arguments)
+    run_cli(compile_mets.main, arguments)
 
     output_file = os.path.join(testpath, 'mets.xml')
     tree = ET.parse(output_file)
@@ -161,10 +152,8 @@ def test_compile_mets_cleanup_ok(testpath):
     assert root.xpath("/mets:mets/mets:metsHdr/mets:agent/mets:name",
                       namespaces=NAMESPACES)[0].text == 'CSC'
 
-    assert result.exit_code == 0
 
-
-def test_compile_mets_fail(testpath):
+def test_compile_mets_fail(testpath, run_cli):
     arguments = ['ch',
                  'CSC',
                  'contract-id-1234',
@@ -175,6 +164,5 @@ def test_compile_mets_fail(testpath):
                  '--last_moddate', '2016-10-28T09:30:55',
                  '--record_status', 'nonsense',
                  '--workspace', testpath]
-    runner = CliRunner()
-    result = runner.invoke(compile_mets.main, arguments)
+    result = run_cli(compile_mets.main, arguments, success=False)
     assert isinstance(result.exception, SystemExit)

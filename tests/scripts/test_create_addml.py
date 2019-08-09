@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import os
 
 import pytest
-from click.testing import CliRunner
 
 import lxml.etree as ET
 import siptools.scripts.create_addml as create_addml
@@ -127,7 +126,7 @@ def test_create_addml_creator(testpath, isheader, exp_amd_files, exp_fields):
     ('./csvfile.csv', './tests/data'),
     ('data/csvfile.csv', 'absolute')
 ])
-def test_paths(testpath, file_, base_path):
+def test_paths(testpath, file_, base_path, run_cli):
     """ Test the following path arguments:
     (1) Path without base_path
     (2) Path without base bath, but with './'
@@ -138,14 +137,13 @@ def test_paths(testpath, file_, base_path):
     if 'absolute' in base_path:
         base_path = os.path.join(os.getcwd(), 'tests')
 
-    runner = CliRunner()
     if base_path != '':
-        runner.invoke(create_addml.main, [
+        run_cli(create_addml.main, [
             '--delim', DELIMITER, '--charset', CHARSET,
             '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
             '--workspace', testpath, '--base_path', base_path, file_])
     else:
-        runner.invoke(create_addml.main, [
+        run_cli(create_addml.main, [
             '--delim', DELIMITER, '--charset', CHARSET,
             '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
             '--workspace', testpath, file_])

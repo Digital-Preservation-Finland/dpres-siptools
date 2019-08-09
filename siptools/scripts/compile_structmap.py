@@ -11,9 +11,8 @@ import click
 
 import lxml.etree as ET
 import mets
-import scandir
 import xml_helpers.utils as xml_utils
-from siptools.utils import add, encode_id, encode_path, get_objectlist, tree
+from siptools.utils import add, encode_path, get_objectlist, tree
 from siptools.xml.mets import NAMESPACES
 
 click.disable_unicode_literals_warning = True

@@ -93,9 +93,10 @@ def decode_path(path, suffix=''):
     """Decode given path from URL encoding and remove given suffix
     """
     if six.PY2:
-        path = path.encode("utf-8")
+        path = unquote_plus(path.encode("utf-8")).decode("utf-8")
+    else:
+        path = unquote_plus(path)
 
-    path = unquote_plus(path).decode("utf-8")
     if path.endswith(suffix):
         path = path.replace(suffix, '', 1)
     return path

@@ -4,18 +4,16 @@ from __future__ import unicode_literals
 import os
 
 import pytest
-from click.testing import CliRunner
 
 import lxml.etree as ET
 from siptools.scripts import premis_event
 
 
-def test_premis_event_ok(testpath):
+def test_premis_event_ok(testpath, run_cli):
     """Test that main function produces event.xml and agent.xml files with
     correct elements.
     """
-    runner = CliRunner()
-    result = runner.invoke(premis_event.main, [
+    run_cli(premis_event.main, [
         'creation',
         '2016-10-13T12:30:55',
         '--event_target', 'tests/data/structured',
@@ -26,9 +24,6 @@ def test_premis_event_ok(testpath):
         '--agent_name', 'Demo Application',
         '--agent_type', 'software'
     ])
-
-    # Main function should return 0
-    assert result.exit_code == 0
 
     # Read output files
     event_xml = ET.parse(
@@ -77,21 +72,17 @@ def test_premis_event_ok(testpath):
                           namespaces=namespaces)[0].text
 
 
-def test_amd_links_root(testpath):
+def test_amd_links_root(testpath, run_cli):
     """Tests that premis_event script writes reference links correctly
     to the md-references file.
     """
-    runner = CliRunner()
-    result = runner.invoke(premis_event.main, [
+    run_cli(premis_event.main, [
         'creation',
         '2016-10-13T12:30:55',
         '--event_detail', 'Testing',
         '--event_outcome', 'success',
         '--workspace', testpath
     ])
-
-    # Main function should return 0
-    assert result.exit_code == 0
 
     ref = os.path.join(testpath, 'md-references.xml')
     assert os.path.isfile(ref)
@@ -101,13 +92,12 @@ def test_amd_links_root(testpath):
     assert dir_ref == '.'
 
 
-def test_amd_links_file(testpath):
+def test_amd_links_file(testpath, run_cli):
     """Tests that premis_event script writes reference links correctly
     to the md-references file with a proper file target.
     """
     target = 'tests/data/test_import.pdf'
-    runner = CliRunner()
-    result = runner.invoke(premis_event.main, [
+    run_cli(premis_event.main, [
         'creation',
         '2016-10-13T12:30:55',
         '--event_detail', 'Testing',
@@ -115,9 +105,6 @@ def test_amd_links_file(testpath):
         '--workspace', testpath,
         '--event_target', target
     ])
-
-    # Main function should return 0
-    assert result.exit_code == 0
 
     ref = os.path.join(testpath, 'md-references.xml')
     assert os.path.isfile(ref)
@@ -127,13 +114,12 @@ def test_amd_links_file(testpath):
     assert dir_ref == target
 
 
-def test_amd_links_dir(testpath):
+def test_amd_links_dir(testpath, run_cli):
     """Tests that premis_event script writes reference links correctly
     to the md-references file with a directory target.
     """
     target = 'tests/data'
-    runner = CliRunner()
-    result = runner.invoke(premis_event.main, [
+    run_cli(premis_event.main, [
         'creation',
         '2016-10-13T12:30:55',
         '--event_detail', 'Testing',
@@ -141,9 +127,6 @@ def test_amd_links_dir(testpath):
         '--workspace', testpath,
         '--event_target', target
     ])
-
-    # Main function should return 0
-    assert result.exit_code == 0
 
     ref = os.path.join(testpath, 'md-references.xml')
     assert os.path.isfile(ref)
@@ -153,18 +136,17 @@ def test_amd_links_dir(testpath):
     assert dir_ref == target
 
 
-def test_premis_event_fail(testpath):
+def test_premis_event_fail(testpath, run_cli):
     """Test that main function raises `SystemExit` if `event_outcome`
     parameter is incorrect."""
 
-    runner = CliRunner()
-    result = runner.invoke(premis_event.main, [
+    result = run_cli(premis_event.main, [
         'creation', '2016-10-13T12:30:55',
         '--event_detail', 'Testing',
         '--event_outcome', 'nonsense',
         '--event_outcome_detail', 'Outcome detail',
         '--workspace', testpath
-    ])
+    ], success=False)
     assert isinstance(result.exception, SystemExit)
 
 

@@ -9,7 +9,6 @@ import shutil
 import sys
 
 import pytest
-from click.testing import CliRunner
 
 import lxml.etree
 import siptools.scripts.create_mix as create_mix
@@ -48,7 +47,7 @@ def test_create_mix_techmdfile(testpath):
     assert len(xml.xpath('//mdReference')) == 3
 
 
-def test_main_utf8_files(testpath):
+def test_main_utf8_files(testpath, run_cli):
     """Test for ``main`` function with filenames that contain non-ascii
     characters.
     """
@@ -60,8 +59,7 @@ def test_main_utf8_files(testpath):
     shutil.copy('tests/data/images/tiff1.tif', image_full_path)
 
     # Call main function with encoded filename as parameter
-    runner = CliRunner()
-    runner.invoke(
+    run_cli(
         create_mix.main, [
             '--workspace', testpath, '--base_path', testpath,
             image_relative_path.encode(sys.getfilesystemencoding())
@@ -166,7 +164,7 @@ def test_mix_multiple_images():
     ('./images/tiff1.tif', './tests/data'),
     ('data/images/tiff1.tif', 'absolute')
 ])
-def test_paths(testpath, file_, base_path):
+def test_paths(testpath, file_, base_path, run_cli):
     """ Test the following path arguments:
     (1) Path without base_path
     (2) Path without base bath, but with './'
@@ -177,13 +175,11 @@ def test_paths(testpath, file_, base_path):
     if 'absolute' in base_path:
         base_path = os.path.join(os.getcwd(), 'tests')
 
-    runner = CliRunner()
     if base_path != '':
-        runner.invoke(create_mix.main, [
+        run_cli(create_mix.main, [
             '--workspace', testpath, '--base_path', base_path, file_])
     else:
-        runner.invoke(create_mix.main, [
-            '--workspace', testpath, file_])
+        run_cli(create_mix.main, ['--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
         io.open(os.path.join(testpath, 'md-references.xml'), "rt").read()

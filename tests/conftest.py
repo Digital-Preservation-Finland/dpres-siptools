@@ -6,6 +6,8 @@ import sys
 import tempfile
 import shutil
 
+from click.testing import CliRunner
+
 import pytest
 
 # Prefer modules from source directory rather than from site-python
@@ -71,3 +73,32 @@ def testpath(request):
 
     request.addfinalizer(fin)
     return temp_path
+
+
+@pytest.fixture(scope="function")
+def run_cli():
+    """Executes given Click interface with given arguments
+    """
+    def _run_cli(cli_func, args, success=True):
+        """
+        Execute Click command with given arguments and check the exit code
+
+        :param cli_func: Click command function
+        :param list args: List of parameters
+        :param bool success: If True, expect the command to succeed, otherwise
+                             expect the command to fail.
+
+        :returns: Command result
+        :rtype: click.testing.Result
+        """
+        runner = CliRunner()
+        result = runner.invoke(cli_func, args)
+        if success:
+            assert result.exit_code == 0, result
+        else:
+            assert result.exit_code != 0, \
+                "Expected command to fail but it succeeded instead"
+
+        return result
+
+    return _run_cli

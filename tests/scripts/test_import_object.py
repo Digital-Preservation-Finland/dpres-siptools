@@ -10,7 +10,6 @@ import sys
 
 import pytest
 import six
-from click.testing import CliRunner
 
 import lxml.etree as ET
 from siptools.scripts import import_object
@@ -35,13 +34,12 @@ def get_amd_file(path, input_file, stream=None):
     return output
 
 
-def test_import_object_ok(testpath):
+def test_import_object_ok(testpath, run_cli):
     """Test import_object.main funtion with valid test data."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  input_file]
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
+    run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -50,10 +48,8 @@ def test_import_object_ok(testpath):
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
 
-    assert result.exit_code == 0
 
-
-def test_import_object_skip_wellformed_check_ok(testpath):
+def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
     """Test import_object.main function --skip-inspection argument."""
     input_file = 'tests/data/text-file.txt'
     arguments = ['--workspace', testpath, input_file,
@@ -61,8 +57,7 @@ def test_import_object_skip_wellformed_check_ok(testpath):
                  '--file_format', 'image/dpx', '1.0',
                  '--checksum', 'MD5', '1qw87geiewgwe9',
                  '--date_created', datetime.datetime.utcnow().isoformat()]
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
+    run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -71,18 +66,15 @@ def test_import_object_skip_wellformed_check_ok(testpath):
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
 
-    assert result.exit_code == 0
 
-
-def test_import_object_skip_wellformed_check_nodate_ok(testpath):
+def test_import_object_skip_wellformed_check_nodate_ok(testpath, run_cli):
     """Test import_object.main function without --date_created argument."""
     input_file = 'tests/data/text-file.txt'
     arguments = ['--workspace', testpath, input_file,
                  '--skip_wellformed_check',
                  '--file_format', 'image/dpx', '1.0',
                  '--checksum', 'MD5', '1qw87geiewgwe9']
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
+    run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -90,10 +82,9 @@ def test_import_object_skip_wellformed_check_nodate_ok(testpath):
 
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
-    assert result.exit_code == 0
 
 
-def test_import_object_structured_ok(testpath):
+def test_import_object_structured_ok(testpath, run_cli):
     # TODO: Missing function docstring. What is the purpose of this test?
     workspace = os.path.abspath(testpath)
     test_data = os.path.abspath(os.path.join(os.curdir,
@@ -102,8 +93,7 @@ def test_import_object_structured_ok(testpath):
     for element in iterate_files(test_data):
         arguments = ['--workspace', workspace, '--skip_wellformed_check',
                      os.path.relpath(element, os.curdir)]
-        runner = CliRunner()
-        result = runner.invoke(import_object.main, arguments)
+        run_cli(import_object.main, arguments)
         test_file = os.path.relpath(element, os.curdir)
 
         output = get_amd_file(testpath, test_file)
@@ -112,16 +102,14 @@ def test_import_object_structured_ok(testpath):
 
         assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                               namespaces=NAMESPACES)) == 1
-        assert result.exit_code == 0
 
 
-def test_import_object_order(testpath):
+def test_import_object_order(testpath, run_cli):
     """Test file order"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  '--order', '5', input_file]
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
+    run_cli(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
     path = output.replace('-PREMIS%3AOBJECT-amd.xml',
                           '-scraper.pkl')
@@ -135,16 +123,13 @@ def test_import_object_order(testpath):
     assert 'order' in streams[0]['properties']
     assert streams[0]['properties']['order'] == '5'
 
-    assert result.exit_code == 0
 
-
-def test_import_object_identifier(testpath):
+def test_import_object_identifier(testpath, run_cli):
     """Test digital object identifier argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  '--identifier', 'local', 'test-id', input_file]
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
+    run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -155,16 +140,13 @@ def test_import_object_identifier(testpath):
     assert root.xpath('//premis:objectIdentifierValue',
                       namespaces=NAMESPACES)[0].text == 'test-id'
 
-    assert result.exit_code == 0
 
-
-def test_import_object_format_registry(testpath):
+def test_import_object_format_registry(testpath, run_cli):
     """Test digital object format registry argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  '--format_registry', 'local', 'test-key', input_file]
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
+    run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
@@ -175,10 +157,8 @@ def test_import_object_format_registry(testpath):
     assert root.xpath('//premis:formatRegistryKey',
                       namespaces=NAMESPACES)[0].text == 'test-key'
 
-    assert result.exit_code == 0
 
-
-def test_import_object_utf8(testpath):
+def test_import_object_utf8(testpath, run_cli):
     """Test importing works for file that:
 
     * is a utf-8 encoded text file
@@ -197,9 +177,7 @@ def test_import_object_utf8(testpath):
 
     # Run function
     arguments = ['--workspace', testpath, '--skip_wellformed_check', utf8_file]
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
-    assert result.exit_code == 0
+    run_cli(import_object.main, arguments)
 
     # Check output
     output = get_amd_file(testpath, utf8_file)
@@ -241,7 +219,7 @@ def test_import_object_utf8(testpath):
     ]
 )
 def test_import_object_cases(testpath, input_file, expected_mimetype,
-                             expected_version, case_name):
+                             expected_version, case_name, run_cli):
     """Test the import_object tool function when run as terminal client.
     In addition to getting the metadata, we're also validating.
 
@@ -253,8 +231,7 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
     """
     _ = case_name
     arguments = ['--workspace', testpath, input_file]
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
+    run_cli(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
@@ -275,8 +252,6 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
                    namespaces=NAMESPACES),
         expected_version
     )
-
-    assert result.exit_code == 0
 
 
 # TODO: Once pytest version is upgraded, combine this test with above
@@ -307,7 +282,7 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
     ]
 )
 def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
-                                      expected_version, case_name):
+                                      expected_version, case_name, run_cli):
     """Test the import_object tool function when run as terminal client
     to see if we could fetch the metadata.
 
@@ -319,8 +294,7 @@ def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
     """
     _ = case_name
     arguments = ['--workspace', testpath, input_file, '--skip_wellformed_check']
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
+    run_cli(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)
     root = tree.getroot()
@@ -342,15 +316,15 @@ def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
         expected_version
     )
 
-    assert result.exit_code == 0
 
-
-def test_import_object_fail():
+def test_import_object_fail(run_cli):
     """Test that import_object.main raises error if target file does not
     exist
     """
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, ['tests/data/missing-file'])
+    result = run_cli(
+        import_object.main, ['tests/data/missing-file'],
+        success=False
+    )
     assert result.exception
 
 
@@ -361,15 +335,14 @@ def iterate_files(path):
             yield os.path.join(root, name)
 
 
-def test_streams(testpath):
+def test_streams(testpath, run_cli):
     """Test with streams, the test file contains one video and one audio
        stream.
     """
     input_file = 'tests/data/video/valid__h264_aac.mp4'
     arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  input_file]
-    runner = CliRunner()
-    result = runner.invoke(import_object.main, arguments)
+    run_cli(import_object.main, arguments)
 
     # Streams
     stream_id = []
@@ -414,5 +387,3 @@ def test_streams(testpath):
     assert len(root.xpath(
         '//premis:relatedObjectIdentifierValue[.="%s"]' % stream_id[1],
         namespaces=NAMESPACES)) == 1
-
-    assert result.exit_code == 0

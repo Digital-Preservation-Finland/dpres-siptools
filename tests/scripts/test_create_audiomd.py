@@ -8,10 +8,8 @@ import pickle
 import shutil
 import sys
 
-import pytest
-from click.testing import CliRunner
-
 import lxml.etree as ET
+import pytest
 import siptools.scripts.create_audiomd as create_audiomd
 
 AUDIOMD_NS = 'http://www.loc.gov/audioMD/'
@@ -154,7 +152,7 @@ def test_create_audiomd(testpath):
     assert os.path.isfile(filepath)
 
 
-def test_main_utf8_files(testpath):
+def test_main_utf8_files(testpath, run_cli):
     """Test for ``main`` function with filenames that contain non-ascii
     characters.
     """
@@ -166,8 +164,7 @@ def test_main_utf8_files(testpath):
     shutil.copy('tests/data/audio/valid__wav.wav', full_path)
 
     # Call main function with encoded filename as parameter
-    runner = CliRunner()
-    runner.invoke(
+    run_cli(
         create_audiomd.main, [
             '--workspace', testpath, '--base_path', testpath,
             relative_path.encode(sys.getfilesystemencoding())
@@ -221,7 +218,7 @@ def test_existing_scraper_result(testpath):
     ('./audio/valid__wav.wav', './tests/data'),
     ('data/audio/valid__wav.wav', 'absolute')
 ])
-def test_paths(testpath, file_, base_path):
+def test_paths(testpath, file_, base_path, run_cli):
     """ Test the following path arguments:
     (1) Path without base_path
     (2) Path without base bath, but with './'
@@ -231,13 +228,12 @@ def test_paths(testpath, file_, base_path):
     """
     if 'absolute' in base_path:
         base_path = os.path.join(os.getcwd(), 'tests')
-    runner = CliRunner()
     if base_path != '':
-        runner.invoke(create_audiomd.main, [
-            '--workspace', testpath, '--base_path', base_path, file_])
+        run_cli(create_audiomd.main, [
+            '--workspace', testpath, '--base_path', base_path, file_
+        ])
     else:
-        runner.invoke(create_audiomd.main, [
-            '--workspace', testpath, file_])
+        run_cli(create_audiomd.main, ['--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
         io.open(os.path.join(testpath, 'md-references.xml'), "rt").read()

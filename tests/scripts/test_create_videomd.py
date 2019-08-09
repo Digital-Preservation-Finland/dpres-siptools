@@ -9,7 +9,6 @@ import shutil
 import sys
 
 import pytest
-from click.testing import CliRunner
 
 import lxml.etree as ET
 import siptools.scripts.create_videomd as create_videomd
@@ -183,7 +182,7 @@ def test_create_videomd(testpath):
     assert os.path.isfile(filepath)
 
 
-def test_main_utf8_files(testpath):
+def test_main_utf8_files(testpath, run_cli):
     """Test for ``main`` function with filenames that contain non-ascii
     characters.
     """
@@ -195,8 +194,7 @@ def test_main_utf8_files(testpath):
     shutil.copy('tests/data/video/valid_1.m1v', full_path)
 
     # Call main function with encoded filename as parameter
-    runner = CliRunner()
-    runner.invoke(
+    run_cli(
         create_videomd.main, [
             '--workspace', testpath, '--base_path', testpath,
             fsencode_path(relative_path)
@@ -208,7 +206,7 @@ def test_main_utf8_files(testpath):
     assert len(xml.xpath(u'//mdReference[@file="data/äöå.m1v"]')) == 1
 
 
-def test_existing_scraper_result(testpath):
+def test_existing_scraper_result(testpath, run_cli):
     """Test that existing pickle file from import_object is used.
     We just need to check duration, since it's different from the real
     duration.
@@ -251,7 +249,7 @@ def test_existing_scraper_result(testpath):
     ('./video/valid_1.m1v', './tests/data'),
     ('data/video/valid_1.m1v', 'absolute')
 ])
-def test_paths(testpath, file_, base_path):
+def test_paths(testpath, file_, base_path, run_cli):
     """ Test the following path arguments:
     (1) Path without base_path
     (2) Path without base bath, but with './'
@@ -262,12 +260,11 @@ def test_paths(testpath, file_, base_path):
     if 'absolute' in base_path:
         base_path = os.path.join(os.getcwd(), 'tests')
 
-    runner = CliRunner()
     if base_path != '':
-        runner.invoke(create_videomd.main, [
+        run_cli(create_videomd.main, [
             '--workspace', testpath, '--base_path', base_path, file_])
     else:
-        runner.invoke(create_videomd.main, [
+        run_cli(create_videomd.main, [
             '--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
