@@ -225,19 +225,24 @@ def ead3_c_div(parent, structmap, filegrp, workspace, filelist):
         if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
             ead3_c_div(elem, c_div, filegrp, workspace, filelist)
 
+    dao_elems = []
     for elem in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
         if ET.QName(elem.tag).localname in ['dao', 'daoset']:
             if ET.QName(elem.tag).localname == 'daoset':
-                ead3_file = elem.xpath(
-                    "./ead3:dao/@href", namespaces=NAMESPACES)[0]
+                for dao in elem.xpath(
+                        "./ead3:dao/@href",
+                        namespaces=NAMESPACES):
+                    dao_elems.append(dao.get('href'))
             else:
-                ead3_file = elem.xpath("./@href")[0]
-            if ead3_file.startswith('/'):
-                ead3_file = ead3_file[1:]
-            amd_file = [x for x in filelist if ead3_file in x][0]
-            fileid = add_file_to_filesec(workspace, amd_file, filegrp)
-            dao = mets.fptr(fileid=fileid)
-            c_div.append(dao)
+                dao_elems.append(elem.xpath("./@href")[0])
+
+    for href in dao_elems:
+        if href.startswith('/'):
+            href = href[1:]
+        amd_file = [x for x in filelist if href in x][0]
+        fileid = add_file_to_filesec(workspace, amd_file, filegrp)
+        fptr = mets.fptr(fileid=fileid)
+        c_div.append(fptr)
 
     structmap.append(c_div)
 
