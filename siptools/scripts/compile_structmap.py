@@ -229,10 +229,10 @@ def ead3_c_div(parent, structmap, filegrp, workspace, filelist):
     for elem in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
         if ET.QName(elem.tag).localname in ['dao', 'daoset']:
             if ET.QName(elem.tag).localname == 'daoset':
-                for dao in elem.xpath(
+                for dao_href in elem.xpath(
                         "./ead3:dao/@href",
                         namespaces=NAMESPACES):
-                    dao_elems.append(dao.get('href'))
+                    dao_elems.append(dao_href)
             else:
                 dao_elems.append(elem.xpath("./@href")[0])
 
