@@ -39,6 +39,9 @@ DEFAULT_VERSIONS = {
 # For mimetypes that has no version applicable for them.
 NO_VERSION = '(:unap)'
 
+# For cases where scraper does not know the version
+UNKNOWN_VERSION = '(:unav)'
+
 
 @click.command()
 @click.argument('filepaths', nargs=-1, type=str)
@@ -298,7 +301,7 @@ def create_premis_object(fname, scraper,
 
         # Scraper's version information will override the version
         # information if any is found.
-        if scraper.version:
+        if scraper.version and scraper.version != UNKNOWN_VERSION:
             format_version = scraper.version
 
         # Case for unapplicable versions where version information don't exist.
