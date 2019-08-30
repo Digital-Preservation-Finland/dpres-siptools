@@ -20,6 +20,7 @@ def test_end_to_end(testpath):
 
     environment = os.environ.copy()
     environment['PYTHONPATH'] = '.'
+    environment['PYTHONIOENCODING'] = 'UTF-8'
 
     command = ['python', 'siptools/scripts/import_object.py',
                '--workspace', testpath, objects, '--skip_wellformed_check',
