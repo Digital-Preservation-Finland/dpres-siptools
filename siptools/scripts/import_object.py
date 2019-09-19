@@ -457,7 +457,11 @@ def _read_uint(f_in):
     binary_num = f_in.read(4)
 
     for i in range(4):
-        uint += ord(binary_num[i]) << (8 * i)  # Left shift of 8*i
+        try:
+            uint += ord(binary_num[i]) << (8 * i)  # Left shift of 8*i
+        except TypeError:
+            # Python 3 compatibility
+            uint += binary_num[i] << (8 * i)  # Left shift of 8*i
 
     return uint
 

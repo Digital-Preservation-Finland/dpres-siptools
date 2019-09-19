@@ -387,3 +387,13 @@ def test_streams(testpath, run_cli):
     assert len(root.xpath(
         '//premis:relatedObjectIdentifierValue[.="%s"]' % stream_id[1],
         namespaces=NAMESPACES)) == 1
+
+
+def test_bwav_detection():
+    """Test that wav and broadcast wav are correctly identified."""
+    assert not import_object.is_broadcast_wav(
+        "tests/data/audio/valid__wav.wav"
+    )
+    assert import_object.is_broadcast_wav(
+        "tests/data/audio/valid_2_bwf.wav"
+    )
