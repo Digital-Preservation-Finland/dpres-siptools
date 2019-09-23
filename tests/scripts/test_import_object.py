@@ -6,7 +6,6 @@ import datetime
 import io
 import os.path
 import pickle
-import sys
 
 import pytest
 import six
@@ -389,11 +388,10 @@ def test_streams(testpath, run_cli):
         namespaces=NAMESPACES)) == 1
 
 
-def test_bwav_detection():
+@pytest.mark.parametrize(("fpath", "result"), [
+    ("tests/data/audio/valid__wav.wav", False),
+    ("tests/data/audio/valid_2_bwf.wav", True)
+])
+def test_bwav_detection(fpath, result):
     """Test that wav and broadcast wav are correctly identified."""
-    assert not import_object.is_broadcast_wav(
-        "tests/data/audio/valid__wav.wav"
-    )
-    assert import_object.is_broadcast_wav(
-        "tests/data/audio/valid_2_bwf.wav"
-    )
+    assert import_object.is_broadcast_wav(fpath) == result
