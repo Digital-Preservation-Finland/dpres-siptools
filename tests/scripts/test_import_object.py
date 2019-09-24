@@ -386,12 +386,3 @@ def test_streams(testpath, run_cli):
     assert len(root.xpath(
         '//premis:relatedObjectIdentifierValue[.="%s"]' % stream_id[1],
         namespaces=NAMESPACES)) == 1
-
-
-@pytest.mark.parametrize(("fpath", "result"), [
-    ("tests/data/audio/valid__wav.wav", False),
-    ("tests/data/audio/valid_2_bwf.wav", True)
-])
-def test_bwav_detection(fpath, result):
-    """Test that wav and broadcast wav are correctly identified."""
-    assert import_object.is_broadcast_wav(fpath) == result
