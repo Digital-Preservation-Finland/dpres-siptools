@@ -174,7 +174,7 @@ class PremisCreator(MdCreator):
                 for _, info in six.iteritems(scraper.info):
                     if len(info['errors']) > 0:
                         for error in info['errors']:
-                            errors.append('errors')
+                            errors.append(error)
                 error_str = "\n".join(errors)
                 raise ValueError(error_str)
         else:
