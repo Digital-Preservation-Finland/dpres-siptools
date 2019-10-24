@@ -10,6 +10,7 @@ stages:
   - rpm-package
   - local-test
   - rpm-stable
+  - documentation
 
 rpm-package:
   stage: rpm-package
@@ -86,3 +87,10 @@ rpm-stable:
     - 'rpm-stable.sh'
   only:
     - tags
+
+documentation:
+  stage: documentation
+  script:
+    - 'documentation.sh'
+  only:
+    - develop

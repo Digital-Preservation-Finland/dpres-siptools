@@ -5,7 +5,7 @@ The Digital Preservation SIP Tools Library - Documentation index
     :maxdepth: 2
 
     readme
-    intro    
+    intro
     modules
 
 .. only:: html

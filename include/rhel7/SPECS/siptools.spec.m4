@@ -23,7 +23,7 @@ BuildArch:      noarch
 Requires:       python dpres-signature xml-helpers mets premis nisomix addml
 Requires:       audiomd videomd file-scraper-core python36-click python-click
 Requires:       python-magic python-six
-BuildRequires:  python-setuptools file-scraper-full dpres-ipt
+BuildRequires:  python-setuptools file-scraper-full dpres-ipt openssl-devel
 
 %description
 Command line tools for creating Submission information packages (SIP) for preservation workflow.
