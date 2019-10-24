@@ -25,7 +25,7 @@ The scripts of the pre-ingest tool may be used independently only for some parts
 or for generating the entire SIP. Metadata of a SIP applies multiple international metadata 
 standards. Each of these standards is designated for a certain type of metadata.
 
-.. _file format specifications: http://digitalpreservation.fi/files/File-Formats-1.7.0-en.pdf
+.. _file format specifications: http://digitalpreservation.fi/
 
 
 Step 1: Importing Files to Digital Objects and Generating Basic Technical Metadata
@@ -132,7 +132,7 @@ about what has been done and premis:agent who/what performed the event. The crea
 the whole SIP by default. If the event is only for a single file --event_target parameter should be 
 used.
 
-.. _event history: http://digitalpreservation.fi/files/Metadata-1.7.1-en.pdf#page=16
+.. _event history: http://digitalpreservation.fi
 
 **Descriptive Metadata**
 
@@ -142,8 +142,8 @@ It creates an METS element tree and includes descriptive information to the `dmd
 The description is for the whole SIP, however, the description can be targetted to a certain file 
 by using --dmd_target parameter.
 
-.. _Descriptive metadata: http://digitalpreservation.fi/files/Metadata-1.7.1-en.pdf#page=13
-.. _dmdSec: http://digitalpreservation.fi/files/Metadata-1.7.1-en.pdf#page=26
+.. _Descriptive metadata: http://digitalpreservation.fi
+.. _dmdSec: http://digitalpreservation.fi
 
 Step 3: File List and a Structural Map
 --------------------------------------
@@ -156,8 +156,8 @@ structural map are created separately for these two types of structural maps. Th
 the filepaths, metadata type and linking metadata are read from the md-references.xml file that is 
 created and updated when digital objects are imported (step 1), and events and descriptions created (step 2).
 
-.. _structMap: http://digitalpreservation.fi/files/Metadata-1.7.1-en.pdf#page=35
-.. _fileSec: http://digitalpreservation.fi/files/Metadata-1.7.1-en.pdf#page=32
+.. _structMap: http://digitalpreservation.fi
+.. _fileSec: http://digitalpreservation.fi
 .. _EAD3: http://www.loc.gov/ead/
 
 *Physical Directory Structure*
@@ -171,8 +171,8 @@ a file, a div element is created. The div contains an identifier to the `dmdSec`
 as well as to administrative metadata. At the end ftpr elements are added to the file division elements 
 that links digital objects to div element. At the end, div elements are collected under a structmap element.
 
-.. _fileGrp: http://digitalpreservation.fi/files/Metadata-1.7.1-en.pdf#page=32
-.. _div: http://digitalpreservation.fi/files/Metadata-1.7.1-en.pdf#page=36
+.. _fileGrp: http://digitalpreservation.fi
+.. _div: http://digitalpreservation.fi
  
 
 *EAD3 Structure*
@@ -191,8 +191,8 @@ one METS document. The Mets-compiling component in the pre-ingest tool merges pr
 `dmdSec`_, `amdSec`_, `fileSec`_ and `structMap`_ elements. In addition, `metsHdr`_ is created that 
 is based on the user's input.
 
-.. _amdSec: http://digitalpreservation.fi/files/Metadata-1.7.1-en.pdf#page=27
-.. _metsHdr: http://digitalpreservation.fi/files/Metadata-1.7.1-en.pdf#page=25
+.. _amdSec: http://digitalpreservation.fi
+.. _metsHdr: http://digitalpreservation.fi
 
 
 Step 5: Signing and Packaging a SIP
