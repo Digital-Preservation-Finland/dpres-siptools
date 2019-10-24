@@ -38,3 +38,10 @@ rpm: clean-rpm
 	preprocess-spec-m4-macros.sh include/rhel7
 	build-rpm.sh ${MOCK_CONFIG}
 
+.PHONY: doc
+doc:
+	sphinx-apidoc --no-toc --force --output-dir=doc/source/modules siptools
+	make -C doc html
+
+doc-autobuild: doc
+	sphinx-autobuild --no-initial -b html doc/source doc/build/html --host 0.0.0.0 --ignore '*sw?' --ignore '*~' --re-ignore '[0-9]$$'

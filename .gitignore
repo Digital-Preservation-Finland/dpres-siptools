@@ -13,7 +13,7 @@ dist/
 *.egg-info
 .coverage
 coverage-html
-doc/source/tests
+doc/source/modules
 *~
 .DS_Store
 .DS_Store?
