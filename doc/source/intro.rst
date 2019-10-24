@@ -37,12 +37,11 @@ includes charset, file format, identifier, checksum, date when the data was crea
 registry. If the basic technical metadata is not given, the metadata for charset, identifier, 
 file format, checksum and date_created will be generated automatically.  
 
-The pre-ingest tool can accept a wide range of files that are described in the 
-`file format specificatios`_. The pre-ingest tool uses a `file-scraper library`_ to recognise 
-mimetype and version metadata, if they are not given as parameters. For video containers that 
-have several video and audio streams, mimetypes and versions are collected separately for each stream. 
-The file-scraper library also validates the imported file, if this step is not prevented in 
-the skip_wellformed_check parameter.
+The pre-ingest tool can accept a wide range of files that are described in the `file format specifications`_.
+The pre-ingest tool uses a `file-scraper library`_ to recognise mimetype and version metadata, if 
+they are not given as parameters. For video containers that have several video and audio streams,
+mimetypes and versions are collected separately for each stream. The file-scraper library also validates 
+the imported file, if this step is not prevented in the skip_wellformed_check parameter.
 
 The filename in this step (as well as in the later steps) is a relative path to the directory in which 
 the METS document is located. However, an optional --base_path parameter allows using an absolute path. 
@@ -181,7 +180,7 @@ that links digital objects to div element. At the end, div elements are collecte
 In the case of `EAD3`_ structural map, the structure is based on the digital access object (dao) elements.
 At first the `div`_ elements are created based on the name tags in the EAD3 metadata. Then the sets of dao 
 are extracted from the EAD3 metadata and from these, hrefs are collected. The files are grouped and added
-to the `fileSec`_]] based on the hrefs and at the same time file pointers are added to the div elements.   
+to the `fileSec`_ based on the hrefs and at the same time file pointers are added to the div elements.   
 
 
 Step 4: METS Document
