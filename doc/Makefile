@@ -128,31 +128,3 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
-
-_html_meta_refresh: html
-	find build/html -iname '*.html' -exec \
-		sed -i 's#<head>#<head><script type="text/javascript" src="/html/_static/live.js"/></script>#' '{}' \;
-
-_docserver: killdocserver
-	cd build ; python -mSimpleHTTPServer 8000 &
-	sleep 1
-	@echo ""
-	@echo "------------------------------------------------------------"
-	@echo "Documentation SimpleHTTPServer up and running..."
-	@echo ""
-	@echo "Point your browser to http://`hostname`:8000/"
-	@echo ""
-	@echo "You can stop the server with command: make killdocserver"
-	@echo ""
-	@echo "------------------------------------------------------------"
-	@echo ""
-
-killdocserver: 
-	kill `ps auxwww | grep "[S]impleHTTPServer 8000" | awk '{print $$2}'` | true
-
-docserver: _docserver _html_meta_refresh
-	while true ; do \
-		inotifywait -r -eMODIFY --exclude='.*sw?' --exclude='.*pyc' Makefile source ../README.rst ; \
-		[ $$? == 127 ] && sleep 5 ; \
-		( make _html_meta_refresh &  ); \
-	done
