@@ -63,7 +63,7 @@ METS files as well as paths to the digital objects or folders in the package. Fi
 to the fileSec in the METS document, while directory type links are added to the structMap section of 
 the METS.
 
-.. figure:: md-references.JPG
+.. figure:: md-references.jpg
 
    **Figure 2.** Example of md-references.xml file.
 
