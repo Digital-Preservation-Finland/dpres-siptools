@@ -1,5 +1,5 @@
-The Digital Preservation SIP Tools Library - Documentation index
-================================================================
+The Digital Preservation SIP Tools Library - Documentation
+==========================================================
 
 .. toctree::
     :maxdepth: 2

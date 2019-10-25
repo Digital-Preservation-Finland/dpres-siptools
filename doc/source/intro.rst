@@ -1,6 +1,5 @@
-Ingest Tool - a Tool Package for Generating a Valid Submission Information Package (SIP)
-========================================================================================
-
+Introduction to Generating a Submission Information Package (SIP)
+===============================================================
 
 The pre-ingest tool of the Digital Preservation Service (DPS) is intended for facilitating 
 the generation of a valid SIP following the specifications. The SIP packaging with the pre-ingest tool 
