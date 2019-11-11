@@ -246,7 +246,12 @@ def ead3_c_div(parent, structmap, filegrp, workspace, filelist):
         amd_file = [x for x in filelist if href in x][0]
         fileid = add_file_to_filesec(workspace, amd_file, filegrp)
         fptr = mets.fptr(fileid=fileid)
-        c_div.append(fptr)
+        file_div = add_file_properties(workspace, amd_file, fptr,
+                                       type_attr='dao')
+        if file_div:
+            c_div.append(file_div)
+        else:
+            c_div.append(fptr)
 
     structmap.append(c_div)
 
@@ -414,7 +419,7 @@ def create_filegrp(workspace, filegrp, filelist):
         add_file_to_filesec(workspace, path, filegrp)
 
 
-def add_file_properties(workspace, path, fptr):
+def add_file_properties(workspace, path, fptr, type_attr='file'):
     """Create a div element with file properties
 
     :param properties: File properties
@@ -444,7 +449,7 @@ def add_file_properties(workspace, path, fptr):
         properties = file_metadata_dict[0]['properties']
 
     if 'order' in properties:
-        div_el = mets.div(type_attr='file',
+        div_el = mets.div(type_attr=type_attr,
                           order=properties['order'])
         div_el.append(fptr)
         return div_el

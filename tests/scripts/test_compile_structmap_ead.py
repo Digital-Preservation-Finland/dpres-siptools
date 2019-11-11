@@ -12,9 +12,11 @@ def create_test_data(workspace, run_cli):
     """Create technical metadata test data."""
     run_cli(import_object.main, [
         '--workspace', workspace, '--skip_wellformed_check',
+        '--order', '0001',
         'tests/data/structured/Software files/koodi.java'])
     run_cli(import_object.main, [
         '--workspace', workspace, '--skip_wellformed_check',
+        '--order', '0002',
         'tests/data/structured/Publication files/publication.txt'])
 
 
@@ -62,7 +64,11 @@ def test_compile_structmap_ok(testpath, run_cli):
         '//mets:div/mets:div/mets:div/mets:div/mets:div[@LABEL="file"]',
         namespaces=NAMESPACES)) == 2
     assert sm_root.xpath(
-        '//mets:div[@LABEL="file"]/*',
+        '//mets:div[@TYPE="dao"]/*',
         namespaces=NAMESPACES)[0].tag == '{http://www.loc.gov/METS/}fptr'
     assert 'FILEID' in sm_root.xpath(
-        '//mets:div[@LABEL="file"]/*', namespaces=NAMESPACES)[0].attrib
+        '//mets:div[@TYPE="dao"]/*', namespaces=NAMESPACES)[0].attrib
+    assert sm_root.xpath(
+        '//mets:div[@ORDER]', namespaces=NAMESPACES)[0].get('ORDER') == '1'
+    assert sm_root.xpath(
+        '//mets:div[@ORDER]', namespaces=NAMESPACES)[1].get('ORDER') == '2'
