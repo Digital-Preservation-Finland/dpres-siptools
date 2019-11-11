@@ -246,12 +246,17 @@ def ead3_c_div(parent, structmap, filegrp, workspace, filelist):
         amd_file = [x for x in filelist if href in x][0]
         fileid = add_file_to_filesec(workspace, amd_file, filegrp)
         fptr = mets.fptr(fileid=fileid)
-        file_div = add_file_properties(workspace, amd_file, fptr,
-                                       type_attr='dao')
-        if file_div:
-            c_div.append(file_div)
+        if len(dao_elems) > 1:
+            file_div = add_file_div(workspace, amd_file, fptr, type_attr='dao')
+            if file_div:
+                c_div.append(file_div)
+            else:
+                c_div.append(fptr)
         else:
-            c_div.append(fptr)
+            properties = file_properties(workspace, amd_file)
+            if properties and 'order' in properties:
+                c_div.attrib['ORDER'] = properties['order']
+                c_div.append(fptr)
 
     structmap.append(c_div)
 
@@ -376,7 +381,7 @@ def create_div(workspace, divs, parent, filesec, filelist, path='',
         if div_path in filelist:
             fileid = get_fileid(filesec, div_path)
             fptr = mets.fptr(fileid)
-            div_el = add_file_properties(workspace, div_path, fptr)
+            div_el = add_file_div(workspace, div_path, fptr)
             if div_el is not None:
                 property_list.append(div_el)
             else:
@@ -419,12 +424,32 @@ def create_filegrp(workspace, filegrp, filelist):
         add_file_to_filesec(workspace, path, filegrp)
 
 
-def add_file_properties(workspace, path, fptr, type_attr='file'):
+def add_file_div(workspace, path, fptr, type_attr='file'):
     """Create a div element with file properties
 
     :param properties: File properties
     :param path: File path
     :param fptr: Element fptr for file
+    :param type_attr: The TYPE attribute value for the div
+
+    :returns: Div element with properties or None
+    """
+
+    properties = file_properties(workspace, path)
+    if properties and 'order' in properties:
+        div_el = mets.div(type_attr=type_attr,
+                          order=properties['order'])
+        div_el.append(fptr)
+        return div_el
+
+    return None
+
+
+def file_properties(workspace, path):
+    """Return the file properties from the pickle data
+
+    :param properties: File properties
+    :param path: File path
 
     :returns: Div element with properties or None
     """
@@ -442,19 +467,10 @@ def add_file_properties(workspace, path, fptr, type_attr='file'):
     with open(pkl_name, 'rb') as pkl_file:
         file_metadata_dict = pickle.load(pkl_file)
 
-    properties = {}
     if 'properties' not in file_metadata_dict[0]:
         return None
-    else:
-        properties = file_metadata_dict[0]['properties']
 
-    if 'order' in properties:
-        div_el = mets.div(type_attr=type_attr,
-                          order=properties['order'])
-        div_el.append(fptr)
-        return div_el
-
-    return None
+    return file_metadata_dict[0]['properties']
 
 
 if __name__ == '__main__':

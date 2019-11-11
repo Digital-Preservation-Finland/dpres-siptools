@@ -64,11 +64,11 @@ def test_compile_structmap_ok(testpath, run_cli):
         '//mets:div/mets:div/mets:div/mets:div/mets:div[@LABEL="file"]',
         namespaces=NAMESPACES)) == 2
     assert sm_root.xpath(
-        '//mets:div[@TYPE="dao"]/*',
+        '//mets:div[@LABEL="file"]/*',
         namespaces=NAMESPACES)[0].tag == '{http://www.loc.gov/METS/}fptr'
     assert 'FILEID' in sm_root.xpath(
-        '//mets:div[@TYPE="dao"]/*', namespaces=NAMESPACES)[0].attrib
+        '//mets:div[@LABEL="file"]/*', namespaces=NAMESPACES)[0].attrib
     assert sm_root.xpath(
-        '//mets:div[@ORDER]', namespaces=NAMESPACES)[0].get('ORDER') == '1'
+        '//mets:div[@LABEL="file"]', namespaces=NAMESPACES)[0].get('ORDER') == '1'
     assert sm_root.xpath(
-        '//mets:div[@ORDER]', namespaces=NAMESPACES)[1].get('ORDER') == '2'
+        '//mets:div[@LABEL="file"]', namespaces=NAMESPACES)[1].get('ORDER') == '2'
