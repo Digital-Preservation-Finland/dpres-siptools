@@ -507,16 +507,9 @@ def collect_dao_hrefs(ead3_c):
                 for dao_href in elem.xpath(
                         "./ead3:dao/@href",
                         namespaces=NAMESPACES):
-                    hrefs.append(dao_href)
+                    hrefs.append(dao_href.lstrip('/'))
             else:
-                hrefs.append(elem.xpath("./@href")[0])
-
-    # Remove leading slash as we accept that paths in the EAD3 data
-    # can start with a slash
-    for index, href in enumerate(hrefs):
-        if href.startswith('/'):
-            href = href[1:]
-            hrefs[index] = href
+                hrefs.append(elem.xpath("./@href")[0].lstrip('/'))
 
     return hrefs
 
