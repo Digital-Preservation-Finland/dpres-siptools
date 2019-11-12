@@ -229,34 +229,10 @@ def ead3_c_div(parent, structmap, filegrp, workspace, filelist):
         if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
             ead3_c_div(elem, c_div, filegrp, workspace, filelist)
 
-    dao_elems = []
-    for elem in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
-        if ET.QName(elem.tag).localname in ['dao', 'daoset']:
-            if ET.QName(elem.tag).localname == 'daoset':
-                for dao_href in elem.xpath(
-                        "./ead3:dao/@href",
-                        namespaces=NAMESPACES):
-                    dao_elems.append(dao_href)
-            else:
-                dao_elems.append(elem.xpath("./@href")[0])
-
-    for href in dao_elems:
-        if href.startswith('/'):
-            href = href[1:]
-        amd_file = [x for x in filelist if href in x][0]
-        fileid = add_file_to_filesec(workspace, amd_file, filegrp)
-        fptr = mets.fptr(fileid=fileid)
-        if len(dao_elems) > 1:
-            file_div = add_file_div(workspace, amd_file, fptr, type_attr='dao')
-            if file_div:
-                c_div.append(file_div)
-            else:
-                c_div.append(fptr)
-        else:
-            properties = file_properties(workspace, amd_file)
-            if properties and 'order' in properties:
-                c_div.attrib['ORDER'] = properties['order']
-                c_div.append(fptr)
+    hrefs = collect_dao_hrefs(parent)
+    c_div = add_fptrs_div_ead(
+        c_div=c_div, hrefs=hrefs, filelist=filelist,
+        filegrp=filegrp, workspace=workspace)
 
     structmap.append(c_div)
 
@@ -446,12 +422,12 @@ def add_file_div(workspace, path, fptr, type_attr='file'):
 
 
 def file_properties(workspace, path):
-    """Return the file properties from the pickle data
+    """Return file properties from the pickle data file
 
     :param properties: File properties
     :param path: File path
 
-    :returns: Div element with properties or None
+    :returns: A dict with properties or None
     """
 
     pkl_name = None
@@ -471,6 +447,78 @@ def file_properties(workspace, path):
         return None
 
     return file_metadata_dict[0]['properties']
+
+
+def add_fptrs_div_ead(c_div, hrefs, filelist, filegrp, workspace):
+    """Creates fptr elements for hrefs. If the files contain
+    file properties, like ordering data, the data is written to the
+    parent div element.
+    If file properties exist and the number of hrefs is more than one,
+    the hrefs need to be split into own div elements since the ORDER
+    attribute is at the div level.
+
+    :c_div: The div element as lxml.etree
+    :hrefs: a list of hrefs
+    :filelist: Sorted list of digital objects (file paths)
+    :filegrp: fileGrp element
+    :workspace: Workspace path
+
+    :returns: The modified c_div element
+    """
+    for href in hrefs:
+        amd_file = [x for x in filelist if href in x]
+
+        # href strings that do not match any file don't add anything new
+        if not amd_file:
+            break
+        amd_file = amd_file[0]
+        properties = file_properties(workspace, amd_file)
+        fileid = add_file_to_filesec(workspace, amd_file, filegrp)
+        fptr = mets.fptr(fileid=fileid)
+
+        if properties and 'order' in properties:
+
+            # Create new div elements for each fptr if there is more than
+            # one file, otherwise add the ORDER attribute to the current
+            # div element
+            if len(hrefs) > 1:
+                file_div = add_file_div(
+                    workspace, amd_file, fptr, type_attr='dao')
+                c_div.append(file_div)
+            else:
+                c_div.attrib['ORDER'] = properties['order']
+                c_div.append(fptr)
+        else:
+            c_div.append(fptr)
+
+    return c_div
+
+
+def collect_dao_hrefs(ead3_c):
+    """Returns the href attribute values from ead3 dao elements.
+
+    :ead3_c: EAD3 c level element XML as lxml.etree structure
+    :returns: A list of hrefs
+    """
+    hrefs = []
+    for elem in ead3_c.xpath("./ead3:did/*", namespaces=NAMESPACES):
+        if ET.QName(elem.tag).localname in ['dao', 'daoset']:
+            if ET.QName(elem.tag).localname == 'daoset':
+                for dao_href in elem.xpath(
+                        "./ead3:dao/@href",
+                        namespaces=NAMESPACES):
+                    hrefs.append(dao_href)
+            else:
+                hrefs.append(elem.xpath("./@href")[0])
+
+    # Remove leading slash as we accept that paths in the EAD3 data
+    # can start with a slash
+    for index, href in enumerate(hrefs):
+        if href.startswith('/'):
+            href = href[1:]
+            hrefs[index] = href
+
+    return hrefs
 
 
 if __name__ == '__main__':

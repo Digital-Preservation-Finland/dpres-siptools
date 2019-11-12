@@ -2,22 +2,31 @@
 from __future__ import unicode_literals
 
 import os
+import mets
+import pytest
 
 import lxml.etree as ET
 from siptools.scripts import compile_structmap, import_object
 from siptools.xml.mets import NAMESPACES
 
 
-def create_test_data(workspace, run_cli):
+def create_test_data(workspace, run_cli, order=True):
     """Create technical metadata test data."""
-    run_cli(import_object.main, [
+    param1 = [
         '--workspace', workspace, '--skip_wellformed_check',
-        '--order', '0001',
-        'tests/data/structured/Software files/koodi.java'])
-    run_cli(import_object.main, [
+        'tests/data/structured/Software files/koodi.java']
+    param2 = [
         '--workspace', workspace, '--skip_wellformed_check',
-        '--order', '0002',
-        'tests/data/structured/Publication files/publication.txt'])
+        'tests/data/structured/Publication files/publication.txt']
+
+    if order:
+        param1.append('--order')
+        param1.append('0001')
+        param2.append('--order')
+        param2.append('0002')
+
+    run_cli(import_object.main, param1)
+    run_cli(import_object.main, param2)
 
 
 def test_compile_structmap_ok(testpath, run_cli):
@@ -69,6 +78,70 @@ def test_compile_structmap_ok(testpath, run_cli):
     assert 'FILEID' in sm_root.xpath(
         '//mets:div[@LABEL="file"]/*', namespaces=NAMESPACES)[0].attrib
     assert sm_root.xpath(
-        '//mets:div[@LABEL="file"]', namespaces=NAMESPACES)[0].get('ORDER') == '1'
+        '//mets:div[@LABEL="file"]',
+        namespaces=NAMESPACES)[0].get('ORDER') == '1'
     assert sm_root.xpath(
-        '//mets:div[@LABEL="file"]', namespaces=NAMESPACES)[1].get('ORDER') == '2'
+        '//mets:div[@LABEL="file"]',
+        namespaces=NAMESPACES)[1].get('ORDER') == '2'
+
+
+def test_collect_dao_hrefs():
+    """Tests that the function collect_dao_hrefs returns a list with
+    hrefs without leading slashes from ead3 test data.
+    """
+    ead3 = ('<ead3:c xmlns:ead3="http://ead3.archivists.org/schema/" '
+            'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+            'xsi:schemaLocation="http://ead3.archivists.org/schema '
+            'http://www.loc.gov/ead/ead3.xsd"><ead3:did><ead3:daoset>'
+            '<ead3:dao daotype="derived" href="file1.txt"/>'
+            '<ead3:dao daotype="derived" href="/file2.txt"/>'
+            '</ead3:daoset></ead3:did></ead3:c>')
+    xml = ET.fromstring(ead3)
+    hrefs = compile_structmap.collect_dao_hrefs(xml)
+    assert hrefs == ['file1.txt', 'file2.txt']
+
+
+@pytest.mark.parametrize(('hrefs', 'length', 'child_elem', 'order'), [
+    (['koodi.java'], 1, 'fptr', True),
+    (['koodi.java', 'publication.txt'], 2, 'div', True),
+    (['koodi.java', 'publication.txt', 'fooo'], 2, 'div', True),
+    (['koodi.java', 'publication.txt'], 2, 'fptr', False)], ids=(
+        'One href: add ORDER to existing div',
+        'Two hrefs: add new divs for each href',
+        'One non-existing href: add just the existing hrefs',
+        'No file properties: just fptr elements added'))
+def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
+                           order):
+    """Tests the add_fptrs_div_ead function by asserting that the c_div
+    element has been modified with fptrs and divs correctly according to
+    the test cases.
+    """
+    create_test_data(testpath, run_cli, order=order)
+    div_elem = '<mets:div xmlns:mets="http://www.loc.gov/METS/"></mets:div>'
+
+    xml = ET.fromstring(div_elem)
+    filelist = [
+        'tests/data/structured/Publication files/publication.txt',
+        'tests/data/structured/Software files/koodi.java']
+    filegrp = filegrp = mets.filegrp()
+    c_div = compile_structmap.add_fptrs_div_ead(
+        xml, hrefs, filelist, filegrp, testpath)
+
+    # Child elements are either new divs or fptrs
+    assert c_div.xpath(
+        './*')[0].tag == '{http://www.loc.gov/METS/}%s' % child_elem
+
+    # Number of child elements should equal the number of valid hrefs
+    assert len(c_div.xpath('./*')) == length
+
+    # Number of fptr elements should equal the number of valid hrefs
+    assert len(c_div.findall('.//{http://www.loc.gov/METS/}fptr')) == length
+
+    # If file properties exist, it is written to the divs
+    if order and length == 1:
+        assert 'ORDER' in c_div.attrib
+    elif order:
+        assert 'ORDER' in c_div.xpath('./*')[0].attrib
+        assert c_div.xpath('./*')[0].get('TYPE') == 'dao'
+    else:
+        assert 'ORDER' not in c_div.attrib
