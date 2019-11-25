@@ -39,7 +39,13 @@ DEFAULT_VERSIONS = {
     'application/vnd.ms-excel': '11.0',
     'application/vnd.ms-powerpoint': '11.0',
     'audio/x-wav': '',
-    'video/mp4': ''
+    'video/mp4': '',
+    'image/jp2': '',
+    'video/dv': '',
+    'audio/mp4': '',
+    'video/MP1S': '',
+    'video/MP2P': '',
+    'video/MP2T': '',
 }
 
 # For mimetypes that has no version applicable for them.
