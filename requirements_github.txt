@@ -6,7 +6,6 @@ scandir
 file-magic
 wand>=0.5.1
 Pillow
-ffmpeg-python
 M2Crypto
 python-mimeparse
 six
@@ -22,4 +21,5 @@ git+https://github.com/Digital-Preservation-Finland/nisomix.git#egg=nisomix
 git+https://github.com/Digital-Preservation-Finland/addml.git#egg=addml
 git+https://github.com/Digital-Preservation-Finland/audiomd.git#egg=audiomd
 git+https://github.com/Digital-Preservation-Finland/videomd.git#egg=videomd
+git+https://github.com/Digital-Preservation-Finland/ffmpeg-python.git#egg=ffmpeg_python
 git+https://github.com/Digital-Preservation-Finland/file-scraper.git#egg=file-scraper

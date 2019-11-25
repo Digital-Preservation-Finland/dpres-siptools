@@ -14,7 +14,6 @@ six
 olefile
 opf-fido
 click
-ffmpeg-python
 M2Crypto
 python-mimeparse
 git+https://gitlab.csc.fi/dpres/xml-helpers.git@develop#egg=xml_helpers
@@ -26,3 +25,4 @@ git+https://gitlab.csc.fi/dpres/addml.git@develop#egg=addml
 git+https://gitlab.csc.fi/dpres/audiomd.git@develop#egg=audiomd
 git+https://gitlab.csc.fi/dpres/videomd.git@develop#egg=videomd
 git+https://gitlab.csc.fi/dpres/file-scraper.git@develop#egg=file_scraper
+git+https://gitlab.csc.fi/dpres/ffmpeg-python.git@develop#egg=ffmpeg_python
