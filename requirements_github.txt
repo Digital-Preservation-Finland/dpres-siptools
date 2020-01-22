@@ -10,7 +10,7 @@ M2Crypto
 python-mimeparse
 six
 olefile
-opf-fido==1.3.12
+opf-fido==1.4.0
 pymediainfo
 click
 git+https://github.com/Digital-Preservation-Finland/xml-helpers.git#egg=xml_helpers

@@ -40,7 +40,7 @@ def main():
             "Pillow",
             "six",
             "olefile",
-            "opf-fido==1.3.12",
+            "opf-fido==1.4.0",
             "click",
             "ffmpeg-python",
             "M2Crypto",

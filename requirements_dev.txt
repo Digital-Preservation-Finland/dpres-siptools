@@ -12,7 +12,7 @@ wand>=0.5.1
 Pillow
 six
 olefile
-opf-fido==1.3.12
+opf-fido==1.4.0
 click
 M2Crypto
 python-mimeparse
