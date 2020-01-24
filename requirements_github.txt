@@ -10,7 +10,6 @@ M2Crypto
 python-mimeparse
 six
 olefile
-opf-fido==1.4.0
 pymediainfo
 click
 
