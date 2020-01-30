@@ -171,7 +171,9 @@ class PremisCreator(MdCreator):
         """Scrape file
         :filepath: Path to file to be scraped
         :skip_well_check: True, if well-formed check is skipped
-        :file_format: File format and version from arguments
+        :file_format: File format and version from the command line argument
+                      parser, originally given as a value pair by the user.
+                      The mimetype is in index 0 and version in index 1.
         :charset: Character encoding from arguments
         :returns: scraper with result attributes
         """
@@ -228,8 +230,10 @@ class PremisCreator(MdCreator):
         - Creates PREMIS metadata with amd references for streams in a file
         - Returns stream dict from scraper
         """
-        scraper = self._scrape_file(filepath, skip_well_check, file_format,
-                                    charset)
+        scraper = self._scrape_file(filepath=filepath,
+                                    skip_well_check=skip_well_check,
+                                    file_format=file_format,
+                                    charset=charset)
         premis_elem = self._premis_for_file(
             filepath, filerel, scraper, charset, file_format, checksum,
             date_created, identifier, format_registry
