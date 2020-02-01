@@ -49,11 +49,11 @@ def test_import_object_ok(testpath, run_cli):
 
 
 def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
-    """Test import_object.main function --skip-inspection argument."""
+    """Test import_object.main function --skip_well_formed argument."""
     input_file = 'tests/data/text-file.txt'
     arguments = ['--workspace', testpath, input_file,
                  '--skip_wellformed_check',
-                 '--file_format', 'image/dpx', '1.0',
+                 '--file_format', 'image/x-dpx', '1.0',
                  '--checksum', 'MD5', '1qw87geiewgwe9',
                  '--date_created', datetime.datetime.utcnow().isoformat()]
     run_cli(import_object.main, arguments)
@@ -71,7 +71,7 @@ def test_import_object_skip_wellformed_check_nodate_ok(testpath, run_cli):
     input_file = 'tests/data/text-file.txt'
     arguments = ['--workspace', testpath, input_file,
                  '--skip_wellformed_check',
-                 '--file_format', 'image/dpx', '1.0',
+                 '--file_format', 'image/x-dpx', '1.0',
                  '--checksum', 'MD5', '1qw87geiewgwe9']
     run_cli(import_object.main, arguments)
 
