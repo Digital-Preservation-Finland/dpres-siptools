@@ -5,6 +5,7 @@ import io
 import os
 import sys
 
+import six
 import click
 
 import addml
@@ -109,7 +110,7 @@ class AddmlCreator(MdCreator):
         :returns: None
         """
 
-        header = csv_header(csv_file, delimiter)
+        header = csv_header(csv_file, delimiter, charset)
 
         key = (delimiter, header, charset, record_separator, quoting_char)
 
@@ -180,20 +181,35 @@ def flat_file_str(fname, def_ref):
     return flat_file
 
 
-def csv_header(csv_file_path, delimiter, isheader=False, headername='header'):
+def _open_csv_file(file_path, charset):
+    """
+    Open the file in mode dependent on the python version.
+
+    :file_path: CSV file path
+    :charset: Charset of the CSV file
+    :returns: handle to the newly-opened file
+    :raises: IOError if the file cannot be read
+    """
+    if six.PY2:
+        return io.open(file_path, "rb")
+    if six.PY3:
+        return io.open(file_path, "rt", encoding=charset)
+
+
+def csv_header(csv_file_path, delimiter, charset, isheader=False,
+               headername='header'):
     """Returns header of CSV file if there is one.
     Otherwise generates a header and returns it
     """
+    csv_file = _open_csv_file(csv_file_path, charset)
+    header = csv_file.readline().rstrip()
 
-    with io.open(csv_file_path, 'rt') as csv_file:
-        header = csv_file.readline().rstrip()
+    if not isheader:
+        header_count = header.count(delimiter)
+        header = headername + "1"
 
-        if not isheader:
-            header_count = header.count(delimiter)
-            header = headername + "1"
-
-            for i in range(header_count):
-                header += "{}{}{}".format(delimiter, headername, i + 2)
+        for i in range(header_count):
+            header += "{}{}{}".format(delimiter, headername, i + 2)
 
     return header
 
@@ -255,7 +271,7 @@ def create_addml_metadata(
     """
 
     header = csv_header(
-        csv_file, delimiter, isheader
+        csv_file, delimiter, charset, isheader
     )
 
     description = ET.Element(addml.addml_ns('description'))
