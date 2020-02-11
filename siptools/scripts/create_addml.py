@@ -9,6 +9,7 @@ import six
 import click
 
 import addml
+import csv
 import lxml.etree as ET
 from siptools.utils import MdCreator, encode_path
 
@@ -111,8 +112,8 @@ class AddmlCreator(MdCreator):
         """
 
         header = csv_header(csv_file, delimiter, charset)
-
-        key = (delimiter, header, charset, record_separator, quoting_char)
+        headerstr = delimiter.join(header)
+        key = (delimiter, headerstr, charset, record_separator, quoting_char)
 
         # If similar metadata already exists,
         # only append filename to self.filenames
@@ -198,18 +199,34 @@ def _open_csv_file(file_path, charset):
 
 def csv_header(csv_file_path, delimiter, charset, isheader=False,
                headername='header'):
-    """Returns header of CSV file if there is one.
+    """
+    Returns header of CSV file if there is one.
     Otherwise generates a header and returns it
+
+    :csv_file_path: CSV file path
+    :delimiter: Field delimiter in CSV
+    :charset: Character encoding of CSV file
+    :isheader: True id file has a header, False otherwise
+    :headername: Default header name if file does not have header
+    :returns: Header list of CSV columns
     """
     csv_file = _open_csv_file(csv_file_path, charset)
-    header = csv_file.readline().rstrip()
+    csv.register_dialect(
+        "new_dialect",
+        # 'delimiter' accepts only byte strings on Python 2 and
+        # only Unicode strings on Python 3
+        delimiter=str(delimiter)
+    )
+
+    header_bytes = next(csv.reader(csv_file, dialect="new_dialect"))
+    header = [item.decode(charset) for item in header_bytes]
+    csv_file.close()
 
     if not isheader:
-        header_count = header.count(delimiter)
-        header = headername + "1"
-
+        header_count = len(header)
+        header = []
         for i in range(header_count):
-            header += "{}{}{}".format(delimiter, headername, i + 2)
+            header.append("{}{}".format(headername, i + 1))
 
     return header
 
@@ -270,14 +287,13 @@ def create_addml_metadata(
     :returns: ADDML metadata XML element
     """
 
-    header = csv_header(
+    headers = csv_header(
         csv_file, delimiter, charset, isheader
     )
 
     description = ET.Element(addml.addml_ns('description'))
     reference = ET.Element(addml.addml_ns('reference'))
 
-    headers = header.split(delimiter)
     field_definitions = addml.wrapper_elems('fieldDefinitions')
 
     for col in headers:

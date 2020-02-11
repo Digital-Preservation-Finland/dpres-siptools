@@ -154,6 +154,30 @@ def test_paths(testpath, file_, base_path, run_cli):
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))
 
 
+@pytest.mark.parametrize("filename, charset", [
+    ("tests/data/valid_utf8.csv", "UTF-8"),
+    ("tests/data/valid_iso8859-15.csv", "ISO-8859-15"),
+    ("tests/data/valid_utf8.csv", "UTF-8"),
+    ("tests/data/valid_iso8859-15.csv", "ISO-8859-15"),
+])
+def test_csv_header_charset(filename, charset):
+    """
+    Test CSV header read with different character encodings.
+
+    :filename: Test file
+    :charset: Character encoding of test file
+    """
+    header = create_addml.csv_header(
+        csv_file_path=filename, delimiter=",", charset=charset, isheader=True
+    )
+    assert header == ["year", "br\xe4nd", "m\xf6del", "detail", "other"]
+
+    header = create_addml.csv_header(
+        csv_file_path=filename, delimiter=",", charset=charset, isheader=False
+    )
+    assert header == ["header1", "header2", "header3", "header4", "header5"]
+
+
 def _create_addml(testpath, isheader):
     creator = create_addml.AddmlCreator(testpath)
 
