@@ -193,7 +193,7 @@ def _open_csv_file(file_path, charset):
     """
     if six.PY2:
         return io.open(file_path, "rb")
-    if six.PY3:
+    else:
         return io.open(file_path, "rt", encoding=charset)
 
 
@@ -218,8 +218,11 @@ def csv_header(csv_file_path, delimiter, charset, isheader=False,
         delimiter=str(delimiter)
     )
 
-    header_bytes = next(csv.reader(csv_file, dialect="new_dialect"))
-    header = [item.decode(charset) for item in header_bytes]
+    first_row = next(csv.reader(csv_file, dialect="new_dialect"))
+    if six.PY2:
+        header = [item.decode(charset) for item in first_row]
+    else:
+        header = first_row
     csv_file.close()
 
     if not isheader:
