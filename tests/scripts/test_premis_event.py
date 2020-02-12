@@ -3,10 +3,11 @@ from __future__ import unicode_literals
 
 import os
 
-import pytest
-
 import lxml.etree as ET
+
+import pytest
 from siptools.scripts import premis_event
+from siptools.xml.mets import NAMESPACES
 
 
 def test_premis_event_ok(testpath, run_cli):
@@ -242,3 +243,47 @@ def test_create_premis_agent_file_ok(testpath):
     ):
         assert agent_xml.findall(element, namespaces=namespaces)[0].text \
             == content
+
+
+def test_reuse_agent(testpath, run_cli):
+    """Test that identical agent will be reused in events if found
+    """
+    # Create two events
+    for i in range(1, 3):
+        run_cli(premis_event.main, [
+            'creation',
+            '2016-10-13T12:30:55',
+            '--event_target', 'tests/data/structured',
+            '--event_detail', 'Testing: act %s' % i,
+            '--event_outcome', 'success',
+            '--event_outcome_detail', 'Outcome detail',
+            '--workspace', testpath,
+            '--agent_name', 'Demo Application',
+            '--agent_type', 'software'
+        ])
+
+    event_files = [
+        "f448570b93ec399729014c9045281cf2-PREMIS%3AEVENT-amd.xml",
+        "d7aa4c0d764dcf46e6b4168529e372a2-PREMIS%3AEVENT-amd.xml"
+    ]
+    events = [
+        ET.parse(os.path.join(testpath, path)).getroot()
+        for path in event_files
+    ]
+    event_details = [
+        event.find(".//premis:eventDetail", namespaces=NAMESPACES).text
+        for event in events
+    ]
+    agent_identifiers = [
+        event.find(
+            ".//premis:linkingAgentIdentifierValue",
+            namespaces=NAMESPACES
+        ).text
+        for event in events
+    ]
+
+    # Events are different but link to same agent using an identical UUID
+    assert event_details == ["Testing: act 1", "Testing: act 2"]
+
+    assert len(agent_identifiers[0]) == 36
+    assert agent_identifiers[0] == agent_identifiers[1]

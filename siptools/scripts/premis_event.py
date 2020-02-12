@@ -1,17 +1,20 @@
 """Command line tool for creating premis events"""
 from __future__ import unicode_literals
 
+import glob
 import os
 import sys
 from uuid import uuid4
 
 import click
+import lxml.etree
 import six
 
 import mets
 import premis
 import xml_helpers.utils
 from siptools.utils import MdCreator, encode_id, encode_path
+from siptools.xml.mets import NAMESPACES
 from siptools.xml.premis import PREMIS_EVENT_OUTCOME_TYPES, PREMIS_EVENT_TYPES
 
 click.disable_unicode_literals_warning = True
@@ -102,16 +105,21 @@ def premis_event(event_type, event_datetime, event_detail, event_outcome,
     (directory, event_file) = event_target_path(base_path, event_target)
 
     if agent_name or agent_type:
-        agent_identifier = six.text_type(uuid4())
-        agent = create_premis_agent(agent_name,
-                                    agent_type, agent_identifier)
+        agent_identifier = find_premis_agent_identifier(
+            workspace, agent_name, agent_type
+        )
 
-        agent_creator = PremisCreator(workspace)
-        agent_creator.add_md(agent, event_file, directory=directory)
-        agent_creator.write(mdtype="PREMIS:AGENT", stdout=stdout)
+        if not agent_identifier:
+            agent_identifier = six.text_type(uuid4())
+            agent = create_premis_agent(agent_name,
+                                        agent_type, agent_identifier)
 
-        if stdout:
-            print(xml_helpers.utils.serialize(agent).decode("utf-8"))
+            agent_creator = PremisCreator(workspace)
+            agent_creator.add_md(agent, event_file, directory=directory)
+            agent_creator.write(mdtype="PREMIS:AGENT", stdout=stdout)
+
+            if stdout:
+                print(xml_helpers.utils.serialize(agent).decode("utf-8"))
     else:
         agent_identifier = None
 
@@ -174,6 +182,41 @@ class PremisCreator(MdCreator):
               section="digiprovmd", stdout=False):
         super(PremisCreator, self).write(
             mdtype=mdtype, mdtypeversion=mdtypeversion, section=section)
+
+
+def find_premis_agent_identifier(workspace, agent_name, agent_type):
+    """
+    Search for an existing PREMIS agent in the workspace with the same
+    agent name and type. If found, return the agent identifier.
+
+    :param str workspace: path to the workspace
+    :param str agent_name: content of PREMIS agentName element
+    :param str agent_type: content of PREMIS agentType element
+
+    :returns: PREMIS agent identifier if found, None otherwise
+    """
+    search_path = os.path.join(workspace, "*AGENT-amd.xml")
+
+    for path in glob.glob(search_path):
+        element = lxml.etree.parse(path).getroot()[0]
+        agent = element.find(
+            ".//premis:agent", namespaces=NAMESPACES
+        )
+
+        found_agent_name = agent.find(
+            "premis:agentName", namespaces=NAMESPACES
+        ).text
+        found_agent_type = agent.find(
+            "premis:agentType", namespaces=NAMESPACES
+        ).text
+
+        if found_agent_name == agent_name and found_agent_type == agent_type:
+            # Agent already exists
+            return agent.find(
+                ".//premis:agentIdentifierValue", namespaces=NAMESPACES
+            ).text
+
+    return None
 
 
 def create_premis_agent(agent_name, agent_type, agent_identifier):

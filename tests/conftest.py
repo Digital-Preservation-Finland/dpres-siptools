@@ -92,7 +92,12 @@ def run_cli():
         :rtype: click.testing.Result
         """
         runner = CliRunner()
-        result = runner.invoke(cli_func, args)
+        result = runner.invoke(
+            cli_func, args,
+            # If the command is meant to succeed, let pytest catch the
+            # exceptions instead of Click
+            catch_exceptions=not success
+        )
         if success:
             assert result.exit_code == 0, result
         else:
