@@ -156,7 +156,7 @@ def event_target_path(base_path, event_target=None):
         if os.path.isdir(eventpath):
             directory = os.path.normpath(event_target)
         elif os.path.isfile(eventpath):
-            event_file =os.path.normpath(event_target)
+            event_file = os.path.normpath(event_target)
         else:
             raise IOError
     else:

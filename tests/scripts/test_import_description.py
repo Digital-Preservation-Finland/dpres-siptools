@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import os
 import io
-import sys
 
 import pytest
 
@@ -11,12 +10,6 @@ import lxml.etree as ET
 from siptools.scripts import import_description
 from siptools.scripts.import_description import main
 from siptools.utils import fsdecode_path
-
-
-try:
-    from urllib import quote_plus
-except ImportError:  # Python 3
-    from urllib.parse import quote_plus
 
 
 def get_md_file(path, input_target):
@@ -150,7 +143,8 @@ def test_paths(testpath, directory, base_path, run_cli):
             "tests/data/import_description/metadata/dc_description.xml"
         ])
 
-    assert "directory=\"" + os.path.normpath(directory) + "\"" in \
-        io.open(os.path.join(testpath, "md-references.xml"), "rt").read()
+    with io.open(os.path.join(testpath, "md-references.xml"), "rt") as md_ref:
+        md_references = md_ref.read()
 
+    assert 'directory=\"%s\"' % os.path.normpath(directory) in md_references
     assert os.path.isdir(os.path.normpath(os.path.join(base_path, directory)))

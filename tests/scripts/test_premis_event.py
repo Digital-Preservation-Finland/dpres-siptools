@@ -276,7 +276,8 @@ def test_paths(testpath, file_, base_path, run_cli):
             "success", "creation", "2020-02-02T20:20:20"
         ])
 
-    assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        io.open(os.path.join(testpath, "md-references.xml"), "rt").read()
+    with io.open(os.path.join(testpath, "md-references.xml"), "rt") as md_ref:
+        md_references = md_ref.read()
 
+    assert 'file=\"%s\"' % os.path.normpath(file_) in md_references
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))
