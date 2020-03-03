@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import os
+import io
 import sys
 
 import pytest
@@ -111,3 +112,45 @@ def test_import_description_invalid_namespace(testpath, run_cli):
         '--workspace', testpath],
         success=False)
     assert isinstance(result.exception, TypeError)
+
+
+@pytest.mark.parametrize("directory, base_path", [
+    ("tests/data/audio", ""),
+    ("./tests/data/audio", ""),
+    ("audio", "tests/data"),
+    ("./audio", "./tests/data"),
+    ("data/audio", "absolute"),
+    ("tests/data/audio/", ""),
+    ("./tests/data/audio/", ""),
+    ("audio/", "tests/data"),
+    ("./audio/", "./tests/data"),
+    ("data/audio/", "absolute")
+])
+def test_paths(testpath, directory, base_path, run_cli):
+    """ Test the following path arguments:
+    (1) Path without base_path
+    (2) Path without base bath, but with "./"
+    (3) Path with base path
+    (4) Path with base path and with "./"
+    (5) Absolute base path
+    (6) Cases (1)-(5) with and without ending "/"
+    """
+    if "absolute" in base_path:
+        base_path = os.path.join(os.getcwd(), "tests")
+    if base_path != "":
+        run_cli(import_description.main, [
+            "--workspace", testpath, "--base_path", base_path,
+            "--dmdsec_target", directory, "--remove_root",
+            "tests/data/import_description/metadata/dc_description.xml"
+        ])
+    else:
+        run_cli(import_description.main, [
+            "--workspace", testpath, "--dmdsec_target", directory,
+            "--remove_root",
+            "tests/data/import_description/metadata/dc_description.xml"
+        ])
+
+    assert "directory=\"" + os.path.normpath(directory) + "\"" in \
+        io.open(os.path.join(testpath, "md-references.xml"), "rt").read()
+
+    assert os.path.isdir(os.path.normpath(os.path.join(base_path, directory)))

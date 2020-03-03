@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import os
+import io
 
 import pytest
 
@@ -242,3 +243,40 @@ def test_create_premis_agent_file_ok(testpath):
     ):
         assert agent_xml.findall(element, namespaces=namespaces)[0].text \
             == content
+
+
+@pytest.mark.parametrize("file_, base_path", [
+    ("tests/data/audio/valid__wav.wav", ""),
+    ("./tests/data/audio/valid__wav.wav", ""),
+    ("audio/valid__wav.wav", "tests/data"),
+    ("./audio/valid__wav.wav", "./tests/data"),
+    ("data/audio/valid__wav.wav", "absolute")
+])
+def test_paths(testpath, file_, base_path, run_cli):
+    """ Test the following path arguments:
+    (1) Path without base_path
+    (2) Path without base bath, but with "./"
+    (3) Path with base path
+    (4) Path with base path and with "./"
+    (5) Absolute base path
+    """
+    if "absolute" in base_path:
+        base_path = os.path.join(os.getcwd(), "tests")
+    if base_path:
+        run_cli(premis_event.main, [
+            "--workspace", testpath, "--base_path", base_path,
+            "--event_target", file_, "--event_detail", "foo",
+            "--event_outcome", "success", "creation",
+            "2020-02-02T20:20:20"
+        ])
+    else:
+        run_cli(premis_event.main, [
+            "--workspace", testpath, "--event_target", file_,
+            "--event_detail", "foo", "--event_outcome",
+            "success", "creation", "2020-02-02T20:20:20"
+        ])
+
+    assert "file=\"" + os.path.normpath(file_) + "\"" in \
+        io.open(os.path.join(testpath, "md-references.xml"), "rt").read()
+
+    assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

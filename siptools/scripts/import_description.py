@@ -108,7 +108,7 @@ def dmd_target_path(base_path, dmdsec_target=None):
             dmd_target = os.path.normpath(os.path.join(base_path,
                                                        dmdsec_target))
         else:
-            dmd_target = dmdsec_target
+            dmd_target = os.path.normpath(dmdsec_target)
 
         if not os.path.isdir(dmd_target):
             raise IOError

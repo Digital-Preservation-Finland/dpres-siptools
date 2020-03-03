@@ -151,12 +151,12 @@ def event_target_path(base_path, event_target=None):
         if base_path not in ['.']:
             eventpath = os.path.normpath(os.path.join(base_path, event_target))
         else:
-            eventpath = event_target
+            eventpath = os.path.normpath(event_target)
 
         if os.path.isdir(eventpath):
             directory = os.path.normpath(event_target)
         elif os.path.isfile(eventpath):
-            event_file = event_target
+            event_file =os.path.normpath(event_target)
         else:
             raise IOError
     else:
@@ -253,7 +253,8 @@ def create_premis_agent_file(workspace, event_type, agent_name, agent_type,
     """
     output_filename = '%s-agent-amd.xml' % (event_type)
     if event_target:
-        output_filename = '%s-%s' % (event_target, output_filename)
+        output_filename = '%s-%s' % (os.path.normpath(event_target),
+                                     output_filename)
     output_filename = encode_path(output_filename)
 
     agent_id = encode_id(output_filename)
@@ -290,7 +291,8 @@ def create_premis_event_file(workspace, event_type, event_datetime,
     """
     output_filename = '%s-event-amd.xml' % event_type
     if event_target:
-        output_filename = '%s-%s' % (event_target, output_filename)
+        output_filename = '%s-%s' % (os.path.normpath(event_target),
+                                     output_filename)
     output_filename = encode_path(output_filename)
 
     event_id = encode_id(output_filename)
