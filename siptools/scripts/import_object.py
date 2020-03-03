@@ -113,21 +113,9 @@ def main(workspace, base_path, skip_wellformed_check, charset, file_format,
     --identifier are file dependent metadata, and if these are used, then use
     the script only for one file.
     """
-    arguments = {
-            "workspace": workspace,
-            "base_path": base_path,
-            "skip_wellformed_check": skip_wellformed_check,
-            "charset": charset,
-            "file_format": file_format,
-            "checksum": checksum,
-            "date_created": date_created,
-            "identifier": identifier, 
-            "format_registry": format_registry,
-            "order": order,
-            "stdout": stdout,
-            "filepaths": filepaths
-    }
-    import_object(**arguments)
+    import_object(workspace, base_path, skip_wellformed_check, charset,
+                  file_format, checksum, date_created, identifier,
+                  format_registry, order, stdout, filepaths)
     return 0
 
 
@@ -170,30 +158,36 @@ def import_object(**kwargs):
 
 def _normalize_args(params):
     """
+    Normalize values of argument dict to default values if missing.
+    :params: Arguments as dict.
+    :returns: Normalized dict.
     """
-    parameters = {
-            "workspace": "./workspace" if not "workspace" in params else \
-                params["workspace"],
-            "base_path": "." if not "base_path" in params else \
-                params["base_path"],
-            "skip_wellformed_check": False if not "skip_wellformed_check" in \
-                params else params["skip_wellformed_check"],
-            "charset": None if not "charset" in params else params["charset"],
-            "file_format": None if not "file_format" in params else \
-                params["file_format"],
-            "checksum": None if not "checksum" in params else \
-                params["checksum"],
-            "date_created": None if not "date_created" in params else \
-                params["date_created"],
-            "identifier": None if not "identifier" in params else \
-                params["identifier"],
-            "format_registry": None if not "format_registry" in params else \
-                params["format_registry"],
-            "order": None if not "order" in params else params["order"],
-            "stdout": False if not "stdout" in params else params["stdout"],
-            "filepaths": None if not "filepaths" in params else \
-                params["filepaths"]
-    }
+    parameters = {}
+    parameters["workspace"] = "./workspace" if not "workspace" in params else \
+        params["workspace"],
+    parameters["base_path"] = "." if not "base_path" in params else \
+        params["base_path"],
+    parameters["skip_wellformed_check"] = False if not \
+        "skip_wellformed_check" in params else \
+        params["skip_wellformed_check"],
+    parameters["charset"] = None if not "charset" in params else \
+        params["charset"],
+    parameters["file_format"] = None if not "file_format" in params else \
+        params["file_format"],
+    parameters["checksum"] = None if not "checksum" in params else \
+        params["checksum"],
+    parameters["date_created"] = None if not "date_created" in params else \
+        params["date_created"],
+    parameters["identifier"] = None if not "identifier" in params else \
+        params["identifier"],
+    parameters["format_registry"] = None if not "format_registry" in params \
+        else params["format_registry"],
+    parameters["order"] = None if not "order" in params else params["order"],
+    parameters["stdout"] = False if not "stdout" in params else \
+        params["stdout"],
+    parameters["filepaths"] = None if not "filepaths" in params else \
+        params["filepaths"]
+
     return parameters
 
 
