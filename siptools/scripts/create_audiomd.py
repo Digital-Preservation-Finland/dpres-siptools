@@ -93,12 +93,16 @@ class AudiomdCreator(MdCreator):
         super(AudiomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
-def create_audiomd_metadata(filename, filerel=None, workspace=None):
+def create_audiomd_metadata(filename, filerel=None, workspace=None,
+                            streams=None):
     """Creates and returns list of audioMD XML sections.
     :filename: Audio file path
     :returns: List of AudioMD XML sections.
     """
-    streams = scrape_file(filename, filerel=filerel, workspace=workspace)
+    if streams is None:
+        scraper = scrape_file(filepath=filename, filerel=filerel,
+                              workspace=workspace)
+        streams = scraper.streams
     fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     audiomd_dict = {}
@@ -116,7 +120,7 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None):
         audiomd_dict[six.text_type(index)] = audiomd_elem
 
     if not audiomd_dict:
-        raise ValueError('Audio stream info could not be constructed.')
+        print 'The file has no audio streams. No AudioMD metadata created.'
 
     return audiomd_dict
 

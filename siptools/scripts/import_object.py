@@ -13,7 +13,7 @@ import six
 
 import premis
 from file_scraper.scraper import Scraper
-from siptools.utils import MdCreator
+from siptools.utils import MdCreator, scrape_file
 
 click.disable_unicode_literals_warning = True
 
@@ -113,9 +113,13 @@ def main(workspace, base_path, skip_wellformed_check, charset, file_format,
     --identifier are file dependent metadata, and if these are used, then use
     the script only for one file.
     """
-    import_object(workspace, base_path, skip_wellformed_check, charset,
-                  file_format, checksum, date_created, identifier,
-                  format_registry, order, stdout, filepaths)
+    import_object(
+        workspace=workspace, base_path=base_path,
+        skip_wellformed_check=skip_wellformed_check, charset=charset,
+        file_format=file_format, checksum=checksum, date_created=date_created,
+        identifier=identifier, format_registry=format_registry, order=order,
+        stdout=stdout, filepaths=filepaths
+    )
     return 0
 
 
@@ -126,7 +130,7 @@ def import_object(**kwargs):
 
     :returns: Dictionary of the scraped file metadata
     """
-    params = _normalize_args(kwargs)
+    params = _initialize_args(kwargs)
     # Loop files and create premis objects
     files = collect_filepaths(dirs=params["filepaths"],
                               base=params["base_path"])
@@ -156,35 +160,35 @@ def import_object(**kwargs):
     return file_metadata_dict
 
 
-def _normalize_args(params):
+def _initialize_args(params):
     """
-    Normalize values of argument dict to default values if missing.
+    Initialize values of argument dict to default values if missing.
     :params: Arguments as dict.
-    :returns: Normalized dict.
+    :returns: Initialized dict.
     """
     parameters = {}
     parameters["workspace"] = "./workspace" if not "workspace" in params else \
-        params["workspace"],
+        params["workspace"]
     parameters["base_path"] = "." if not "base_path" in params else \
-        params["base_path"],
+        params["base_path"]
     parameters["skip_wellformed_check"] = False if not \
         "skip_wellformed_check" in params else \
-        params["skip_wellformed_check"],
+        params["skip_wellformed_check"]
     parameters["charset"] = None if not "charset" in params else \
-        params["charset"],
+        params["charset"]
     parameters["file_format"] = None if not "file_format" in params else \
-        params["file_format"],
+        params["file_format"]
     parameters["checksum"] = None if not "checksum" in params else \
-        params["checksum"],
+        params["checksum"]
     parameters["date_created"] = None if not "date_created" in params else \
-        params["date_created"],
+        params["date_created"]
     parameters["identifier"] = None if not "identifier" in params else \
-        params["identifier"],
+        params["identifier"]
     parameters["format_registry"] = None if not "format_registry" in params \
-        else params["format_registry"],
-    parameters["order"] = None if not "order" in params else params["order"],
+        else params["format_registry"]
+    parameters["order"] = None if not "order" in params else params["order"]
     parameters["stdout"] = False if not "stdout" in params else \
-        params["stdout"],
+        params["stdout"]
     parameters["filepaths"] = None if not "filepaths" in params else \
         params["filepaths"]
 
@@ -196,39 +200,6 @@ class PremisCreator(MdCreator):
     for files and streams.
     """
 
-    def _scrape_file(self, filepath, skip_well_check, file_format=None,
-                     charset=None):
-        """Scrape file
-        :filepath: Path to file to be scraped
-        :skip_well_check: True, if well-formed check is skipped
-        :file_format: File format and version from the command line argument
-                      parser, originally given as a value pair by the user.
-                      The mimetype is in index 0 and version in index 1.
-        :charset: Character encoding from arguments
-        :returns: scraper with result attributes
-        """
-        if not file_format:
-            file_format = (None, None)
-        scraper = Scraper(filepath, mimetype=file_format[0],
-                          version=file_format[1], charset=charset)
-        if not skip_well_check:
-            scraper.scrape(True)
-            if not scraper.well_formed:
-                errors = []
-                for _, info in six.iteritems(scraper.info):
-                    if len(info['errors']) > 0:
-                        for error in info['errors']:
-                            errors.append(error)
-                error_str = "\n".join(errors)
-                # Ensure the error string is binary on Py2, Unicode on Py3.
-                # This ensures the message is not truncated on Py2 if it
-                # contains Unicode.
-                raise ValueError(six.ensure_str(error_str))
-        else:
-            scraper.scrape(False)
-
-        return scraper
-
     def add_premis_md(self, filepath, filerel=None, **params):
         """
         Metadata creator for PREMIS metadata. This method:
@@ -237,10 +208,16 @@ class PremisCreator(MdCreator):
         - Creates PREMIS metadata with amd references for streams in a file
         - Returns stream dict from scraper
         """
-        params = _normalize_args(params)
-        scraper = self._scrape_file(
+        params = _initialize_args(params)
+        mimetype = None if not params["file_format"] else \
+            params["file_format"][0]
+        version = None if not params["file_format"] else \
+            params["file_format"][1]
+
+        scraper = scrape_file(
             filepath=filepath, skip_well_check=params["skip_wellformed_check"],
-            file_format=params["file_format"], charset=params["charset"]
+            mimetype=mimetype, version=version, charset=params["charset"],
+            skip_json=True
         )
 
         premis_elem = create_premis_object(filepath, scraper, **params)
@@ -322,7 +299,7 @@ def create_premis_object(fname, scraper, **kwargs):
         if info['class'] == 'ScraperNotFound':
             raise ValueError('File format is not supported.')
 
-    params = _normalize_args(kwargs)
+    params = _initialize_args(kwargs)
     checksum = params["checksum"] or ("MD5", scraper.checksum(algorithm='md5'))
     date_created = params["date_created"] or creation_date(fname)
     identifier = params["identifier"] or ("UUID", six.text_type(uuid4()))

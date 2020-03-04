@@ -89,12 +89,16 @@ class VideomdCreator(MdCreator):
         super(VideomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
-def create_videomd_metadata(filename, filerel=None, workspace=None):
+def create_videomd_metadata(filename, filerel=None, workspace=None,
+                            streams=None):
     """Creates and returns list of videoMD XML sections.
     :filename: Audio file path
     :returns: List of VideoMD XML sections.
     """
-    streams = scrape_file(filename, filerel=filerel, workspace=workspace)
+    if streams is None:
+        scraper = scrape_file(filepath=filename, filerel=filerel,
+                              workspace=workspace)
+        streams = scraper.streams
     fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     videomd_dict = {}
@@ -109,7 +113,7 @@ def create_videomd_metadata(filename, filerel=None, workspace=None):
         videomd_dict[six.text_type(index)] = videomd_elem
 
     if not videomd_dict:
-        raise ValueError('Video stream info could not be constructed.')
+        print 'The file has no video streams. No VideoMD metadata created.'
 
     return videomd_dict
 

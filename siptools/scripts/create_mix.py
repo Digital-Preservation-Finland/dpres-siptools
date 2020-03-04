@@ -110,13 +110,16 @@ def check_missing_metadata(stream, filename):
             )
 
 
-def create_mix_metadata(filename, filerel=None, workspace=None):
+def create_mix_metadata(filename, filerel=None, workspace=None, streams=None):
     """Create MIX metadata XML element for an image file.
 
     :image: image file
     :returns: MIX XML element
     """
-    streams = scrape_file(filename, filerel=filerel, workspace=workspace)
+    if streams is None:
+        scraper = scrape_file(filepath=filename, filerel=filerel,
+                              workspace=workspace)
+        streams = scraper.streams
     stream_md = streams[0]
     check_missing_metadata(stream_md, filename)
 

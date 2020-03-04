@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import io
 import os.path
-import pickle
+import json
 import shutil
 import sys
 
@@ -207,7 +207,7 @@ def test_main_utf8_files(testpath, run_cli):
 
 
 def test_existing_scraper_result(testpath, run_cli):
-    """Test that existing pickle file from import_object is used.
+    """Test that existing json file from import_object is used.
     We just need to check duration, since it's different from the real
     duration.
     """
@@ -230,9 +230,9 @@ def test_existing_scraper_result(testpath, run_cli):
         'codec_creator_app_version': '(:unav)',
         'duration': 'PT50S', 'sampling': '4:2:0', 'stream_type': 'video',
         'width': '320', 'codec_creator_app': '(:unav)'}}
-    with open(os.path.join(testpath, ('%s-scraper.pkl' % amdid)), 'wb') \
+    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wb') \
             as outfile:
-        pickle.dump(stream_dict, outfile)
+        json.dump(stream_dict, outfile)
 
     videomd = create_videomd.create_videomd_metadata(
         file_, workspace=testpath

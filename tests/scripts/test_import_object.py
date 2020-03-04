@@ -5,14 +5,14 @@ from __future__ import unicode_literals
 import datetime
 import io
 import os.path
-import pickle
+import json
 
 import pytest
 import six
 
 import lxml.etree as ET
 from siptools.scripts import import_object
-from siptools.utils import fsdecode_path
+from siptools.utils import fsdecode_path, load_scraper_json
 from siptools.xml.mets import NAMESPACES
 
 
@@ -53,7 +53,7 @@ def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
     input_file = 'tests/data/text-file.txt'
     arguments = ['--workspace', testpath, input_file,
                  '--skip_wellformed_check',
-                 '--file_format', 'image/x-dpx', '1.0',
+                 '--file_format', 'text/html', '4.01',
                  '--checksum', 'MD5', '1qw87geiewgwe9',
                  '--date_created', datetime.datetime.utcnow().isoformat()]
     run_cli(import_object.main, arguments)
@@ -71,7 +71,7 @@ def test_import_object_skip_wellformed_check_nodate_ok(testpath, run_cli):
     input_file = 'tests/data/text-file.txt'
     arguments = ['--workspace', testpath, input_file,
                  '--skip_wellformed_check',
-                 '--file_format', 'image/x-dpx', '1.0',
+                 '--file_format', 'text/xml', '1.0',
                  '--checksum', 'MD5', '1qw87geiewgwe9']
     run_cli(import_object.main, arguments)
 
@@ -111,13 +111,10 @@ def test_import_object_order(testpath, run_cli):
     run_cli(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
     path = output.replace('-PREMIS%3AOBJECT-amd.xml',
-                          '-scraper.pkl')
+                          '-scraper.json')
     assert os.path.isfile(path)
 
-    streams = {}
-    with open(path, "rb") as infile:
-        streams = pickle.load(infile)
-
+    streams = load_scraper_json(path)
     assert 'properties' in streams[0]
     assert 'order' in streams[0]['properties']
     assert streams[0]['properties']['order'] == '5'

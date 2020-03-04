@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import io
 import os
-import pickle
+import json
 import shutil
 import sys
 
@@ -122,7 +122,7 @@ def test_create_mix():
 
 
 def test_existing_scraper_result(testpath):
-    """Test that existing pickle file from import_object is used.
+    """Test that existing json file from import_object is used.
     We just need to check width, since it's different from the real one.
     """
     amdid = 'f54380dfc2960793badf5e81c9b1627c'
@@ -139,10 +139,10 @@ def test_existing_scraper_result(testpath):
         'bps_unit': 'integer', 'bps_value': '8', 'colorspace': 'srgb',
         'compression': 'lzw', 'height': '400', 'mimetype': 'image/tiff',
         'samples_per_pixel': '3', 'stream_type': 'image', 'version': '6.0',
-        'width': '1234', 'byte_order': 'little endian'}}
-    with open(os.path.join(testpath, ('%s-scraper.pkl' % amdid)), 'wb') \
+        'width': '1234', 'byte_order': 'little endian', 'index': 0}}
+    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wb') \
             as outfile:
-        pickle.dump(stream_dict, outfile)
+        json.dump(stream_dict, outfile)
 
     mix = create_mix.create_mix_metadata(file_, workspace=testpath)
     path = "//mix:imageWidth"

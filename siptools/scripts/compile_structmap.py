@@ -3,7 +3,7 @@ metadata for a METS document."""
 from __future__ import unicode_literals
 
 import os
-import pickle
+import json
 import sys
 from uuid import uuid4
 
@@ -12,7 +12,8 @@ import click
 import lxml.etree as ET
 import mets
 import xml_helpers.utils as xml_utils
-from siptools.utils import add, encode_path, get_objectlist, tree
+from siptools.utils import (add, encode_path, get_objectlist, tree,
+                            load_scraper_json)
 from siptools.xml.mets import NAMESPACES
 
 click.disable_unicode_literals_warning = True
@@ -53,7 +54,7 @@ def main(workspace, structmap_type, root_type, dmdsec_loc, stdout):
     """Tool for generating METS file section and structural map based on
     created/imported administrative metada and descriptive metadata.
     The script will also add order of the file to the structural map
-    (via pickle file), if --order argument was used in import_object script.
+    (via json file), if --order argument was used in import_object script.
     """
     compile_structmap(workspace, structmap_type, root_type, dmdsec_loc, stdout)
 
@@ -422,7 +423,7 @@ def add_file_div(workspace, path, fptr, type_attr='file'):
 
 
 def file_properties(workspace, path):
-    """Return file properties from the pickle data file
+    """Return file properties from the json data file
 
     :param properties: File properties
     :param path: File path
@@ -430,18 +431,16 @@ def file_properties(workspace, path):
     :returns: A dict with properties or None
     """
 
-    pkl_name = None
+    json_name = None
     for amdref in get_md_references(workspace, path=path):
-        pkl_name = os.path.join(
-            workspace, '{}-scraper.pkl'.format(amdref[1:]))
-        if os.path.isfile(pkl_name):
+        json_name = os.path.join(
+            workspace, '{}-scraper.json'.format(amdref[1:]))
+        if os.path.isfile(json_name):
             break
 
-    if pkl_name is None or not os.path.isfile(pkl_name):
+    if json_name is None or not os.path.isfile(json_name):
         return None
-
-    with open(pkl_name, 'rb') as pkl_file:
-        file_metadata_dict = pickle.load(pkl_file)
+    file_metadata_dict = load_scraper_json(json_name)
 
     if 'properties' not in file_metadata_dict[0]:
         return None

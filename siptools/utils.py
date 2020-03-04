@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import copy
 import hashlib
 import os
-import pickle
+import json
 import sys
 from collections import defaultdict
 
@@ -24,37 +24,68 @@ except ImportError:  # Python 2
     from urllib import quote_plus, unquote_plus
 
 
-def scrape_file(filename, filerel=None, workspace=None):
+def load_scraper_json(json_name):
+    """
+    Load scraper stream from JSON file.
+    :json_name: JSON file name
+    :returns: Stream metadata from JSON file.
+    """
+    with open(json_name, 'rt') as json_file:
+        streams = json.load(json_file)
+    new_streams = {}
+    for index in streams:
+        new_streams[int(index)] = streams[index]
+        new_streams[int(index)]["index"] = \
+            int(new_streams[int(index)]["index"])
+    return new_streams
+
+
+def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
+                version=None, charset=None, skip_well_check=False,
+                skip_json=False):
     """Return already existing scraping result or create a new one, if
     missing.
     """
     if filerel is None:
-        filerel = filename
+        filerel = filepath
 
     ref_exists = False
-    if workspace is not None:
+    if workspace is not None and not skip_json:
         ref = os.path.join(workspace, 'md-references.xml')
         if os.path.isfile(ref):
             ref_exists = True
 
-    if ref_exists:
+    if ref_exists and not skip_json:
         root = lxml.etree.parse(ref).getroot()
         filerel = fsdecode_path(filerel)
 
         amdref = root.xpath("/mdReferences/mdReference[not(@stream) "
                             "and @file='%s']" % filerel)
-        pkl_name = None
-        if amdref:
-            pkl_name = os.path.join(
-                workspace, '{}-scraper.pkl'.format(amdref[0].text[1:]))
+        json_name = None
+        for ref in amdref:
+            json_name = os.path.join(
+                workspace, '{}-scraper.json'.format(ref.text[1:]))
+            if json_name and os.path.isfile(json_name):
+                break
+        if json_name:
+            scraper = Scraper(filepath)
+            scraper.streams = load_scraper_json(json_name)
+            scraper.mimetype = scraper.streams[0]["mimetype"]
+            scraper.version = scraper.streams[0]["version"]
+            return scraper
 
-        if pkl_name and os.path.isfile(pkl_name) and amdref:
-            with open(pkl_name, 'rb') as pkl_file:
-                return pickle.load(pkl_file)
-
-    scraper = Scraper(filename)
-    scraper.scrape(False)
-    return scraper.streams
+    scraper = Scraper(filepath, mimetype=mimetype,
+                      version=version, charset=charset)
+    scraper.scrape(not skip_well_check)
+    if not skip_well_check:
+        errors = []
+        for _, info in six.iteritems(scraper.info):
+            for error in info['errors']:
+                errors.append(error)
+        if errors:
+            error_str = "\n".join(errors)
+            raise ValueError(error_str)
+    return scraper
 
 
 def fix_missing_metadata(streams, filename, allow_unav, allow_zero):
@@ -414,15 +445,12 @@ class MdCreator(object):
         :premis_amd_id: The AMDID of corresponding premis FILE object
         """
         digest = premis_amd_id[1:]
-        filename = encode_path("%s-scraper.pkl" % digest)
+        filename = encode_path("%s-scraper.json" % digest)
         filename = os.path.join(self.workspace, filename)
 
         if not os.path.exists(filename):
             with open(filename, 'wb') as outfile:
-                # TODO: pickle is overkill for serializing simple dicts
-                # and might lead to remote code execution if the user
-                # can find a way to modify the pickled file
-                pickle.dump(file_metadata_dict, outfile)
+                json.dump(file_metadata_dict, outfile)
             print("Wrote technical data to: %s" % (outfile.name))
 
     def write(self, mdtype="type", mdtypeversion="version", othermdtype=None,

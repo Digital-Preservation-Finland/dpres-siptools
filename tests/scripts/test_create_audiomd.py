@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import io
 import os.path
-import pickle
+import json
 import shutil
 import sys
 
@@ -177,7 +177,7 @@ def test_main_utf8_files(testpath, run_cli):
 
 
 def test_existing_scraper_result(testpath):
-    """Test that existing pickle file from import_object is used.
+    """Test that existing json file from import_object is used.
     We just need to check duration, since it's different from the real
     duration.
     """
@@ -198,9 +198,9 @@ def test_existing_scraper_result(testpath):
         'data_rate': '705.6', 'data_rate_mode': 'Fixed', 'duration': 'PT50S',
         'index': 0, 'mimetype': 'audio/x-wav', 'num_channels': '2',
         'sampling_frequency': '44.1', 'stream_type': 'audio', 'version': ''}}
-    with open(os.path.join(testpath, ('%s-scraper.pkl' % amdid)), 'wb') \
+    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wb') \
             as outfile:
-        pickle.dump(stream_dict, outfile)
+        json.dump(stream_dict, outfile)
 
     audiomd = create_audiomd.create_audiomd_metadata(
         file_, workspace=testpath
