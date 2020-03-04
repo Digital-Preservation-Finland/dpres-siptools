@@ -120,7 +120,8 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None,
         audiomd_dict[six.text_type(index)] = audiomd_elem
 
     if not audiomd_dict:
-        print 'The file has no audio streams. No AudioMD metadata created.'
+        print('The file has no audio streams. No AudioMD metadata created.')
+        return None
 
     return audiomd_dict
 

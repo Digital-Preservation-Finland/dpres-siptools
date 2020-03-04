@@ -113,7 +113,8 @@ def create_videomd_metadata(filename, filerel=None, workspace=None,
         videomd_dict[six.text_type(index)] = videomd_elem
 
     if not videomd_dict:
-        print 'The file has no video streams. No VideoMD metadata created.'
+        print('The file has no video streams. No VideoMD metadata created.')
+        return None
 
     return videomd_dict
 
