@@ -14,8 +14,12 @@ import mets
 import premis
 import xml_helpers.utils
 from siptools.utils import MdCreator, encode_id, encode_path
+<<<<<<< HEAD
 from siptools.xml.mets import NAMESPACES
 from siptools.xml.premis import PREMIS_EVENT_OUTCOME_TYPES, PREMIS_EVENT_TYPES
+=======
+from siptools.xml.premis import PREMIS_EVENT_OUTCOME_TYPES
+>>>>>>> TPASPKT-476 Refactor the code and add documentation. Release event type from controlled vocabulary.
 
 click.disable_unicode_literals_warning = True
 
@@ -32,10 +36,8 @@ def _list2str(lst):
 
 
 @click.command()
-@click.argument('event_type',
-                type=click.Choice(PREMIS_EVENT_TYPES))
-@click.argument('event_datetime', required=True,
-                type=str)
+@click.argument('event_type', required=True, type=str)
+@click.argument('event_datetime', required=True, type=str)
 @click.option('--workspace',
               type=click.Path(exists=True),
               default='./workspace',
@@ -88,38 +90,50 @@ def main(event_type, event_datetime, event_detail, event_outcome,
     EVENT_TYPE: Type of the event.
     EVENT_DATETIME: Timestamp of the event.
     """
-    premis_event(event_type, event_datetime, event_detail, event_outcome,
-                 event_outcome_detail, workspace, base_path, agent_name,
-                 agent_type, stdout, event_target)
-
+    premis_event(
+        event_type=event_type, event_datetime=event_datetime,
+        event_detail=event_detail, event_outcome=event_outcome,
+        event_outcome_detail=event_outcome_detail, workspace=workspace,
+        base_path=base_path, agent_name=agent_name, agent_type=agent_type,
+        stdout=stdout, event_target=event_target
+    )
     return 0
 
 
 def premis_event(event_type, event_datetime, event_detail, event_outcome,
-                 event_outcome_detail=None, workspace="./workspace",
-                 base_path=".", agent_name=None, agent_type=None, stdout=False,
-                 event_target=None):
-    """The script creates provenance metadata for the package. The metadata
-    contains event and, if given, also agent of the event.
+                 **kwargs):
     """
-    (directory, event_file) = event_target_path(base_path, event_target)
+    The script creates provenance metadata for the package. The metadata
+    contains event and, if given, also agent of the event.
 
-    if agent_name or agent_type:
+    :event_type: PREMIS event type
+    :event_datetime: PREMIS event timestamp
+    :event_detail: PREMIS event detail info
+    :event_outcome: PREMIS event outcome
+    :kwargs: Additional given arguments
+    """
+    params = _initialize_args(kwargs)
+    (directory, event_file) = event_target_path(
+        params["base_path"], params["event_target"])
+
+    if params["agent_name"] or params["agent_type"]:
         agent_identifier = find_premis_agent_identifier(
-            workspace, agent_name, agent_type
+            params["workspace"], params["agent_name"], params["agent_type"]
         )
 
         if not agent_identifier:
             agent_identifier = six.text_type(uuid4())
-            agent = create_premis_agent(agent_name,
-                                        agent_type, agent_identifier)
 
-            agent_creator = PremisCreator(workspace)
-            agent_creator.add_md(agent, event_file, directory=directory)
-            agent_creator.write(mdtype="PREMIS:AGENT", stdout=stdout)
+        agent = create_premis_agent(params["agent_name"],
+                                    params["agent_type"],
+                                    agent_identifier)
 
-            if stdout:
-                print(xml_helpers.utils.serialize(agent).decode("utf-8"))
+        agent_creator = PremisCreator(params["workspace"])
+        agent_creator.add_md(agent, event_file, directory=directory)
+        agent_creator.write(mdtype="PREMIS:AGENT", stdout=params["stdout"])
+
+        if params["stdout"]:
+            print(xml_helpers.utils.serialize(agent).decode("utf-8"))
     else:
         agent_identifier = None
 
@@ -128,23 +142,49 @@ def premis_event(event_type, event_datetime, event_detail, event_outcome,
         event_datetime,
         event_detail,
         event_outcome,
-        event_outcome_detail,
+        params["event_outcome_detail"],
         agent_identifier
     )
 
-    creator = PremisCreator(workspace)
+    creator = PremisCreator(params["workspace"])
     creator.add_md(event, event_file, directory=directory)
-    creator.write(mdtype="PREMIS:EVENT", stdout=stdout)
+    creator.write(mdtype="PREMIS:EVENT", stdout=params["stdout"])
 
-    if stdout:
+    if params["stdout"]:
         print(xml_helpers.utils.serialize(event).decode("utf-8"))
 
 
+def _initialize_args(params):
+    """
+    Initalize given arguments to new dict by adding the missing keys with
+    initial values.
+
+    :params: Arguments as dict.
+    :returns: Initialized dict.
+    """
+    parameters = {}
+    parameters["workspace"] = "./workspace" if not "workspace" in params \
+        else params["workspace"]
+    parameters["base_path"] = "." if not "base_path" in params else \
+        params["base_path"]
+    parameters["stdout"] = False if not "stdout" in params else \
+        params["stdout"]
+    keys = ["event_outcome_detail", "agent_name", "agent_type", "stdout",
+            "event_target"]
+    for key in keys:
+        parameters[key] = None if not key in params else params[key]
+
+    return parameters
+
+
 def event_target_path(base_path, event_target=None):
-    """Returns the path to the event_target based on the base_path and
+    """
+    Return the path to the event_target based on the base_path and
     event_target. If event_target is None, the event concerns the whole
     package.
 
+    :base_path: Base path
+    :event_target: Target directory or file of the event
     :returns: a tuple of directory and event_file.
     """
     event_file = None
@@ -174,8 +214,8 @@ def event_target_path(base_path, event_target=None):
 
 
 class PremisCreator(MdCreator):
-    """Subclass of MdCreator, which generates PREMIS event
-    or agent metadata.
+    """
+    Subclass of MdCreator, which generates PREMIS event or agent metadata.
     """
 
     def write(self, mdtype="PREMIS", mdtypeversion="2.3",
@@ -356,7 +396,7 @@ def _write_mets(mets_element, output_file):
     """Write METS XML element to file.
 
     :param mets_element: METS XML element
-    :param output: output file path
+    :param output_file: Output file path
     :returns: ``None``
     """
 

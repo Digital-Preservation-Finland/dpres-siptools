@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 import os
 import lxml.etree
-import xml_helpers
 import siptools.utils as utils
 
 

@@ -8,6 +8,9 @@ import siptools.scripts.sign_mets
 
 
 def test_valid_sign_mets(testpath, run_cli):
+    """
+    Test signing the SIP.
+    """
     output = os.path.join(testpath, 'signature.sig')
     signing_key = 'tests/data/rsa-keys.crt'
     arguments = ['--workspace', testpath, signing_key]

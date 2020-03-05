@@ -49,7 +49,13 @@ def main(filename, workspace, base_path):
 
 
 def create_audiomd(filename, workspace="./workspace/", base_path="."):
-    """Write audioMD metadata for an audio file or streams."""
+    """
+    Write audioMD metadata for an audio file or streams.
+
+    :filename: Audio file path relative to base path
+    :workspace: Workspace path
+    :base_path: Base path
+    """
 
     filerel = os.path.normpath(filename)
     filepath = os.path.normpath(os.path.join(base_path, filename))
@@ -60,8 +66,8 @@ def create_audiomd(filename, workspace="./workspace/", base_path="."):
 
 
 class AudiomdCreator(MdCreator):
-    """Subclass of MdCreator, which generates audioMD metadata
-    for audio files.
+    """
+    Subclass of MdCreator, which generates audioMD metadata for audio files.
     """
 
     def add_audiomd_md(self, filepath, filerel=None):
@@ -71,6 +77,9 @@ class AudiomdCreator(MdCreator):
         If a file is not a video container, then the audio stream metadata is
         processed in file level. Video container includes streams which need
         to be processed separately one at a time.
+
+        :filepath: Audio file path
+        :filerel: Audio file path relative to base path
         """
 
         # Create audioMD metadata
@@ -90,19 +99,25 @@ class AudiomdCreator(MdCreator):
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="AudioMD", section=None, stdout=False,
               file_metadata_dict=None):
+        """
+        Write AudioMD metadata.
+        """
         super(AudiomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
 def create_audiomd_metadata(filename, filerel=None, workspace=None,
                             streams=None):
     """Creates and returns list of audioMD XML sections.
+
     :filename: Audio file path
-    :returns: List of AudioMD XML sections.
+    :filrel: Audio file path relative to base path
+    :workspace: Workspace path
+    :streams: Metadata dict of streams. Will be created if None.
+    :returns: Dict of AudioMD XML sections.
     """
     if streams is None:
-        scraper = scrape_file(filepath=filename, filerel=filerel,
+        streams = scrape_file(filepath=filename, filerel=filerel,
                               workspace=workspace)
-        streams = scraper.streams
     fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     audiomd_dict = {}
@@ -130,6 +145,9 @@ def _fix_data_rate(stream_dict):
     """Changes the data_rate to an integer if it is of a
     float type by rounding the number. The value is saved as
     a string in the dictionary.
+
+    :stream_dict: Metadata dict of a stream
+    :returns: Fixed metadata dict
     """
     for key in stream_dict:
         if key == 'data_rate':
@@ -147,7 +165,8 @@ def _fix_data_rate(stream_dict):
 
 def _get_file_data(stream_dict):
     """Creates and returns the fileData XML element.
-    :stream_dict: Stream dictionary given by Scraper
+
+    :stream_dict: Metadata dict of a stream
     :returns: AudioMD fileData element
     """
     params = {}
@@ -168,7 +187,8 @@ def _get_file_data(stream_dict):
 
 def _get_audio_info(stream_dict):
     """Creates and returns the audioInfo XML element.
-    :stream_dict: Stream dictionary given by Scraper
+
+    :stream_dict: Metadata dict of a stream
     :returns: AudioMD audioInfo element
     """
     return audiomd.amd_audio_info(

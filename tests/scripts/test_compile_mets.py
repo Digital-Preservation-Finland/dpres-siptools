@@ -11,6 +11,11 @@ from siptools.xml.mets import NAMESPACES
 
 
 def create_test_data(workspace, run_cli):
+    """
+    Create test data for the tests.
+
+    :workspace: Workspace path
+    """
     # create descriptive metadata
     dmdsec_location \
         = 'tests/data/import_description/metadata/dc_description.xml'
@@ -41,6 +46,9 @@ def create_test_data(workspace, run_cli):
 
 
 def test_compile_mets_ok(testpath, run_cli):
+    """
+    Test that METS compilation works, no cleanup.
+    """
     create_test_data(testpath, run_cli)
     arguments = ['ch',
                  'CSC',
@@ -101,6 +109,9 @@ def test_compile_mets_ok(testpath, run_cli):
 
 
 def test_compile_mets_cleanup_ok(testpath, run_cli):
+    """
+    Test that METS compilation with cleanup works ok.
+    """
     create_test_data(testpath, run_cli)
     arguments = ['ch',
                  'CSC',
@@ -154,6 +165,9 @@ def test_compile_mets_cleanup_ok(testpath, run_cli):
 
 
 def test_compile_mets_fail(testpath, run_cli):
+    """
+    Test that METS compilation terminates on failure.
+    """
     arguments = ['ch',
                  'CSC',
                  'contract-id-1234',

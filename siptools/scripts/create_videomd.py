@@ -48,7 +48,13 @@ def main(filename, workspace, base_path):
 
 
 def create_videomd(filename, workspace="./workspace/", base_path="."):
-    """Write videoMD metadata for a video file or streams."""
+    """
+    Write videoMD metadata for a video file or streams.
+
+    :filename: Video file name relative to base path
+    :workspace: Workspace path
+    :base_path: Base path
+    """
     filerel = os.path.normpath(filename)
     filepath = os.path.normpath(os.path.join(base_path, filename))
 
@@ -58,7 +64,8 @@ def create_videomd(filename, workspace="./workspace/", base_path="."):
 
 
 class VideomdCreator(MdCreator):
-    """Subclass of MdCreator, which generates videoMD metadata
+    """
+    Subclass of MdCreator, which generates videoMD metadata
     for video files.
     """
 
@@ -68,6 +75,9 @@ class VideomdCreator(MdCreator):
         If a file is not a video container, then the video stream metadata is
         processed in file level. Video container includes streams which need
         to be processed separately one at a time.
+
+        :filepath: Video file path
+        :filerel: Video file path relative to base path
         """
 
         # Create videoMD metadata
@@ -92,13 +102,16 @@ class VideomdCreator(MdCreator):
 def create_videomd_metadata(filename, filerel=None, workspace=None,
                             streams=None):
     """Creates and returns list of videoMD XML sections.
-    :filename: Audio file path
+
+    :filename: Video file path
+    :filerel: Video file path relative to base path
+    :workspace: Workspace path
+    :streams: Metadata dict of streams. Will be created if None.
     :returns: List of VideoMD XML sections.
     """
     if streams is None:
-        scraper = scrape_file(filepath=filename, filerel=filerel,
+        streams = scrape_file(filepath=filename, filerel=filerel,
                               workspace=workspace)
-        streams = scraper.streams
     fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     videomd_dict = {}
@@ -121,8 +134,8 @@ def create_videomd_metadata(filename, filerel=None, workspace=None,
 
 def _get_file_data(stream_dict):
     """Creates and returns the fileData XML element.
+
     :stream_dict: Stream dictionary from Scraper
-    :sound: Value of the sound element
     :returns: VideoMD fileData element
     """
     params = {}

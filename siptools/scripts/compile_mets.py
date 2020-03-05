@@ -92,46 +92,76 @@ def main(mets_profile, organization_name, contractid, objid, label,
     CONTRACTID: Contract ID given by the Digital Preservation Service
     """
     compile_mets(
-        mets_profile, organization_name, contractid, objid, label, contentid,
-        create_date, last_moddate, record_status, workspace, clean, copy_files,
-        base_path, stdout, packagingservice
+        mets_profile=mets_profile, organization_name=organization_name,
+        contractid=contractid, objid=objid, label=label, contentid=contentid,
+        create_date=create_date, last_moddate=last_moddate,
+        record_status=record_status, workspace=workspace, clean=clean,
+        copy_files=copy_files, base_path=base_path, stdout=stdout,
+        packagingservice=packagingservice
     )
     return 0
 
 
-def compile_mets(mets_profile, organization_name, contractid, objid=None,
-                 label=None, contentid=None, create_date=None,
-                 last_moddate=None, record_status="submission",
-                 workspace="./workspace", clean=False, copy_files=False,
-                 base_path=".", stdout=False, packagingservice=None):
-    """Merge partial METS documents in workspace directory into
-    one METS document."""
-    contract = "urn:uuid:%s" % contractid
+def _initialize_args(params):
+    """
+    Initalize given arguments to new dict by adding the missing keys with
+    initial values.
 
-    if not objid:
-        objid = six.text_type(uuid.uuid4())
+    :params: Arguments as dict.
+    :returns: Initialized dict.
+    """
+    parameters = {}
+    parameters["objid"] = six.text_type(uuid.uuid4()) if "objid" not in \
+        params else params["objid"]
+    parameters["create_date"] = datetime.datetime.utcnow().isoformat() if \
+        "create_date" not in params else params["create_date"]
+    parameters["workspace"] = "./workspace" if "workspace" not in params \
+        else params["workspace"]
+    parameters["base_path"] = "." if "base_path" not in params else \
+        params["base_path"]
+    parameters["record_status"] = "submission" if "recordstatus" not in \
+        params else params["recordstatus"]
 
-    if not create_date:
-        create_date = datetime.datetime.utcnow().isoformat()
+    keys = ["clean", "copy_files", "stdout"]
+    for key in keys:
+        parameters[key] = False if key not in params else params[key]
+    keys = ["label", "contentid", "last_moddate", "packagingservice"]
+    for key in keys:
+        parameters[key] = None if key not in params else params[key]
+    return parameters
+
+
+def compile_mets(mets_profile, organization_name, contractid, **kwargs):
+    """
+    Merge partial METS documents in workspace directory into
+    one METS document.
+
+    :mets_profile: METS Profile
+    :organization_name: Organization name
+    :contractid: Contract ID
+    :kwargs: Additional arguments
+    """
+    params = _initialize_args(kwargs)
+    contractid = "urn:uuid:%s" % contractid
 
     mets_document = create_mets(
-        workspace,
+        params["workspace"],
         mets_attributes={'PROFILE': mets_profile,
-                         'OBJID': objid,
-                         'LABEL': label,
-                         "CONTENTID": contentid,
-                         "CONTRACTID": contract},
-        metshdr_attributes={"CREATEDATE": create_date,
-                            "LASTMODDATE": last_moddate,
-                            "RECORDSTATUS": record_status},
+                         'OBJID': params["objid"],
+                         'LABEL': params["label"],
+                         "CONTENTID": params["contentid"],
+                         "CONTRACTID": contractid},
+        metshdr_attributes={"CREATEDATE": params["create_date"],
+                            "LASTMODDATE": params["last_moddate"],
+                            "RECORDSTATUS": params["record_status"]},
         organization=organization_name,
-        packagingservice=packagingservice
+        packagingservice=params["packagingservice"]
     )
 
-    if stdout:
+    if params["stdout"]:
         print(xml_utils.serialize(mets_document.getroot()))
 
-    output_file = os.path.join(workspace, 'mets.xml')
+    output_file = os.path.join(params["workspace"], 'mets.xml')
 
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
@@ -141,13 +171,14 @@ def compile_mets(mets_profile, organization_name, contractid, objid=None,
 
     print("compile_mets created file: %s" % output_file)
 
-    if copy_files:
-        copy_objects(workspace, base_path)
-        print("compile_mets copied objects from %s to workspace" % base_path)
+    if params["copy_files"]:
+        copy_objects(params["workspace"], params["base_path"])
+        print("compile_mets copied objects from %s to "
+              "workspace" % params["base_path"])
 
-    if clean:
-        clean_metsparts(workspace)
-        print("compile_mets cleaned work files from workspace")
+    if params["clean"]:
+        clean_metsparts(params["workspace"])
+        print("compile_mets cleaned work files from workspace.")
 
 
 def create_mets(workspace, mets_attributes, metshdr_attributes,
@@ -218,7 +249,10 @@ def create_mets(workspace, mets_attributes, metshdr_attributes,
 
 
 def clean_metsparts(path):
-    """Clean mets parts from workspace
+    """
+    Clean mets parts from workspace.
+
+    :path: Workspace path
     """
     for root, _, files in os.walk(path, topdown=False):
         for name in files:
@@ -230,7 +264,11 @@ def clean_metsparts(path):
 
 
 def copy_objects(workspace, data_dir):
-    """Copy digital objects to workspace
+    """
+    Copy digital objects to workspace.
+
+    :workspace: Workspace path
+    :data_dir: Path to digital objects
     """
     files = get_objectlist(workspace)
     for source in files:

@@ -69,18 +69,17 @@ def test_create_addml_with_flatfile(is_header):
     assert decode_path(flatfile.get("name")) == "path/to/test"
 
 
-@pytest.mark.parametrize('isheader, exp_amd_files, exp_fields', [
-    (False,
-     ['ec816a14242f3984e483fa23174881d5-ADDML-amd.xml',
-      'dd678fd96b655fd95efbb9fe4a77483a-ADDML-amd.xml'],
-     [['header1', 'header2', 'header3'], ['header1', 'header2', 'header3']]
-     ),
-    (True,
-     ['f2d98110001385875d56ef940394f826-ADDML-amd.xml',
-      'c27d34506bd21076849458c6214095c9-ADDML-amd.xml'],
-     [['1', '2', '3'], ['test', 'test', 'test']]
-     )
-])
+@pytest.mark.parametrize(
+    'isheader, exp_amd_files, exp_fields',
+    [(False,
+      ['ec816a14242f3984e483fa23174881d5-ADDML-amd.xml',
+       'dd678fd96b655fd95efbb9fe4a77483a-ADDML-amd.xml'],
+      [['header1', 'header2', 'header3'], ['header1', 'header2', 'header3']]),
+     (True,
+      ['f2d98110001385875d56ef940394f826-ADDML-amd.xml',
+       'c27d34506bd21076849458c6214095c9-ADDML-amd.xml'],
+      [['1', '2', '3'], ['test', 'test', 'test']])]
+)
 def test_create_addml_creator(testpath, isheader, exp_amd_files, exp_fields):
     """
     Test that ``create_addml`` creates addml files and

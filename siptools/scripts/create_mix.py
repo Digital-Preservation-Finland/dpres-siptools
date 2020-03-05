@@ -58,10 +58,12 @@ def main(filename, workspace, base_path):
 
 
 def create_mix(filename, workspace="./workspace/", base_path="."):
-    """Write MIX metadata for an image file.
+    """
+    Write MIX metadata for an image file.
 
-    FILENAME: Relative path to the file from current directory or from
-              --base_path.
+    :filename: Image file path relative to base path
+    :workspace: Workspace path
+    :base_path: Base path
     """
 
     filerel = os.path.normpath(filename)
@@ -73,15 +75,16 @@ def create_mix(filename, workspace="./workspace/", base_path="."):
 
 
 class MixCreator(MdCreator):
-    """Subclass of MdCreator, which generates MIX metadata for image files.
+    """
+    Subclass of MdCreator, which generates MIX metadata for image files.
     """
 
     def add_mix_md(self, filepath, filerel=None):
         """Creates  MIX metadata for an image file and append it
         to self.md_elements
 
-        :image_file: path to image file
-        :file_relpath: relative path to image file to write to reference file
+        :filepath: path to image file
+        :filerel: relative path to image file to write to reference file
         :returns: None
         """
 
@@ -94,12 +97,19 @@ class MixCreator(MdCreator):
     # Change the default write parameters
     def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None,
               section=None, stdout=False, file_metadata_dict=None):
+        """
+        Write MIX metadata.
+        """
         super(MixCreator, self).write(mdtype, mdtypeversion, othermdtype)
 
 
 def check_missing_metadata(stream, filename):
-    """If an element is none, use value (:unav) if allowed in the
+    """
+    If an element is none, use value (:unav) if allowed in the
     specifications. Otherwise raise exception.
+
+    :stream: Image metadata stream.
+    :filename: Image file name
     """
     for key, element in six.iteritems(stream):
         if key in ['mimetype', 'stream_type', 'index', 'version']:
@@ -113,13 +123,15 @@ def check_missing_metadata(stream, filename):
 def create_mix_metadata(filename, filerel=None, workspace=None, streams=None):
     """Create MIX metadata XML element for an image file.
 
-    :image: image file
+    :filename: Image file name
+    :filerel: Image file name relative to base path
+    :workspace: Workspace path
+    :streams: Metadata dict of streams. Will be created if None.
     :returns: MIX XML element
     """
     if streams is None:
-        scraper = scrape_file(filepath=filename, filerel=filerel,
+        streams = scrape_file(filepath=filename, filerel=filerel,
                               workspace=workspace)
-        streams = scraper.streams
     stream_md = streams[0]
     check_missing_metadata(stream_md, filename)
 

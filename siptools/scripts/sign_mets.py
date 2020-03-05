@@ -32,8 +32,12 @@ def main(sign_key, workspace):
 
 
 def sign_mets(sign_key, workspace="./workspace"):
-    """Script for signing the Submission Information Package with a
+    """
+    Script for signing the Submission Information Package with a
     digital signature. This script creates signature.sig file.
+
+    :sign_key: Signature key for signing
+    :workspace: Workspace path
     """
     signature_path = os.path.join(workspace, 'signature.sig')
     signature = dpres_signature.signature.create_signature(

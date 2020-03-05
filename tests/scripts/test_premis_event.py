@@ -152,21 +152,21 @@ def test_premis_event_fail(testpath, run_cli):
     assert isinstance(result.exception, SystemExit)
 
 
-@pytest.mark.parametrize((
-    'base_path', 'event_target', 'directory', 'event_file'), [
-        # No base_path, target is directory
-        ('.', 'tests/data/structured', 'tests/data/structured', None),
-        # No base_path or event_target, target is package root
-        ('.', None, '.', None),
-        # No event_target, target is still package root
-        ('tests/data', None, '.', None),
-        # Target is a directory
-        ('tests/data/', 'structured', 'structured', None),
-        # Target is a file
-        ('tests/data/',
-         'structured/Access and use rights files/access_file.txt', None,
-         'structured/Access and use rights files/access_file.txt'),
-        ])
+@pytest.mark.parametrize(
+    ('base_path', 'event_target', 'directory', 'event_file'),
+    # No base_path, target is directory
+    [('.', 'tests/data/structured', 'tests/data/structured', None),
+     # No base_path or event_target, target is package root
+     ('.', None, '.', None),
+     # No event_target, target is still package root
+     ('tests/data', None, '.', None),
+     # Target is a directory
+     ('tests/data/', 'structured', 'structured', None),
+     # Target is a file
+     ('tests/data/',
+      'structured/Access and use rights files/access_file.txt', None,
+      'structured/Access and use rights files/access_file.txt')]
+)
 def test_event_target_path(base_path, event_target, directory, event_file):
     """Tests the event_target_path function."""
     (ev_directory, ev_file) = premis_event.event_target_path(

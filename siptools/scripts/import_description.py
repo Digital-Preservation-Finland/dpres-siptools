@@ -51,33 +51,39 @@ def main(dmdsec_location, base_path, dmdsec_target, workspace, without_uuid,
     DMDLOCATION: Path to XML file that contains descriptive metadata.
     """
     import_description(
-        dmdsec_location, base_path, dmdsec_target, workspace, without_uuid,
-        remove_root, stdout)
+        dmdsec_location=dmdsec_location, base_path=base_path,
+        dmdsec_target=dmdsec_target, workspace=workspace,
+        without_uuid=without_uuid, remove_root=remove_root, stdout=stdout
+    )
     return 0
 
 
-def import_description(dmdsec_location, base_path='.', dmdsec_target=None,
-                       workspace="./workspace", without_uuid=False,
-                       remove_root=False, stdout=False):
-    """Create METS documents that contains descriptive metadata
-    imported from XML file.
+def import_description(dmdsec_location, **kwargs):
     """
-    dmd_target = dmd_target_path(base_path, dmdsec_target)
+    Create METS documents that contains descriptive metadata
+    imported from XML file.
+
+    :dmdsec_location: Path to descriptive metadata relative to base path
+    :kwargs: Additional arguments
+    :raises: OSError if descriptive metadata file exists
+    """
+    params = _initialize_args(kwargs)
+    dmd_target = dmd_target_path(params["base_path"], params["dmdsec_target"])
     dmdfile_id = str(uuid4())
     dmd_id = '_' + dmdfile_id
-    if without_uuid:
+    if params["without_uuid"]:
         filename = 'dmdsec.xml'
     else:
         filename = '%s-dmdsec.xml' % dmdfile_id
 
-    _mets = create_mets(dmdsec_location, dmd_id, remove_root)
-    creator = DmdCreator(workspace)
+    _mets = create_mets(dmdsec_location, dmd_id, params["remove_root"])
+    creator = DmdCreator(params["workspace"])
     creator.write_dmd_ref(_mets, dmd_id, dmd_target)
 
-    if stdout:
+    if params["stdout"]:
         print(lxml.etree.tostring(_mets, pretty_print=True).decode("utf-8"))
 
-    output_file = os.path.join(workspace, filename)
+    output_file = os.path.join(params["workspace"], filename)
     if os.path.isfile(output_file):
         raise OSError('File {} already exists.'.format(output_file))
 
@@ -92,17 +98,37 @@ def import_description(dmdsec_location, base_path='.', dmdsec_target=None,
     print("import_description created file: %s" % output_file)
 
 
+def _initialize_args(params):
+    """
+    Initalize given arguments to new dict by adding the missing keys with
+    initial values.
+
+    :params: Arguments as dict.
+    :returns: Initialized dict.
+    """
+    parameters = {}
+    parameters["workspace"] = "./workspace" if not "workspace" in params \
+        else params["workspace"]
+    parameters["base_path"] = "." if not "base_path" in params else \
+        params["base_path"]
+    parameters["dmdsec_target"] = None if not "dmdsec_target" in params else \
+        params["dmdsec_target"]
+    keys = ["without_uuid", "remove_root", "stdout"]
+    for key in keys:
+        parameters[key] = False if not key in params else params[key]
+
+    return parameters
+
+
 def dmd_target_path(base_path, dmdsec_target=None):
-    """"Returns the path to the dmdsec_target based on the base_path and
+    """"
+    Returns the path to the dmdsec_target based on the base_path and
     dmdsec_target. If dmdsec_target is None, the dmdsec concerns the whole
     package.
-    """
 
-    # If the given target path is an absolute path and base_path is
-    # current path (i.e. not given), relpath will return ../../..
-    # sequences, if current path is not part of the absolute path. In
-    # such case we will use the absolute path for eventpath and omit
-    # base_path relation.
+    :base_path: Base path
+    :dmdsec_target: Target directory of the descriptive metadata
+    """
     if dmdsec_target:
         if base_path not in ['.']:
             dmd_target = os.path.normpath(os.path.join(base_path,
@@ -120,11 +146,18 @@ def dmd_target_path(base_path, dmdsec_target=None):
 
 
 class DmdCreator(MdCreator):
-    """Subclass of MdCreator, which generates dmdSec metadata."""
+    """
+    Subclass of MdCreator, which generates dmdSec metadata.
+    """
 
     def write_dmd_ref(self, dmd_xml, dmd_id, dmd_target=None):
-        """Adds references to the dmdSec and writes them to the
+        """
+        Adds references to the dmdSec and writes them to the
         external reference file.
+
+        :dmd_xml: Descriptive metadata as XML
+        :dmd_id: ID of the descriptive metadata
+        :dmd_target: Target directory of the descriptive metadata
         """
 
         if not dmd_target:

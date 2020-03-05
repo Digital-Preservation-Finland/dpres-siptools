@@ -1,3 +1,6 @@
+"""
+METS specific values related to national specifications
+"""
 from __future__ import unicode_literals
 
 import six

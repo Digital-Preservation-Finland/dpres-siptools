@@ -6,7 +6,6 @@ import io
 import os.path
 import json
 import shutil
-import sys
 
 import pytest
 
@@ -146,8 +145,8 @@ def test_stream():
 
 
 def test_invalid_file():
-    """Test that calling create_videomd_metadata() for file that can not be parsed
-    raises ValueError
+    """Test that calling create_videomd_metadata() for file that can not be
+    parsed raises ValueError
     """
     with pytest.raises(ValueError):
         create_videomd.create_videomd_metadata("non-existent.mpg")
@@ -206,7 +205,7 @@ def test_main_utf8_files(testpath, run_cli):
     assert len(xml.xpath(u'//mdReference[@file="data/äöå.m1v"]')) == 1
 
 
-def test_existing_scraper_result(testpath, run_cli):
+def test_existing_scraper_result(testpath):
     """Test that existing json file from import_object is used.
     We just need to check duration, since it's different from the real
     duration.

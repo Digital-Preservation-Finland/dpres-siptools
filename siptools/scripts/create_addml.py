@@ -5,11 +5,11 @@ import io
 import os
 import sys
 
+import csv
 import six
 import click
 
 import addml
-import csv
 import lxml.etree as ET
 from siptools.utils import MdCreator, encode_path
 
@@ -62,7 +62,18 @@ def main(filename, charset, delim, sep, quot, header, workspace, base_path):
 
 def create_addml(filename, charset, delim, sep, quot,
                  header=False, workspace="./workspace/", base_path="."):
-    """Create ADDML metadata for a CSV file."""
+    """
+    Create ADDML metadata for a CSV file.
+
+    :filename: CSV file name relative to base path
+    :charset: Engoding of CSV file
+    :delim: Delimiter of CSV file
+    :sep: Separator of CSV file
+    :quot: Quotation character of CSV file
+    :header: True if CSV has a header, False otherwise
+    :workspace: Workspace path
+    :base_path: Base path
+    """
     filerel = os.path.normpath(filename)
     filepath = os.path.normpath(os.path.join(base_path, filename))
 
@@ -82,9 +93,9 @@ class AddmlCreator(MdCreator):
 
     def __init__(self, workspace):
         """
+        Initialize ADDML creator.
+
         :workspace: Output path
-        :etrees: Dict of the generated root elements
-        :filenames: Dict of the filenames corresponding to root elements
         """
         super(AddmlCreator, self).__init__(workspace)
         self.etrees = {}
@@ -107,7 +118,6 @@ class AddmlCreator(MdCreator):
         :charset: Charset used in the CSV file
         :record_separator: Char used for separating CSV file fields
         :quoting_char: Quotation char used in the CSV file
-
         :returns: None
         """
 
@@ -134,11 +144,10 @@ class AddmlCreator(MdCreator):
     def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML",
               filerel=None, section=None, stdout=False,
               file_metadata_dict=None):
-        """ Write all the METS XML files and md-reference file.
+        """
+        Write all the METS XML files and md-reference file.
         Base class write is overwritten to handle the references
         correctly and add flatFile fields to METS XML files.
-
-        :returns: None
         """
 
         for key in self.etrees:
@@ -168,11 +177,13 @@ class AddmlCreator(MdCreator):
 
 
 def flat_file_str(fname, def_ref):
-    """Returns addml:flatFile xml element as a string,
+    """
+    Return addml:flatFile xml element as a string,
     which can be appended to the xml file.
 
     :fname: Name attribute of the flatFile element
     :def_ref: definitionReference of the flatFile element
+    :returns: flatFile element string
     """
 
     flat_file = '<addml:flatFile name="%s" definitionReference="%s"/>\n' % (
@@ -241,7 +252,6 @@ def append_lines(fname, xml_elem, append):
     :fname: File name
     :xml_elem: Element below which to append
     :append: List of lines to append
-
     :returns: None
     """
 
@@ -286,7 +296,6 @@ def create_addml_metadata(
     :record_separator: Char used for separating CSV file fields
     :quoting_char: Quotation char used in the CSV file
     :flatfile_name: flatFile elements name attribute
-
     :returns: ADDML metadata XML element
     """
 

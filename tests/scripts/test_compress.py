@@ -1,3 +1,6 @@
+"""
+Test TAR packaging.
+"""
 from __future__ import unicode_literals
 
 import os
@@ -7,7 +10,9 @@ import siptools.scripts.compress
 
 
 def test_compress(testpath, run_cli):
-
+    """
+    Test TAR packaging script.
+    """
     dir_to_tar = os.path.abspath(
         os.path.join(os.path.dirname(__file__), '..', 'data', 'structured'))
     output = os.path.join(testpath, 'sip.tar')

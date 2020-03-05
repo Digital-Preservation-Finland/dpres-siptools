@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import datetime
 import io
 import os.path
-import json
 
 import pytest
 import six
@@ -197,7 +196,8 @@ def test_import_object_utf8(testpath, run_cli):
         ('tests/data/valid_tiff.tif', 'image/tiff', '6.0', 'tiff'),
         ('tests/data/valid_jpeg.jpeg', 'image/jpeg', ('1.0', '1.01', '1.02'),
          'jpeg'),
-        ('tests/data/text-file.txt', 'text/plain; charset=UTF-8', None, 'text'),
+        ('tests/data/text-file.txt', 'text/plain; charset=UTF-8', None,
+         'text'),
         ('tests/data/csvfile.csv', 'text/plain; charset=UTF-8', None, 'csv'),
         ('tests/data/mets_valid_minimal.xml', 'text/xml; charset=UTF-8', '1.0',
          'xml'),
@@ -260,7 +260,8 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
         ('tests/data/valid_tiff.tif', 'image/tiff', '6.0', 'tiff'),
         ('tests/data/valid_jpeg.jpeg', 'image/jpeg', ('1.0', '1.01', '1.02'),
          'jpeg'),
-        ('tests/data/text-file.txt', 'text/plain; charset=UTF-8', None, 'text'),
+        ('tests/data/text-file.txt', 'text/plain; charset=UTF-8', None,
+         'text'),
         ('tests/data/csvfile.csv', 'text/plain; charset=UTF-8', None, 'csv'),
         ('tests/data/mets_valid_minimal.xml', 'text/xml; charset=UTF-8', '1.0',
          'xml'),
@@ -289,7 +290,8 @@ def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
             - None: premis version must be a falsy value.
     """
     _ = case_name
-    arguments = ['--workspace', testpath, input_file, '--skip_wellformed_check']
+    arguments = ['--workspace', testpath, input_file,
+                 '--skip_wellformed_check']
     run_cli(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
     tree = ET.parse(output)

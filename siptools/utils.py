@@ -24,9 +24,22 @@ except ImportError:  # Python 2
     from urllib import quote_plus, unquote_plus
 
 
+def calc_checksum(filepath, algorithm="md5"):
+    """
+    Calculate checksum of a file.
+
+    :filepath: File path
+    :algorithm: Algorithm name
+    :returns: Checksum of the file
+    """
+    scraper = Scraper(filepath)
+    return scraper.checksum(algorithm=algorithm)
+
+
 def load_scraper_json(json_name):
     """
     Load scraper stream from JSON file.
+
     :json_name: JSON file name
     :returns: Stream metadata from JSON file.
     """
@@ -40,22 +53,21 @@ def load_scraper_json(json_name):
     return new_streams
 
 
-def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
-                version=None, charset=None, skip_well_check=False,
-                skip_json=False):
-    """Return already existing scraping result or create a new one, if
-    missing.
+def read_json_streams(filerel, workspace):
     """
-    if filerel is None:
-        filerel = filepath
+    Find out JSON file name from references and read it as
+    metadata dict of streams.
 
+    :filerel: Digital object file path relative to base_path
+    :workspace: Workspace path
+    """
     ref_exists = False
-    if workspace is not None and not skip_json:
+    if workspace is not None:
         ref = os.path.join(workspace, 'md-references.xml')
         if os.path.isfile(ref):
             ref_exists = True
 
-    if ref_exists and not skip_json:
+    if ref_exists:
         root = lxml.etree.parse(ref).getroot()
         filerel = fsdecode_path(filerel)
 
@@ -68,29 +80,71 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
             if json_name and os.path.isfile(json_name):
                 break
         if json_name:
-            scraper = Scraper(filepath)
-            scraper.streams = load_scraper_json(json_name)
-            scraper.mimetype = scraper.streams[0]["mimetype"]
-            scraper.version = scraper.streams[0]["version"]
-            return scraper
+            return load_scraper_json(json_name)
+    return None
+
+
+def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
+                version=None, charset=None, skip_well_check=False,
+                skip_json=False):
+    """
+    Return already existing scraping result or create a new one, if
+    missing.
+
+    :filepath: Digital object path
+    :filerel: Digital object path relative to base path
+    :workspace: Workspace path
+    :mimetype: MIME type of digital object
+    :version: File format version of digital object
+    :charset: Encoding of digital object (if text file)
+    :skip_well_check: True skips well-formedness checking
+    :skip_json: True does scraping and does not try to find JSON file
+    :returns: Metadata dict of streams
+    :raises: ValueError If metadata collecting fails.
+             IOError If file does not exist.
+    """
+    filerel = filepath if filerel is None else filerel
+    streams = None
+    if not skip_json:
+        streams = read_json_streams(filerel, workspace)
+    if streams is not None:
+        return streams
 
     scraper = Scraper(filepath, mimetype=mimetype,
                       version=version, charset=charset)
     scraper.scrape(not skip_well_check)
-    if not skip_well_check:
+
+    if scraper.well_formed is False:  # Must not be None
         errors = []
         for _, info in six.iteritems(scraper.info):
             for error in info['errors']:
                 errors.append(error)
-        if errors:
-            error_str = "\n".join(errors)
-            raise ValueError(error_str)
-    return scraper
+        error_str = "\n".join(errors)
+        if skip_well_check:
+            error_head = "Metadata of file %s could not " \
+                "be collected due to errors.\n" % filepath
+            error_str = error_head + error_str
+        raise ValueError(error_str)
+
+    if scraper.info[0]['class'] == 'FileExists' and \
+            len(scraper.info[0]['errors']) > 0:
+        raise IOError(scraper.info[0]['errors'])
+    for _, info in six.iteritems(scraper.info):
+        if info['class'] == 'ScraperNotFound':
+            raise ValueError('File format is not supported.')
+
+    return scraper.streams
 
 
 def fix_missing_metadata(streams, filename, allow_unav, allow_zero):
-    """If an element is none, use value (:unav) if allowed in the
+    """
+    If an element is none, use value (:unav) if allowed in the
     specifications. Otherwise raise exception.
+
+    :streams: Metadata dict of streams
+    :filename: File name of digital object
+    :allow_unav: List of keys where (:unav) is allowed
+    :allow_zero: List of keys where 0 is allowed
     """
     for index, stream in streams.items():
         for key, element in stream.items():
@@ -108,7 +162,14 @@ def fix_missing_metadata(streams, filename, allow_unav, allow_zero):
 
 
 def encode_path(path, suffix='', prefix='', safe=""):
-    """Encode given path to URL encoding with given perfix and suffix
+    """
+    Encode given path to URL encoding with given perfix and suffix.
+
+    :path: Path to encode
+    :suffix: Suffix to add
+    :prefix: Prefix to add
+    :safe: Characters safe from URL quoting
+    :returns: Encoded string with given prefix and suffix
     """
     if isinstance(path, six.text_type):
         path = path.encode("utf-8")
@@ -121,7 +182,12 @@ def encode_path(path, suffix='', prefix='', safe=""):
 
 
 def decode_path(path, suffix=''):
-    """Decode given path from URL encoding and remove given suffix
+    """
+    Decode given path from URL encoding and remove given suffix.
+
+    :path: Path to decode
+    :suffix: Suffix to remove
+    :returns: Decoded string without given suffix
     """
     if six.PY2:
         path = unquote_plus(path.encode("utf-8")).decode("utf-8")
@@ -134,7 +200,13 @@ def decode_path(path, suffix=''):
 
 
 def fsencode_path(filename):
-    """Encode Unicode filenames using the file system encoding"""
+    """
+    Encode Unicode filenames using the file system encoding.
+
+    :filename: File path to encode
+    :returns: Encoded path
+    :raises: TypeError if wrong type given
+    """
     if isinstance(filename, six.text_type):
         return filename.encode(encoding=sys.getfilesystemencoding())
     elif isinstance(filename, six.binary_type):
@@ -144,7 +216,13 @@ def fsencode_path(filename):
 
 
 def fsdecode_path(filename):
-    """Decode byte filenames using the file system encoding"""
+    """
+    Decode byte filenames using the file system encoding.
+
+    :filename: File path to decode
+    :returns: Decoded path
+    :raises: TypeError if wrong type given
+    """
     if isinstance(filename, six.binary_type):
         return filename.decode(encoding=sys.getfilesystemencoding())
     elif isinstance(filename, six.text_type):
@@ -154,20 +232,32 @@ def fsdecode_path(filename):
 
 
 def encode_id(text):
-    """Give ID to given text with MD5 calculation
+    """
+    Give ID to given text with MD5 calculation.
+
+    :text: Text to calculate
+    :returns: MD5 hash of text prefixed with underscore.
     """
     return '_{}'.format(hashlib.md5(text.encode("utf-8")).hexdigest())
 
 
 def tree():
-    """Tree dictionary data structure from
+    """
+    Tree dictionary data structure from
     https://gist.github.com/hrldcpr/2012250
+
+    :returns: Tree dictionary data structure
     """
     return defaultdict(tree)
 
 
 def add(treedict, path):
-    """Add new nodes in given path to tree
+    """
+    Add new nodes in given path to tree.
+
+    :treedict: Tree dictionary
+    :path: Path to add
+    :returns: Updated tree
     """
     root = None
     for node in path:
@@ -178,19 +268,23 @@ def add(treedict, path):
 
 
 def copy_etree(etree):
-    """Copies etree recursively. Returns new identical etree
+    """
+    Copies etree recursively.
+
+    :etree: Tree to copy.
+    :returns: New identical etree.
     """
     return copy.deepcopy(etree)
 
 
 def _pop_attributes(attributes, attrib_list, path):
-    """Pops all the attributes from attributes dict and appends them to
+    """
+    Pops all the attributes from attributes dict and appends them to
     attrib_list.
 
     :attributes: lxml.etree.Element.attrib dictionary
     :attrib_list: List of all the attributes
     :path: Path from root XML element to current element
-    :returns: None
     """
     for key in attributes:
         attribute = attributes.pop(key)
@@ -198,8 +292,14 @@ def _pop_attributes(attributes, attrib_list, path):
 
 
 def _remove_identifiers(metadata, prefix, linking_prefix=None):
-    """Removes the unique identifier and the linking identifiers for the
+    """
+    Removes the unique identifier and the linking identifiers for the
     PREMIS XML metadata.
+
+    :metadata: Metadata where identifiers are removed
+    :prefix: Prefix in the identifier element name
+    :linking_prefix: Prefix in the linking identifier element name
+    :returns: Edited metadata
     """
     for identifier in premis.iter_elements(
             metadata, '%sIdentifierValue' % prefix):
@@ -281,15 +381,15 @@ def get_objectlist(workspace, file_path=None):
 
 
 class MdCreator(object):
-    """ Class for generating METS XML and md-references files efficiently.
+    """
+    Class for generating METS XML and md-references files efficiently.
     """
 
     def __init__(self, workspace):
         """
+        Initialize metadata creator.
+
         :workspace: Output path
-        :md_elements: List of tuples (XML Element, filename, stream,
-                      directory)
-        :references: List of tuples (md_id, filename, stream, directory)
         """
         self.workspace = workspace
         self.md_elements = []
@@ -297,19 +397,17 @@ class MdCreator(object):
 
     def add_reference(self, md_id, filepath, stream=None, directory=None,
                       ref_type='amd'):
-        """Add metadata reference information to the
-        references list, which is written into md-references after
-        self.write() is called. md-references is read by the
-        compile-structmap script when fileSec and structMap elements
-        are created for METS XML.
+        """
+        Add metadata reference information to the references list, which is
+        written into md-references after self.write() is called. md-references
+        is read by the compile-structmap script when fileSec and structMap
+        elements are created for METS XML.
 
         :md_id: ID of MD element to be referenced
         :filepath: path of the file linking to the MD element
         :stream: id of the stream linking to the MD element
         :directory: path of the directory linking to the MD element
         :ref_type: type of MD section, e.g. 'amd' or 'dmd'
-
-        :returns: None
         """
         references = {}
         references['md_id'] = md_id
@@ -320,7 +418,8 @@ class MdCreator(object):
         self.references.append(references)
 
     def add_md(self, metadata, filename=None, stream=None, directory=None):
-        """Append metadata XML element into self.md_elements list.
+        """
+        Append metadata XML element into self.md_elements list.
         self.md_elements is read by write() function and all the elements
         are written into corresponding METS XML files.
 
@@ -336,17 +435,15 @@ class MdCreator(object):
         :filename: Path of the file linking to the MD element
         :stream: Stream index, or None if not a stream
         :directory: Path of the directory linking to the MD element
-
-        :returns: None
         """
 
         md_element = (metadata, filename, stream, directory)
         self.md_elements.append(md_element)
 
     def write_references(self):
-        """Write "md-references.xml" file, which is read by
-        the compile-structmap script when fileSec and structMap elements
-        are created for METS XML.
+        """
+        Write "md-references.xml" file, which is read by the compile-structmap
+        script when fileSec and structMap elements are created for METS XML.
         """
 
         reference_file = os.path.join(self.workspace, 'md-references.xml')
@@ -386,10 +483,11 @@ class MdCreator(object):
 
     def write_md(self, metadata, mdtype, mdtypeversion, othermdtype=None,
                  section=None, stdout=False):
-        """Wraps XML metadata into MD element and writes it to a METS XML
-        file in the workspace. The output filename is
-        <mdtype>-<hash>-othermd.xml, where <mdtype> is the type of metadata
-        given as parameter and <hash> is a string generated from the metadata.
+        """
+        Wraps XML metadata into MD element and writes it to a METS XML file in
+        the workspace. The output filename is <mdtype>-<hash>-othermd.xml,
+        where <mdtype> is the type of metadata given as parameter and <hash>
+        is a string generated from the metadata.
 
         Serializing and hashing the root xml element can be rather time
         consuming and as such this method should not be called for each file
@@ -403,8 +501,7 @@ class MdCreator(object):
         :othermdtype (string): Value of mdWrap OTHERMDTYPE attribute
         :section (string): Type of mets metadata section
         :stdout (boolean): Print also to stdout
-
-        :returns: md_id, filename
+        :returns: md_id, filename - Metadata id and filename
         """
         digest = generate_digest(metadata)
         suffix = othermdtype if othermdtype else mdtype
@@ -440,7 +537,9 @@ class MdCreator(object):
         return md_id, filename
 
     def write_dict(self, file_metadata_dict, premis_amd_id):
-        """Write streams to a file for further scripts.
+        """
+        Write streams to a file for further scripts.
+
         :file_metadata_dict: File metadata dict
         :premis_amd_id: The AMDID of corresponding premis FILE object
         """
@@ -455,7 +554,8 @@ class MdCreator(object):
 
     def write(self, mdtype="type", mdtypeversion="version", othermdtype=None,
               section=None, stdout=False, file_metadata_dict=None):
-        """Write METS XML and md-reference files. First, METS XML files are
+        """
+        Write METS XML and md-reference files. First, METS XML files are
         written and self.references is appended. Second, md-references is
         written.
 
@@ -470,7 +570,6 @@ class MdCreator(object):
         :section (string): METS section type
         :stdout (boolean): Print also to stdout
         :file_metadat_dict (dict): File metadata dict
-        :returns: None
         """
 
         # Write METS XML and append self.references
@@ -492,8 +591,9 @@ class MdCreator(object):
 
 def remove_dmdsec_references(workspace):
     """
-    Removes the reference to the dmdSecs in the 'md-references.xml'
-    file.
+    Removes the reference to the dmdSecs in the 'md-references.xml' file.
+
+    :workspace: Workspace path
     """
     refs_file = os.path.join(workspace, 'md-references.xml')
     if os.path.exists(refs_file):

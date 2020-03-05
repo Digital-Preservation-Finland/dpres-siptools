@@ -3,7 +3,6 @@ metadata for a METS document."""
 from __future__ import unicode_literals
 
 import os
-import json
 import sys
 from uuid import uuid4
 
@@ -130,7 +129,6 @@ def create_structmap(workspace, filesec, filelist, type_attr=None,
     :param root_type: TYPE attribute of root div element
     :returns: structural map element
     """
-
     amdids = get_md_references(workspace, directory='.')
     dmdids = get_md_references(workspace, directory='.', ref_type='dmd')
 
@@ -427,7 +425,6 @@ def file_properties(workspace, path):
 
     :param properties: File properties
     :param path: File path
-
     :returns: A dict with properties or None
     """
 

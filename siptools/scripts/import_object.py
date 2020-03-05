@@ -12,8 +12,7 @@ import click
 import six
 
 import premis
-from file_scraper.scraper import Scraper
-from siptools.utils import MdCreator, scrape_file
+from siptools.utils import MdCreator, scrape_file, calc_checksum
 
 click.disable_unicode_literals_warning = True
 
@@ -61,7 +60,7 @@ UNKNOWN_VERSION = '(:unav)'
     '--workspace', type=click.Path(exists=True), default='./workspace/',
     metavar='<WORKSPACE PATH>',
     help="Workspace directory for the metadata files. "
-         "Defaults to ./workspace/")
+         "Defaults to ./workspace")
 @click.option(
     '--base_path', type=click.Path(exists=True), default='.',
     metavar='<BASE PATH>',
@@ -123,16 +122,18 @@ def main(workspace, base_path, skip_wellformed_check, charset, file_format,
     return 0
 
 
-def import_object(**kwargs):
+def import_object(filepaths, **kwargs):
     """Import files to generate digital objects. If parameters charset,
     file_format, identifier, checksum or date_created are not given,
     then these are created automatically.
 
+    :filepaths: File paths to import
+    :kwargs: Additional arguments
     :returns: Dictionary of the scraped file metadata
     """
     params = _initialize_args(kwargs)
     # Loop files and create premis objects
-    files = collect_filepaths(dirs=params["filepaths"],
+    files = collect_filepaths(dirs=filepaths,
                               base=params["base_path"])
     for filepath in files:
 
@@ -162,35 +163,26 @@ def import_object(**kwargs):
 
 def _initialize_args(params):
     """
-    Initialize values of argument dict to default values if missing.
+    Initalize given arguments to new dict by adding the missing keys with
+    initial values.
+
     :params: Arguments as dict.
     :returns: Initialized dict.
     """
     parameters = {}
-    parameters["workspace"] = "./workspace" if not "workspace" in params else \
-        params["workspace"]
+    parameters["workspace"] = "./workspace" if not "workspace" in params \
+        else params["workspace"]
     parameters["base_path"] = "." if not "base_path" in params else \
         params["base_path"]
-    parameters["skip_wellformed_check"] = False if not \
-        "skip_wellformed_check" in params else \
-        params["skip_wellformed_check"]
-    parameters["charset"] = None if not "charset" in params else \
-        params["charset"]
-    parameters["file_format"] = None if not "file_format" in params else \
-        params["file_format"]
-    parameters["checksum"] = None if not "checksum" in params else \
-        params["checksum"]
-    parameters["date_created"] = None if not "date_created" in params else \
-        params["date_created"]
-    parameters["identifier"] = None if not "identifier" in params else \
-        params["identifier"]
-    parameters["format_registry"] = None if not "format_registry" in params \
-        else params["format_registry"]
-    parameters["order"] = None if not "order" in params else params["order"]
-    parameters["stdout"] = False if not "stdout" in params else \
-        params["stdout"]
-    parameters["filepaths"] = None if not "filepaths" in params else \
-        params["filepaths"]
+
+    keys = ["stdout", "skip_wellformed_check"]
+    for key in keys:
+        parameters[key] = False if not key in params else params[key]
+
+    keys = ["charset", "file_format", "checksum", "date_created",
+            "identifier", "format_registry", "order"]
+    for key in keys:
+        parameters[key] = None if not key in params else params[key]
 
     return parameters
 
@@ -202,11 +194,15 @@ class PremisCreator(MdCreator):
 
     def add_premis_md(self, filepath, filerel=None, **params):
         """
-        Metadata creator for PREMIS metadata. This method:
+        Create metadata for PREMIS metadata. This method:
         - Scrapes a file
         - Creates PREMIS metadata with amd references for a file
         - Creates PREMIS metadata with amd references for streams in a file
         - Returns stream dict from scraper
+
+        :filepath: Full path to file (including base_path)
+        :filerel: Relative path from base_path to file
+        :params: Given arguments
         """
         params = _initialize_args(params)
         mimetype = None if not params["file_format"] else \
@@ -214,25 +210,28 @@ class PremisCreator(MdCreator):
         version = None if not params["file_format"] else \
             params["file_format"][1]
 
-        scraper = scrape_file(
+        streams = scrape_file(
             filepath=filepath, skip_well_check=params["skip_wellformed_check"],
             mimetype=mimetype, version=version, charset=params["charset"],
             skip_json=True
         )
 
-        premis_elem = create_premis_object(filepath, scraper, **params)
+        premis_elem = create_premis_object(filepath, streams, **params)
         self.add_md(premis_elem, filerel)
-        premis_list = create_streams(scraper.streams, premis_elem)
+        premis_list = create_streams(streams, premis_elem)
 
         if premis_list is not None:
             for index, premis_stream in six.iteritems(premis_list):
                 self.add_md(premis_stream, filerel, index)
 
-        return scraper.streams
+        return streams
 
     def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3",
               othermdtype=None, section=None, stdout=False,
               file_metadata_dict=None):
+        """
+        Write PREMIS metadata.
+        """
         super(PremisCreator, self).write(
             mdtype=mdtype, mdtypeversion=mdtypeversion,
             file_metadata_dict=file_metadata_dict)
@@ -243,6 +242,7 @@ def create_streams(streams, premis_file):
 
     :streams: Stream dict
     :premis_file: Created PREMIS XML file for the digital object file
+    :returns: List of PREMIS etree objects
     """
     if len(streams) < 2:
         return None
@@ -272,12 +272,22 @@ def create_streams(streams, premis_file):
     return premis_list
 
 
-def check_metadata(format_name, format_version, streams, fname):
-    """Check that we will not get None values"""
-    if format_name is None:
-        raise ValueError('Mimetype could not be identified for '
+def check_metadata(mimetype, version, streams, fname):
+    """
+    Check that we will not get None nor (:unav) values to mimetype and
+    version. Check that multiple streams are found and found only in
+    video containers.
+
+    :mimetype: MIME type
+    :version: File format version
+    :streams: Streams returned from Scraper
+    :fname: File name of the digital object
+    :raises: ValueError if metadata checking results errors
+    """
+    if mimetype is None:
+        raise ValueError('MIME type could not be identified for '
                          'file %s' % fname)
-    if format_version is None:
+    if version is None:
         raise ValueError('File format version could not be identified for '
                          'file %s' % fname)
     if streams[0]['stream_type'] not in ['videocontainer'] and \
@@ -290,35 +300,37 @@ def check_metadata(format_name, format_version, streams, fname):
                          'found.')
 
 
-def create_premis_object(fname, scraper, **kwargs):
-    """Create Premis object for given file."""
-    if scraper.info[0]['class'] == 'FileExists' and \
-            len(scraper.info[0]['errors']) > 0:
-        raise IOError(scraper.info[0]['errors'])
-    for _, info in six.iteritems(scraper.info):
-        if info['class'] == 'ScraperNotFound':
-            raise ValueError('File format is not supported.')
+def create_premis_object(fname, streams, **kwargs):
+    """
+    Create Premis object for given file.
 
+    :fname: File name of the digital object
+    :streams: Streams from the Scraper
+    :kwargs: Given arguments
+    :returns: PREMIS object as etree
+    :raises: ValueError if character set is invalid for text files.
+    """
     params = _initialize_args(kwargs)
-    checksum = params["checksum"] or ("MD5", scraper.checksum(algorithm='md5'))
+    digest = params["checksum"] or ("MD5", calc_checksum(fname))
     date_created = params["date_created"] or creation_date(fname)
     identifier = params["identifier"] or ("UUID", six.text_type(uuid4()))
     format_registry = params["format_registry"]
-    if scraper.streams[0]['stream_type'] == 'text':
-        charset = params["charset"] or scraper.streams[0]['charset']
+    if streams[0]['stream_type'] == 'text':
+        charset = params["charset"] or streams[0]['charset']
     else:
         charset = None
 
     # Scraper's version information will override the version
     # information if any is found.
-    if scraper.version and scraper.version != UNKNOWN_VERSION:
-        format_version = '' if scraper.version == NO_VERSION else \
-            scraper.version
+    if streams[0]["version"] and streams[0]["version"] != UNKNOWN_VERSION:
+        format_version = '' if streams[0]["version"] == NO_VERSION else \
+            streams[0]["version"]
     else:
-        format_version = DEFAULT_VERSIONS.get(scraper.mimetype, None)
+        format_version = DEFAULT_VERSIONS.get(streams[0]["mimetype"], None)
 
-    file_format = params["file_format"] or (scraper.mimetype, format_version)
-    check_metadata(file_format[0], file_format[1], scraper.streams, fname)
+    file_format = params["file_format"] or (streams[0]["mimetype"],
+                                            format_version)
+    check_metadata(file_format[0], file_format[1], streams, fname)
 
     charset_mime = ""
     if charset:
@@ -329,7 +341,7 @@ def create_premis_object(fname, scraper, **kwargs):
     object_identifier = premis.identifier(identifier_type=identifier[0],
                                           identifier_value=identifier[1])
 
-    premis_fixity = premis.fixity(checksum[1], checksum[0])
+    premis_fixity = premis.fixity(digest[1], digest[0])
     premis_format_des = premis.format_designation(
         file_format[0] + charset_mime, file_format[1])
     if not format_registry:
@@ -353,9 +365,14 @@ def create_premis_object(fname, scraper, **kwargs):
 
 
 def collect_filepaths(dirs=None, pattern='*', base='.'):
-    """Collect file paths recursively from given directory. Raises IOError
-    if given path does not exist."""
+    """
+    Collect file paths recursively from given directory.
 
+    :dirs: Directories from arguments
+    :pattern: Filter to match the file names
+    :base: Base path (see --base_path)
+    :raises: IOError if given path does not exist.
+    """
     if dirs is None:
         dirs = ['.']
     files = []
@@ -376,9 +393,13 @@ def collect_filepaths(dirs=None, pattern='*', base='.'):
 
 
 def creation_date(path_to_file):
-    """Try to get the date that a file was created, falling back to when it
+    """
+    Try to get the date that a file was created, falling back to when it
     was last modified if that isn't possible.  See
     http://stackoverflow.com/a/39501288/1709587 for explanation.
+
+    :path_to_file: File path
+    :returns: Timestamp for a file
     """
     if platform.system() == 'Windows':
         return datetime.datetime.fromtimestamp(

@@ -26,7 +26,12 @@ def main(dir_to_tar, tar_filename):
 
 
 def compress(dir_to_tar, tar_filename):
-    """Create tar file from SIP directory."""
+    """
+    Create tar file from SIP directory.
+
+    :dir_to_tar: Directory to pack in tar package
+    :tar_filename: File name of the tar file
+    """
     command = ['tar', '-cvvf', fsencode_path(tar_filename), '.']
     proc = subprocess.Popen(
         command, cwd=dir_to_tar,
