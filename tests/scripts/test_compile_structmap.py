@@ -57,7 +57,8 @@ def test_compile_structmap_dmdsecid(testpath, run_cli):
         '--workspace', testpath, '--skip_wellformed_check',
         'tests/data/structured/Software files/koodi.java'])
     import_description.import_description(
-        'tests/data/import_description/metadata/dc_description.xml',
+        dmdsec_location='tests/data/import_description/metadata/'
+                        'dc_description.xml',
         workspace=testpath)
 
     # Create structmap
