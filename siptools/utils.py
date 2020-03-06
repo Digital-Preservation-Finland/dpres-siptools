@@ -548,7 +548,7 @@ class MdCreator(object):
         filename = os.path.join(self.workspace, filename)
 
         if not os.path.exists(filename):
-            with open(filename, 'wb') as outfile:
+            with open(filename, 'wt') as outfile:
                 json.dump(file_metadata_dict, outfile)
             print("Wrote technical data to: %s" % (outfile.name))
 
