@@ -198,7 +198,7 @@ def test_existing_scraper_result(testpath):
         'data_rate': '705.6', 'data_rate_mode': 'Fixed', 'duration': 'PT50S',
         'index': 0, 'mimetype': 'audio/x-wav', 'num_channels': '2',
         'sampling_frequency': '44.1', 'stream_type': 'audio', 'version': ''}}
-    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wb') \
+    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wt') \
             as outfile:
         json.dump(stream_dict, outfile)
 

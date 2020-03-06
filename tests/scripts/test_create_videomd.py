@@ -229,7 +229,7 @@ def test_existing_scraper_result(testpath):
         'codec_creator_app_version': '(:unav)',
         'duration': 'PT50S', 'sampling': '4:2:0', 'stream_type': 'video',
         'width': '320', 'codec_creator_app': '(:unav)'}}
-    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wb') \
+    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wt') \
             as outfile:
         json.dump(stream_dict, outfile)
 

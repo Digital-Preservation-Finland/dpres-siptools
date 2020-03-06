@@ -140,7 +140,7 @@ def test_existing_scraper_result(testpath):
         'compression': 'lzw', 'height': '400', 'mimetype': 'image/tiff',
         'samples_per_pixel': '3', 'stream_type': 'image', 'version': '6.0',
         'width': '1234', 'byte_order': 'little endian', 'index': 0}}
-    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wb') \
+    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wt') \
             as outfile:
         json.dump(stream_dict, outfile)
 
