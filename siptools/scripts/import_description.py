@@ -59,32 +59,32 @@ def main(dmdsec_location, base_path, dmdsec_target, workspace, without_uuid,
     return 0
 
 
-def import_description(dmdsec_location, **kwargs):
+def import_description(**kwargs):
     """
     Create METS documents that contains descriptive metadata
     imported from XML file.
 
-    :dmdsec_location: Path to descriptive metadata relative to base path
-    :kwargs: Additional arguments
+    :kwargs: Given arguments
     :raises: OSError if descriptive metadata file exists
     """
-    params = _initialize_args(kwargs)
-    dmd_target = dmd_target_path(params["base_path"], params["dmdsec_target"])
+    _initialize_args(kwargs)
+    dmd_target = dmd_target_path(kwargs["base_path"], kwargs["dmdsec_target"])
     dmdfile_id = str(uuid4())
     dmd_id = '_' + dmdfile_id
-    if params["without_uuid"]:
+    if kwargs["without_uuid"]:
         filename = 'dmdsec.xml'
     else:
         filename = '%s-dmdsec.xml' % dmdfile_id
 
-    _mets = create_mets(dmdsec_location, dmd_id, params["remove_root"])
-    creator = DmdCreator(params["workspace"])
+    _mets = create_mets(kwargs["dmdsec_location"], dmd_id,
+                        kwargs["remove_root"])
+    creator = DmdCreator(kwargs["workspace"])
     creator.write_dmd_ref(_mets, dmd_id, dmd_target)
 
-    if params["stdout"]:
+    if kwargs["stdout"]:
         print(lxml.etree.tostring(_mets, pretty_print=True).decode("utf-8"))
 
-    output_file = os.path.join(params["workspace"], filename)
+    output_file = os.path.join(kwargs["workspace"], filename)
     if os.path.isfile(output_file):
         raise OSError('File {} already exists.'.format(output_file))
 
@@ -99,26 +99,23 @@ def import_description(dmdsec_location, **kwargs):
     print("import_description created file: %s" % output_file)
 
 
-def _initialize_args(params):
+def _initialize_args(kwargs):
     """
     Initalize given arguments to new dict by adding the missing keys with
     initial values.
 
-    :params: Arguments as dict.
+    :kwargs: Arguments as dict.
     :returns: Initialized dict.
     """
-    parameters = {}
-    parameters["workspace"] = "./workspace" if not "workspace" in params \
-        else params["workspace"]
-    parameters["base_path"] = "." if not "base_path" in params else \
-        params["base_path"]
-    parameters["dmdsec_target"] = None if not "dmdsec_target" in params else \
-        params["dmdsec_target"]
+    kwargs["workspace"] = "./workspace" if not "workspace" in kwargs \
+        else kwargs["workspace"]
+    kwargs["base_path"] = "." if not "base_path" in kwargs else \
+        kwargs["base_path"]
+    kwargs["dmdsec_target"] = None if not "dmdsec_target" in kwargs else \
+        kwargs["dmdsec_target"]
     keys = ["without_uuid", "remove_root", "stdout"]
     for key in keys:
-        parameters[key] = False if not key in params else params[key]
-
-    return parameters
+        kwargs[key] = False if not key in kwargs else kwargs[key]
 
 
 def dmd_target_path(base_path, dmdsec_target=None):
