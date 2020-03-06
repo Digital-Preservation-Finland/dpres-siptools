@@ -1,6 +1,6 @@
 # coding=utf-8
 """Command line tool for creating MIX metadata."""
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 
 import os
 import sys
@@ -95,6 +95,7 @@ class MixCreator(MdCreator):
                         filename=(filerel if filerel else filepath))
 
     # Change the default write parameters
+    #pylint: disable=too-many-arguments
     def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None,
               section=None, stdout=False, file_metadata_dict=None):
         """

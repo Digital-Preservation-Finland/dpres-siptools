@@ -1,5 +1,5 @@
 """Command line tool for creating tar file from SIP directory"""
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 
 import sys
 import subprocess

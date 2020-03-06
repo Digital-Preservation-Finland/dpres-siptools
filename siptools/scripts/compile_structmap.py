@@ -1,6 +1,6 @@
 """"Command line tool for creating the structural map and file section
 metadata for a METS document."""
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 
 import os
 import sys
@@ -333,6 +333,8 @@ def get_md_references(workspace, path=None, stream=None, directory=None,
     return set(amd_ids)
 
 
+#pylint: disable=too-many-arguments
+#pylint: disable=too-many-locals
 def create_div(workspace, divs, parent, filesec, filelist, path='',
                type_attr=None):
     """Recursively create fileSec and structmap divs based on directory
@@ -354,33 +356,31 @@ def create_div(workspace, divs, parent, filesec, filelist, path='',
         div_path = os.path.join(path, div)
         # It's a file, lets create file+fptr elements
         if div_path in filelist:
-            fileid = get_fileid(filesec, div_path)
-            fptr = mets.fptr(fileid)
-            div_el = add_file_div(workspace, div_path, fptr)
-            if div_el is not None:
-                property_list.append(div_el)
+            fptr = mets.fptr(get_fileid(filesec, div_path))
+            div_elem = add_file_div(workspace, div_path, fptr)
+            if div_elem is not None:
+                property_list.append(div_elem)
             else:
                 fptr_list.append(fptr)
 
         # It's not a file, lets create a div element
         else:
-            div_path = os.path.join(path, div)
             amdids = get_md_references(workspace, directory=div_path)
             dmdsec_id = get_md_references(workspace, directory=div_path,
                                           ref_type='dmd')
             if type_attr == 'Directory-physical':
-                div_el = mets.div(type_attr='directory', label=div,
-                                  dmdid=dmdsec_id, admid=amdids)
+                div_elem = mets.div(type_attr='directory', label=div,
+                                    dmdid=dmdsec_id, admid=amdids)
             else:
-                div_el = mets.div(type_attr=div, dmdid=dmdsec_id,
-                                  admid=amdids)
-            div_list.append(div_el)
-            create_div(workspace, divs[div], div_el, filesec, filelist,
+                div_elem = mets.div(type_attr=div, dmdid=dmdsec_id,
+                                    admid=amdids)
+            div_list.append(div_elem)
+            create_div(workspace, divs[div], div_elem, filesec, filelist,
                        div_path, type_attr)
 
     # Add fptr list first, then div list
-    for fptr_elem in fptr_list:
-        parent.append(fptr_elem)
+    for fptr in fptr_list:
+        parent.append(fptr)
     for div_elem in property_list:
         parent.append(div_elem)
     for div_elem in div_list:

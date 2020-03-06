@@ -1,5 +1,5 @@
 """Command line tool for creating audioMD metadata."""
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 
 import os
 import sys
@@ -96,6 +96,7 @@ class AudiomdCreator(MdCreator):
                             filename=(filerel if filerel else filepath),
                             stream=index)
 
+    #pylint: disable=too-many-arguments
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="AudioMD", section=None, stdout=False,
               file_metadata_dict=None):

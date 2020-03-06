@@ -184,18 +184,19 @@ def test_invalid_event_target_path():
         premis_event.event_target_path('.', 'foo/bar')
 
 
+#pylint: disable=invalid-name
 def test_create_premis_event_file_ok(testpath):
     """Test that create_premis_event_file function produces event.xml file with
     correct elements.
     """
 
     (file_path, event_xml) = premis_event.create_premis_event_file(
-        testpath,
-        'creation',
-        '2016-10-13T12:30:55',
-        'Testing',
-        'success',
-        'Outcome detail')
+        workspace=testpath,
+        event_type='creation',
+        event_datetime='2016-10-13T12:30:55',
+        event_detail='Testing',
+        event_outcome='success',
+        event_outcome_detail='Outcome detail')
 
     assert file_path == os.path.join(testpath, 'creation-event-amd.xml')
 
@@ -217,17 +218,18 @@ def test_create_premis_event_file_ok(testpath):
             element, namespaces=namespaces)[0].text == content
 
 
+#pylint: disable=invalid-name
 def test_create_premis_agent_file_ok(testpath):
     """Test that create_premis_agent_file function produces agent.xml file with
     correct elements.
     """
 
     (file_path, agent_xml) = premis_event.create_premis_agent_file(
-        testpath,
-        'event-type',
-        'Demo Application',
-        'software',
-        'Agent Identifier')
+        workspace=testpath,
+        event_type='event-type',
+        agent_name='Demo Application',
+        agent_type='software',
+        agent_identifier='Agent Identifier')
 
     assert file_path == os.path.join(testpath, 'event-type-agent-amd.xml')
 

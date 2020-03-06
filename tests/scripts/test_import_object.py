@@ -47,6 +47,7 @@ def test_import_object_ok(testpath, run_cli):
                           namespaces=NAMESPACES)) == 1
 
 
+#pylint: disable=invalid-name
 def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
     """Test import_object.main function --skip_well_formed argument."""
     input_file = 'tests/data/text-file.txt'
@@ -65,6 +66,7 @@ def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
                           namespaces=NAMESPACES)) == 1
 
 
+#pylint: disable=invalid-name
 def test_import_object_skip_wellformed_check_nodate_ok(testpath, run_cli):
     """Test import_object.main function without --date_created argument."""
     input_file = 'tests/data/text-file.txt'
@@ -82,6 +84,7 @@ def test_import_object_skip_wellformed_check_nodate_ok(testpath, run_cli):
                           namespaces=NAMESPACES)) == 1
 
 
+#pylint: disable=invalid-name
 def test_import_object_structured_ok(testpath, run_cli):
     # TODO: Missing function docstring. What is the purpose of this test?
     workspace = os.path.abspath(testpath)
@@ -136,6 +139,7 @@ def test_import_object_identifier(testpath, run_cli):
                       namespaces=NAMESPACES)[0].text == 'test-id'
 
 
+#pylint: disable=invalid-name
 def test_import_object_format_registry(testpath, run_cli):
     """Test digital object format registry argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
@@ -214,6 +218,7 @@ def test_import_object_utf8(testpath, run_cli):
          'audio wav v2'),
     ]
 )
+#pylint: disable=too-many-arguments
 def test_import_object_cases(testpath, input_file, expected_mimetype,
                              expected_version, case_name, run_cli):
     """Test the import_object tool function when run as terminal client.
@@ -278,6 +283,8 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
          'audio wav v2'),
     ]
 )
+#pylint: disable=invalid-name
+#pylint: disable=too-many-arguments
 def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
                                       expected_version, case_name, run_cli):
     """Test the import_object tool function when run as terminal client

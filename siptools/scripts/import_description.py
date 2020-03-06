@@ -1,7 +1,7 @@
-"""Create METS document that contains descriptive metadata imported from XML
-file
 """
-from __future__ import unicode_literals
+Create METS document that contains descriptive metadata imported from XML file
+"""
+from __future__ import unicode_literals, print_function
 
 import sys
 import os
@@ -43,6 +43,7 @@ click.disable_unicode_literals_warning = True
                    'metadata file')
 @click.option('--stdout', is_flag=True,
               help='Print output to stdout')
+#pylint: disable=too-many-arguments
 def main(dmdsec_location, base_path, dmdsec_target, workspace, without_uuid,
          remove_root, stdout):
     """Create METS documents that contains descriptive metadata

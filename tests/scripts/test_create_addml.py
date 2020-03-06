@@ -23,8 +23,9 @@ def test_create_addml(is_header):
     """Test that ``create_addml`` returns valid addml."""
 
     addml_etree = create_addml.create_addml_metadata(
-        CSV_FILE, DELIMITER, is_header,
-        CHARSET, RECORDSEPARATOR, QUOTINGCHAR
+        csv_file=CSV_FILE, delimiter=DELIMITER, isheader=is_header,
+        charset=CHARSET, record_separator=RECORDSEPARATOR,
+        quoting_char=QUOTINGCHAR
     )
 
     # Check namespace
@@ -59,9 +60,9 @@ def test_create_addml_with_flatfile(is_header):
     """
 
     addml_etree = create_addml.create_addml_metadata(
-        CSV_FILE, DELIMITER, is_header,
-        CHARSET, RECORDSEPARATOR, QUOTINGCHAR,
-        flatfile_name="path/to/test"
+        csv_file=CSV_FILE, delimiter=DELIMITER, isheader=is_header,
+        charset=CHARSET, record_separator=RECORDSEPARATOR,
+        quoting_char=QUOTINGCHAR, flatfile_name="path/to/test"
     )
 
     # Check that URL encoded path is written to flatFile element
@@ -167,12 +168,12 @@ def test_csv_header_charset(filename, charset):
     :charset: Character encoding of test file
     """
     header = create_addml.csv_header(
-        csv_file_path=filename, delimiter=",", charset=charset, isheader=True
+        csv_file=filename, delimiter=",", charset=charset, isheader=True
     )
     assert header == ["year", "br\xe4nd", "m\xf6del", "detail", "other"]
 
     header = create_addml.csv_header(
-        csv_file_path=filename, delimiter=",", charset=charset, isheader=False
+        csv_file=filename, delimiter=",", charset=charset, isheader=False
     )
     assert header == ["header1", "header2", "header3", "header4", "header5"]
 
@@ -183,19 +184,22 @@ def _create_addml(testpath, isheader):
     # Append two csv files with same
     # metadata, but different filename
     creator.add_addml_md(
-        "tests/data/simple_csv.csv", ',', isheader,
-        CHARSET, RECORDSEPARATOR, QUOTINGCHAR
+        csv_file="tests/data/simple_csv.csv", delimiter=',',
+        isheader=isheader, charset=CHARSET, record_separator=RECORDSEPARATOR,
+        quoting_char=QUOTINGCHAR
     )
 
     creator.add_addml_md(
-        "tests/data/simple_csv_2.csv", ',', isheader,
-        CHARSET, RECORDSEPARATOR, QUOTINGCHAR
+        csv_file="tests/data/simple_csv_2.csv", delimiter=',',
+        isheader=isheader, charset=CHARSET, record_separator=RECORDSEPARATOR,
+        quoting_char=QUOTINGCHAR
     )
 
     # Append csv file with different metadata
     creator.add_addml_md(
-        CSV_FILE, DELIMITER, isheader, CHARSET,
-        RECORDSEPARATOR, QUOTINGCHAR
+        csv_file=CSV_FILE, delimiter=DELIMITER, isheader=isheader,
+        charset=CHARSET, record_separator=RECORDSEPARATOR,
+        quoting_char=QUOTINGCHAR
     )
 
     creator.write()

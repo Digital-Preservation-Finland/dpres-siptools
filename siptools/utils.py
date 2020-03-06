@@ -1,7 +1,7 @@
 """
 Utilities for siptools
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 
 import copy
 import hashlib
@@ -84,6 +84,7 @@ def read_json_streams(filerel, workspace):
     return None
 
 
+#pylint: disable=too-many-arguments
 def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
                 version=None, charset=None, skip_well_check=False,
                 skip_json=False):
@@ -117,8 +118,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
     if scraper.well_formed is False:  # Must not be None
         errors = []
         for _, info in six.iteritems(scraper.info):
-            for error in info['errors']:
-                errors.append(error)
+            errors.append("\n".join(info['errors']))
         error_str = "\n".join(errors)
         if skip_well_check:
             error_head = "Metadata of file %s could not " \
@@ -395,6 +395,7 @@ class MdCreator(object):
         self.md_elements = []
         self.references = []
 
+    #pylint: disable=too-many-arguments
     def add_reference(self, md_id, filepath, stream=None, directory=None,
                       ref_type='amd'):
         """
@@ -481,6 +482,8 @@ class MdCreator(object):
                               xml_declaration=True,
                               encoding="utf-8")
 
+    #pylint: disable=too-many-arguments
+    #pylint: disable=too-many-locals
     def write_md(self, metadata, mdtype, mdtypeversion, othermdtype=None,
                  section=None, stdout=False):
         """
@@ -552,6 +555,7 @@ class MdCreator(object):
                 json.dump(file_metadata_dict, outfile)
             print("Wrote technical data to: %s" % (outfile.name))
 
+    #pylint: disable=too-many-arguments
     def write(self, mdtype="type", mdtypeversion="version", othermdtype=None,
               section=None, stdout=False, file_metadata_dict=None):
         """
@@ -571,7 +575,6 @@ class MdCreator(object):
         :stdout (boolean): Print also to stdout
         :file_metadat_dict (dict): File metadata dict
         """
-
         # Write METS XML and append self.references
         for metadata, filename, stream, directory in self.md_elements:
             md_id, _ = self.write_md(

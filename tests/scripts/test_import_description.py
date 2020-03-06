@@ -24,6 +24,7 @@ def get_md_file(path, input_target):
     return output
 
 
+#pylint: disable=invalid-name
 def test_import_description_valid_file(testpath, run_cli):
     """ Test case for single valid xml-file"""
     dmdsec_location = 'tests/data/import_description/metadata/' \
@@ -70,6 +71,7 @@ def test_invalid_dmd_target_path():
         import_description.dmd_target_path('.', 'foo/bar')
 
 
+#pylint: disable=invalid-name
 def test_import_description_file_not_found(testpath, run_cli):
     """ Test case for not existing xml-file."""
     dmdsec_location = 'tests/data/import_description/metadata/' \
@@ -95,6 +97,7 @@ def test_import_description_no_xml(testpath, run_cli):
     assert isinstance(result.exception, ET.XMLSyntaxError)
 
 
+#pylint: disable=invalid-name
 def test_import_description_invalid_namespace(testpath, run_cli):
     """ test case for invalid namespace in XML file """
     dmdsec_location = 'tests/data/import_description/dc_invalid_ns.xml'

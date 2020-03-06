@@ -114,6 +114,7 @@ def test_collect_dao_hrefs():
         'No file properties: just fptr elements added'
     )
 )
+#pylint: disable=too-many-arguments
 def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
                            order):
     """Tests the add_fptrs_div_ead function by asserting that the c_div
