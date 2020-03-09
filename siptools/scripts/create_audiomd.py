@@ -118,7 +118,7 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None,
     """
     if streams is None:
         streams = scrape_file(filepath=filename, filerel=filerel,
-                              workspace=workspace)
+                              workspace=workspace, skip_well_check=True)
     fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     audiomd_dict = {}

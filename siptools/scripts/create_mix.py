@@ -132,7 +132,7 @@ def create_mix_metadata(filename, filerel=None, workspace=None, streams=None):
     """
     if streams is None:
         streams = scrape_file(filepath=filename, filerel=filerel,
-                              workspace=workspace)
+                              workspace=workspace, skip_well_check=True)
     stream_md = streams[0]
     check_missing_metadata(stream_md, filename)
 
