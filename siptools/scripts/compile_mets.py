@@ -119,8 +119,8 @@ def _initialize_args(kwargs):
         else kwargs["workspace"]
     kwargs["base_path"] = "." if "base_path" not in kwargs else \
         kwargs["base_path"]
-    kwargs["record_status"] = "submission" if "recordstatus" not in \
-        kwargs else kwargs["recordstatus"]
+    kwargs["record_status"] = "submission" if "record_status" not in \
+        kwargs else kwargs["record_status"]
 
     keys = ["clean", "copy_files", "stdout"]
     for key in keys:
