@@ -194,7 +194,10 @@ class PremisCreator(MdCreator):
                         for error in info['errors']:
                             errors.append(error)
                 error_str = "\n".join(errors)
-                raise ValueError(error_str)
+                # Ensure the error string is binary on Py2, Unicode on Py3.
+                # This ensures the message is not truncated on Py2 if it
+                # contains Unicode.
+                raise ValueError(six.ensure_str(error_str))
         else:
             scraper.scrape(False)
 
