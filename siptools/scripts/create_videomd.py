@@ -8,7 +8,8 @@ import click
 import six
 
 import videomd
-from siptools.utils import MdCreator, fix_missing_metadata, scrape_file
+from siptools.mdcreator import MdCreator
+from siptools.utils import fix_missing_metadata, scrape_file
 
 click.disable_unicode_literals_warning = True
 
@@ -96,8 +97,12 @@ class VideomdCreator(MdCreator):
     #pylint: disable=too-many-arguments
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="VideoMD", section=None, stdout=False,
-              file_metadata_dict=None):
-        super(VideomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
+              file_metadata_dict=None,
+              ref_file="create-videomd-md-references.xml"):
+        super(VideomdCreator, self).write(
+            mdtype=mdtype, mdtypeversion=mdtypeversion,
+            othermdtype=othermdtype, ref_file=ref_file
+        )
 
 
 def create_videomd_metadata(filename, filerel=None, workspace=None,

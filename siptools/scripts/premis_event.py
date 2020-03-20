@@ -13,7 +13,8 @@ import six
 import mets
 import premis
 import xml_helpers.utils
-from siptools.utils import MdCreator, encode_id, encode_path
+from siptools.mdcreator import MdCreator
+from siptools.utils import encode_id, encode_path
 from siptools.xml.mets import NAMESPACES
 from siptools.xml.premis import PREMIS_EVENT_OUTCOME_TYPES
 
@@ -68,6 +69,9 @@ def _list2str(lst):
               type=str,
               metavar='<AGENT NAME>',
               help='Agent name')
+@click.option('--agent_identifier', nargs=2, type=str,
+              metavar='<AGENT IDENTIFIER TYPE> <AGENT IDENTIFIER VALUE>',
+              help='Agent identifier type and value')
 @click.option('--agent_type',
               required='--agent_name' in sys.argv,
               type=str,
@@ -77,9 +81,7 @@ def _list2str(lst):
               is_flag=True,
               help='Print output to stdout')
 #pylint: disable=too-many-arguments
-def main(event_type, event_datetime, event_detail, event_outcome,
-         event_outcome_detail, workspace, base_path, agent_name, agent_type,
-         stdout, event_target):
+def main(**kwargs):
     """The script creates provenance metadata for the package. The metadata
     contains event and, if given, also agent of the event.
 
@@ -87,14 +89,27 @@ def main(event_type, event_datetime, event_detail, event_outcome,
     EVENT_TYPE: Type of the event.
     EVENT_DATETIME: Timestamp of the event.
     """
-    premis_event(
-        event_type=event_type, event_datetime=event_datetime,
-        event_detail=event_detail, event_outcome=event_outcome,
-        event_outcome_detail=event_outcome_detail, workspace=workspace,
-        base_path=base_path, agent_name=agent_name, agent_type=agent_type,
-        stdout=stdout, event_target=event_target
-    )
+    premis_event(**kwargs)
     return 0
+
+
+def _attribute_values(given_params):
+    """
+    Give attribute values as a dict for the script.
+
+    :given_params: Arguments as dict.
+    :returns: Attribute value dict
+    """
+    attributes = {
+        "workspace": "./workspace/",
+        "base_path": ".",
+        "stdout": False,
+    }
+    for key in given_params:
+        if given_params[key]:
+            attributes[key] = given_params[key]
+
+    return attributes
 
 
 def premis_event(**kwargs):
@@ -102,62 +117,42 @@ def premis_event(**kwargs):
     The script creates provenance metadata for the package. The metadata
     contains event and, if given, also agent of the event.
 
-    :kwargs: Given arguments
+    :attributes: Given arguments
     """
-    _initialize_args(kwargs)
+    attributes = _attribute_values(kwargs)
     (directory, event_file) = event_target_path(
-        kwargs["base_path"], kwargs["event_target"])
+        attributes["base_path"], attributes["event_target"])
 
-    if kwargs["agent_name"] or kwargs["agent_type"]:
+    if attributes["agent_name"] or attributes["agent_type"]:
         agent_identifier = find_premis_agent_identifier(
-            kwargs["workspace"], kwargs["agent_name"], kwargs["agent_type"]
+            attributes["workspace"], attributes["agent_name"],
+            attributes["agent_type"]
         )
 
         if not agent_identifier:
-            agent_identifier = six.text_type(uuid4())
+            agent_identifier = attributes["agent_identifier"]
 
-        agent = create_premis_agent(kwargs["agent_name"],
-                                    kwargs["agent_type"],
+        agent = create_premis_agent(attributes["agent_name"],
+                                    attributes["agent_type"],
                                     agent_identifier)
 
-        agent_creator = PremisCreator(kwargs["workspace"])
+        agent_creator = PremisCreator(attributes["workspace"])
         agent_creator.add_md(agent, event_file, directory=directory)
-        agent_creator.write(mdtype="PREMIS:AGENT", stdout=kwargs["stdout"])
+        agent_creator.write(mdtype="PREMIS:AGENT", stdout=attributes["stdout"])
 
-        if kwargs["stdout"]:
+        if attributes["stdout"]:
             print(xml_helpers.utils.serialize(agent).decode("utf-8"))
     else:
-        agent_identifier = None
+        attributes["agent_identifier"] = None
 
-    event = create_premis_event(agent_identifier=agent_identifier, **kwargs)
+    event = create_premis_event(**attributes)
 
-    creator = PremisCreator(kwargs["workspace"])
+    creator = PremisCreator(attributes["workspace"])
     creator.add_md(event, event_file, directory=directory)
-    creator.write(mdtype="PREMIS:EVENT", stdout=kwargs["stdout"])
+    creator.write(mdtype="PREMIS:EVENT", stdout=attributes["stdout"])
 
-    if kwargs["stdout"]:
+    if attributes["stdout"]:
         print(xml_helpers.utils.serialize(event).decode("utf-8"))
-
-
-def _initialize_args(kwargs):
-    """
-    Initalize given arguments to new dict by adding the missing keys with
-    initial values.
-
-    :kwargs: Arguments as dict.
-    :returns: Initialized dict.
-    """
-    kwargs["workspace"] = "./workspace" if "workspace" not in kwargs \
-        else kwargs["workspace"]
-    kwargs["base_path"] = "." if "base_path" not in kwargs else \
-        kwargs["base_path"]
-    kwargs["stdout"] = False if "stdout" not in kwargs else \
-        kwargs["stdout"]
-
-    keys = ["event_outcome_detail", "agent_name", "agent_type", "stdout",
-            "event_target"]
-    for key in keys:
-        kwargs[key] = None if key not in kwargs else kwargs[key]
 
 
 def event_target_path(base_path, event_target=None):
@@ -203,14 +198,16 @@ class PremisCreator(MdCreator):
 
     #pylint: disable=too-many-arguments
     def write(self, mdtype="PREMIS", mdtypeversion="2.3", othermdtype=None,
-              section="digiprovmd", stdout=False, file_metadata_dict=None):
+              section="digiprovmd", stdout=False, file_metadata_dict=None,
+              ref_file="premis-event-md-references.xml"):
         super(PremisCreator, self).write(
             mdtype=mdtype,
             mdtypeversion=mdtypeversion,
             othermdtype=othermdtype,
             section=section,
             stdout=stdout,
-            file_metadata_dict=file_metadata_dict
+            file_metadata_dict=file_metadata_dict,
+            ref_file=ref_file
         )
 
 
@@ -259,15 +256,15 @@ def create_premis_agent(agent_name, agent_type, agent_identifier):
     :returns: PREMIS event XML element
     """
     agent_identifier = premis.identifier(
-        identifier_type='UUID',
-        identifier_value=agent_identifier, prefix='agent'
+        identifier_type=agent_identifier[0],
+        identifier_value=agent_identifier[1], prefix='agent'
     )
     premis_agent = premis.agent(agent_identifier, agent_name, agent_type)
 
     return premis_agent
 
 
-def create_premis_event(agent_identifier, **kwargs):
+def create_premis_event(**params):
     """Creates METS digiprovMD element that contains PREMIS event element.
     Linking agent identifier element is added to PREMIS event element, if agent
     identifier is provided as parameter.
@@ -280,139 +277,33 @@ def create_premis_event(agent_identifier, **kwargs):
     :param event_outcome_detail: Event outcome description
     :returns: PREMIS event XML element
     """
-    _initialize_args(kwargs)
+    attributes = _attribute_values(params)
     event_identifier = premis.identifier(
         identifier_type='UUID',
         identifier_value=six.text_type(uuid4()),
         prefix='event'
     )
 
-    premis_event_outcome = premis.outcome(kwargs["event_outcome"],
-                                          kwargs["event_outcome_detail"])
+    premis_event_outcome = premis.outcome(attributes["event_outcome"],
+                                          attributes["event_outcome_detail"])
 
     child_elements = [premis_event_outcome]
 
     # Create linkingAgentIdentifier element if agent identifier is provided
-    if agent_identifier is not None:
+    if attributes["agent_identifier"] is not None:
         linking_agent_identifier = premis.identifier(
-            identifier_type='UUID',
-            identifier_value=agent_identifier,
+            identifier_type=attributes["agent_identifier"][0],
+            identifier_value=attributes["agent_identifier"][1],
             prefix='linkingAgent'
         )
         child_elements.append(linking_agent_identifier)
 
     premis_event_elem = premis.event(
-        event_identifier, kwargs["event_type"], kwargs["event_datetime"],
-        kwargs["event_detail"], child_elements=child_elements
+        event_identifier, attributes["event_type"], attributes["event_datetime"],
+        attributes["event_detail"], child_elements=child_elements
     )
 
     return premis_event_elem
-
-
-def create_premis_agent_file(agent_identifier, **kwargs):
-    """Creates `<event_type>-agent.xml` file. If path to target file is given
-    as `event_target` parameter, the URL-encoded path is used as filename
-    prefix. The file is METS XML file that contains PREMIS agent element inside
-    digiprovMD element. The ID attribute of digiprovMD is hashed from the
-    filename.
-
-    :param workspace: path to directory where file is created
-    :param event_type: event type (for filename)
-    :param agent_name: PREMIS agentName
-    :param agent_type: PREMIS agentType
-    :param agent_identifier: PREMIS agentIdentifierValue
-    :param event_target: event target file (for filename)
-    :returns: output file path and METS XML element object
-    """
-    _initialize_args(kwargs)
-    output_filename = '%s-agent-amd.xml' % (kwargs["event_type"])
-    if kwargs["event_target"]:
-        output_filename = '%s-%s' % (os.path.normpath(kwargs["event_target"]),
-                                     output_filename)
-    output_filename = encode_path(output_filename)
-
-    agent_id = encode_id(output_filename)
-
-    premis_agent = create_premis_agent(kwargs["agent_name"],
-                                       kwargs["agent_type"],
-                                       agent_identifier)
-
-    agent_mets = _create_mets(premis_agent, agent_id, 'PREMIS:AGENT')
-    _write_mets(agent_mets, os.path.join(kwargs["workspace"],
-                                         output_filename))
-
-    return (os.path.join(kwargs["workspace"], output_filename),
-            agent_mets)
-
-
-def create_premis_event_file(agent_identifier=None, **kwargs):
-    """Creates `<event_type>-event.xml` file. If path to target file is given
-    as `event_target` parameter, the URL-encoded path is used as filename
-    prefix. The file is METS XML file that contains PREMIS event element inside
-    digiprovMD element. The ID attribute of digiprovMD is hashed from the
-    filename.
-
-    :param agent_identifier: PREMIS linkingAgentIdentifierValue
-    :param workspace: path to directory where file is created
-    :param event_type: PREMIS eventType
-    :param event_datetime: PREMIS eventDateTime
-    :param event_detail: PREMIS eventDetail
-    :param event_outcome: PREMIS eventOutcome
-    :param event_outcome_detail: PREMIS eventOutcomeDetail
-    :param event_target: event target file (for filename)
-    :returns: output file path and METS XML element object
-    """
-    _initialize_args(kwargs)
-    output_filename = '%s-event-amd.xml' % kwargs["event_type"]
-    if kwargs["event_target"]:
-        output_filename = '%s-%s' % (os.path.normpath(kwargs["event_target"]),
-                                     output_filename)
-    output_filename = encode_path(output_filename)
-
-    event_id = encode_id(output_filename)
-
-    premis_event_elem = create_premis_event(
-        agent_identifier=agent_identifier, **kwargs
-    )
-
-    event_mets = _create_mets(premis_event_elem, event_id, 'PREMIS:EVENT')
-    _write_mets(event_mets, os.path.join(kwargs["workspace"],
-                                         output_filename))
-
-    return (os.path.join(kwargs["workspace"], output_filename),
-            event_mets)
-
-
-def _write_mets(mets_element, output_file):
-    """Write METS XML element to file.
-
-    :param mets_element: METS XML element
-    :param output_file: Output file path
-    :returns: ``None``
-    """
-
-    if not os.path.exists(os.path.dirname(output_file)):
-        os.makedirs(os.path.dirname(output_file))
-
-    with open(output_file, 'wb+') as output:
-        output.write(xml_helpers.utils.serialize(mets_element))
-
-
-def _create_mets(premis_element, digiprovmd_id, mdtype):
-    """Creates a METS XML element that contains PREMIS element
-
-    :param premis_element: PREMIS element
-    :param digiprovmd_id: ID attribute of digiprovMD element
-    :param mdtype: MDTYPE of mdWrap element
-    :returns: METS XML element
-    """
-    xmldata = mets.xmldata(child_elements=[premis_element])
-    mdwrap = mets.mdwrap(mdtype, '2.3', child_elements=[xmldata])
-    digiprovmd = mets.digiprovmd(digiprovmd_id, child_elements=[mdwrap])
-    amdsec = mets.amdsec(child_elements=[digiprovmd])
-    _mets = mets.mets(child_elements=[amdsec])
-
-    return _mets
 
 
 if __name__ == '__main__':

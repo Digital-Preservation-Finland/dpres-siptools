@@ -16,7 +16,7 @@ import lxml.etree
 import mets
 import xml_helpers.utils as xml_utils
 from scandir import scandir
-from siptools.utils import get_objectlist
+from siptools.mdcreator import get_objectlist
 from siptools.xml.mets import (METS_CATALOG, METS_PROFILE, METS_SPECIFICATION,
                                NAMESPACES, RECORD_STATUS_TYPES, mets_extend)
 
@@ -48,8 +48,7 @@ click.disable_unicode_literals_warning = True
 @click.option('--contentid',
               type=str,
               metavar='<CONTENTID>',
-              help='Identifier for content, useful for the case where '
-                   'content is divided in several SIPs.')
+              help='Identifier for content. Defaults to <OBJID>.')
 @click.option('--create_date',
               type=str,
               default=datetime.datetime.utcnow().isoformat(),
@@ -80,10 +79,7 @@ click.disable_unicode_literals_warning = True
               metavar='<PACKAGING SERVICE>',
               help='If defined, add packaging service as CREATOR '
                    'agent to METS Header.')
-#pylint: disable=too-many-arguments
-def main(mets_profile, organization_name, contractid, objid, label,
-         contentid, create_date, last_moddate, record_status, workspace,
-         clean, copy_files, base_path, stdout, packagingservice):
+def main(**kwargs):
     """Merge partial METS documents in workspace directory into
     one METS document.
 
@@ -92,61 +88,73 @@ def main(mets_profile, organization_name, contractid, objid, label,
     ORGANIZATION_NAME: Creator name (organization)
     CONTRACTID: Contract ID given by the Digital Preservation Service
     """
-    compile_mets(
-        mets_profile=mets_profile, organization_name=organization_name,
-        contractid=contractid, objid=objid, label=label, contentid=contentid,
-        create_date=create_date, last_moddate=last_moddate,
-        record_status=record_status, workspace=workspace, clean=clean,
-        copy_files=copy_files, base_path=base_path, stdout=stdout,
-        packagingservice=packagingservice
-    )
+    compile_mets(**kwargs)
     return 0
 
 
-def _initialize_args(kwargs):
+def _attribute_values(given_params):
     """
-    Initalize given arguments to new dict by adding the missing keys with
-    initial values.
+    Give attribute values as a dict for the script.
 
-    :kwargs: Arguments as dict.
+    :given_params: Arguments as dict.
     :returns: Initialized dict.
     """
-    kwargs["objid"] = six.text_type(uuid.uuid4()) if "objid" not in \
-        kwargs else kwargs["objid"]
-    kwargs["create_date"] = datetime.datetime.utcnow().isoformat() if \
-        "create_date" not in kwargs else kwargs["create_date"]
-    kwargs["workspace"] = "./workspace" if "workspace" not in kwargs \
-        else kwargs["workspace"]
-    kwargs["base_path"] = "." if "base_path" not in kwargs else \
-        kwargs["base_path"]
-    kwargs["record_status"] = "submission" if "record_status" not in \
-        kwargs else kwargs["record_status"]
+    new_uuid = six.text_type(uuid.uuid4())
+    attributes = {
+        "mets_profile": given_params["mets_profile"],
+        "organization_name": given_params["organization_name"],
+        "contractid": "urn:uuid:%s" % given_params["contractid"],
+        "workspace": "./workspace/",
+        "base_path": ".",
+        "objid": new_uuid,
+        "contentid": new_uuid,
+        "create_date": datetime.datetime.utcnow().isoformat(),
+        "record_status": "submission",
+        "stdout": False,
+        "clean": False,
+        "copy_files": False,
+        "label": None,
+        "contentid": None,
+        "last_moddate": None,
+        "packagingservice": None,
+    }
+    for key in given_params:
+        if given_params[key]:
+            attributes[key] = given_params[key]
 
-    keys = ["clean", "copy_files", "stdout"]
-    for key in keys:
-        kwargs[key] = False if key not in kwargs else kwargs[key]
-
-    keys = ["label", "contentid", "last_moddate", "packagingservice"]
-    for key in keys:
-        kwargs[key] = None if key not in kwargs else kwargs[key]
-
+    return attributes
 
 def compile_mets(**kwargs):
     """
     Merge partial METS documents in workspace directory into
     one METS document.
 
-    :kwargs: Given arguments
+    :kwargs: Given arguments:
+             mets_profile: METS profile (mandatory)
+             organization_name: Creator name (mandatory)
+             contractid: Contract ID (mandatory)
+             objid: Unique identifier for the package
+             contentid: Identifier of the content
+             create_date: Package creation date
+             last_moddate: Last modification date
+             workspace: Workspace path
+             base_path: Base path of the digital objects
+             record_status: Record status
+             label: Short description about the package
+             clean: True for cleaning the workspace from temporary files
+             copy_files: True copies the digital objects from base_path to
+                         workspace
+             stdout: True prints the output to stdout
+             packagingservice: Packaging service specific parameter
     """
-    _initialize_args(kwargs)
-    kwargs["contractid"] = "urn:uuid:%s" % kwargs["contractid"]
+    attributes = _attribute_values(kwargs)
 
-    mets_document = create_mets(**kwargs)
+    mets_document = create_mets(**attributes)
 
-    if kwargs["stdout"]:
+    if attributes["stdout"]:
         print(xml_utils.serialize(mets_document.getroot()))
 
-    output_file = os.path.join(kwargs["workspace"], 'mets.xml')
+    output_file = os.path.join(attributes["workspace"], 'mets.xml')
 
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
@@ -156,17 +164,17 @@ def compile_mets(**kwargs):
 
     print("compile_mets created file: %s" % output_file)
 
-    if kwargs["copy_files"]:
-        copy_objects(kwargs["workspace"], kwargs["base_path"])
+    if attributes["copy_files"]:
+        copy_objects(attributes["workspace"], attributes["base_path"])
         print("compile_mets copied objects from %s to "
-              "workspace" % kwargs["base_path"])
+              "workspace" % attributes["base_path"])
 
-    if kwargs["clean"]:
-        clean_metsparts(kwargs["workspace"])
+    if attributes["clean"]:
+        clean_metsparts(attributes["workspace"])
         print("compile_mets cleaned work files from workspace.")
 
 
-def create_mets(**kwargs):
+def create_mets(**attributes):
     """Creates METS document element tree. Looks for files with prefix
     "-amd.xml", "dmdsec.xml", "structmap.xml", "filesec.xml", and
     "rightsmd.xml" from workspace and merges the dmdSec,
@@ -174,29 +182,40 @@ def create_mets(**kwargs):
     one METS document. Also metsHdr element is created and included in
     document.
 
-    :kwargs: Given arguments
+    :attributes: The following keys:
+                 mets_profile: METS Profile (mandatory)
+                 organization_name: Creator name (mandatory)
+                 contractid: Contract ID (mandatory)
+                 objid: Unique identifier for the package
+                 contentid: Identifier of the content
+                 create_date: Package creation date
+                 last_moddate: Last modification date
+                 workspace: Workspace path
+                 record_status: Record status
+                 label: Short description about the package
+                 packagingservice: Packaging service specific parameter
     :returns: METS document ElementTree object
     """
-    _initialize_args(kwargs)
+    attributes = _attribute_values(attributes)
     # Create list of agent elements
-    if kwargs["packagingservice"]:
-        agents = [mets.agent(kwargs["organization_name"],
+    if attributes["packagingservice"]:
+        agents = [mets.agent(attributes["organization_name"],
                              agent_role='ARCHIVIST')]
-        agents.append(mets.agent(kwargs["packagingservice"],
+        agents.append(mets.agent(attributes["packagingservice"],
                                  agent_type='OTHER',
                                  agent_role='CREATOR',
                                  othertype='SOFTWARE'))
     else:
-        agents = [mets.agent(kwargs["organization_name"],
+        agents = [mets.agent(attributes["organization_name"],
                              agent_role='CREATOR')]
 
     # Create mets header
-    metshdr = mets.metshdr(kwargs["create_date"], kwargs["last_moddate"],
-                           kwargs["record_status"], agents)
+    metshdr = mets.metshdr(attributes["create_date"], attributes["last_moddate"],
+                           attributes["record_status"], agents)
 
     # Collect elements from workspace XML files
     elements = []
-    for entry in scandir(kwargs["workspace"]):
+    for entry in scandir(attributes["workspace"]):
         if entry.name.endswith(('-amd.xml', 'dmdsec.xml',
                                 'structmap.xml', 'filesec.xml',
                                 'rightsmd.xml')) and entry.is_file():
@@ -207,15 +226,15 @@ def create_mets(**kwargs):
     elements.sort(key=mets.order)
 
     # Create METS element
-    mets_element = mets.mets(METS_PROFILE[kwargs["mets_profile"]],
-                             objid=kwargs["objid"],
-                             label=kwargs["label"],
+    mets_element = mets.mets(METS_PROFILE[attributes["mets_profile"]],
+                             objid=attributes["objid"],
+                             label=attributes["label"],
                              namespaces=NAMESPACES)
     mets_element = mets_extend(mets_element,
                                METS_CATALOG,
                                METS_SPECIFICATION,
-                               kwargs["contentid"],
-                               kwargs["contractid"])
+                               attributes["contentid"],
+                               attributes["contractid"])
     mets_element.append(metshdr)
     for element in elements:
         mets_element.append(element)

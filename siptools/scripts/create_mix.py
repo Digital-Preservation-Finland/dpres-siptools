@@ -9,7 +9,8 @@ import click
 import six
 
 import nisomix
-from siptools.utils import MdCreator, scrape_file
+from siptools.mdcreator import MdCreator
+from siptools.utils import scrape_file
 
 
 click.disable_unicode_literals_warning = True
@@ -97,11 +98,15 @@ class MixCreator(MdCreator):
     # Change the default write parameters
     #pylint: disable=too-many-arguments
     def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None,
-              section=None, stdout=False, file_metadata_dict=None):
+              section=None, stdout=False, file_metadata_dict=None,
+              ref_file="create-mix-md-references.xml"):
         """
         Write MIX metadata.
         """
-        super(MixCreator, self).write(mdtype, mdtypeversion, othermdtype)
+        super(MixCreator, self).write(
+            mdtype=mdtype, mdtypeversion=mdtypeversion,
+            othermdtype=othermdtype, ref_file=ref_file
+        )
 
 
 def check_missing_metadata(stream, filename):

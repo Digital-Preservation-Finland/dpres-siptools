@@ -97,7 +97,9 @@ def test_create_addml_creator(testpath, isheader, exp_amd_files, exp_fields):
 
     # Check that md-reference and the ADDML-amd files with correct content
     # are created
-    assert os.path.isfile(os.path.join(testpath, 'md-references.xml'))
+    assert os.path.isfile(
+        os.path.join(testpath, 'create-addml-md-references.xml')
+    )
 
     for amd_file_index, exp_amd_file in enumerate(exp_amd_files):
         amd_file = os.path.join(testpath, exp_amd_file)
@@ -149,7 +151,8 @@ def test_paths(testpath, file_, base_path, run_cli):
             '--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        open(os.path.join(testpath, 'md-references.xml')).read()
+        open(os.path.join(testpath, 
+                          'create-addml-md-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))
 

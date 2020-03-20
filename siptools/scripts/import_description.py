@@ -13,8 +13,7 @@ import lxml.etree
 import mets
 
 from siptools.xml.mets import METS_MDTYPES
-from siptools.utils import MdCreator
-
+from siptools.mdcreator import MdCreator
 
 click.disable_unicode_literals_warning = True
 
@@ -44,19 +43,38 @@ click.disable_unicode_literals_warning = True
 @click.option('--stdout', is_flag=True,
               help='Print output to stdout')
 #pylint: disable=too-many-arguments
-def main(dmdsec_location, base_path, dmdsec_target, workspace, without_uuid,
-         remove_root, stdout):
+def main(**kwargs):
     """Create METS documents that contains descriptive metadata
     imported from XML file.
 
     DMDLOCATION: Path to XML file that contains descriptive metadata.
     """
-    import_description(
-        dmdsec_location=dmdsec_location, base_path=base_path,
-        dmdsec_target=dmdsec_target, workspace=workspace,
-        without_uuid=without_uuid, remove_root=remove_root, stdout=stdout
-    )
+    import_description(**kwargs)
     return 0
+
+
+def _attribute_values(given_params):
+    """
+    Give attribute values as a dict for the script.
+
+    :given_params: Arguments as dict.
+    :returns: Attribute value dict
+    """
+    attributes = {
+        "dmdsec_location": given_params["dmdsec_location"]
+        "workspace": "./workspace/",
+        "base_path": ".",
+        "root_type": "directory",
+        "dmdsec_target": None,
+        "without_uuid": False,
+        "remove_root": False,
+        "stdout": False,
+    }
+    for key in given_params:
+        if given_params[key]:
+            attributes[key] = given_params[key]
+
+    return attributes
 
 
 def import_description(**kwargs):
@@ -64,27 +82,28 @@ def import_description(**kwargs):
     Create METS documents that contains descriptive metadata
     imported from XML file.
 
-    :kwargs: Given arguments
+    :kwargs: Given arguments 
     :raises: OSError if descriptive metadata file exists
     """
-    _initialize_args(kwargs)
-    dmd_target = dmd_target_path(kwargs["base_path"], kwargs["dmdsec_target"])
+    attributes = attribute_values(kwargs)
+    dmd_target = dmd_target_path(attributes["base_path"],
+                                 attributes["dmdsec_target"])
     dmdfile_id = str(uuid4())
     dmd_id = '_' + dmdfile_id
-    if kwargs["without_uuid"]:
+    if attributes["without_uuid"]:
         filename = 'dmdsec.xml'
     else:
         filename = '%s-dmdsec.xml' % dmdfile_id
 
-    _mets = create_mets(kwargs["dmdsec_location"], dmd_id,
-                        kwargs["remove_root"])
-    creator = DmdCreator(kwargs["workspace"])
+    _mets = create_mets(attributes["dmdsec_location"], dmd_id,
+                        attributes["remove_root"])
+    creator = DmdCreator(attributes["workspace"])
     creator.write_dmd_ref(_mets, dmd_id, dmd_target)
 
-    if kwargs["stdout"]:
+    if attributes["stdout"]:
         print(lxml.etree.tostring(_mets, pretty_print=True).decode("utf-8"))
 
-    output_file = os.path.join(kwargs["workspace"], filename)
+    output_file = os.path.join(attributes["workspace"], filename)
     if os.path.isfile(output_file):
         raise OSError('File {} already exists.'.format(output_file))
 
@@ -99,26 +118,7 @@ def import_description(**kwargs):
     print("import_description created file: %s" % output_file)
 
 
-def _initialize_args(kwargs):
-    """
-    Initalize given arguments to new dict by adding the missing keys with
-    initial values.
-
-    :kwargs: Arguments as dict.
-    :returns: Initialized dict.
-    """
-    kwargs["workspace"] = "./workspace" if not "workspace" in kwargs \
-        else kwargs["workspace"]
-    kwargs["base_path"] = "." if not "base_path" in kwargs else \
-        kwargs["base_path"]
-    kwargs["dmdsec_target"] = None if not "dmdsec_target" in kwargs else \
-        kwargs["dmdsec_target"]
-    keys = ["without_uuid", "remove_root", "stdout"]
-    for key in keys:
-        kwargs[key] = False if not key in kwargs else kwargs[key]
-
-
-def dmd_target_path(base_path, dmdsec_target=None):
+def dmd_target_path(base_path, dmdsec_target):
     """"
     Returns the path to the dmdsec_target based on the base_path and
     dmdsec_target. If dmdsec_target is None, the dmdsec concerns the whole
@@ -162,8 +162,8 @@ class DmdCreator(MdCreator):
             dmd_target = '.'
 
         self.add_md(metadata=dmd_xml, directory=dmd_target)
-        self.add_reference(dmd_id, None, directory=dmd_target, ref_type='dmd')
-        self.write_references()
+        self.add_reference(dmd_id, None, directory=dmd_target)
+        self.write_references(ref_file="import-description-md-references.xml")
 
 
 def create_mets(input_file, dmd_id, remove_root=False):

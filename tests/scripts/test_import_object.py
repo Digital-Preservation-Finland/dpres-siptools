@@ -17,7 +17,7 @@ from siptools.xml.mets import NAMESPACES
 
 def get_amd_file(path, input_file, stream=None):
     """Get id"""
-    ref = os.path.join(path, 'md-references.xml')
+    ref = os.path.join(path, 'import-object-md-references.xml')
 
     root = ET.parse(ref).getroot()
     decoded_input_file = fsdecode_path(input_file)

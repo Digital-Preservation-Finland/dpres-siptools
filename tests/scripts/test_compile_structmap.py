@@ -67,7 +67,7 @@ def test_compile_structmap_dmdsecid(testpath, run_cli):
     # The root div of structMap should have reference to dmdSec element in
     # dmdsec.xml
 
-    ref = os.path.join(testpath, 'md-references.xml')
+    ref = os.path.join(testpath, 'import-description-md-references.xml')
     root = lxml.etree.parse(ref).getroot()
     dmdref = root.xpath("/mdReferences/mdReference"
                         "[@directory='.']")[0]

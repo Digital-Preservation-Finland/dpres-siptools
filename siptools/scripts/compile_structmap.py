@@ -11,8 +11,8 @@ import click
 import lxml.etree as ET
 import mets
 import xml_helpers.utils as xml_utils
-from siptools.utils import (add, encode_path, get_objectlist, tree,
-                            load_scraper_json)
+from siptools.mdcreator import get_objectlist
+from siptools.utils import add, encode_path, tree, load_scraper_json
 from siptools.xml.mets import NAMESPACES
 
 click.disable_unicode_literals_warning = True
@@ -49,25 +49,57 @@ def ead3_ns(tag):
 @click.option('--stdout',
               is_flag=True,
               help='Print output also to stdout.')
-def main(workspace, structmap_type, root_type, dmdsec_loc, stdout):
+def main(**kwargs):
     """Tool for generating METS file section and structural map based on
     created/imported administrative metada and descriptive metadata.
     The script will also add order of the file to the structural map
     (via json file), if --order argument was used in import_object script.
     """
-    compile_structmap(workspace, structmap_type, root_type, dmdsec_loc, stdout)
+    compile_structmap(**kwargs)
 
     return 0
 
 
-def compile_structmap(workspace="./workspace/", structmap_type=None,
-                      root_type=None, dmdsec_loc=None, stdout=False):
+def _attribute_values(given_params):
+    """
+    Give attribute values as a dict for the script.
+
+    :given_params: Arguments as dict.
+    :returns: Attribute value dict
+    """
+    attributes = {
+        "workspace": "./workspace/",
+        "root_type": "directory",
+        "structmap_type": None,
+        "dmdsec_loc": None,
+        "stdout": False,
+        "filelist": get_objectlist(given_params["workspace"]),
+        "all_amd_refs": read_all_amd_references(given_params["workspace"]),
+        "all_dmd_refs": read_md_references(
+            given_params["workspace"], "import-description-md-references.xml"
+        )
+    }
+    for key in given_params:
+        if given_params[key]:
+            attributes[key] = given_params[key]
+
+    return attributes
+
+
+def compile_structmap(**kwargs):
     """Generate METS file section and structural map based on
     created/imported administrative metada and descriptive metadata.
-    """
-    filelist = get_objectlist(workspace)
 
-    if structmap_type == 'EAD3-logical':
+    :kwargs: Given arguments:
+             workspace: Workspace directory
+             structmap_type: Type of structmap
+             root_type: Type of root div
+             dmdsec_loc: Location of structured descriptive metadata
+             stdout: True to print output to stdout
+    """
+    attributes = _attribute_values(**kwargs)
+
+    if attributes["structmap_type"] == 'EAD3-logical':
         # If structured descriptive metadata for structMap divs is used, also
         # the fileSec element (apparently?) is different. The
         # create_ead3_structmap function populates the fileGrp element.
@@ -75,19 +107,17 @@ def compile_structmap(workspace="./workspace/", structmap_type=None,
         filesec_element = mets.filesec(child_elements=[filegrp])
         filesec = mets.mets(child_elements=[filesec_element])
 
-        structmap = create_ead3_structmap(dmdsec_loc, workspace,
-                                          filegrp, filelist, structmap_type)
+        structmap = create_ead3_structmap(filegrp, attributes)
     else:
-        filesec = create_filesec(workspace, filelist)
-        structmap = create_structmap(workspace, filesec.getroot(),
-                                     filelist, structmap_type, root_type)
+        filesec = create_filesec(attributes)
+        structmap = create_structmap(filesec.getroot(), attributes)
 
-    if stdout:
+    if attributes["stdout"]:
         print(xml_utils.serialize(filesec).decode("utf-8"))
         print(xml_utils.serialize(structmap).decode("utf-8"))
 
-    output_sm_file = os.path.join(workspace, 'structmap.xml')
-    output_fs_file = os.path.join(workspace, 'filesec.xml')
+    output_sm_file = os.path.join(attributes["workspace"], 'structmap.xml')
+    output_fs_file = os.path.join(attributes["workspace"], 'filesec.xml')
 
     if not os.path.exists(os.path.dirname(output_sm_file)):
         os.makedirs(os.path.dirname(output_sm_file))
@@ -105,46 +135,59 @@ def compile_structmap(workspace="./workspace/", structmap_type=None,
                                                       output_fs_file))
 
 
-def create_filesec(workspace, filelist):
-    """Creates METS document element tree that contains fileSec element.
+def create_filesec(attributes):
+    """
+    Creates METS document element tree that contains fileSec element.
+
+    :attributes: Attribute values as a dict
+                 all_amd_refs: XML element tree of administrative metadata
+                               references
+                 filelist: Sorted list of digital objects (file paths)
+    :returns: METS XML Element tree including file section element
     """
     filegrp = mets.filegrp()
     filesec = mets.filesec(child_elements=[filegrp])
 
-    create_filegrp(workspace, filegrp, filelist)
+    for path in attributes["filelist"]:
+        add_file_to_filesec(attributes["all_amd_refs"], path, filegrp)
 
     mets_element = mets.mets(child_elements=[filesec])
     ET.cleanup_namespaces(mets_element)
     return ET.ElementTree(mets_element)
 
 
-def create_structmap(workspace, filesec, filelist, type_attr=None,
-                     root_type=None):
-    """Creates METS document element tree that contains structural map.
+def create_structmap(filesec, attributes):
+    """
+    Creates METS document element tree that contains structural map.
 
-    :param workspace: directory from which some files are searhed
-    :param filesec: fileSec element
-    :param filelist: Sorted list of digital objects (file paths)
-    :param type_attr: TYPE attribute of structMap element
-    :param root_type: TYPE attribute of root div element
+    :filesec: fileSec element
+    :attributes: The following keys:
+                 all_amd_refs: XML element tree of administrative metadata
+                               references
+                 all_dmd_refs: XML element tree of descriptive metadata
+                               references
+                 filelist: Sorted list of digital objects (file paths)
+                 structmap_type: TYPE attribute of structMap element
+                 root_type: TYPE attribute of root div element
+                 workspace: Workspace path
     :returns: structural map element
     """
-    amdids = get_md_references(workspace, directory='.')
-    dmdids = get_md_references(workspace, directory='.', ref_type='dmd')
+    amdids = get_md_references(attributes["all_amd_refs"], directory='.')
+    dmdids = get_md_references(attributes["all_dmd_refs"], directory='.')
 
-    if type_attr == 'Directory-physical':
+    if attributes["structmap_type"] == 'Directory-physical':
         container_div = mets.div(type_attr='directory', label='.',
                                  dmdid=dmdids, admid=amdids)
     else:
-        root_type = root_type if root_type else 'directory'
-        container_div = mets.div(type_attr=root_type, dmdid=dmdids,
+        container_div = mets.div(type_attr=attributes["root_type"],
+                                 dmdid=dmdids,
                                  admid=amdids)
 
-    structmap = mets.structmap(type_attr=type_attr)
+    structmap = mets.structmap(type_attr=attributes["structmap_type"])
     structmap.append(container_div)
-    divs = div_structure(filelist)
-    create_div(workspace, divs, container_div, filesec,
-               filelist, type_attr=type_attr)
+    divs = div_structure(attributes["filelist"])
+    create_div(divs, container_div, filesec, attributes,
+               type_attr=attributes["structmap_type"])
 
     mets_element = mets.mets(child_elements=[structmap])
     ET.cleanup_namespaces(mets_element)
@@ -163,17 +206,21 @@ def div_structure(filelist):
     return divs
 
 
-def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
+def create_ead3_structmap(filegrp, attributes):
     """Create structmap based on ead3 descriptive metadata structure.
 
-    :desc_file: EAD3 descriptive metadata file
-    :workspace: Workspace path
-    :structmap: Structmap element
     :filegrp: fileGrp element
-    :filelist: Sorted list of digital objects (file paths)
-    :type_attr: TYPE attribute of structMap element
+    :attributes: The following keys:
+                 all_amd_refs: XML element tree of administrative metadata
+                               references
+                 all_dmd_refs: XML element tree of descriptive metadata
+                               references
+                 filelist: Sorted list of digital objects (file paths)
+                 dmdsec_loc: EAD3 descriptive metadata file
+                 structmap_type: TYPE attribute of structMap element
+                 workspace: Workspace path
     """
-    structmap = mets.structmap(type_attr=type_attr)
+    structmap = mets.structmap(type_attr=attributes["structmap_type"])
     container_div = mets.div(type_attr='logical')
 
     root = ET.parse(descfile).getroot()
@@ -185,8 +232,8 @@ def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
     except IndexError:
         label = 'archdesc'
 
-    amdids = get_md_references(workspace, directory='.')
-    dmdids = get_md_references(workspace, directory='.', ref_type='dmd')
+    amdids = get_md_references(attributes["all_amd_refs"], directory='.')
+    dmdids = get_md_references(attributes["all_dmd_refs"], directory='.')
 
     div_ead = mets.div(type_attr='archdesc', label=label, dmdid=dmdids,
                        admid=amdids)
@@ -194,7 +241,7 @@ def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
     if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:
         for elem in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
             if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
-                ead3_c_div(elem, div_ead, filegrp, workspace, filelist)
+                ead3_c_div(elem, div_ead, filegrp, attributes)
 
     container_div.append(div_ead)
     structmap.append(container_div)
@@ -203,7 +250,7 @@ def create_ead3_structmap(descfile, workspace, filegrp, filelist, type_attr):
     return ET.ElementTree(mets_element)
 
 
-def ead3_c_div(parent, structmap, filegrp, workspace, filelist):
+def ead3_c_div(parent, div, filegrp, attributes):
     """Create div elements based on ead3 c elements. Fptr elements are
     created based on ead dao elements. The Ead3 elements tags are put
     into @type and the @level or @otherlevel attributes from ead3 will
@@ -212,8 +259,11 @@ def ead3_c_div(parent, structmap, filegrp, workspace, filelist):
     :parent: Element to follow in EAD3
     :div: Div element in structmap
     :filegrp: fileGrp element
-    :workspace: Workspace path
-    :filelist: Sorted list of digital objects (file paths)
+    :attributes: The following keys:
+                 all_amd_refs: XML element tree of administrative metadata
+                               references
+                 filelist: Sorted list of digital objects (file paths)
+                 workspace: Workspace path
     """
 
     try:
@@ -226,30 +276,27 @@ def ead3_c_div(parent, structmap, filegrp, workspace, filelist):
 
     for elem in parent.findall("./*"):
         if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
-            ead3_c_div(elem, c_div, filegrp, workspace, filelist)
+            ead3_c_div(elem, c_div, filegrp, attributes)
 
     hrefs = collect_dao_hrefs(parent)
-    c_div = add_fptrs_div_ead(
-        c_div=c_div, hrefs=hrefs, filelist=filelist,
-        filegrp=filegrp, workspace=workspace)
+    c_div = add_fptrs_div_ead(c_div=c_div, hrefs=hrefs, filelist=filelist,
+                              attributes=attributes)
 
-    structmap.append(c_div)
+    div.append(c_div)
 
 
-def add_file_to_filesec(workspace, path, filegrp):
+def add_file_to_filesec(all_amd_refs, path, filegrp):
     """Add file element to fileGrp element given as parameter.
 
-    :param workspace: Workspace directorye from which administrative MD
-                      files and amd reference files searched.
-    :param path: url encoded path of the file
-    :param lxml.etree.Element filegrp: fileGrp element
-    :param str returns: id of file added to fileGrp
+    :all_amd_refs: XML element tree of administrative metadata references
+    :path: url encoded path of the file
+    :filegrp: fileGrp element
     :returns: unique identifier of file element
     """
     fileid = '_{}'.format(uuid4())
 
     # Create list of IDs of amdID elements
-    amdids = get_md_references(workspace, path=path)
+    amdids = get_md_references(all_amd_refs, path=path)
 
     # Create XML element and add it to fileGrp
     file_el = mets.file_elem(
@@ -264,8 +311,8 @@ def add_file_to_filesec(workspace, path, filegrp):
     streams = get_objectlist(workspace, path)
     if streams:
         for stream in streams:
-            stream_ids = get_md_references(workspace, path=path,
-                                           stream=stream)
+            stream_ids = get_md_references(
+                all_amd_refs, path=path, stream=stream)
             stream_el = mets.stream(admid_elements=stream_ids)
             file_el.append(stream_el)
 
@@ -278,8 +325,8 @@ def get_fileid(filesec, path):
     """Find a file with `path` from fileSec. Returns the ID attribute of
     matching file element.
 
-    :param path: path of the file
-    :param lxml.etree Element filesec: fileSec element
+    :filesec: fileSec element
+    :path: path of the file
     :returns: file element identifier
     """
     encoded_path = encode_path(path, safe='/')
@@ -291,62 +338,94 @@ def get_fileid(filesec, path):
 
     return element.attrib['ID']
 
-
-def get_md_references(workspace, path=None, stream=None, directory=None,
-                      ref_type='amd'):
-    """If MD reference file exists in workspace, read
-    the MD IDs that should be referenced for the file, stream or
-    directory in question. MD reference references to either an
-    administrative metadata section or a descriptive metadata section.
+def read_all_amd_references(workspace):
+    """
+    Collect all administrative references.
 
     :workspace: path to workspace directory
-    :path: path of the file for which MD IDs are read
-    :stream: stream index for which MD IDs are read
-    :directory: path of the directory for which MD IDs are read
-    :ref_type: type of metadata section, e.g. amd or dmd
     :returns: a set of administrative MD IDs
     """
-    reference_file = os.path.join(workspace, 'md-references.xml')
+    references = None
+    for ref_file in ["import-object-md-references.xml",
+                     "create-addml-md-references.xml",
+                     "create-audiomd-md-references.xml",
+                     "create-mix-md-references.xml",
+                     "create-videomd-md-references.xml",
+                     "premis-event-md-references.xml"]:
+        if references is None:
+            refrences = read_md_references(workspace, ref_file)
+        else:
+            refs = read_md_references(workspace, ref_file)
+            for ref in refs:
+                refrences.append(ref)
+
+    return references
+
+
+def read_md_references(workspace, ref_file="md-references.xml"):
+    """If MD reference file exists in workspace, read
+    all the MD IDs as element_tree.
+
+    :workspace: path to workspace directory
+    :ref_file: Metadata reference file
+    :returns: a set of administrative MD IDs
+    """
+    reference_file = os.path.join(workspace, ref_file)
     amd_ids = []
 
     if os.path.isfile(reference_file):
         element_tree = ET.parse(reference_file)
-        if directory:
-            directory = os.path.normpath(directory)
-            reference_elements = element_tree.xpath(
-                '/mdReferences/mdReference'
-                '[@directory="%s" and @ref_type="%s"]' % (
-                    directory, ref_type)
-            )
-        elif stream is None:
-            reference_elements = element_tree.xpath(
-                '/mdReferences/mdReference[@file="%s" '
-                'and not(@stream)]' % path
-            )
-        else:
-            reference_elements = element_tree.xpath(
-                '/mdReferences/mdReference[@file="%s" '
-                'and @stream="%s"]' % (path, stream)
-            )
-        amd_ids = [element.text for element in reference_elements]
 
-    return set(amd_ids)
+    return element_tree
+
+
+def get_md_references(element_tree, path=None, stream=None, directory=None):
+    """
+    Return filtered references from a set of given references.
+    :element_tree: XML etree of references to be filtered
+    :path: Filter by given file path
+    :stream: Filter by given strean index
+    :directory: Filter by given directory path
+    """
+    if directory:
+        directory = os.path.normpath(directory)
+        reference_elements = element_tree.xpath(
+            '/mdReferences/mdReference'
+            '[@directory="%s"]' % directory
+        )
+    elif stream is None:
+        reference_elements = element_tree.xpath(
+            '/mdReferences/mdReference[@file="%s" '
+            'and not(@stream)]' % path
+        )
+    else:
+        reference_elements = element_tree.xpath(
+            '/mdReferences/mdReference[@file="%s" '
+            'and @stream="%s"]' % (path, stream)
+        )
+    md_ids = [element.text for element in reference_elements]
+
+    return set(md_ids)
 
 
 #pylint: disable=too-many-arguments
 #pylint: disable=too-many-locals
-def create_div(workspace, divs, parent, filesec, filelist, path='',
-               type_attr=None):
+def create_div(divs, parent, filesec, attributes, path=''):
     """Recursively create fileSec and structmap divs based on directory
     structure.
 
-    :param workspace: Workspace path
-    :param divs: Current directory or file in directory structure walkthrough
-    :param parent: Parent element in structMap
-    :param filesec: filesec element
-    :param filelist: Sorted list of digital objects (file paths)
-    :param path: Current path in directory structure walkthrough
-    :param type_attr: Structmap type
+    :divs: Current directory or file in directory structure walkthrough
+    :parent: Parent element in structMap
+    :filesec: filesec element
+    :attributes: The following keys:
+                 all_amd_refs: XML element tree of administrative metadata
+                               references
+                 all_dmd_refs: XML element tree of descriptive metadata
+                               references
+                 filelist: Sorted list of digital objects (file paths)
+                 type_attr: Structmap type
+                 workspace: Workspace path
+    :path: Current path in directory structure walkthrough
     :returns: ``None``
     """
     fptr_list = []
@@ -357,7 +436,7 @@ def create_div(workspace, divs, parent, filesec, filelist, path='',
         # It's a file, lets create file+fptr elements
         if div_path in filelist:
             fptr = mets.fptr(get_fileid(filesec, div_path))
-            div_elem = add_file_div(workspace, div_path, fptr)
+            div_elem = add_file_div(div_path, fptr, attributes)
             if div_elem is not None:
                 property_list.append(div_elem)
             else:
@@ -365,9 +444,11 @@ def create_div(workspace, divs, parent, filesec, filelist, path='',
 
         # It's not a file, lets create a div element
         else:
-            amdids = get_md_references(workspace, directory=div_path)
-            dmdsec_id = get_md_references(workspace, directory=div_path,
-                                          ref_type='dmd')
+            amdids = get_md_references(
+                attributes["all_amd_refs"], directory=div_path)
+            dmdsec_id = get_md_references(
+                attributes["all_dmd_refs"], directory=div_path)
+
             if type_attr == 'Directory-physical':
                 div_elem = mets.div(type_attr='directory', label=div,
                                     dmdid=dmdsec_id, admid=amdids)
@@ -375,8 +456,7 @@ def create_div(workspace, divs, parent, filesec, filelist, path='',
                 div_elem = mets.div(type_attr=div, dmdid=dmdsec_id,
                                     admid=amdids)
             div_list.append(div_elem)
-            create_div(workspace, divs[div], div_elem, filesec, filelist,
-                       div_path, type_attr)
+            create_div(divs[div], div_elem, filesec, attributes, div_path)
 
     # Add fptr list first, then div list
     for fptr in fptr_list:
@@ -387,30 +467,21 @@ def create_div(workspace, divs, parent, filesec, filelist, path='',
         parent.append(div_elem)
 
 
-def create_filegrp(workspace, filegrp, filelist):
-    """Add files to fileSec under fileGrp element.
-
-    :param workspace: Workspace path
-    :param filegrp: filegrp element in fileSec
-    :param filelist: Set of digital objects (file paths)
-    :returns: ``None``
-    """
-    for path in filelist:
-        add_file_to_filesec(workspace, path, filegrp)
-
-
-def add_file_div(workspace, path, fptr, type_attr='file'):
+def add_file_div(path, fptr, attributes, type_attr='file'):
     """Create a div element with file properties
 
-    :param properties: File properties
-    :param path: File path
-    :param fptr: Element fptr for file
-    :param type_attr: The TYPE attribute value for the div
+    :path: File path
+    :fptr: Element fptr for file
+    :attributes: The following keys:
+                 all_amd_refs: XML element tree of administrative metadata
+                               references
+                 workspace: Workspace path
+    :type_attr: The TYPE attribute value for the div
 
     :returns: Div element with properties or None
     """
 
-    properties = file_properties(workspace, path)
+    properties = file_properties(path, attributes)
     if properties and 'order' in properties:
         div_el = mets.div(type_attr=type_attr,
                           order=properties['order'])
@@ -420,18 +491,21 @@ def add_file_div(workspace, path, fptr, type_attr='file'):
     return None
 
 
-def file_properties(workspace, path):
+def file_properties(path, attributes):
     """Return file properties from the json data file
 
-    :param properties: File properties
-    :param path: File path
+    :path: File path
+    :attributes: The following keys:
+                 all_amd_refs: XML element tree of administrative metadata
+                               references
+                 workspace: Workspace path
     :returns: A dict with properties or None
     """
 
     json_name = None
-    for amdref in get_md_references(workspace, path=path):
+    for amdref in get_md_references(attributes["all_amd_refs"], path=path):
         json_name = os.path.join(
-            workspace, '{}-scraper.json'.format(amdref[1:]))
+            attributes["workspace"], '{}-scraper.json'.format(amdref[1:]))
         if os.path.isfile(json_name):
             break
 
@@ -445,7 +519,7 @@ def file_properties(workspace, path):
     return file_metadata_dict[0]['properties']
 
 
-def add_fptrs_div_ead(c_div, hrefs, filelist, filegrp, workspace):
+def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
     """Creates fptr elements for hrefs. If the files contain
     file properties, like ordering data, the data is written to the
     parent div element.
@@ -455,10 +529,12 @@ def add_fptrs_div_ead(c_div, hrefs, filelist, filegrp, workspace):
 
     :c_div: The div element as lxml.etree
     :hrefs: a list of hrefs
-    :filelist: Sorted list of digital objects (file paths)
     :filegrp: fileGrp element
-    :workspace: Workspace path
-
+    :attributes: The following keys:
+                 all_amd_refs: XML element tree of administrative metadata
+                               references
+                 filelist: Sorted list of digital objects (file paths)
+                 workspace: Workspace path
     :returns: The modified c_div element
     """
     for href in hrefs:
@@ -468,8 +544,9 @@ def add_fptrs_div_ead(c_div, hrefs, filelist, filegrp, workspace):
         if not amd_file:
             break
         amd_file = amd_file[0]
-        properties = file_properties(workspace, amd_file)
-        fileid = add_file_to_filesec(workspace, amd_file, filegrp)
+        properties = file_properties(amd_file, attributes)
+        fileid = add_file_to_filesec(attributes["all_amd_refs"], amd_file,
+                                     filegrp)
         fptr = mets.fptr(fileid=fileid)
 
         if properties and 'order' in properties:
@@ -478,8 +555,8 @@ def add_fptrs_div_ead(c_div, hrefs, filelist, filegrp, workspace):
             # one file, otherwise add the ORDER attribute to the current
             # div element
             if len(hrefs) > 1:
-                file_div = add_file_div(
-                    workspace, amd_file, fptr, type_attr='dao')
+                file_div = add_file_div(amd_file, fptr, attributes,
+                                        type_attr='dao')
                 c_div.append(file_div)
             else:
                 c_div.attrib['ORDER'] = properties['order']

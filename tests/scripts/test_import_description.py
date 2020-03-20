@@ -14,7 +14,7 @@ from siptools.utils import fsdecode_path
 
 def get_md_file(path, input_target):
     """Get id"""
-    ref = os.path.join(path, 'md-references.xml')
+    ref = os.path.join(path, 'import-description-md-references.xml')
 
     root = ET.parse(ref).getroot()
     amdref = root.xpath("/mdReferences/mdReference"
@@ -146,7 +146,10 @@ def test_paths(testpath, directory, base_path, run_cli):
             "tests/data/import_description/metadata/dc_description.xml"
         ])
 
-    with io.open(os.path.join(testpath, "md-references.xml"), "rt") as md_ref:
+    with io.open(os.path.join(
+            testpath,
+            "import-description-md-references.xml"
+        ), "rt") as md_ref:
         md_references = md_ref.read()
 
     assert 'directory=\"%s\"' % os.path.normpath(directory) in md_references

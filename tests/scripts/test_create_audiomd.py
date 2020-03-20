@@ -141,7 +141,8 @@ def test_create_audiomd(testpath):
     creator.write()
 
     # Check that md-reference and one AudioMD-amd files are created
-    assert os.path.isfile(os.path.join(testpath, 'md-references.xml'))
+    assert os.path.isfile(os.path.join(testpath, 
+                                       'create-audiomd-md-references.xml'))
 
     filepath = os.path.join(
         testpath, 'eae4d239422e21f3a8cfa57bb2afcb9e-AudioMD-amd.xml'
@@ -172,7 +173,7 @@ def test_main_utf8_files(testpath, run_cli):
     )
 
     # Check that filename is found in amd-reference file.
-    xml = ET.parse(os.path.join(testpath, 'md-references.xml'))
+    xml = ET.parse(os.path.join(testpath, 'create-audiomd-md-references.xml'))
     assert len(xml.xpath('//mdReference[@file="data/äöå.wav"]')) == 1
 
 
@@ -187,7 +188,8 @@ def test_existing_scraper_result(testpath):
           <mdReferences>
           <mdReference file="{}">_{}</mdReference>
           </mdReferences>""".format(file_, amdid).encode("utf-8")
-    with open(os.path.join(testpath, 'md-references.xml'), 'wb') as out:
+    with open(os.path.join(testpath,
+                           'import-object-md-references.xml'), 'wb') as out:
         out.write(xml)
 
     stream_dict = {0: {
@@ -236,6 +238,7 @@ def test_paths(testpath, file_, base_path, run_cli):
         run_cli(create_audiomd.main, ['--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        io.open(os.path.join(testpath, 'md-references.xml'), "rt").read()
+        io.open(os.path.join(testpath,
+                             'create-audiomd-md-references.xml'), "rt").read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

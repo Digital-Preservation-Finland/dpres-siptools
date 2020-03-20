@@ -12,7 +12,8 @@ import click
 import six
 
 import premis
-from siptools.utils import MdCreator, scrape_file, calc_checksum
+from siptools.mdcreator import MdCreator
+from siptools.utils import scrape_file, calc_checksum
 
 click.disable_unicode_literals_warning = True
 
@@ -100,88 +101,77 @@ UNKNOWN_VERSION = '(:unav)'
 @click.option(
     '--stdout', is_flag=True, help='Print result also to stdout')
 #pylint: disable=too-many-arguments
-def main(workspace, base_path, skip_wellformed_check, charset, file_format,
-         checksum, date_created, identifier, format_registry, order, stdout,
-         filepaths):
-    """Import files to generate digital objects. If kwargs --charset,
+def main(**kwargs):
+    """Import files to generate digital objects. If attributes --charset,
     --file_format, --identifier, --checksum or --date_created are not given,
     then these are created automatically.
 
     FILEPATHS: Files or a directory to import, relative path in relation to
-    current directory or to --base_path. It depends on your kwargs whether
+    current directory or to --base_path. It depends on your attributes whether
     you may give several files or a single file. For example --checksum and
     --identifier are file dependent metadata, and if these are used, then use
     the script only for one file.
     """
-    import_object(
-        workspace=workspace, base_path=base_path,
-        skip_wellformed_check=skip_wellformed_check, charset=charset,
-        file_format=file_format, checksum=checksum, date_created=date_created,
-        identifier=identifier, format_registry=format_registry, order=order,
-        stdout=stdout, filepaths=filepaths
-    )
+    import_object(**kwargs)
     return 0
 
 
+def _attribute_values(given_params):
+    """
+    Give attribute values as a dict for the script.
+
+    :given_params: Arguments as dict.
+    :returns: Attribute value dict
+    """
+    attributes = {
+        "workspace": "./workspace/",
+        "base_path": ".",
+        "sikp_wellformed_check": False,
+        "stdout": False,
+    }
+    for key in given_params:
+        if given_params[key]:
+            attributes[key] = given_params[key]
+
+    return attributes
+
+
 def import_object(**kwargs):
-    """Import files to generate digital objects. If kwargs charset,
+    """Import files to generate digital objects. If attributes charset,
     file_format, identifier, checksum or date_created are not given,
     then these are created automatically.
 
-    :kwargs: Given arguments
+    :attributes: Given arguments
     :returns: Dictionary of the scraped file metadata
     """
-    _initialize_args(kwargs)
+    attributes = attribute_values(kwargs)
     # Loop files and create premis objects
-    files = collect_filepaths(dirs=kwargs["filepaths"],
-                              base=kwargs["base_path"])
+    files = collect_filepaths(dirs=attributes["filepaths"],
+                              base=attributes["base_path"])
     for filepath in files:
 
         # If the given path is an absolute path and base_path is current
         # path (i.e. not given), relpath will return ../../.. sequences, if
         # current path is not part of the absolute path. In such case we will
         # use the absolute path for filerel and omit base_path relation.
-        if kwargs["base_path"] not in ['.']:
-            filerel = os.path.relpath(filepath, kwargs["base_path"])
+        if attributes["base_path"] not in ['.']:
+            filerel = os.path.relpath(filepath, attributes["base_path"])
         else:
             filerel = filepath
 
         properties = {}
-        if kwargs["order"] is not None:
-            properties['order'] = six.text_type(kwargs["order"])
+        if attributes["order"] is not None:
+            properties['order'] = six.text_type(attributes["order"])
         # Add new properties of a file for other script files, e.g. structMap
 
-        creator = PremisCreator(kwargs["workspace"])
-        file_metadata_dict = creator.add_premis_md(filepath, filerel, **kwargs)
+        creator = PremisCreator(attributes["workspace"])
+        file_metadata_dict = creator.add_premis_md(filepath, filerel, **attributes)
         if properties:
             file_metadata_dict[0]['properties'] = properties
-        creator.write(stdout=kwargs["stdout"],
+        creator.write(stdout=attributes["stdout"],
                       file_metadata_dict=file_metadata_dict)
 
     return file_metadata_dict
-
-
-def _initialize_args(kwargs):
-    """
-    Initalize given arguments to new dict by adding the missing keys with
-    initial values.
-
-    :kwargs: Arguments as dict.
-    :returns: Initialized dict.
-    """
-    kwargs["workspace"] = "./workspace" if not "workspace" in kwargs \
-        else kwargs["workspace"]
-    kwargs["base_path"] = "." if not "base_path" in kwargs else \
-        kwargs["base_path"]
-
-    keys = ["stdout", "skip_wellformed_check"]
-    for key in keys:
-        kwargs[key] = False if not key in kwargs else kwargs[key]
-
-    keys = ["charset", "file_format", "checksum", "date_created",
-            "identifier", "format_registry", "order"]
-    for key in keys:
-        kwargs[key] = None if not key in kwargs else kwargs[key]
 
 
 class PremisCreator(MdCreator):
@@ -189,7 +179,7 @@ class PremisCreator(MdCreator):
     for files and streams.
     """
 
-    def add_premis_md(self, filepath, filerel=None, **kwargs):
+    def add_premis_md(self, filepath, filerel=None, attributes):
         """
         Create metadata for PREMIS metadata. This method:
         - Scrapes a file
@@ -199,21 +189,22 @@ class PremisCreator(MdCreator):
 
         :filepath: Full path to file (including base_path)
         :filerel: Relative path from base_path to file
-        :kwargs: Given arguments
+        :attributes: Given arguments
         """
-        _initialize_args(kwargs)
-        mimetype = None if not kwargs["file_format"] else \
-            kwargs["file_format"][0]
-        version = None if not kwargs["file_format"] else \
-            kwargs["file_format"][1]
+        if not attributes["file_format"]:
+            mimetype = None
+            version = None
+        else:
+            mimetype = attributes["file_format"][0]
+            version = attributes["file_format"][1]
 
         streams = scrape_file(
-            filepath=filepath, skip_well_check=kwargs["skip_wellformed_check"],
-            mimetype=mimetype, version=version, charset=kwargs["charset"],
+            filepath=filepath, skip_well_check=attributes["skip_wellformed_check"],
+            mimetype=mimetype, version=version, charset=attributes["charset"],
             skip_json=True
         )
 
-        premis_elem = create_premis_object(filepath, streams, **kwargs)
+        premis_elem = create_premis_object(filepath, streams, **attributes)
         self.add_md(premis_elem, filerel)
         premis_list = create_streams(streams, premis_elem)
 
@@ -226,13 +217,15 @@ class PremisCreator(MdCreator):
     #pylint: disable=too-many-arguments
     def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3",
               othermdtype=None, section=None, stdout=False,
-              file_metadata_dict=None):
+              file_metadata_dict=None,
+              ref_file="import-object-md-references.xml"):
         """
         Write PREMIS metadata.
         """
         super(PremisCreator, self).write(
             mdtype=mdtype, mdtypeversion=mdtypeversion,
-            file_metadata_dict=file_metadata_dict)
+            file_metadata_dict=file_metadata_dict, ref_file=ref_file
+        )
 
 
 def create_streams(streams, premis_file):
@@ -299,36 +292,37 @@ def check_metadata(mimetype, version, streams, fname):
 
 
 #pylint: disable=too-many-locals
-def create_premis_object(fname, streams, **kwargs):
+def create_premis_object(fname, streams, **params):
     """
     Create Premis object for given file.
 
     :fname: File name of the digital object
     :streams: Streams from the Scraper
-    :kwargs: Given arguments
+    :params: Given arguments
     :returns: PREMIS object as etree
     :raises: ValueError if character set is invalid for text files.
     """
-    _initialize_args(kwargs)
-    digest = kwargs["checksum"] or ("MD5", calc_checksum(fname))
-    date_created = kwargs["date_created"] or creation_date(fname)
-    identifier = kwargs["identifier"] or ("UUID", six.text_type(uuid4()))
-    format_registry = kwargs["format_registry"]
+    attributes = attribute_values(params)
+    if not attributes["checksum"]:
+        attributes["checksum"] = ("MD5", calc_checksum(fname))
+    date_created = attributes["date_created"] or creation_date(fname)
     if streams[0]['stream_type'] == 'text':
-        charset = kwargs["charset"] or streams[0]['charset']
+        charset = attributes["charset"] or streams[0]['charset']
     else:
         charset = None
 
-    # Scraper's version information will override the version
-    # information if any is found.
-    if streams[0]["version"] and streams[0]["version"] != UNKNOWN_VERSION:
-        format_version = '' if streams[0]["version"] == NO_VERSION else \
-            streams[0]["version"]
-    else:
-        format_version = DEFAULT_VERSIONS.get(streams[0]["mimetype"], None)
 
-    file_format = kwargs["file_format"] or (streams[0]["mimetype"],
-                                            format_version)
+    if not attributes["file_format"]:
+        if streams[0]["version"] and streams[0]["version"] != UNKNOWN_VERSION:
+            format_version = '' if streams[0]["version"] == NO_VERSION else \
+                streams[0]["version"]
+        else:
+            format_version = DEFAULT_VERSIONS.get(streams[0]["mimetype"], None)
+
+        file_format = (streams[0]["mimetype"], format_version)
+    else:
+        file_format = (None, None)
+
     check_metadata(file_format[0], file_format[1], streams, fname)
 
     charset_mime = ""
@@ -337,17 +331,19 @@ def create_premis_object(fname, streams, **kwargs):
             raise ValueError('Invalid charset.')
         charset_mime = '; charset={}'.format(charset)
 
-    object_identifier = premis.identifier(identifier_type=identifier[0],
-                                          identifier_value=identifier[1])
+    object_identifier = premis.identifier(
+        identifier_type=attributes["identifier"][0],
+        identifier_value=attributes["identifier"][1]
+    )
 
-    premis_fixity = premis.fixity(digest[1], digest[0])
+    premis_fixity = premis.fixity(attributes["checksum"][1], attributes["checksum"][0])
     premis_format_des = premis.format_designation(
         file_format[0] + charset_mime, file_format[1])
-    if not format_registry:
+    if not attributes["format_registry"]:
         premis_format = premis.format(child_elements=[premis_format_des])
     else:
-        premis_registry = premis.format_registry(format_registry[0],
-                                                 format_registry[1])
+        premis_registry = premis.format_registry(attributes["format_registry"][0],
+                                                 attributes["format_registry"][1])
         premis_format = premis.format(child_elements=[premis_format_des,
                                                       premis_registry])
     premis_date_created = premis.date_created(date_created)

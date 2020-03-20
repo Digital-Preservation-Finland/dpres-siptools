@@ -8,7 +8,8 @@ import click
 import six
 
 import audiomd
-from siptools.utils import MdCreator, fix_missing_metadata, scrape_file
+from siptools.mdcreator import MdCreator
+from siptools.utils import fix_missing_metadata, scrape_file
 
 click.disable_unicode_literals_warning = True
 
@@ -99,11 +100,15 @@ class AudiomdCreator(MdCreator):
     #pylint: disable=too-many-arguments
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="AudioMD", section=None, stdout=False,
-              file_metadata_dict=None):
+              file_metadata_dict=None,
+              ref_file="create-audiomd-md-references.xml"):
         """
         Write AudioMD metadata.
         """
-        super(AudiomdCreator, self).write(mdtype, mdtypeversion, othermdtype)
+        super(AudiomdCreator, self).write(
+            mdtype=mdtype, mdtypeversion=mdtypeversion,
+            othermdtype=othermdtype, ref_file=ref_file
+        )
 
 
 def create_audiomd_metadata(filename, filerel=None, workspace=None,

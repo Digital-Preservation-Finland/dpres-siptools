@@ -11,13 +11,14 @@ import click
 
 import addml
 import lxml.etree as ET
-from siptools.utils import MdCreator, encode_path
+from siptools.mdcreator import MdCreator
+from siptools.utils import encode_path
 
 click.disable_unicode_literals_warning = True
 
 
 @click.command()
-@click.argument('filename', type=str)
+@click.argument('csv_file', type=str)
 @click.option('--workspace', type=click.Path(exists=True),
               default='./workspace/',
               metavar='<WORKSPACE PATH>',
@@ -43,8 +44,7 @@ click.disable_unicode_literals_warning = True
               metavar='<QUOTING CHAR>',
               help="Quoting character used in the CSV file")
 #pylint: disable=too-many-arguments
-def main(filename, charset, delimiter, record_separator, quoting_char,
-         isheader, workspace, base_path):
+def main(**kwargs):
     """Tool for creating ADDML metadata for a CSV file. The
     ADDML metadata is written to <hash>-ADDML-amd.xml
     METS XML file in the workspace directory. The ADDML
@@ -53,47 +53,64 @@ def main(filename, charset, delimiter, record_separator, quoting_char,
     just the new CSV file name is appended to the existing
     metadata.
 
-    FILENAME: Relative path to the file from current directory or from
+    CSV_FILE: Relative path to the file from current directory or from
               --base_path.
     """
-    create_addml(
-        filename=filename, charset=charset, delimiter=delimiter,
-        record_separator=record_separator, quoting_char=quoting_char,
-        isheader=isheader, workspace=workspace, base_path=base_path
-    )
+    create_addml(**kwargs)
     return 0
+
+
+def _attribute_values(given_params):
+    """
+    Initalize arguments to new dict by adding the missing keys with
+    attribute values.
+
+    :given_params: Arguments as dict.
+    :returns: Initialized dict.
+    """
+    attributes = {
+        "csv_file": given_params["csv_file"],
+        "workspace": "./workspace/",
+        "base_path": "directory",
+        "isheader": False,
+        "charset": given_params["charset"],
+        "delimiter": given_params["delimiter"],
+        "record_separator": given_params["record_separator"],
+        "quoting_char": given_params["quoting_char"],
+        "headername": "header",
+        "flatfile_name": None,
+        "stdout": False,
+    }
+    for key in given_params:
+        if given_params[key]:
+            attributes[key] = given_params[key]
+
+    return attributes
 
 
 def create_addml(**kwargs):
     """
     Create ADDML metadata for a CSV file.
 
-    :kwargs: Given arguments
+    :kwargs: Given arguments 
+             csv_file: CSV file name
+             workspace: Workspace path
+             base_path: Base path of the digital objects
+             isheader: True if the CSV file has a header line
+             charset: Character encoding of CSV file
+             delimiter: Delimiter used in CSV file
+             record_separator: Record separator of CSV file
+             quoting_char: Quoting character of CSV file
+             stdout: True for printing the output to stdout
     """
-    _initialize_args(kwargs)
-    filerel = os.path.normpath(kwargs["filename"])
-    filepath = os.path.normpath(os.path.join(kwargs["base_path"],
-                                             kwargs["filename"]))
-    kwargs["csv_file"] = filepath
-    creator = AddmlCreator(kwargs["workspace"], filerel)
-    creator.add_addml_md(**kwargs)
+    attributes = _attribute_values(kwargs)
+    filerel = os.path.normpath(attributes["filename"])
+    filepath = os.path.normpath(os.path.join(attributes["base_path"],
+                                             attributes["filename"]))
+    attributes["csv_file"] = filepath
+    creator = AddmlCreator(attributes["workspace"], filerel)
+    creator.add_addml_md(attributes)
     creator.write()
-
-
-def _initialize_args(kwargs):
-    """
-    Initalize given arguments to new dict by adding the missing keys with
-    initial values.
-
-    :kwargs: Arguments as dict.
-    :returns: Initialized dict.
-    """
-    kwargs["workspace"] = "./workspace" if not "workspace" in kwargs \
-        else kwargs["workspace"]
-    kwargs["base_path"] = "." if not "base_path" in kwargs else \
-        kwargs["base_path"]
-    kwargs["isheader"] = False if not "isheader" in kwargs else \
-        kwargs["isheader"]
 
 
 class AddmlCreator(MdCreator):
@@ -112,7 +129,7 @@ class AddmlCreator(MdCreator):
         self.filenames = {}
         self.filerel = filerel
 
-    def add_addml_md(self, **kwargs):
+    def add_addml_md(self, attributes):
 
         """Append metadata to etrees and filenames dicts.
         All the metadata given as the parameters uniquely defines
@@ -122,35 +139,37 @@ class AddmlCreator(MdCreator):
         already been created. This means that the write_md()
         function needs to be called only once for each distinct metadata types.
 
-        :csv_file: CSV file name
-        :delimiter: Delimiter used in the CSV file
-        :isheader: True if CSV has a header else False
-        :charset: Charset used in the CSV file
-        :record_separator: Char used for separating CSV file fields
-        :quoting_char: Quotation char used in the CSV file
+        :attributes: The following keys:
+                     csv_file: CSV file name
+                     headername: Default header name if file does not have header
+                     delimiter: Delimiter used in the CSV file
+                     isheader: True if CSV has a header else False
+                     charset: Charset used in the CSV file
+                     record_separator: Char used for separating CSV file fields
+                     quoting_char: Quotation char used in the CSV file
         :returns: None
         """
-        _initialize_args(kwargs)
-        header = csv_header(**kwargs)
-        headerstr = kwargs["delimiter"].join(header)
-        key = (kwargs["delimiter"], headerstr, kwargs["charset"],
-               kwargs["record_separator"], kwargs["quoting_char"])
+        header = csv_header(attributes)
+        headerstr = attributes["delimiter"].join(header)
+        key = (attributes["delimiter"], headerstr, attributes["charset"],
+               attributes["record_separator"], attributes["quoting_char"])
 
         # If similar metadata already exists,
         # only append filename to self.filenames
         if key in self.etrees:
-            self.filenames[key].append(kwargs["csv_file"])
+            self.filenames[key].append(attributes["csv_file"])
             return
 
         # If similar metadata does not exist, create it
-        metadata = create_addml_metadata(**kwargs)
+        metadata = create_addml_metadata(**attributes)
 
         self.etrees[key] = metadata
-        self.filenames[key] = [kwargs["csv_file"]]
+        self.filenames[key] = [attributes["csv_file"]]
 
     #pylint: disable=too-many-arguments
     def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML",
-              section=None, stdout=False, file_metadata_dict=None):
+              section=None, stdout=False, file_metadata_dict=None,
+              ref_file="create-addml-md-references.xml"):
         """
         Write all the METS XML files and md-reference file.
         Base class write is overwritten to handle the references
@@ -179,7 +198,7 @@ class AddmlCreator(MdCreator):
             append_lines(amd_fname, "<addml:flatFiles>", append)
 
         # Write md-references
-        self.write_references()
+        self.write_references(ref_file=ref_file)
 
         # Clear filenames and etrees
         self.__init__(self.workspace)
@@ -217,39 +236,39 @@ def _open_csv_file(file_path, charset):
         return io.open(file_path, "rt", encoding=charset)
 
 
-def csv_header(headername='header', **kwargs):
+def csv_header(attributes):
     """
     Returns header of CSV file if there is one.
     Otherwise generates a header and returns it
 
-    :headername: Default header name if file does not have header
-    :csv_file: CSV file path
-    :delimiter: Field delimiter in CSV
-    :charset: Character encoding of CSV file
-    :isheader: True id file has a header, False otherwise
-    :returns: Header list of CSV columns
+    :attributes: The following keys:
+                 headername: Default header name if file does not have header
+                 csv_file: CSV file path
+                 delimiter: Field delimiter in CSV
+                 charset: Character encoding of CSV file
+                 isheader: True id file has a header, False otherwise
+                 returns: Header list of CSV columns
     """
-    _initialize_args(kwargs)
-    csv_file = _open_csv_file(kwargs["csv_file"], kwargs["charset"])
+    csv_file = _open_csv_file(attributes["csv_file"], attributes["charset"])
     csv.register_dialect(
         "new_dialect",
         # 'delimiter' accepts only byte strings on Python 2 and
         # only Unicode strings on Python 3
-        delimiter=str(kwargs["delimiter"])
+        delimiter=str(attributes["delimiter"])
     )
 
     first_row = next(csv.reader(csv_file, dialect="new_dialect"))
     if six.PY2:
-        header = [item.decode(kwargs["charset"]) for item in first_row]
+        header = [item.decode(attributes["charset"]) for item in first_row]
     else:
         header = first_row
     csv_file.close()
 
-    if not kwargs["isheader"]:
+    if not attributes["isheader"]:
         header_count = len(header)
         header = []
         for i in range(header_count):
-            header.append("{}{}".format(headername, i + 1))
+            header.append("{}{}".format(attributes["headername"], i + 1))
 
     return header
 
@@ -282,7 +301,7 @@ def append_lines(fname, xml_elem, append):
 
 
 #pylint: disable=too-many-locals
-def create_addml_metadata(**kwargs):
+def create_addml_metadata(**params):
     """Creates ADDML metadata for a CSV file by default
     without flatFile element, which is added by the
     write() method of the AddmlCreator class. This is done to
@@ -295,19 +314,19 @@ def create_addml_metadata(**kwargs):
     differ from the original filepath e.g. when it is a tmpfile
     downloaded from IDA.
 
-    :csv_file: Path to the CSV file
-    :flatfile_name: flatFile elements name attribute
-    :delimiter: Delimiter used in the CSV file
-    :isheader: True if CSV has a header else False
-    :charset: Charset used in the CSV file
-    :record_separator: Char used for separating CSV file fields
-    :quoting_char: Quotation char used in the CSV file
+    :params: The following parameters
+             csv_file: Path to the CSV file
+             headername: Default header name if file does not have header
+             flatfile_name: flatFile elements name attribute
+             delimiter: Delimiter used in the CSV file
+             isheader: True if CSV has a header else False
+             charset: Charset used in the CSV file
+             record_separator: Char used for separating CSV file fields
+             quoting_char: Quotation char used in the CSV file
     :returns: ADDML metadata XML element
     """
-    _initialize_args(kwargs)
-    kwargs["flatfile_name"] = None if "flatfile_name" not in kwargs else \
-        kwargs["flatfile_name"]
-    headers = csv_header(**kwargs)
+    attributes = _attribute_values(params)
+    headers = csv_header(attributes)
 
     description = ET.Element(addml.addml_ns('description'))
     reference = ET.Element(addml.addml_ns('reference'))
@@ -347,10 +366,10 @@ def create_addml_metadata(**kwargs):
     record_types = addml.wrapper_elems('recordTypes', [record_type])
 
     delim_file_format = addml.delimfileformat(
-        kwargs["record_separator"], kwargs["delimiter"],
-        kwargs["quoting_char"]
+        attributes["record_separator"], attributes["delimiter"],
+        attributes["quoting_char"]
     )
-    charset_elem = addml.addml_basic_elem('charset', kwargs["charset"])
+    charset_elem = addml.addml_basic_elem('charset', attributes["charset"])
     flat_file_type = addml.definition_elems(
         'flatFileType', 'rec001',
         child_elements=[charset_elem, delim_file_format]
@@ -361,10 +380,10 @@ def create_addml_metadata(**kwargs):
         'structureTypes', [flat_file_types, record_types, field_types]
     )
 
-    if kwargs["flatfile_name"]:
+    if attributes["flatfile_name"]:
         flatfile = addml.definition_elems(
             'flatFile',
-            encode_path(kwargs["flatfile_name"]),
+            encode_path(attributes["flatfile_name"]),
             'ref001'
         )
         elems = [flatfile, flat_file_definitions, structure_types]

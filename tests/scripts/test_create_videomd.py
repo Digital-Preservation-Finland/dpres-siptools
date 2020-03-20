@@ -172,7 +172,8 @@ def test_create_videomd(testpath):
     creator.write()
 
     # Check that mdreference and one VideoMD-amd files are created
-    assert os.path.isfile(os.path.join(testpath, 'md-references.xml'))
+    assert os.path.isfile(os.path.join(testpath,
+                                       'create-videomd-md-references.xml'))
 
     filepath = os.path.join(
         testpath, '36260c626dac2f82359d7c22ef378392-VideoMD-amd.xml'
@@ -201,7 +202,8 @@ def test_main_utf8_files(testpath, run_cli):
     )
 
     # Check that filename is found in md-reference file.
-    xml = ET.parse(os.path.join(testpath, 'md-references.xml'))
+    xml = ET.parse(os.path.join(testpath,
+                                'create-videomd-md-references.xml'))
     assert len(xml.xpath(u'//mdReference[@file="data/äöå.m1v"]')) == 1
 
 
@@ -216,7 +218,8 @@ def test_existing_scraper_result(testpath):
           <mdReferences>
           <mdReference file="{}">_{}</mdReference>
           </mdReferences>""".format(file_, amdid).encode("utf-8")
-    with open(os.path.join(testpath, 'md-references.xml'), 'wb') as out:
+    with open(os.path.join(testpath,
+                           'import-object-md-references.xml'), 'wb') as out:
         out.write(xml)
 
     stream_dict = {0: {
@@ -267,6 +270,7 @@ def test_paths(testpath, file_, base_path, run_cli):
             '--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        io.open(os.path.join(testpath, 'md-references.xml'), "rt").read()
+        io.open(os.path.join(testpath, 
+                             'create-videomd-md-references.xml'), "rt").read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

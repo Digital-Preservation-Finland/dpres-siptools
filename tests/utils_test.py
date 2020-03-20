@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import os
 import lxml.etree
 import siptools.utils as utils
-
+from siptools.mdcreator import MdCreator, remove_dmdsec_references
 
 def test_encode_path():
     """Tests for the encode_path function."""
@@ -43,7 +43,7 @@ def test_create_amdfile(testpath):
     workspace. Check that XML file contains expected elements.
     """
 
-    md_creator = utils.MdCreator(testpath)
+    md_creator = MdCreator(testpath)
 
     sample_data = lxml.etree.Element('sampleData')
     md_creator.write_md(sample_data, 'NISOIMG', '2.0')
@@ -77,7 +77,7 @@ def test_add_mdreference(testpath):
     write the mdreference file.
     """
 
-    md_creator = utils.MdCreator(testpath)
+    md_creator = MdCreator(testpath)
 
     md_creator.add_reference('abcd1234', 'path/to/file1')
     md_creator.add_reference('abcd1234', 'path/to/file2')
@@ -182,13 +182,10 @@ def test_remove_dmdsec_references(testpath):
            '<mdReference directory="." ref_type="dmd">'
            'aabbcc</mdReference></mdReferences>')
 
-    with open(os.path.join(testpath, 'md-references.xml'), 'w+') as outfile:
+    with open(os.path.join(
+            testpath, 'import-description-md-references.xml'), 'w+') as outfile:
         outfile.write(xml)
 
-    utils.remove_dmdsec_references(testpath)
+    remove_dmdsec_references(testpath)
 
-    root = lxml.etree.parse(
-        os.path.join(testpath, 'md-references.xml')).getroot()
-
-    assert not root.xpath('/mdReferences/mdReference[@ref_type="dmd"]')
-    assert len(root.xpath('/mdReferences/*')) == 3
+    assert not os.path.exists(os.path.join(testpath, 'import-description-md-references.xml'))
