@@ -18,7 +18,7 @@ click.disable_unicode_literals_warning = True
 
 
 @click.command()
-@click.argument('csv_file', type=str)
+@click.argument('filename', type=str)
 @click.option('--workspace', type=click.Path(exists=True),
               default='./workspace/',
               metavar='<WORKSPACE PATH>',
@@ -53,7 +53,7 @@ def main(**kwargs):
     just the new CSV file name is appended to the existing
     metadata.
 
-    CSV_FILE: Relative path to the file from current directory or from
+    FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
     create_addml(**kwargs)
@@ -69,21 +69,26 @@ def _attribute_values(given_params):
     :returns: Initialized dict.
     """
     attributes = {
-        "csv_file": given_params["csv_file"],
+        "filename": None,
         "workspace": "./workspace/",
-        "base_path": "directory",
+        "base_path": ".",
         "isheader": False,
         "charset": given_params["charset"],
         "delimiter": given_params["delimiter"],
         "record_separator": given_params["record_separator"],
         "quoting_char": given_params["quoting_char"],
-        "headername": "header",
         "flatfile_name": None,
         "stdout": False,
     }
     for key in given_params:
         if given_params[key]:
             attributes[key] = given_params[key]
+
+    if "filename" in given_params:
+        attributes["csv_file"] = os.path.normpath(
+            os.path.join(attributes["base_path"], attributes["filename"])
+        )
+        attributes["filename"] = os.path.normpath(attributes["filename"])
 
     return attributes
 
@@ -93,7 +98,7 @@ def create_addml(**kwargs):
     Create ADDML metadata for a CSV file.
 
     :kwargs: Given arguments 
-             csv_file: CSV file name
+             filename: CSV file name
              workspace: Workspace path
              base_path: Base path of the digital objects
              isheader: True if the CSV file has a header line
@@ -104,11 +109,7 @@ def create_addml(**kwargs):
              stdout: True for printing the output to stdout
     """
     attributes = _attribute_values(kwargs)
-    filerel = os.path.normpath(attributes["filename"])
-    filepath = os.path.normpath(os.path.join(attributes["base_path"],
-                                             attributes["filename"]))
-    attributes["csv_file"] = filepath
-    creator = AddmlCreator(attributes["workspace"], filerel)
+    creator = AddmlCreator(attributes["workspace"], attributes["filename"])
     creator.add_addml_md(attributes)
     creator.write()
 
@@ -249,6 +250,7 @@ def csv_header(attributes):
                  isheader: True id file has a header, False otherwise
                  returns: Header list of CSV columns
     """
+    attributes["headername"] = attributes.get("headername", "header") 
     csv_file = _open_csv_file(attributes["csv_file"], attributes["charset"])
     csv.register_dialect(
         "new_dialect",
@@ -301,7 +303,7 @@ def append_lines(fname, xml_elem, append):
 
 
 #pylint: disable=too-many-locals
-def create_addml_metadata(**params):
+def create_addml_metadata(**attributes):
     """Creates ADDML metadata for a CSV file by default
     without flatFile element, which is added by the
     write() method of the AddmlCreator class. This is done to
@@ -314,18 +316,18 @@ def create_addml_metadata(**params):
     differ from the original filepath e.g. when it is a tmpfile
     downloaded from IDA.
 
-    :params: The following parameters
-             csv_file: Path to the CSV file
-             headername: Default header name if file does not have header
-             flatfile_name: flatFile elements name attribute
-             delimiter: Delimiter used in the CSV file
-             isheader: True if CSV has a header else False
-             charset: Charset used in the CSV file
-             record_separator: Char used for separating CSV file fields
-             quoting_char: Quotation char used in the CSV file
+    :attributes: The following parameters
+                 csv_file: Path to the CSV file
+                 headername: Default header name if file does not have header
+                 flatfile_name: flatFile elements name attribute
+                 delimiter: Delimiter used in the CSV file
+                 isheader: True if CSV has a header else False
+                 charset: Charset used in the CSV file
+                 record_separator: Char used for separating CSV file fields
+                 quoting_char: Quotation char used in the CSV file
     :returns: ADDML metadata XML element
     """
-    attributes = _attribute_values(params)
+    attributes = _attribute_values(attributes)
     headers = csv_header(attributes)
 
     description = ET.Element(addml.addml_ns('description'))

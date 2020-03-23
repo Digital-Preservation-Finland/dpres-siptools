@@ -112,11 +112,10 @@ def test_get_md_references(testpath):
     """Test get_md_references function. Copies sample MD reference file
     to workspace and reads the administrative MD IDs for a file.
     """
-    shutil.copy('tests/data/sample_md-references.xml',
-                os.path.join(testpath, 'md-references.xml'))
+    xml = lxml.etree.parse('tests/data/sample_md-references.xml').getroot()
 
     # The sample file contains two references for file2
-    ids = compile_structmap.get_md_references(testpath, 'path/to/file2')
+    ids = compile_structmap.get_md_references(xml, 'path/to/file2')
     assert set(ids) == set(['abcd1234', 'efgh5678'])
 
 

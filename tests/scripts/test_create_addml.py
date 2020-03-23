@@ -170,14 +170,16 @@ def test_csv_header_charset(filename, charset):
     :filename: Test file
     :charset: Character encoding of test file
     """
-    header = create_addml.csv_header(
-        csv_file=filename, delimiter=",", charset=charset, isheader=True
-    )
+    header = create_addml.csv_header(attributes = {
+        "csv_file": filename, "delimiter": ",", "charset": charset,
+        "isheader": True
+    })
     assert header == ["year", "br\xe4nd", "m\xf6del", "detail", "other"]
 
-    header = create_addml.csv_header(
-        csv_file=filename, delimiter=",", charset=charset, isheader=False
-    )
+    header = create_addml.csv_header(attributes = {
+        "csv_file": filename, "delimiter": ",", "charset": charset,
+        "isheader": False
+    })
     assert header == ["header1", "header2", "header3", "header4", "header5"]
 
 
@@ -186,23 +188,25 @@ def _create_addml(testpath, isheader):
 
     # Append two csv files with same
     # metadata, but different filename
-    creator.add_addml_md(
-        csv_file="tests/data/simple_csv.csv", delimiter=',',
-        isheader=isheader, charset=CHARSET, record_separator=RECORDSEPARATOR,
-        quoting_char=QUOTINGCHAR
-    )
+    creator.add_addml_md(attributes = {
+        "csv_file": "tests/data/simple_csv.csv", "delimiter": ",",
+        "isheader": isheader, "charset": CHARSET,
+        "record_separator": RECORDSEPARATOR,
+        "quoting_char": QUOTINGCHAR
+    })
 
-    creator.add_addml_md(
-        csv_file="tests/data/simple_csv_2.csv", delimiter=',',
-        isheader=isheader, charset=CHARSET, record_separator=RECORDSEPARATOR,
-        quoting_char=QUOTINGCHAR
-    )
+    creator.add_addml_md(attributes = { 
+        "csv_file": "tests/data/simple_csv_2.csv", "delimiter": ",",
+        "isheader": isheader, "charset": CHARSET,
+        "record_separator": RECORDSEPARATOR,
+        "quoting_char": QUOTINGCHAR
+    })
 
     # Append csv file with different metadata
-    creator.add_addml_md(
-        csv_file=CSV_FILE, delimiter=DELIMITER, isheader=isheader,
-        charset=CHARSET, record_separator=RECORDSEPARATOR,
-        quoting_char=QUOTINGCHAR
-    )
+    creator.add_addml_md(attributes = {
+        "csv_file": CSV_FILE, "delimiter": DELIMITER, "isheader": isheader,
+        "charset": CHARSET, "record_separator": RECORDSEPARATOR,
+        "quoting_char": QUOTINGCHAR
+    })
 
     creator.write()

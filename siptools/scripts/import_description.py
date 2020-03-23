@@ -61,10 +61,9 @@ def _attribute_values(given_params):
     :returns: Attribute value dict
     """
     attributes = {
-        "dmdsec_location": given_params["dmdsec_location"]
+        "dmdsec_location": given_params["dmdsec_location"],
         "workspace": "./workspace/",
         "base_path": ".",
-        "root_type": "directory",
         "dmdsec_target": None,
         "without_uuid": False,
         "remove_root": False,
@@ -82,10 +81,17 @@ def import_description(**kwargs):
     Create METS documents that contains descriptive metadata
     imported from XML file.
 
-    :kwargs: Given arguments 
+    :kwargs: Given arguments
+             dmdsec_location: Path of the descriptive metadata file
+             workspace: Workspace path
+             base_path: Base path of the digital objects
+             dmdsec_target: Target of descriptive metadata
+             without_uuid: If true, output file named without UUID prefix
+             remove_root: If true, remove root element from metadata
+             stdout: If true, print output to stdout
     :raises: OSError if descriptive metadata file exists
     """
-    attributes = attribute_values(kwargs)
+    attributes = _attribute_values(kwargs)
     dmd_target = dmd_target_path(attributes["base_path"],
                                  attributes["dmdsec_target"])
     dmdfile_id = str(uuid4())
@@ -171,9 +177,9 @@ def create_mets(input_file, dmd_id, remove_root=False):
     metadata is imported from XML file. The whole XML document or just the
     child elements of root can be imported.
 
-    :param input_file: path to input file
-    :param dmd_id: dmdSec identifier
-    :param remove_root: import only child elements
+    :input_file: path to input file
+    :dmd_id: dmdSec identifier
+    :remove_root: import only child elements
     :returns: METS document element tree
     """
 

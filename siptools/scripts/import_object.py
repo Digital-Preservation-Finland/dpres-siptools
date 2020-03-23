@@ -124,9 +124,17 @@ def _attribute_values(given_params):
     :returns: Attribute value dict
     """
     attributes = {
+        "filepaths": given_params["filepaths"],
         "workspace": "./workspace/",
         "base_path": ".",
-        "sikp_wellformed_check": False,
+        "skip_wellformed_check": False,
+        "charset": None,
+        "file_format": None,
+        "format_registry": None,
+        "identifier": ("UUID", six.text_type(uuid4())),
+        "checksum": None,
+        "date_created": None,
+        "order": None,
         "stdout": False,
     }
     for key in given_params:
@@ -142,9 +150,21 @@ def import_object(**kwargs):
     then these are created automatically.
 
     :attributes: Given arguments
+                 filepaths: Files or a directory to import
+                 workspace: Workspace path
+                 base_path: Base path of digital objects
+                 skip_wellformed_check: True skips well-formedness checking
+                 charset: Character encoding of a file,
+                 file_format: File format and version (tuple) of a file,
+                 format_registry: Format registry name and value (tuple),
+                 identifier: File identifier type and value (tuple),
+                 checksum: Checksum algorithm and value (tuple),
+                 date_created: Creation date of a file,
+                 order: Order number of a file,
+                 stdout: True prints output to stdout
     :returns: Dictionary of the scraped file metadata
     """
-    attributes = attribute_values(kwargs)
+    attributes = _attribute_values(kwargs)
     # Loop files and create premis objects
     files = collect_filepaths(dirs=attributes["filepaths"],
                               base=attributes["base_path"])
@@ -165,7 +185,8 @@ def import_object(**kwargs):
         # Add new properties of a file for other script files, e.g. structMap
 
         creator = PremisCreator(attributes["workspace"])
-        file_metadata_dict = creator.add_premis_md(filepath, filerel, **attributes)
+        file_metadata_dict = creator.add_premis_md(
+            filepath, attributes, filerel=filerel)
         if properties:
             file_metadata_dict[0]['properties'] = properties
         creator.write(stdout=attributes["stdout"],
@@ -179,7 +200,7 @@ class PremisCreator(MdCreator):
     for files and streams.
     """
 
-    def add_premis_md(self, filepath, filerel=None, attributes):
+    def add_premis_md(self, filepath, attributes, filerel=None):
         """
         Create metadata for PREMIS metadata. This method:
         - Scrapes a file
@@ -188,8 +209,16 @@ class PremisCreator(MdCreator):
         - Returns stream dict from scraper
 
         :filepath: Full path to file (including base_path)
+        :attributes: The following keys
+                     skip_wellformed_check: True skips well-formedness checking
+                     charset: Character encoding of a file,
+                     file_format: File format and version (tuple) of a file,
+                     format_registry: Format registry name and value (tuple),
+                     identifier: File identifier type and value (tuple),
+                     checksum: Checksum algorithm and value (tuple),
+                     date_created: Creation date of a file
         :filerel: Relative path from base_path to file
-        :attributes: Given arguments
+        :returns: Stream dict from file-scraper
         """
         if not attributes["file_format"]:
             mimetype = None
@@ -292,17 +321,23 @@ def check_metadata(mimetype, version, streams, fname):
 
 
 #pylint: disable=too-many-locals
-def create_premis_object(fname, streams, **params):
+def create_premis_object(fname, streams, **attributes):
     """
     Create Premis object for given file.
 
     :fname: File name of the digital object
     :streams: Streams from the Scraper
-    :params: Given arguments
+    :attributes: The following keys:
+                 charset: Character encoding of a file,
+                 file_format: File format and version (tuple) of a file,
+                 format_registry: Format registry name and value (tuple),
+                 identifier: File identifier type and value (tuple),
+                 checksum: Checksum algorithm and value (tuple),
+                 date_created: Creation date of a file
     :returns: PREMIS object as etree
     :raises: ValueError if character set is invalid for text files.
     """
-    attributes = attribute_values(params)
+    attributes = _attribute_values(attributes)
     if not attributes["checksum"]:
         attributes["checksum"] = ("MD5", calc_checksum(fname))
     date_created = attributes["date_created"] or creation_date(fname)
@@ -321,7 +356,7 @@ def create_premis_object(fname, streams, **params):
 
         file_format = (streams[0]["mimetype"], format_version)
     else:
-        file_format = (None, None)
+        file_format = (attributes["file_format"][0], attributes["file_format"][1])
 
     check_metadata(file_format[0], file_format[1], streams, fname)
 

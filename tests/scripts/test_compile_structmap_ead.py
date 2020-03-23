@@ -125,12 +125,18 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
     div_elem = '<mets:div xmlns:mets="http://www.loc.gov/METS/"></mets:div>'
 
     xml = ET.fromstring(div_elem)
-    filelist = [
+    attrs = {}
+    attrs["all_amd_refs"] = ET.parse(
+        os.path.join(testpath, "import-object-md-references.xml")
+    )
+    attrs["object_refs"] = attrs["all_amd_refs"]
+    attrs["workspace"] = testpath
+    attrs["filelist"] = [
         'tests/data/structured/Publication files/publication.txt',
         'tests/data/structured/Software files/koodi.java']
     filegrp = filegrp = mets.filegrp()
     c_div = compile_structmap.add_fptrs_div_ead(
-        xml, hrefs, filelist, filegrp, testpath)
+        xml, hrefs, filegrp, attrs)
 
     # Child elements are either new divs or fptrs
     assert c_div.xpath(

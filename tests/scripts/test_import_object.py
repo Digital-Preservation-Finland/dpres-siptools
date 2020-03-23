@@ -50,10 +50,10 @@ def test_import_object_ok(testpath, run_cli):
 #pylint: disable=invalid-name
 def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
     """Test import_object.main function --skip_well_formed argument."""
-    input_file = 'tests/data/text-file.txt'
+    input_file = 'tests/data/invalid_4.01_illegal_tags.html'
     arguments = ['--workspace', testpath, input_file,
                  '--skip_wellformed_check',
-                 '--file_format', 'text/html', '4.01',
+                 '--file_format', 'text/plain', '',
                  '--checksum', 'MD5', '1qw87geiewgwe9',
                  '--date_created', datetime.datetime.utcnow().isoformat()]
     run_cli(import_object.main, arguments)
@@ -69,10 +69,10 @@ def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
 #pylint: disable=invalid-name
 def test_import_object_skip_wellformed_check_nodate_ok(testpath, run_cli):
     """Test import_object.main function without --date_created argument."""
-    input_file = 'tests/data/text-file.txt'
+    input_file = 'tests/data/invalid_4.01_illegal_tags.html'
     arguments = ['--workspace', testpath, input_file,
                  '--skip_wellformed_check',
-                 '--file_format', 'text/xml', '1.0',
+                 '--file_format', 'text/plain', '',
                  '--checksum', 'MD5', '1qw87geiewgwe9']
     run_cli(import_object.main, arguments)
 

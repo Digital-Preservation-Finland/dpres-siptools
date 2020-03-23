@@ -6,7 +6,7 @@ import subprocess
 import pytest
 
 
-@pytest.mark.e2e
+# @pytest.mark.e2e
 def test_end_to_end(testpath):
     """Test creation of SIP and asserting the validity
     of the created mets document with validation tools.
@@ -24,7 +24,7 @@ def test_end_to_end(testpath):
 
     command = ['python', 'siptools/scripts/import_object.py',
                '--workspace', testpath, objects, '--skip_wellformed_check',
-               '--file_format', 'text/plain', '1.0',
+               '--file_format', 'text/plain', '',
                '--checksum', 'MD5', '1qw87geiewgwe9',
                '--date_created', '2017-01-11T10:14:13',
                '--charset', 'ISO-8859-15']

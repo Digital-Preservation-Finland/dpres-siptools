@@ -103,7 +103,7 @@ def _attribute_values(given_params):
     attributes = {
         "mets_profile": given_params["mets_profile"],
         "organization_name": given_params["organization_name"],
-        "contractid": "urn:uuid:%s" % given_params["contractid"],
+        "contractid": "%s" % given_params["contractid"],
         "workspace": "./workspace/",
         "base_path": ".",
         "objid": new_uuid,
@@ -122,7 +122,11 @@ def _attribute_values(given_params):
         if given_params[key]:
             attributes[key] = given_params[key]
 
+    if not str(attributes["contractid"]).startswith("urn:uuid:"):
+        attributes["contractid"] = "urn:uuid:%s" % attributes["contractid"]
+
     return attributes
+
 
 def compile_mets(**kwargs):
     """

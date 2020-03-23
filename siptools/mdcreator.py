@@ -225,17 +225,14 @@ class MdCreator(object):
         self.__init__(self.workspace)
 
 
-def get_objectlist(workspace, file_path=None):
+def get_objectlist(xml, file_path=None):
     """Get unique and sorted list of files or streams from md-references.xml
 
-    :workspace: Workspace path
+    :xml: XML tree of objects
     :file_path: If given, finds streams of the given file.
                 If None, finds a sorted list all file paths.
     :returns: Sorted list of files, or streams of a given file
     """
-    reference_file = os.path.join(workspace,
-                                  'import-object-md-references.xml')
-    xml = lxml.etree.parse(reference_file)
     objectset = set()
     if file_path is not None:
         streams = xml.xpath(

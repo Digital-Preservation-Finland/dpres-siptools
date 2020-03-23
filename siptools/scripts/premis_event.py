@@ -69,9 +69,11 @@ def _list2str(lst):
               type=str,
               metavar='<AGENT NAME>',
               help='Agent name')
-@click.option('--agent_identifier', nargs=2, type=str,
+@click.option('--agent_identifier', nargs=2,
+              type=str,
               metavar='<AGENT IDENTIFIER TYPE> <AGENT IDENTIFIER VALUE>',
-              help='Agent identifier type and value')
+              help='Agent identifier type and value. Does not have effect if '
+                   '--agent_name and --agent_type are missing.')
 @click.option('--agent_type',
               required='--agent_name' in sys.argv,
               type=str,
@@ -101,13 +103,25 @@ def _attribute_values(given_params):
     :returns: Attribute value dict
     """
     attributes = {
+        "event_type": given_params["event_type"],
+        "event_datetime": given_params["event_datetime"],
         "workspace": "./workspace/",
         "base_path": ".",
+        "event_target": None,
+        "event_detail": given_params["event_detail"],
+        "event_outcome": given_params["event_outcome"],
+        "event_outcome_detail": given_params["event_outcome_detail"],
+        "agent_name": None,
+        "agent_type": None,
+        "agent_identifier": ("UUID", six.text_type(uuid4())),
         "stdout": False,
     }
     for key in given_params:
         if given_params[key]:
             attributes[key] = given_params[key]
+
+    if not attributes["agent_name"] and not attributes["agent_type"]:
+        attributes["agent_identifier"] = None
 
     return attributes
 
@@ -117,7 +131,19 @@ def premis_event(**kwargs):
     The script creates provenance metadata for the package. The metadata
     contains event and, if given, also agent of the event.
 
-    :attributes: Given arguments
+    :kwargs: Given arguments
+             event_type: PREMIS event type
+             event_datetime: Timestamp of the event
+             workspace: Workspace path
+             base_path: Base path of digital objects
+             event_target: Target path of the event
+             event_detail: Short information about the event
+             event_outcome: Event outcome
+             event_outcome_detail: Deteiled information about the event
+             agent_name: Agent name
+             agent_type: PREMIS agent type
+             agent_identifier: Agent identifier type and value (tuple)
+             stdout: Tru prints output to stdout
     """
     attributes = _attribute_values(kwargs)
     (directory, event_file) = event_target_path(
@@ -250,9 +276,9 @@ def create_premis_agent(agent_name, agent_type, agent_identifier):
     """Creates METS digiprovMD element that contains PREMIS agent element with
     unique identifier.
 
-    :param agent_name: content of PREMIS agentName element
-    :param agent_type: content of PREMIS agentType element
-    :param agent_identifier: content of PREMIS agentIdentifierValue element
+    :agent_name: content of PREMIS agentName element
+    :agent_type: content of PREMIS agentType element
+    :agent_identifier: content of PREMIS agentIdentifierValue element
     :returns: PREMIS event XML element
     """
     agent_identifier = premis.identifier(
@@ -264,20 +290,22 @@ def create_premis_agent(agent_name, agent_type, agent_identifier):
     return premis_agent
 
 
-def create_premis_event(**params):
+def create_premis_event(**attributes):
     """Creates METS digiprovMD element that contains PREMIS event element.
     Linking agent identifier element is added to PREMIS event element, if agent
     identifier is provided as parameter.
 
-    :param agent_identifier: PREMIS agent identifier or ``None``
-    :param event_type: Event type
-    :param event_datetime: Event time
-    :param event_detail: Event details
-    :param event_outcome: Event outcome ("success" or "failure")
-    :param event_outcome_detail: Event outcome description
+    :attributes: The following keys:
+                  event_type: PREMIS event type
+                  event_datetime: Timestamp of the event
+                  event_target: Target path of the event
+                  event_detail: Short information about the event
+                  event_outcome: Event outcome
+                  event_outcome_detail: Deteiled information about the event
+                  agent_identifier: Agent identifier type and value (tuple)
     :returns: PREMIS event XML element
     """
-    attributes = _attribute_values(params)
+    attributes = _attribute_values(attributes)
     event_identifier = premis.identifier(
         identifier_type='UUID',
         identifier_value=six.text_type(uuid4()),
