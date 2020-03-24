@@ -11,7 +11,8 @@ import click
 import lxml.etree as ET
 import mets
 import xml_helpers.utils as xml_utils
-from siptools.mdcreator import get_objectlist
+from siptools.mdcreator import (get_objectlist, read_all_amd_references,
+                                read_md_references, get_md_references)
 from siptools.utils import add, encode_path, tree, load_scraper_json
 from siptools.xml.mets import NAMESPACES
 
@@ -82,7 +83,8 @@ def _attribute_values(given_params):
         attributes["workspace"], "import-object-md-references.xml"
     )
     attributes["filelist"] = get_objectlist(attributes["object_refs"])
-    attributes["all_amd_refs"] = read_all_amd_references(attributes["workspace"])
+    attributes["all_amd_refs"] = read_all_amd_references(
+        attributes["workspace"])
     attributes["all_dmd_refs"] = read_md_references(
         attributes["workspace"], "import-description-md-references.xml"
     )
@@ -342,78 +344,6 @@ def get_fileid(filesec, path):
     )[0]
 
     return element.attrib['ID']
-
-def read_all_amd_references(workspace):
-    """
-    Collect all administrative references.
-
-    :workspace: path to workspace directory
-    :returns: a set of administrative MD IDs
-    """
-    references = None
-    for ref_file in ["import-object-md-references.xml",
-                     "create-addml-md-references.xml",
-                     "create-audiomd-md-references.xml",
-                     "create-mix-md-references.xml",
-                     "create-videomd-md-references.xml",
-                     "premis-event-md-references.xml"]:
-        if references is None:
-            references = read_md_references(workspace, ref_file)
-        else:
-            refs = read_md_references(workspace, ref_file)
-            if refs is not None:
-                for ref in refs:
-                    references.append(ref)
-
-    return references
-
-
-def read_md_references(workspace, ref_file="md-references.xml"):
-    """If MD reference file exists in workspace, read
-    all the MD IDs as element_tree.
-
-    :workspace: path to workspace directory
-    :ref_file: Metadata reference file
-    :returns: Root of the reference tree
-    """
-    reference_file = os.path.join(workspace, ref_file)
-    amd_ids = []
-
-    if os.path.isfile(reference_file):
-        return ET.parse(reference_file).getroot()
-    return None
-
-
-def get_md_references(element_tree, path=None, stream=None, directory=None):
-    """
-    Return filtered references from a set of given references.
-    :element_tree: XML etree of references to be filtered
-    :path: Filter by given file path
-    :stream: Filter by given strean index
-    :directory: Filter by given directory path
-    """
-    if element_tree is None:
-        return None
-
-    if directory:
-        directory = os.path.normpath(directory)
-        reference_elements = element_tree.xpath(
-            '/mdReferences/mdReference'
-            '[@directory="%s"]' % directory
-        )
-    elif stream is None:
-        reference_elements = element_tree.xpath(
-            '/mdReferences/mdReference[@file="%s" '
-            'and not(@stream)]' % path
-        )
-    else:
-        reference_elements = element_tree.xpath(
-            '/mdReferences/mdReference[@file="%s" '
-            'and @stream="%s"]' % (path, stream)
-        )
-    md_ids = [element.text for element in reference_elements]
-
-    return set(md_ids)
 
 
 #pylint: disable=too-many-arguments

@@ -141,7 +141,7 @@ def test_create_audiomd(testpath):
     creator.write()
 
     # Check that md-reference and one AudioMD-amd files are created
-    assert os.path.isfile(os.path.join(testpath, 
+    assert os.path.isfile(os.path.join(testpath,
                                        'create-audiomd-md-references.xml'))
 
     filepath = os.path.join(

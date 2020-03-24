@@ -16,7 +16,7 @@ import lxml.etree
 import mets
 import xml_helpers.utils as xml_utils
 from scandir import scandir
-from siptools.mdcreator import get_objectlist
+from siptools.mdcreator import get_objectlist, read_md_references
 from siptools.xml.mets import (METS_CATALOG, METS_PROFILE, METS_SPECIFICATION,
                                NAMESPACES, RECORD_STATUS_TYPES, mets_extend)
 
@@ -103,7 +103,7 @@ def _attribute_values(given_params):
     attributes = {
         "mets_profile": given_params["mets_profile"],
         "organization_name": given_params["organization_name"],
-        "contractid": "%s" % given_params["contractid"],
+        "contractid": "%s" % six.text_type(given_params["contractid"]),
         "workspace": "./workspace/",
         "base_path": ".",
         "objid": new_uuid,
@@ -114,7 +114,6 @@ def _attribute_values(given_params):
         "clean": False,
         "copy_files": False,
         "label": None,
-        "contentid": None,
         "last_moddate": None,
         "packagingservice": None,
     }
@@ -122,7 +121,7 @@ def _attribute_values(given_params):
         if given_params[key]:
             attributes[key] = given_params[key]
 
-    if not str(attributes["contractid"]).startswith("urn:uuid:"):
+    if not attributes["contractid"].startswith("urn:uuid:"):
         attributes["contractid"] = "urn:uuid:%s" % attributes["contractid"]
 
     return attributes
@@ -214,8 +213,10 @@ def create_mets(**attributes):
                              agent_role='CREATOR')]
 
     # Create mets header
-    metshdr = mets.metshdr(attributes["create_date"], attributes["last_moddate"],
-                           attributes["record_status"], agents)
+    metshdr = mets.metshdr(attributes["create_date"],
+                           attributes["last_moddate"],
+                           attributes["record_status"],
+                           agents)
 
     # Collect elements from workspace XML files
     elements = []
@@ -269,7 +270,9 @@ def copy_objects(workspace, data_dir):
     :workspace: Workspace path
     :data_dir: Path to digital objects
     """
-    files = get_objectlist(workspace)
+    files = get_objectlist(read_md_references(
+        workspace, "import-object-md-references.xml"
+    ))
     for source in files:
         target = os.path.join(workspace, source)
         if not os.path.exists(os.path.dirname(target)):

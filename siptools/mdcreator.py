@@ -17,7 +17,7 @@ from siptools.utils import generate_digest, encode_path
 
 class MdCreator(object):
     """
-    Class for generating METS XML and md-references files efficiently.
+    Class for generating Mlxml.etreeS XML and md-references files efficiently.
     """
 
     def __init__(self, workspace):
@@ -36,7 +36,7 @@ class MdCreator(object):
         Add metadata reference information to the references list, which is
         written into md-references after self.write() is called. md-references
         is read by the compile-structmap script when fileSec and structMap
-        elements are created for METS XML.
+        elements are created for Mlxml.etreeS XML.
 
         :md_id: ID of MD element to be referenced
         :filepath: path of the file linking to the MD element
@@ -54,10 +54,10 @@ class MdCreator(object):
         """
         Append metadata XML element into self.md_elements list.
         self.md_elements is read by write() function and all the elements
-        are written into corresponding METS XML files.
+        are written into corresponding Mlxml.etreeS XML files.
 
         When write() is called write_md() automatically writes
-        corresponding metadata to the same METS XML file. However,
+        corresponding metadata to the same Mlxml.etreeS XML file. However,
         serializing and hashing the XML elements can be rather time consuming.
         If the metadata can be easily separated without serializing and
         hashing, this function should only be called once for each distinct
@@ -76,7 +76,8 @@ class MdCreator(object):
     def write_references(self, ref_file="md-references.xml"):
         """
         Write "md-references.xml" file, which is read by the compile-structmap
-        script when fileSec and structMap elements are created for METS XML.
+        script when fileSec and structMap elements are created for Mlxml.etreeS
+        XML.
         """
 
         reference_file = os.path.join(self.workspace, ref_file)
@@ -119,8 +120,9 @@ class MdCreator(object):
     def write_md(self, metadata, mdtype, mdtypeversion, othermdtype=None,
                  section=None, stdout=False):
         """
-        Wraps XML metadata into MD element and writes it to a METS XML file in
-        the workspace. The output filename is <mdtype>-<hash>-othermd.xml,
+        Wraps XML metadata into MD element and writes it to a Mlxml.etreeS XML
+        file in the workspace. The output filename is
+            <mdtype>-<hash>-othermd.xml,
         where <mdtype> is the type of metadata given as parameter and <hash>
         is a string generated from the metadata.
 
@@ -165,8 +167,8 @@ class MdCreator(object):
                 if stdout:
                     print(xml_helpers.utils.serialize(mets_).decode("utf-8"))
                 print(
-                    "Wrote METS %s administrative metadata to file %s" %
-                    (mdtype, outfile.name)
+                    "Wrote Mlxml.etreeS %s administrative metadata to file "
+                    "%s" % (mdtype, outfile.name)
                 )
 
         return md_id, filename
@@ -192,8 +194,8 @@ class MdCreator(object):
               section=None, stdout=False, file_metadata_dict=None,
               ref_file="md-references.xml"):
         """
-        Write METS XML and md-reference files. First, METS XML files are
-        written and self.references is appended. Second, md-references is
+        Write Mlxml.etreeS XML and md-reference files. First, METS XML files
+        are written and self.references is appended. Second, md-references is
         written.
 
         If subclasses is optimized to call add_md once for each metadata type,
@@ -204,11 +206,11 @@ class MdCreator(object):
         :mdtype (string): Value of mdWrap MDTYPE attribute
         :mdtypeversion (string): Value of mdWrap MDTYPEVERSION attribute
         :othermdtype (string): Value of mdWrap OTHERMDTYPE attribute
-        :section (string): METS section type
+        :section (string): Mlxml.etreeS section type
         :stdout (boolean): Print also to stdout
         :file_metadat_dict (dict): File metadata dict
         """
-        # Write METS XML and append self.references
+        # Write Mlxml.etreeS XML and append self.references
         for metadata, filename, stream, directory in self.md_elements:
             md_id, _ = self.write_md(
                 metadata, mdtype, mdtypeversion, othermdtype=othermdtype,
@@ -257,3 +259,75 @@ def remove_dmdsec_references(workspace):
                              'import-description-md-references.xml')
     if os.path.exists(refs_file):
         os.remove(refs_file)
+
+
+def read_all_amd_references(workspace):
+    """
+    Collect all administrative references.
+
+    :workspace: path to workspace directory
+    :returns: a set of administrative MD IDs
+    """
+    references = None
+    for ref_file in ["import-object-md-references.xml",
+                     "create-addml-md-references.xml",
+                     "create-audiomd-md-references.xml",
+                     "create-mix-md-references.xml",
+                     "create-videomd-md-references.xml",
+                     "premis-event-md-references.xml"]:
+        if references is None:
+            references = read_md_references(workspace, ref_file)
+        else:
+            refs = read_md_references(workspace, ref_file)
+            if refs is not None:
+                for ref in refs:
+                    references.append(ref)
+
+    return references
+
+
+def read_md_references(workspace, ref_file="md-references.xml"):
+    """If MD reference file exists in workspace, read
+    all the MD IDs as element_tree.
+
+    :workspace: path to workspace directory
+    :ref_file: Metadata reference file
+    :returns: Root of the reference tree
+    """
+    reference_file = os.path.join(workspace, ref_file)
+
+    if os.path.isfile(reference_file):
+        return lxml.etree.parse(reference_file).getroot()
+    return None
+
+
+def get_md_references(element_tree, path=None, stream=None, directory=None):
+    """
+    Return filtered references from a set of given references.
+    :element_tree: XML etree of references to be filtered
+    :path: Filter by given file path
+    :stream: Filter by given strean index
+    :directory: Filter by given directory path
+    """
+    if element_tree is None:
+        return None
+
+    if directory:
+        directory = os.path.normpath(directory)
+        reference_elements = element_tree.xpath(
+            '/mdReferences/mdReference'
+            '[@directory="%s"]' % directory
+        )
+    elif stream is None:
+        reference_elements = element_tree.xpath(
+            '/mdReferences/mdReference[@file="%s" '
+            'and not(@stream)]' % path
+        )
+    else:
+        reference_elements = element_tree.xpath(
+            '/mdReferences/mdReference[@file="%s" '
+            'and @stream="%s"]' % (path, stream)
+        )
+    md_ids = [element.text for element in reference_elements]
+
+    return set(md_ids)

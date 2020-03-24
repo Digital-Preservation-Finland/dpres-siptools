@@ -108,17 +108,6 @@ def test_file_and_dir(testpath, run_cli):
     assert elementlist[1].tag == '{%s}div' % NAMESPACES['mets']
 
 
-def test_get_md_references(testpath):
-    """Test get_md_references function. Copies sample MD reference file
-    to workspace and reads the administrative MD IDs for a file.
-    """
-    xml = lxml.etree.parse('tests/data/sample_md-references.xml').getroot()
-
-    # The sample file contains two references for file2
-    ids = compile_structmap.get_md_references(xml, 'path/to/file2')
-    assert set(ids) == set(['abcd1234', 'efgh5678'])
-
-
 def test_othermd_references(testpath, run_cli):
     """Test that main function creates references to othermd-metadata from file
     element in fileSec. A sample workspace contains aMD files, MIX metadata

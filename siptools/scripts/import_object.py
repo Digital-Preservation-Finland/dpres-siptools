@@ -129,10 +129,10 @@ def _attribute_values(given_params):
         "base_path": ".",
         "skip_wellformed_check": False,
         "charset": None,
-        "file_format": None,
-        "format_registry": None,
+        "file_format": (),
+        "format_registry": (),
         "identifier": ("UUID", six.text_type(uuid4())),
-        "checksum": None,
+        "checksum": (),
         "date_created": None,
         "order": None,
         "stdout": False,
@@ -228,8 +228,11 @@ class PremisCreator(MdCreator):
             version = attributes["file_format"][1]
 
         streams = scrape_file(
-            filepath=filepath, skip_well_check=attributes["skip_wellformed_check"],
-            mimetype=mimetype, version=version, charset=attributes["charset"],
+            filepath=filepath,
+            skip_well_check=attributes["skip_wellformed_check"],
+            mimetype=mimetype,
+            version=version,
+            charset=attributes["charset"],
             skip_json=True
         )
 
@@ -346,7 +349,6 @@ def create_premis_object(fname, streams, **attributes):
     else:
         charset = None
 
-
     if not attributes["file_format"]:
         if streams[0]["version"] and streams[0]["version"] != UNKNOWN_VERSION:
             format_version = '' if streams[0]["version"] == NO_VERSION else \
@@ -356,7 +358,8 @@ def create_premis_object(fname, streams, **attributes):
 
         file_format = (streams[0]["mimetype"], format_version)
     else:
-        file_format = (attributes["file_format"][0], attributes["file_format"][1])
+        file_format = (attributes["file_format"][0],
+                       attributes["file_format"][1])
 
     check_metadata(file_format[0], file_format[1], streams, fname)
 
@@ -371,14 +374,16 @@ def create_premis_object(fname, streams, **attributes):
         identifier_value=attributes["identifier"][1]
     )
 
-    premis_fixity = premis.fixity(attributes["checksum"][1], attributes["checksum"][0])
+    premis_fixity = premis.fixity(attributes["checksum"][1],
+                                  attributes["checksum"][0])
     premis_format_des = premis.format_designation(
         file_format[0] + charset_mime, file_format[1])
     if not attributes["format_registry"]:
         premis_format = premis.format(child_elements=[premis_format_des])
     else:
-        premis_registry = premis.format_registry(attributes["format_registry"][0],
-                                                 attributes["format_registry"][1])
+        premis_registry = premis.format_registry(
+            attributes["format_registry"][0],
+            attributes["format_registry"][1])
         premis_format = premis.format(child_elements=[premis_format_des,
                                                       premis_registry])
     premis_date_created = premis.date_created(date_created)

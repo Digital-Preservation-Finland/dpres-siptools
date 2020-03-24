@@ -97,7 +97,7 @@ def create_addml(**kwargs):
     """
     Create ADDML metadata for a CSV file.
 
-    :kwargs: Given arguments 
+    :kwargs: Given arguments
              filename: CSV file name
              workspace: Workspace path
              base_path: Base path of the digital objects
@@ -142,7 +142,8 @@ class AddmlCreator(MdCreator):
 
         :attributes: The following keys:
                      csv_file: CSV file name
-                     headername: Default header name if file does not have header
+                     headername: Header name prefix if file does not have
+                                 header
                      delimiter: Delimiter used in the CSV file
                      isheader: True if CSV has a header else False
                      charset: Charset used in the CSV file
@@ -250,7 +251,7 @@ def csv_header(attributes):
                  isheader: True id file has a header, False otherwise
                  returns: Header list of CSV columns
     """
-    attributes["headername"] = attributes.get("headername", "header") 
+    attributes["headername"] = attributes.get("headername", "header")
     csv_file = _open_csv_file(attributes["csv_file"], attributes["charset"])
     csv.register_dialect(
         "new_dialect",

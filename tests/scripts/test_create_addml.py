@@ -151,7 +151,7 @@ def test_paths(testpath, file_, base_path, run_cli):
             '--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        open(os.path.join(testpath, 
+        open(os.path.join(testpath,
                           'create-addml-md-references.xml')).read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))
@@ -170,13 +170,13 @@ def test_csv_header_charset(filename, charset):
     :filename: Test file
     :charset: Character encoding of test file
     """
-    header = create_addml.csv_header(attributes = {
+    header = create_addml.csv_header(attributes={
         "csv_file": filename, "delimiter": ",", "charset": charset,
         "isheader": True
     })
     assert header == ["year", "br\xe4nd", "m\xf6del", "detail", "other"]
 
-    header = create_addml.csv_header(attributes = {
+    header = create_addml.csv_header(attributes={
         "csv_file": filename, "delimiter": ",", "charset": charset,
         "isheader": False
     })
@@ -188,14 +188,14 @@ def _create_addml(testpath, isheader):
 
     # Append two csv files with same
     # metadata, but different filename
-    creator.add_addml_md(attributes = {
+    creator.add_addml_md(attributes={
         "csv_file": "tests/data/simple_csv.csv", "delimiter": ",",
         "isheader": isheader, "charset": CHARSET,
         "record_separator": RECORDSEPARATOR,
         "quoting_char": QUOTINGCHAR
     })
 
-    creator.add_addml_md(attributes = { 
+    creator.add_addml_md(attributes={
         "csv_file": "tests/data/simple_csv_2.csv", "delimiter": ",",
         "isheader": isheader, "charset": CHARSET,
         "record_separator": RECORDSEPARATOR,
@@ -203,7 +203,7 @@ def _create_addml(testpath, isheader):
     })
 
     # Append csv file with different metadata
-    creator.add_addml_md(attributes = {
+    creator.add_addml_md(attributes={
         "csv_file": CSV_FILE, "delimiter": DELIMITER, "isheader": isheader,
         "charset": CHARSET, "record_separator": RECORDSEPARATOR,
         "quoting_char": QUOTINGCHAR

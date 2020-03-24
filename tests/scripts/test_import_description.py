@@ -146,10 +146,9 @@ def test_paths(testpath, directory, base_path, run_cli):
             "tests/data/import_description/metadata/dc_description.xml"
         ])
 
-    with io.open(os.path.join(
-            testpath,
-            "import-description-md-references.xml"
-        ), "rt") as md_ref:
+    with io.open(os.path.join(testpath,
+                              "import-description-md-references.xml"),
+                 "rt") as md_ref:
         md_references = md_ref.read()
 
     assert 'directory=\"%s\"' % os.path.normpath(directory) in md_references

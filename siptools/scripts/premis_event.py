@@ -10,11 +10,9 @@ import click
 import lxml.etree
 import six
 
-import mets
 import premis
 import xml_helpers.utils
 from siptools.mdcreator import MdCreator
-from siptools.utils import encode_id, encode_path
 from siptools.xml.mets import NAMESPACES
 from siptools.xml.premis import PREMIS_EVENT_OUTCOME_TYPES
 
@@ -332,8 +330,11 @@ def create_premis_event(**attributes):
         child_elements.append(linking_agent_identifier)
 
     premis_event_elem = premis.event(
-        event_identifier, attributes["event_type"], attributes["event_datetime"],
-        attributes["event_detail"], child_elements=child_elements
+        event_identifier,
+        attributes["event_type"],
+        attributes["event_datetime"],
+        attributes["event_detail"],
+        child_elements=child_elements
     )
 
     return premis_event_elem

@@ -134,8 +134,8 @@ def test_existing_scraper_result(testpath):
           <mdReferences>
           <mdReference file="{}">_{}</mdReference>
           </mdReferences>""".format(file_, amdid).encode("utf-8")
-    with open(os.path.join(testpath,
-              'import-object-md-references.xml'), 'wb') as out:
+    with open(os.path.join(testpath, 'import-object-md-references.xml'),
+              'wb') as out:
         out.write(xml)
 
     stream_dict = {0: {
@@ -185,7 +185,7 @@ def test_paths(testpath, file_, base_path, run_cli):
         run_cli(create_mix.main, ['--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        io.open(os.path.join(testpath,
-                'create-mix-md-references.xml'), "rt").read()
+        io.open(os.path.join(testpath, 'create-mix-md-references.xml'),
+                "rt").read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

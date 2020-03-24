@@ -259,8 +259,8 @@ def test_paths(testpath, file_, base_path, run_cli):
             "success", "creation", "2020-02-02T20:20:20"
         ])
 
-    with io.open(os.path.join(
-            testpath, "premis-event-md-references.xml"), "rt") as md_ref:
+    with io.open(os.path.join(testpath, "premis-event-md-references.xml"),
+                 "rt") as md_ref:
         md_references = md_ref.read()
 
     assert 'file=\"%s\"' % os.path.normpath(file_) in md_references

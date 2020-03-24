@@ -6,7 +6,7 @@ import subprocess
 import pytest
 
 
-# @pytest.mark.e2e
+@pytest.mark.e2e
 def test_end_to_end(testpath):
     """Test creation of SIP and asserting the validity
     of the created mets document with validation tools.

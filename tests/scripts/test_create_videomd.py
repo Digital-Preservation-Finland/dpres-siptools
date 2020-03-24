@@ -270,7 +270,7 @@ def test_paths(testpath, file_, base_path, run_cli):
             '--workspace', testpath, file_])
 
     assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        io.open(os.path.join(testpath, 
+        io.open(os.path.join(testpath,
                              'create-videomd-md-references.xml'), "rt").read()
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))
