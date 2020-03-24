@@ -113,7 +113,7 @@ def _attribute_values(given_params):
         "event_outcome_detail": given_params["event_outcome_detail"],
         "agent_name": None,
         "agent_type": None,
-        "agent_identifier": ("UUID", six.text_type(uuid4())),
+        "agent_identifier": None,
         "stdout": False,
     }
     for key in given_params:
@@ -150,17 +150,15 @@ def premis_event(**kwargs):
         attributes["base_path"], attributes["event_target"])
 
     if attributes["agent_name"] or attributes["agent_type"]:
-        agent_identifier = find_premis_agent_identifier(
-            attributes["workspace"], attributes["agent_name"],
-            attributes["agent_type"]
-        )
 
-        if not agent_identifier:
-            agent_identifier = attributes["agent_identifier"]
+        if not attributes["agent_identifier"]:
+            attributes["agent_identifier"] = \
+                find_premis_agent_identifier(attributes)
 
-        agent = create_premis_agent(attributes["agent_name"],
-                                    attributes["agent_type"],
-                                    agent_identifier)
+        if not attributes["agent_identifier"]:
+            attributes["agent_identifier"] = ("UUID", six.text_type(uuid4()))
+
+        agent = create_premis_agent(attributes)
 
         agent_creator = PremisCreator(attributes["workspace"])
         agent_creator.add_md(agent, event_file, directory=directory)
@@ -237,18 +235,18 @@ class PremisCreator(MdCreator):
         )
 
 
-def find_premis_agent_identifier(workspace, agent_name, agent_type):
+def find_premis_agent_identifier(attributes):
     """
     Search for an existing PREMIS agent in the workspace with the same
     agent name and type. If found, return the agent identifier.
 
-    :param str workspace: path to the workspace
-    :param str agent_name: content of PREMIS agentName element
-    :param str agent_type: content of PREMIS agentType element
-
+    :attributes: The follwing keys:
+                 workspace: path to the workspace
+                 agent_name: content of PREMIS agentName element
+                 agent_type: content of PREMIS agentType element
     :returns: PREMIS agent identifier if found, None otherwise
     """
-    search_path = os.path.join(workspace, "*AGENT-amd.xml")
+    search_path = os.path.join(attributes["workspace"], "*AGENT-amd.xml")
 
     for path in glob.glob(search_path):
         element = lxml.etree.parse(path).getroot()[0]
@@ -263,29 +261,36 @@ def find_premis_agent_identifier(workspace, agent_name, agent_type):
             "premis:agentType", namespaces=NAMESPACES
         ).text
 
-        if found_agent_name == agent_name and found_agent_type == agent_type:
+        if found_agent_name == attributes["agent_name"] and \
+                found_agent_type == attributes["agent_type"]:
             # Agent already exists
-            return agent.find(
+            id_type = agent.find(
+                ".//premis:agentIdentifierType", namespaces=NAMESPACES
+            ).text
+            id_value = agent.find(
                 ".//premis:agentIdentifierValue", namespaces=NAMESPACES
             ).text
+            return (id_type, id_value)
 
     return None
 
 
-def create_premis_agent(agent_name, agent_type, agent_identifier):
+def create_premis_agent(attributes):
     """Creates METS digiprovMD element that contains PREMIS agent element with
     unique identifier.
 
-    :agent_name: content of PREMIS agentName element
-    :agent_type: content of PREMIS agentType element
-    :agent_identifier: content of PREMIS agentIdentifierValue element
+    :attributes: The following keys:
+                 agent_name: content of PREMIS agentName element
+                 agent_type: content of PREMIS agentType element
+                 agent_identifier: PREMIS agent identifier
     :returns: PREMIS event XML element
     """
     agent_identifier = premis.identifier(
-        identifier_type=agent_identifier[0],
-        identifier_value=agent_identifier[1], prefix='agent'
+        identifier_type=attributes["agent_identifier"][0],
+        identifier_value=attributes["agent_identifier"][1], prefix='agent'
     )
-    premis_agent = premis.agent(agent_identifier, agent_name, agent_type)
+    premis_agent = premis.agent(agent_identifier, attributes["agent_name"],
+                                attributes["agent_type"])
 
     return premis_agent
 

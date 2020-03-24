@@ -125,7 +125,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
             error_head = "Metadata of file %s could not " \
                 "be collected due to errors.\n" % filepath
             error_str = error_head + error_str
-        raise ValueError(error_str)
+        raise ValueError(six.ensure_str(error_str))
 
     if scraper.info[0]['class'] == 'FileExists' and \
             len(scraper.info[0]['errors']) > 0:
