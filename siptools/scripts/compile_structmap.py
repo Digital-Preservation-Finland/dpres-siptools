@@ -79,15 +79,18 @@ def _attribute_values(given_params):
         if given_params[key]:
             attributes[key] = given_params[key]
 
-    attributes["object_refs"] = read_md_references(
-        attributes["workspace"], "import-object-md-references.xml"
-    )
-    attributes["filelist"] = get_objectlist(attributes["object_refs"])
-    attributes["all_amd_refs"] = read_all_amd_references(
-        attributes["workspace"])
-    attributes["all_dmd_refs"] = read_md_references(
-        attributes["workspace"], "import-description-md-references.xml"
-    )
+    attributes["object_refs"] = attributes.get(
+        "object_refs", read_md_references(
+            attributes["workspace"], "import-object-md-references.xml"
+        ))
+    attributes["filelist"] = attributes.get(
+        "filelist", get_objectlist(attributes["object_refs"]))
+    attributes["all_amd_refs"] = attributes.get(
+        "all_amd_refs", read_all_amd_references(attributes["workspace"]))
+    attributes["all_dmd_refs"] = attributes.get(
+        "all_dmd_refs", read_md_references(
+            attributes["workspace"], "import-description-md-references.xml"
+        ))
 
     return attributes
 
@@ -151,6 +154,7 @@ def create_filesec(attributes):
                  filelist: Sorted list of digital objects (file paths)
     :returns: METS XML Element tree including file section element
     """
+    attributes = _attribute_values(attributes)
     filegrp = mets.filegrp()
     filesec = mets.filesec(child_elements=[filegrp])
 
@@ -179,6 +183,7 @@ def create_structmap(filesec, attributes):
                  workspace: Workspace path
     :returns: structural map element
     """
+    attributes = _attribute_values(attributes)
     amdids = get_md_references(attributes["all_amd_refs"], directory='.')
     dmdids = get_md_references(attributes["all_dmd_refs"], directory='.')
 
