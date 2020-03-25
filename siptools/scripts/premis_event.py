@@ -156,7 +156,7 @@ def premis_event(**kwargs):
         if not attributes["agent_identifier"]:
             attributes["agent_identifier"] = ("UUID", six.text_type(uuid4()))
 
-        agent = create_premis_agent(attributes)
+        agent = create_premis_agent(**attributes)
 
         agent_creator = PremisCreator(attributes["workspace"])
         agent_creator.add_md(agent, event_file, directory=directory)
@@ -273,7 +273,7 @@ def find_premis_agent_identifier(attributes):
     return None
 
 
-def create_premis_agent(attributes):
+def create_premis_agent(**attributes):
     """Creates METS digiprovMD element that contains PREMIS agent element with
     unique identifier.
 

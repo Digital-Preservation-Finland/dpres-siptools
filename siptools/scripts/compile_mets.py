@@ -92,22 +92,23 @@ def main(**kwargs):
     return 0
 
 
-def _attribute_values(given_params):
+def _attribute_values(given_params, fill_contentid=False):
     """
     Give attribute values as a dict for the script.
 
     :given_params: Arguments as dict.
+    :fill_contentid: True sets attribute "contentid" same as "objid" if
+                     "objid" is in given_params, but "contentid" is not.
     :returns: Initialized dict.
     """
-    new_uuid = six.text_type(uuid.uuid4())
     attributes = {
         "mets_profile": given_params["mets_profile"],
         "organization_name": given_params["organization_name"],
-        "contractid": "%s" % given_params["contractid"],
+        "contractid": given_params["contractid"],
         "workspace": "./workspace/",
         "base_path": ".",
-        "objid": new_uuid,
-        "contentid": new_uuid,
+        "objid": six.text_type(uuid.uuid4()),
+        "contentid": None,
         "create_date": datetime.datetime.utcnow().isoformat(),
         "record_status": "submission",
         "stdout": False,
@@ -123,6 +124,9 @@ def _attribute_values(given_params):
 
     if not str(attributes["contractid"]).startswith("urn:uuid:"):
         attributes["contractid"] = "urn:uuid:%s" % attributes["contractid"]
+    if fill_contentid and given_params["objid"] and not \
+            attributes["contentid"]:
+        attributes["contentid"] = given_params["objid"]
 
     return attributes
 
@@ -150,7 +154,7 @@ def compile_mets(**kwargs):
              stdout: True prints the output to stdout
              packagingservice: Packaging service specific parameter
     """
-    attributes = _attribute_values(kwargs)
+    attributes = _attribute_values(kwargs, True)
 
     mets_document = create_mets(**attributes)
 
@@ -177,7 +181,7 @@ def compile_mets(**kwargs):
         print("compile_mets cleaned work files from workspace.")
 
 
-def create_mets(**attributes):
+def create_mets(fill_contentid=False, **attributes):
     """Creates METS document element tree. Looks for files with prefix
     "-amd.xml", "dmdsec.xml", "structmap.xml", "filesec.xml", and
     "rightsmd.xml" from workspace and merges the dmdSec,
@@ -185,6 +189,8 @@ def create_mets(**attributes):
     one METS document. Also metsHdr element is created and included in
     document.
 
+    :fill_contentid: True sets attribute "contentid" same as "objid" if
+                     "objid" is given, but "contentid" is not.
     :attributes: The following keys:
                  mets_profile: METS Profile (mandatory)
                  organization_name: Creator name (mandatory)
@@ -199,7 +205,7 @@ def create_mets(**attributes):
                  packagingservice: Packaging service specific parameter
     :returns: METS document ElementTree object
     """
-    attributes = _attribute_values(attributes)
+    attributes = _attribute_values(attributes, fill_contentid)
     # Create list of agent elements
     if attributes["packagingservice"]:
         agents = [mets.agent(attributes["organization_name"],

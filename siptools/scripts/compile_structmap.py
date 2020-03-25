@@ -79,6 +79,24 @@ def _attribute_values(given_params):
         if given_params[key]:
             attributes[key] = given_params[key]
 
+    return get_reference_lists(**attributes)
+
+
+def get_reference_lists(**attributes):
+    """
+    Fill the attributes with various lists.
+
+    :attributes: The following keys:
+                 workspace: Workspace path
+                 object_refs: XML tree of digital objects.
+                              Will be created if missing.
+                 filelist: ID list of objects. Will be created if missing.
+                 all_amd_refs: All administrative metadata references.
+                               Will be created if missing.
+                 all_dmd_refs: All descriptive metadata references.
+                               Will be created if missing.
+    :returns: Attributes filled with the lists listed above.
+    """
     attributes["object_refs"] = attributes.get(
         "object_refs", read_md_references(
             attributes["workspace"], "import-object-md-references.xml"
@@ -118,8 +136,8 @@ def compile_structmap(**kwargs):
 
         structmap = create_ead3_structmap(filegrp, attributes)
     else:
-        filesec = create_filesec(attributes)
-        structmap = create_structmap(filesec.getroot(), attributes)
+        filesec = create_filesec(**attributes)
+        structmap = create_structmap(filesec.getroot(), **attributes)
 
     if attributes["stdout"]:
         print(xml_utils.serialize(filesec).decode("utf-8"))
@@ -144,7 +162,7 @@ def compile_structmap(**kwargs):
                                                       output_fs_file))
 
 
-def create_filesec(attributes):
+def create_filesec(**attributes):
     """
     Creates METS document element tree that contains fileSec element.
 
@@ -167,7 +185,7 @@ def create_filesec(attributes):
     return ET.ElementTree(mets_element)
 
 
-def create_structmap(filesec, attributes):
+def create_structmap(filesec, **attributes):
     """
     Creates METS document element tree that contains structural map.
 
