@@ -300,7 +300,6 @@ def read_md_references(workspace, ref_file="md-references.xml"):
         return lxml.etree.parse(reference_file).getroot()
     return None
 
-
 def get_md_references(element_tree, path=None, stream=None, directory=None):
     """
     Return filtered references from a set of given references.
@@ -312,7 +311,11 @@ def get_md_references(element_tree, path=None, stream=None, directory=None):
     if element_tree is None:
         return None
 
-    if directory:
+    if directory is None and path is None and stream is None:
+        reference_elements = element_tree.xpath(
+            '/mdReferences/mdReference'
+        )
+    elif directory:
         directory = os.path.normpath(directory)
         reference_elements = element_tree.xpath(
             '/mdReferences/mdReference'
