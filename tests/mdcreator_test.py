@@ -53,7 +53,7 @@ def test_add_mdreference(testpath):
     md_creator.add_reference('abcd1234', 'path/to/file1')
     md_creator.add_reference('abcd1234', 'path/to/file2')
 
-    md_creator.write_references()
+    md_creator.write_references('md-references.xml')
 
     # Read created file. Reference should be found for both files
     etree = lxml.etree.parse(os.path.join(testpath, 'md-references.xml'))

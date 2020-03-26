@@ -73,7 +73,7 @@ class MdCreator(object):
         md_element = (metadata, filename, stream, directory)
         self.md_elements.append(md_element)
 
-    def write_references(self, ref_file="md-references.xml"):
+    def write_references(self, ref_file):
         """
         Write "md-references.xml" file, which is read by the compile-structmap
         script when fileSec and structMap elements are created for Mlxml.etreeS
@@ -190,9 +190,9 @@ class MdCreator(object):
             print("Wrote technical data to: %s" % (outfile.name))
 
     #pylint: disable=too-many-arguments
-    def write(self, mdtype="type", mdtypeversion="version", othermdtype=None,
-              section=None, stdout=False, file_metadata_dict=None,
-              ref_file="md-references.xml"):
+    def write(self, mdtype="type", mdtypeversion="version",
+              othermdtype=None, section=None, stdout=False,
+              file_metadata_dict=None, ref_file=None):
         """
         Write Mlxml.etreeS XML and md-reference files. First, METS XML files
         are written and self.references is appended. Second, md-references is
@@ -209,6 +209,7 @@ class MdCreator(object):
         :section (string): Mlxml.etreeS section type
         :stdout (boolean): Print also to stdout
         :file_metadat_dict (dict): File metadata dict
+        :ref_file (string): Reference file name
         """
         # Write Mlxml.etreeS XML and append self.references
         for metadata, filename, stream, directory in self.md_elements:
@@ -251,7 +252,7 @@ def get_objectlist(xml, file_path=None):
 
 def remove_dmdsec_references(workspace):
     """
-    Removes the reference to the dmdSecs in the 'md-references.xml' file.
+    Removes the reference to the dmdSecs in the md-references.xml file.
 
     :workspace: Workspace path
     """
@@ -286,7 +287,7 @@ def read_all_amd_references(workspace):
     return references
 
 
-def read_md_references(workspace, ref_file="md-references.xml"):
+def read_md_references(workspace, ref_file):
     """If MD reference file exists in workspace, read
     all the MD IDs as element_tree.
 
