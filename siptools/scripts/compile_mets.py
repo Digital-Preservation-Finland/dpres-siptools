@@ -124,7 +124,7 @@ def _attribute_values(given_params, fill_contentid=False):
 
     if not str(attributes["contractid"]).startswith("urn:uuid:"):
         attributes["contractid"] = "urn:uuid:%s" % attributes["contractid"]
-    if fill_contentid and given_params["objid"] and not \
+    if fill_contentid and given_params.get("objid", None) and not \
             attributes["contentid"]:
         attributes["contentid"] = given_params["objid"]
 
