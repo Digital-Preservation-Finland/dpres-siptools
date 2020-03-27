@@ -48,11 +48,15 @@ def test_import_object_ok(testpath, run_cli):
 
 
 #pylint: disable=invalid-name
-def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
-    """Test import_object.main function --skip_well_formed argument."""
+def test_import_object_illegal_html_valid_text(testpath, run_cli):
+    """
+    Test import_object.main function --skip_well_formed argument.
+    
+    Test that a non-wellformed HTML file is passed and valid as
+    plain text file.
+    """
     input_file = 'tests/data/invalid_4.01_illegal_tags.html'
     arguments = ['--workspace', testpath, input_file,
-                 '--skip_wellformed_check',
                  '--file_format', 'text/plain', '',
                  '--checksum', 'MD5', '1qw87geiewgwe9',
                  '--date_created', datetime.datetime.utcnow().isoformat()]
@@ -67,12 +71,40 @@ def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
 
 
 #pylint: disable=invalid-name
-def test_import_object_skip_wellformed_check_nodate_ok(testpath, run_cli):
-    """Test import_object.main function without --date_created argument."""
+def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
+    """
+    Test import_object.main function --skip_well_formed argument.
+    
+    Test that a non-wellformed HTML file is passed with metadata
+    collection, since well-formedness checking is bypassed.
+    """
     input_file = 'tests/data/invalid_4.01_illegal_tags.html'
     arguments = ['--workspace', testpath, input_file,
                  '--skip_wellformed_check',
-                 '--file_format', 'text/plain', '',
+                 '--file_format', 'text/html', '',
+                 '--checksum', 'MD5', '1qw87geiewgwe9',
+                 '--date_created', datetime.datetime.utcnow().isoformat()]
+    run_cli(import_object.main, arguments)
+
+    output = get_amd_file(testpath, input_file)
+    tree = ET.parse(output)
+    root = tree.getroot()
+
+    assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
+                          namespaces=NAMESPACES)) == 1
+
+
+#pylint: disable=invalid-name
+def test_import_object_skip_wellformed_check_nodate_ok(testpath, run_cli):
+    """
+    Test import_object.main function without --date_created argument.
+
+    Test that the script works without a given creation date.
+    """
+    input_file = 'tests/data/invalid_4.01_illegal_tags.html'
+    arguments = ['--workspace', testpath, input_file,
+                 '--skip_wellformed_check',
+                 '--file_format', 'text/html', '',
                  '--checksum', 'MD5', '1qw87geiewgwe9']
     run_cli(import_object.main, arguments)
 

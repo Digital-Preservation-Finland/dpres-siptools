@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 import os
 import lxml.etree
-from siptools.mdcreator import (MdCreator, get_md_references,
+from siptools.mdcreator import (MetsSectionCreator, get_md_references,
                                 remove_dmdsec_references)
 
 
@@ -14,7 +14,7 @@ def test_create_amdfile(testpath):
     workspace. Check that XML file contains expected elements.
     """
 
-    md_creator = MdCreator(testpath)
+    md_creator = MetsSectionCreator(testpath)
 
     sample_data = lxml.etree.Element('sampleData')
     md_creator.write_md(sample_data, 'NISOIMG', '2.0')
@@ -48,7 +48,7 @@ def test_add_mdreference(testpath):
     write the mdreference file.
     """
 
-    md_creator = MdCreator(testpath)
+    md_creator = MetsSectionCreator(testpath)
 
     md_creator.add_reference('abcd1234', 'path/to/file1')
     md_creator.add_reference('abcd1234', 'path/to/file2')

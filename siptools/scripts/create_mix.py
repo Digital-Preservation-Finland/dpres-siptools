@@ -9,7 +9,7 @@ import click
 import six
 
 import nisomix
-from siptools.mdcreator import MdCreator
+from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import scrape_file
 
 
@@ -75,9 +75,10 @@ def create_mix(filename, workspace="./workspace/", base_path="."):
     creator.write()
 
 
-class MixCreator(MdCreator):
+class MixCreator(MetsSectionCreator):
     """
-    Subclass of MdCreator, which generates MIX metadata for image files.
+    Subclass of MetsSectionCreator, which generates MIX metadata for image
+    files.
     """
 
     def add_mix_md(self, filepath, filerel=None):

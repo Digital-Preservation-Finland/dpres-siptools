@@ -18,6 +18,7 @@ def create_test_data(workspace, run_cli):
         'tests/data/structured/Software files/koodi.java'])
     run_cli(premis_event.main, [
         'creation', '2016-10-13T12:30:55',
+        '--event_outcome_detail', 'Test ok',
         '--event_detail', 'Testing', '--event_outcome',
         'success', '--workspace', workspace, '--event_target',
         'tests/data/structured/Software files'])
@@ -175,7 +176,7 @@ def test_compile_structmap_directory(testpath, run_cli):
     assert sm_root.xpath(
         '//mets:div[@TYPE="directory" and @LABEL="Software files"]',
         namespaces=NAMESPACES
-    )[0].get('ADMID') == '_47244c09fb49dfd4d0577d29820bfa6c'
+    )[0].get('ADMID') == '_7c1eea4ea4ac7ccadb9199773a026121'
 
 
 def test_compile_structmap_order(testpath, run_cli):

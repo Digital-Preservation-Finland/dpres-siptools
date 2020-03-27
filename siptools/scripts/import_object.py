@@ -12,7 +12,7 @@ import click
 import six
 
 import premis
-from siptools.mdcreator import MdCreator
+from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import scrape_file, calc_checksum
 
 click.disable_unicode_literals_warning = True
@@ -195,8 +195,8 @@ def import_object(**kwargs):
     return file_metadata_dict
 
 
-class PremisCreator(MdCreator):
-    """Subclass of MdCreator, which generates PREMIS metadata
+class PremisCreator(MetsSectionCreator):
+    """Subclass of MetsSectionCreator, which generates PREMIS metadata
     for files and streams.
     """
 

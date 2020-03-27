@@ -83,6 +83,7 @@ def test_amd_links_root(testpath, run_cli):
         '2016-10-13T12:30:55',
         '--event_detail', 'Testing',
         '--event_outcome', 'success',
+        '--event_outcome_detail', 'Test ok',
         '--workspace', testpath
     ])
 
@@ -104,6 +105,7 @@ def test_amd_links_file(testpath, run_cli):
         '2016-10-13T12:30:55',
         '--event_detail', 'Testing',
         '--event_outcome', 'success',
+        '--event_outcome_detail', 'Test ok',
         '--workspace', testpath,
         '--event_target', target
     ])
@@ -126,6 +128,7 @@ def test_amd_links_dir(testpath, run_cli):
         '2016-10-13T12:30:55',
         '--event_detail', 'Testing',
         '--event_outcome', 'success',
+        '--event_outcome_detail', 'Test ok',
         '--workspace', testpath,
         '--event_target', target
     ])
@@ -250,11 +253,13 @@ def test_paths(testpath, file_, base_path, run_cli):
             "--workspace", testpath, "--base_path", base_path,
             "--event_target", file_, "--event_detail", "foo",
             "--event_outcome", "success", "creation",
+            "--event_outcome_detail", "Test ok",
             "2020-02-02T20:20:20"
         ])
     else:
         run_cli(premis_event.main, [
             "--workspace", testpath, "--event_target", file_,
+            "--event_outcome_detail", "Test ok",
             "--event_detail", "foo", "--event_outcome",
             "success", "creation", "2020-02-02T20:20:20"
         ])

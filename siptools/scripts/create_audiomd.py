@@ -8,7 +8,7 @@ import click
 import six
 
 import audiomd
-from siptools.mdcreator import MdCreator
+from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import fix_missing_metadata, scrape_file
 
 click.disable_unicode_literals_warning = True
@@ -66,9 +66,10 @@ def create_audiomd(filename, workspace="./workspace/", base_path="."):
     creator.write()
 
 
-class AudiomdCreator(MdCreator):
+class AudiomdCreator(MetsSectionCreator):
     """
-    Subclass of MdCreator, which generates audioMD metadata for audio files.
+    Subclass of MetsSectionCreator, which generates audioMD metadata for audio
+    files.
     """
 
     def add_audiomd_md(self, filepath, filerel=None):

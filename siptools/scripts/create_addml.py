@@ -11,7 +11,7 @@ import click
 
 import addml
 import lxml.etree as ET
-from siptools.mdcreator import MdCreator
+from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import encode_path
 
 click.disable_unicode_literals_warning = True
@@ -114,8 +114,8 @@ def create_addml(**kwargs):
     creator.write()
 
 
-class AddmlCreator(MdCreator):
-    """Subclass of MdCreator, which generates ADDML metadata
+class AddmlCreator(MetsSectionCreator):
+    """Subclass of MetsSectionCreator, which generates ADDML metadata
     for CSV files.
     """
 

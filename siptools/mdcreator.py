@@ -15,9 +15,10 @@ import xml_helpers
 from siptools.utils import generate_digest, encode_path
 
 
-class MdCreator(object):
+class MetsSectionCreator(object):
     """
-    Class for generating Mlxml.etreeS XML and md-references files efficiently.
+    Class for generating lxml.etree XML for different METS metadata sections
+    and corresponing md-references files efficiently.
     """
 
     def __init__(self, workspace):
@@ -36,7 +37,7 @@ class MdCreator(object):
         Add metadata reference information to the references list, which is
         written into md-references after self.write() is called. md-references
         is read by the compile-structmap script when fileSec and structMap
-        elements are created for Mlxml.etreeS XML.
+        elements are created for lxml.etree XML.
 
         :md_id: ID of MD element to be referenced
         :filepath: path of the file linking to the MD element
@@ -54,15 +55,15 @@ class MdCreator(object):
         """
         Append metadata XML element into self.md_elements list.
         self.md_elements is read by write() function and all the elements
-        are written into corresponding Mlxml.etreeS XML files.
+        are written into corresponding lxml.etree XML files.
 
         When write() is called write_md() automatically writes
-        corresponding metadata to the same Mlxml.etreeS XML file. However,
+        corresponding metadata to the same lxml.etree XML file. However,
         serializing and hashing the XML elements can be rather time consuming.
         If the metadata can be easily separated without serializing and
         hashing, this function should only be called once for each distinct
         metadata. This should be implemented by the subclasses of
-        MdCreator.
+        MetsSectionCreator.
 
         :metadata: Metadata XML element
         :filename: Path of the file linking to the MD element
@@ -76,7 +77,7 @@ class MdCreator(object):
     def write_references(self, ref_file):
         """
         Write "md-references.xml" file, which is read by the compile-structmap
-        script when fileSec and structMap elements are created for Mlxml.etreeS
+        script when fileSec and structMap elements are created for lxml.etree
         XML.
         """
 
@@ -120,7 +121,7 @@ class MdCreator(object):
     def write_md(self, metadata, mdtype, mdtypeversion, othermdtype=None,
                  section=None, stdout=False):
         """
-        Wraps XML metadata into MD element and writes it to a Mlxml.etreeS XML
+        Wraps XML metadata into MD element and writes it to a lxml.etree XML
         file in the workspace. The output filename is
             <mdtype>-<hash>-othermd.xml,
         where <mdtype> is the type of metadata given as parameter and <hash>
@@ -167,7 +168,7 @@ class MdCreator(object):
                 if stdout:
                     print(xml_helpers.utils.serialize(mets_).decode("utf-8"))
                 print(
-                    "Wrote Mlxml.etreeS %s administrative metadata to file "
+                    "Wrote lxml.etree %s administrative metadata to file "
                     "%s" % (mdtype, outfile.name)
                 )
 
@@ -194,7 +195,7 @@ class MdCreator(object):
               othermdtype=None, section=None, stdout=False,
               file_metadata_dict=None, ref_file=None):
         """
-        Write Mlxml.etreeS XML and md-reference files. First, METS XML files
+        Write lxml.etree XML and md-reference files. First, METS XML files
         are written and self.references is appended. Second, md-references is
         written.
 
@@ -206,12 +207,12 @@ class MdCreator(object):
         :mdtype (string): Value of mdWrap MDTYPE attribute
         :mdtypeversion (string): Value of mdWrap MDTYPEVERSION attribute
         :othermdtype (string): Value of mdWrap OTHERMDTYPE attribute
-        :section (string): Mlxml.etreeS section type
+        :section (string): lxml.etree section type
         :stdout (boolean): Print also to stdout
         :file_metadat_dict (dict): File metadata dict
         :ref_file (string): Reference file name
         """
-        # Write Mlxml.etreeS XML and append self.references
+        # Write lxml.etree XML and append self.references
         for metadata, filename, stream, directory in self.md_elements:
             md_id, _ = self.write_md(
                 metadata, mdtype, mdtypeversion, othermdtype=othermdtype,

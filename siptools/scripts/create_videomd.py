@@ -8,7 +8,7 @@ import click
 import six
 
 import videomd
-from siptools.mdcreator import MdCreator
+from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import fix_missing_metadata, scrape_file
 
 click.disable_unicode_literals_warning = True
@@ -64,9 +64,9 @@ def create_videomd(filename, workspace="./workspace/", base_path="."):
     creator.write()
 
 
-class VideomdCreator(MdCreator):
+class VideomdCreator(MetsSectionCreator):
     """
-    Subclass of MdCreator, which generates videoMD metadata
+    Subclass of MetsSectionCreator, which generates videoMD metadata
     for video files.
     """
 

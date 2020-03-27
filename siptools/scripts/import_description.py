@@ -13,7 +13,7 @@ import lxml.etree
 import mets
 
 from siptools.xml.mets import METS_MDTYPES
-from siptools.mdcreator import MdCreator
+from siptools.mdcreator import MetsSectionCreator
 
 click.disable_unicode_literals_warning = True
 
@@ -149,9 +149,9 @@ def dmd_target_path(base_path, dmdsec_target):
     return os.path.normpath(dmdsec_target)
 
 
-class DmdCreator(MdCreator):
+class DmdCreator(MetsSectionCreator):
     """
-    Subclass of MdCreator, which generates dmdSec metadata.
+    Subclass of MetsSectionCreator, which generates dmdSec metadata.
     """
 
     def write_dmd_ref(self, dmd_xml, dmd_id, dmd_target=None):

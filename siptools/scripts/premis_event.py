@@ -12,7 +12,7 @@ import six
 
 import premis
 import xml_helpers.utils
-from siptools.mdcreator import MdCreator
+from siptools.mdcreator import MetsSectionCreator
 from siptools.xml.mets import NAMESPACES
 from siptools.xml.premis import PREMIS_EVENT_OUTCOME_TYPES
 
@@ -59,7 +59,7 @@ def _list2str(lst):
               help=('Event outcome type. Possible values are: ' +
                     _list2str(PREMIS_EVENT_OUTCOME_TYPES)))
 @click.option('--event_outcome_detail',
-              type=str,
+              type=str, required=True,
               metavar='<EVENT OUTCOME DETAIL>',
               help='Detailed information about the event outcome.')
 @click.option('--agent_name',
@@ -213,9 +213,10 @@ def event_target_path(base_path, event_target=None):
     return (directory, event_file)
 
 
-class PremisCreator(MdCreator):
+class PremisCreator(MetsSectionCreator):
     """
-    Subclass of MdCreator, which generates PREMIS event or agent metadata.
+    Subclass of MetsSectionCreator, which generates PREMIS event or agent
+    metadata.
     """
 
     #pylint: disable=too-many-arguments
