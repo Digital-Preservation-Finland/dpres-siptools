@@ -168,6 +168,7 @@ def import_object(**kwargs):
     # Loop files and create premis objects
     files = collect_filepaths(dirs=attributes["filepaths"],
                               base=attributes["base_path"])
+    creator = PremisCreator(attributes["workspace"])
     for filepath in files:
 
         # If the given path is an absolute path and base_path is current
@@ -184,13 +185,13 @@ def import_object(**kwargs):
             properties['order'] = six.text_type(attributes["order"])
         # Add new properties of a file for other script files, e.g. structMap
 
-        creator = PremisCreator(attributes["workspace"])
         file_metadata_dict = creator.add_premis_md(
             filepath, attributes, filerel=filerel)
         if properties:
             file_metadata_dict[0]['properties'] = properties
-        creator.write(stdout=attributes["stdout"],
-                      file_metadata_dict=file_metadata_dict)
+
+    creator.write(stdout=attributes["stdout"],
+                  file_metadata_dict=file_metadata_dict)
 
     return file_metadata_dict
 
