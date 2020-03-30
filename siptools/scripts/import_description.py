@@ -40,11 +40,13 @@ click.disable_unicode_literals_warning = True
 @click.option('--dmd_source',
               type=str,
               metavar='<DMD SOURCE>',
-              help='.')
+              help=('The source, e.g. database or system, that the '
+                    'descriptive metadata was imported from'))
 @click.option('--dmd_agent', nargs=2,
               type=str,
               metavar='<AGENT NAME> <AGENT TYPE>',
-              help='')
+              help=('The agent name and type that was used in importing the '
+                    'descriptive metadata from the source to XML'))
 @click.option('--without_uuid', is_flag=True,
               help='Outputs a dmdsec.xml file without UUID prefix.')
 @click.option('--remove_root', is_flag=True,
