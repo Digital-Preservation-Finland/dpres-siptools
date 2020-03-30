@@ -5,6 +5,7 @@ from __future__ import unicode_literals, print_function
 
 import sys
 import os
+import datetime
 
 from uuid import uuid4
 
@@ -14,6 +15,7 @@ import mets
 
 from siptools.xml.mets import METS_MDTYPES
 from siptools.mdcreator import MetsSectionCreator
+from siptools.scripts.premis_event import premis_event
 
 click.disable_unicode_literals_warning = True
 
@@ -35,6 +37,14 @@ click.disable_unicode_literals_warning = True
               metavar='<DMD TARGET>',
               help='Target of descriptive metadata. '
                    'Default is the root of dataset.')
+@click.option('--dmd_source',
+              type=str,
+              metavar='<DMD SOURCE>',
+              help='.')
+@click.option('--dmd_agent', nargs=2,
+              type=str,
+              metavar='<AGENT NAME> <AGENT TYPE>',
+              help='')
 @click.option('--without_uuid', is_flag=True,
               help='Outputs a dmdsec.xml file without UUID prefix.')
 @click.option('--remove_root', is_flag=True,
@@ -65,6 +75,9 @@ def _attribute_values(given_params):
         "workspace": "./workspace/",
         "base_path": ".",
         "dmdsec_target": None,
+        "dmd_source": "external source",
+        "dmd_agent": (),
+        "dmdsec_target": None,
         "without_uuid": False,
         "remove_root": False,
         "stdout": False,
@@ -85,6 +98,11 @@ def import_description(**kwargs):
              dmdsec_location: Path of the descriptive metadata file
              workspace: Workspace path
              base_path: Base path of the digital objects
+             dmdsec_target: Target of descriptive metadata
+             dmd_source: The source that the descriptive metadata was
+                         extracted from
+             agent: The agent name and type that extracted the
+                    descriptive metadata
              dmdsec_target: Target of descriptive metadata
              without_uuid: If true, output file named without UUID prefix
              remove_root: If true, remove root element from metadata
@@ -120,6 +138,15 @@ def import_description(**kwargs):
                 pretty_print=True,
                 xml_declaration=True,
                 encoding='UTF-8')
+
+    # Create events documenting the technical metadata creation
+    _create_events(
+         workspace=attributes["workspace"],
+         base_path=attributes["base_path"],
+         event_target=attributes["dmdsec_target"],
+         dmd_source=attributes["dmd_source"],
+         source_agent=attributes["dmd_agent"]
+     )
 
     print("import_description created file: %s" % output_file)
 
@@ -211,6 +238,43 @@ def create_mets(input_file, dmd_id, remove_root=False):
     tree = lxml.etree.ElementTree(mets_element)
     lxml.etree.cleanup_namespaces(tree)
     return tree
+
+
+def _create_events(
+        workspace,
+        base_path,
+        event_target,
+        dmd_source,
+        source_agent=None):
+    """Function to create an event for documenting the import of
+    descriptive metadata and the source from where the metadata was
+    extracted.
+
+    :workspace: The path to the workspace
+    :base_path: Base path (see --base_path)
+    :event_target: The target of the descriptive metadata
+    :dmd_source: The source that the descriptive metadata was extracted
+                 from
+    :agent: The agent software that extracted the descriptive metadata
+    """
+    agent_name = None
+    agent_type = None
+    if source_agent:
+        (agent_name, agent_type) = source_agent
+
+    event_datetime = datetime.datetime.now().isoformat()
+    premis_event(event_type="metadata extraction",
+                 event_datetime=event_datetime,
+                 event_detail=("Descriptive metadata import from external "
+                               "source"),
+                 event_outcome="success",
+                 event_outcome_detail=("Descriptive metadata imported to "
+                                       "mets dmdSec from %s" % dmd_source),
+                 workspace=workspace,
+                 base_path=base_path,
+                 agent_name=agent_name,
+                 agent_type=agent_type,
+                 event_target=event_target)
 
 
 if __name__ == '__main__':
