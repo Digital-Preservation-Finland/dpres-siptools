@@ -142,12 +142,12 @@ def import_description(**kwargs):
                 encoding='UTF-8')
 
     # Create events documenting the technical metadata creation
-    _create_events(
+    _create_event(
          workspace=attributes["workspace"],
          base_path=attributes["base_path"],
          event_target=attributes["dmdsec_target"],
          dmd_source=attributes["dmd_source"],
-         source_agent=attributes["dmd_agent"]
+         dmd_agent=attributes["dmd_agent"]
      )
 
     print("import_description created file: %s" % output_file)
@@ -242,12 +242,12 @@ def create_mets(input_file, dmd_id, remove_root=False):
     return tree
 
 
-def _create_events(
+def _create_event(
         workspace,
         base_path,
         event_target,
         dmd_source,
-        source_agent=None):
+        dmd_agent=None):
     """Function to create an event for documenting the import of
     descriptive metadata and the source from where the metadata was
     extracted.
@@ -257,7 +257,8 @@ def _create_events(
     :event_target: The target of the descriptive metadata
     :dmd_source: The source that the descriptive metadata was extracted
                  from
-    :agent: The agent software that extracted the descriptive metadata
+    :dmd_agent: The agent software that extracted the descriptive
+                metadata
     """
     agent_name = None
     agent_type = None
