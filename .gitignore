@@ -27,3 +27,4 @@ rpmbuild
 venv*/
 junit*.xml
 .tox
+workspace/

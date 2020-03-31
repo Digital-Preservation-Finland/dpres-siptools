@@ -17,3 +17,5 @@ PREMIS_EVENT_OUTCOME_TYPES = [
     '(:tba)',
     '(:etal)'
 ]
+
+PREMIS_AGENT_TYPES = ['software', 'hardware', 'person', 'organization']
