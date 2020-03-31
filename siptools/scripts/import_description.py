@@ -101,10 +101,8 @@ def import_description(**kwargs):
              workspace: Workspace path
              base_path: Base path of the digital objects
              dmdsec_target: Target of descriptive metadata
-             dmd_source: The source that the descriptive metadata was
-                         extracted from
-             agent: The agent name and type that extracted the
-                    descriptive metadata
+             dmd_source: The descriptive metadata source
+             dmd_agent: The agent that extracted the metadata
              dmdsec_target: Target of descriptive metadata
              without_uuid: If true, output file named without UUID prefix
              remove_root: If true, remove root element from metadata
@@ -141,7 +139,7 @@ def import_description(**kwargs):
                 xml_declaration=True,
                 encoding='UTF-8')
 
-    # Create events documenting the technical metadata creation
+    # Create an event documenting the metadata import
     _create_event(
          workspace=attributes["workspace"],
          base_path=attributes["base_path"],
@@ -248,9 +246,13 @@ def _create_event(
         event_target,
         dmd_source,
         dmd_agent=None):
-    """Function to create an event for documenting the import of
-    descriptive metadata and the source from where the metadata was
-    extracted.
+    """Helper function to create an event for documenting the
+    descriptive metadata import and the source from where the metadata
+    was extracted.
+
+    The function calls the premis_event script, creating the premis
+    event and agent metadata and linking them to the same target as the
+    descriptive metadata.
 
     :workspace: The path to the workspace
     :base_path: Base path (see --base_path)
@@ -262,8 +264,8 @@ def _create_event(
     """
     agent_name = None
     agent_type = None
-    if source_agent:
-        (agent_name, agent_type) = source_agent
+    if dmd_agent:
+        (agent_name, agent_type) = dmd_agent
 
     event_datetime = datetime.datetime.now().isoformat()
     premis_event(event_type="metadata extraction",

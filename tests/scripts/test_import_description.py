@@ -173,8 +173,8 @@ def test_paths(testpath, directory, base_path, run_cli):
 
 
 def test_import_description_event_agent(testpath, run_cli):
-    """Test that the script import_description creates an event and agent with
-    the proper metadata.
+    """ Test that the script import_description creates an event and
+    agent with the proper metadata.
     """
     dmdsec_location = 'tests/data/import_description/metadata/' \
         'dc_description.xml'
@@ -216,3 +216,10 @@ def test_import_description_event_agent(testpath, run_cli):
     assert agent_root.xpath(
         './/premis:agentType',
         namespaces=NAMESPACES)[0].text == 'software'
+
+    # Test that the agent is linked to the event
+    assert event_root.xpath(
+        './/premis:linkingAgentIdentifierValue',
+        namespaces=NAMESPACES)[0].text == agent_root.xpath(
+            './/premis:agentIdentifierValue',
+            namespaces=NAMESPACES)[0].text
