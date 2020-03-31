@@ -5,6 +5,7 @@ import glob
 import os
 import sys
 from uuid import uuid4
+import json
 
 import click
 import lxml.etree
@@ -77,6 +78,12 @@ def _list2str(lst):
               type=str,
               metavar='<AGENT TYPE>',
               help='Agent type.')
+@click.option('--import_agents_file',
+              type=str,
+              metavar='<AGENTS FILE>',
+              help='The output file listing multiple created agents '
+                   'relating to the current event. Will overrride the '
+                   'other given agent options if used.')
 @click.option('--stdout',
               is_flag=True,
               help='Print output to stdout')
@@ -112,6 +119,7 @@ def _attribute_values(given_params):
         "agent_name": None,
         "agent_type": None,
         "agent_identifier": None,
+        "import_agents_file": None,
         "stdout": False,
     }
     for key in given_params:
@@ -141,13 +149,45 @@ def premis_event(**kwargs):
              agent_name: Agent name
              agent_type: PREMIS agent type
              agent_identifier: Agent identifier type and value (tuple)
+             import_agents_file: External file containing agents created
+                                 by the create-agents script
              stdout: Tru prints output to stdout
     """
     attributes = _attribute_values(kwargs)
     (directory, event_file) = event_target_path(
         attributes["base_path"], attributes["event_target"])
 
-    if attributes["agent_name"] or attributes["agent_type"]:
+    if attributes["import_agents_file"] and os.path.exists(
+            os.path.join(attributes["workspace"],
+                         attributes["import_agents_file"] + '.json')):
+        with open(os.path.join(
+                attributes["workspace"],
+                attributes["import_agents_file"] + '.json')) as feedsjson:
+            agents_list = json.load(feedsjson)
+
+        for agent_json in agents_list:
+            attributes["agent_name"] = agent_json["agent_name"]
+            if agent_json["agent_version"]:
+                attributes["agent_name"] = agent_json["agent_name"] + \
+                    "-" + agent_json["agent_version"]
+            attributes["agent_type"] = agent_json["agent_type"]
+            attributes["agent_identifier"] = find_premis_agent_identifier(
+                attributes)
+            if not attributes["agent_identifier"]:
+                attributes["agent_identifier"] = (
+                    agent_json["identifier_type"],
+                    agent_json["identifier_value"])
+
+            agent = create_premis_agent(**attributes)
+
+            agent_creator = PremisCreator(attributes["workspace"])
+            agent_creator.add_md(agent, event_file, directory=directory)
+            agent_creator.write(mdtype="PREMIS:AGENT",
+                                stdout=attributes["stdout"])
+            if attributes["stdout"]:
+                print(xml_helpers.utils.serialize(agent).decode("utf-8"))
+
+    elif attributes["agent_name"] or attributes["agent_type"]:
 
         if not attributes["agent_identifier"]:
             attributes["agent_identifier"] = \
