@@ -14,6 +14,8 @@ import six
 import premis
 from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import scrape_file, calc_checksum
+from siptools.scripts.premis_event import premis_event
+from siptools.scripts.create_agent import create_agent
 
 click.disable_unicode_literals_warning = True
 
@@ -188,6 +190,16 @@ def import_object(**kwargs):
             filepath, attributes, filerel=filerel, properties=properties)
 
     creator.write(stdout=attributes["stdout"])
+
+    # Create events documenting the technical metadata creation
+    _create_events(
+        workspace=attributes["workspace"],
+        base_path=attributes["base_path"],
+        event_targets=attributes["filepaths"],
+        checksum_event=not bool(attributes["checksum"]),
+        validation_event=not attributes["skip_wellformed_check"],
+        identification_event=not bool(attributes["file_format"])
+    )
 
 
 class PremisCreator(MetsSectionCreator):
@@ -456,6 +468,55 @@ def creation_date(path_to_file):
             # We're probably on Linux. No easy way to get creation dates here,
             # so we'll settle for when its content was last modified.
             return datetime.datetime.fromtimestamp(stat.st_mtime).isoformat()
+
+
+def _create_events(
+        workspace,
+        base_path,
+        event_targets,
+        agents=["file-scraper"],
+        checksum_event=False,
+        validation_event=False,
+        identification_event=False):
+    """Function to create events documenting the extraction of technical
+    metadata as well as the potential message digest calculation and
+    the identification and validation of digital objects.
+
+    :workspace: The path to the workspace
+    :base_path: Base path (see --base_path)
+    :event_targets: The targets of the metadata creation,
+                    i.e. "filepaths"
+    :agents: The software used to extract the metadata
+    :checksum_event: Boolean to indicate whether the message digest of
+                     digital objects were calculated. False if they were
+                     given to the script.
+    :validation_event:  Boolean to indicate whether the digital objects
+                        were validated during the extraction of technical
+                        metadata.
+    :identification_event: Boolean to indicate whether the digital
+                           objects were identified (mimetype and version)
+                           during the extraction of technical metadata.
+    """
+    for agent_name in agents:
+        create_agent(
+            workspace=workspace,
+            agent_name=agent_name,
+            agent_type='software',
+            output_file='import-object-agents')
+    event_datetime = datetime.datetime.now().isoformat()
+    for event_target in event_targets:
+        premis_event(event_type="metadata extraction",
+                     event_datetime=event_datetime,
+                     event_detail=("Technical metadata extraction as premis "
+                                   "metadata from digital objects"),
+                     event_outcome="success",
+                     event_outcome_detail=("Premis metadata successfully "
+                                           "created from extracted technical "
+                                           "metadata."),
+                     workspace=workspace,
+                     base_path=base_path,
+                     event_target=event_target,
+                     import_agents_file='import-object-agents')
 
 
 if __name__ == "__main__":
