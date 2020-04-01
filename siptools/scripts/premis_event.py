@@ -87,7 +87,7 @@ def _list2str(lst):
 @click.option('--stdout',
               is_flag=True,
               help='Print output to stdout')
-#pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments
 def main(**kwargs):
     """The script creates provenance metadata for the package. The metadata
     contains event and, if given, also agent of the event.
@@ -119,8 +119,9 @@ def _attribute_values(given_params):
         "agent_name": None,
         "agent_type": None,
         "agent_identifier": None,
-        "import_agents_file": None,
+        "import_agents_file": "",
         "stdout": False,
+        "linking_agents": set(),
     }
     for key in given_params:
         if given_params[key]:
@@ -152,60 +153,33 @@ def premis_event(**kwargs):
              import_agents_file: External file containing agents created
                                  by the create-agents script
              stdout: Tru prints output to stdout
+             linking_agents: Empty set that is to be populated with
+                             agent linked to the event
     """
     attributes = _attribute_values(kwargs)
     (directory, event_file) = event_target_path(
         attributes["base_path"], attributes["event_target"])
 
-    if attributes["import_agents_file"] and os.path.exists(
-            os.path.join(attributes["workspace"],
-                         attributes["import_agents_file"] + '.json')):
-        with open(os.path.join(
-                attributes["workspace"],
-                attributes["import_agents_file"] + '.json')) as feedsjson:
-            agents_list = json.load(feedsjson)
+    agents = _resolve_agents(**attributes)
 
-        for agent_json in agents_list:
-            attributes["agent_name"] = agent_json["agent_name"]
-            if agent_json["agent_version"]:
-                attributes["agent_name"] = agent_json["agent_name"] + \
-                    "-" + agent_json["agent_version"]
-            attributes["agent_type"] = agent_json["agent_type"]
-            attributes["agent_identifier"] = find_premis_agent_identifier(
-                attributes)
-            if not attributes["agent_identifier"]:
-                attributes["agent_identifier"] = (
-                    agent_json["identifier_type"],
-                    agent_json["identifier_value"])
+    for agent in agents:
+        attributes["agent_identifier"] = agent["agent_identifier"]
+        attributes["agent_name"] = agent["agent_name"]
+        attributes["agent_type"] = agent["agent_type"]
 
-            agent = create_premis_agent(**attributes)
-
-            agent_creator = PremisCreator(attributes["workspace"])
-            agent_creator.add_md(agent, event_file, directory=directory)
-            agent_creator.write(mdtype="PREMIS:AGENT",
-                                stdout=attributes["stdout"])
-            if attributes["stdout"]:
-                print(xml_helpers.utils.serialize(agent).decode("utf-8"))
-
-    elif attributes["agent_name"] or attributes["agent_type"]:
-
-        if not attributes["agent_identifier"]:
-            attributes["agent_identifier"] = \
-                find_premis_agent_identifier(attributes)
-
-        if not attributes["agent_identifier"]:
-            attributes["agent_identifier"] = ("UUID", six.text_type(uuid4()))
+        attributes["linking_agents"].add(
+            (agent["agent_identifier"][0],
+             agent["agent_identifier"][1],
+             agent["agent_role"]))
 
         agent = create_premis_agent(**attributes)
 
         agent_creator = PremisCreator(attributes["workspace"])
         agent_creator.add_md(agent, event_file, directory=directory)
-        agent_creator.write(mdtype="PREMIS:AGENT", stdout=attributes["stdout"])
-
+        agent_creator.write(mdtype="PREMIS:AGENT",
+                            stdout=attributes["stdout"])
         if attributes["stdout"]:
             print(xml_helpers.utils.serialize(agent).decode("utf-8"))
-    else:
-        attributes["agent_identifier"] = None
 
     event = create_premis_event(**attributes)
 
@@ -259,7 +233,7 @@ class PremisCreator(MetsSectionCreator):
     metadata.
     """
 
-    #pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
     def write(self, mdtype="PREMIS", mdtypeversion="2.3", othermdtype=None,
               section="digiprovmd", stdout=False, file_metadata_dict=None,
               ref_file="premis-event-md-references.xml"):
@@ -346,7 +320,8 @@ def create_premis_event(**attributes):
                   event_detail: Short information about the event
                   event_outcome: Event outcome
                   event_outcome_detail: Deteiled information about the event
-                  agent_identifier: Agent identifier type and value (tuple)
+                  linking_agents: Linking agent identifier type,
+                                  identifier value and role (tuple)
     :returns: PREMIS event XML element
     """
     attributes = _attribute_values(attributes)
@@ -361,12 +336,13 @@ def create_premis_event(**attributes):
 
     child_elements = [premis_event_outcome]
 
-    # Create linkingAgentIdentifier element if agent identifier is provided
-    if attributes["agent_identifier"] is not None:
+    # Create linkingAgentIdentifier element if agent identifiers are provided
+    for linking_agent in attributes["linking_agents"]:
         linking_agent_identifier = premis.identifier(
-            identifier_type=attributes["agent_identifier"][0],
-            identifier_value=attributes["agent_identifier"][1],
-            prefix='linkingAgent'
+            identifier_type=linking_agent[0],
+            identifier_value=linking_agent[1],
+            prefix='linkingAgent',
+            role=linking_agent[2]
         )
         child_elements.append(linking_agent_identifier)
 
@@ -379,6 +355,69 @@ def create_premis_event(**attributes):
     )
 
     return premis_event_elem
+
+
+def _resolve_agents(**attributes):
+    """Resolves linked agents that can be added to the event in a few
+    different ways and outputs the agent information as json.
+
+    First, if the import_agents_file option is provided, the linked
+    agent information is read from the file.
+    If the list was not provided, the agent provided in the agent_name
+    and agent_type options are used.
+    If the agent_identifier is is provided, that identifier is used,
+    otherwise a UUID identifier is created.
+    """
+    agent_list = []
+
+    agents_filepath = os.path.join(attributes["workspace"],
+                                   attributes["import_agents_file"] + '.json')
+
+    if attributes["import_agents_file"] and os.path.exists(agents_filepath):
+
+        with open(agents_filepath) as feedsjson:
+            agents = json.load(feedsjson)
+
+        for agent in agents:
+            attributes["agent_name"] = agent["agent_name"]
+            if 'agent_version' in agent:
+                attributes["agent_name"] = agent["agent_name"] + \
+                    '-' + agent["agent_version"]
+            attributes["agent_identifier"] = find_premis_agent_identifier(
+                attributes)
+            if not attributes["agent_identifier"]:
+                attributes["agent_identifier"] = (agent["identifier_type"],
+                                                  agent["identifier_value"])
+            attributes["agent_type"] = agent["agent_type"]
+
+            agent_dict = {
+                "agent_identifier": attributes["agent_identifier"],
+                "agent_name": attributes["agent_name"],
+                "agent_type": attributes["agent_type"],
+                "agent_role": None
+            }
+            if 'agent_role' in agent:
+                agent_dict["agent_role"] = agent["agent_role"]
+
+            agent_list.append(agent_dict)
+
+    elif attributes["agent_name"] or attributes["agent_type"]:
+        if not attributes["agent_identifier"]:
+            attributes["agent_identifier"] = \
+                find_premis_agent_identifier(attributes)
+
+        if not attributes["agent_identifier"]:
+            attributes["agent_identifier"] = ("UUID", six.text_type(uuid4()))
+
+        agent_dict = {
+            "agent_identifier": attributes["agent_identifier"],
+            "agent_name": attributes["agent_name"],
+            "agent_type": attributes["agent_type"],
+            "agent_role": None
+        }
+        agent_list.append(agent_dict)
+
+    return agent_list
 
 
 if __name__ == '__main__':
