@@ -7,8 +7,27 @@ import io
 import lxml.etree as ET
 
 import pytest
+from siptools.scripts.create_agent import create_agent
 from siptools.scripts import premis_event
+from siptools.utils import fsdecode_path
 from siptools.xml.mets import NAMESPACES
+
+
+def get_md_file(path,
+                input_target='.',
+                ref_file='premis-event-md-references.xml',
+                output_suffix='-PREMIS%3AEVENT-amd.xml'):
+    """Get id"""
+    root = ET.parse(os.path.join(path, ref_file)).getroot()
+    id_xpath = "/mdReferences/mdReference[@directory='%s']" % \
+        fsdecode_path(input_target)
+
+    for amdref in root.xpath(id_xpath):
+        output = os.path.join(path, amdref.text[1:] +
+                              output_suffix)
+        if os.path.exists(output):
+            return output
+    return None
 
 
 def test_premis_event_ok(testpath, run_cli):
@@ -229,6 +248,99 @@ def test_reuse_agent(testpath, run_cli):
 
     assert len(agent_identifiers[0]) == 36
     assert agent_identifiers[0] == agent_identifiers[1]
+
+
+@pytest.mark.parametrize(
+    ("agent_identifier_type", "agent_identifier_value",
+     "import_agents_file", "agents_count"), [
+        (None, "", "", 1),
+        ("acme", "foo", "", 1),
+        ("acme", "foo", "testing", 1),
+        ("acme", "foo", "testing", 2),
+    ])
+def test_import_agents(
+        testpath,
+        run_cli,
+        agent_identifier_type,
+        agent_identifier_value,
+        import_agents_file,
+        agents_count):
+    """Tests that the correct number of  agents are created and linked
+    as intended.
+
+    Tests with following cases:
+    1) agent_name and agent_type given
+    2) agent_identifier given in addition to name and type
+    3) import_agents_file is given, that should override the other agent
+       information given
+    4) Multiple agents given through the import_agents_file
+    """
+    agent_name = 'testing agent'
+    agent_type = 'person'
+
+    # Create agent testdata
+    agent_id = create_agent(
+        workspace=testpath,
+        agent_type=agent_type,
+        output_file=import_agents_file,
+        agent_name=agent_name)
+
+    if agents_count > 1:
+        create_agent(
+            workspace=testpath,
+            agent_type=agent_type,
+            output_file=import_agents_file,
+            agent_name='second agent')
+
+    if import_agents_file:
+        agent_identifier_value = agent_id
+        agent_identifier_type = 'local'
+
+    cli_args = [
+        "creation",
+        "2020-02-02T20:20:20",
+        "--workspace", testpath,
+        "--event_detail", "foo",
+        "--event_outcome", "success",
+        "--event_outcome_detail", "Test ok",
+        "--agent_name", agent_name,
+        "--agent_type", agent_type,
+        "--import_agents_file", import_agents_file,
+        ]
+    if agent_identifier_value:
+        cli_args.append("--agent_identifier")
+        cli_args.append(agent_identifier_type)
+        cli_args.append(agent_identifier_value)
+
+    run_cli(premis_event.main, cli_args)
+
+    # Set UUID type for agents that had the identifier created by the script
+    if not agent_identifier_type:
+        agent_identifier_type = 'UUID'
+
+    event_output = get_md_file(testpath)
+
+    event_root = ET.parse(event_output).getroot()
+
+    # Assert that the correct number of agents have been linked
+    assert len(event_root.xpath('//premis:linkingAgentIdentifierValue',
+                                namespaces=NAMESPACES)) == agents_count
+
+    # assert that the correct identifer is linked based on the given options
+    assert event_root.xpath(
+        '//premis:linkingAgentIdentifierType',
+        namespaces=NAMESPACES)[0].text == agent_identifier_type
+    if agent_identifier_value:
+        assert event_root.xpath(
+            '//premis:linkingAgentIdentifierValue',
+            namespaces=NAMESPACES)[0].text == agent_identifier_value
+
+    # Assert that the correct number of agent XML files have been created
+    count = 0
+    for filename in os.listdir(testpath):
+        if filename.endswith('-PREMIS%3AAGENT-amd.xml'):
+            count += 1
+    assert count == agents_count
 
 
 @pytest.mark.parametrize("file_, base_path", [
