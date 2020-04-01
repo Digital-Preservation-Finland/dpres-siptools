@@ -283,7 +283,8 @@ def test_import_agents(
         workspace=testpath,
         agent_type=agent_type,
         output_file=import_agents_file,
-        agent_name=agent_name)
+        agent_name=agent_name,
+        agent_role='testing')
 
     if agents_count > 1:
         create_agent(
@@ -334,6 +335,10 @@ def test_import_agents(
         assert event_root.xpath(
             '//premis:linkingAgentIdentifierValue',
             namespaces=NAMESPACES)[0].text == agent_identifier_value
+    if import_agents_file:
+        assert event_root.xpath(
+            '//premis:linkingAgentRole',
+            namespaces=NAMESPACES)[0].text == 'testing'
 
     # Assert that the correct number of agent XML files have been created
     count = 0
