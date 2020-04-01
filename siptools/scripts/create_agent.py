@@ -1,4 +1,4 @@
-"""Command line tool for creating premis agents"""
+"""Command line tool for collecting agent metadata"""
 from __future__ import unicode_literals, print_function
 
 import os
@@ -57,14 +57,16 @@ def _list2str(lst):
                     'related to the event in question'))
 # pylint: disable=too-many-arguments
 def main(**kwargs):
-    """The script creates provenance metadata for the package. The
+    """The script collects provenance metadata for the package. The
     metadata contains the agent and linking information for the event
-    that the agent relates to.
+    that the agent relates to. If used, this script must be run prior
+    to the premis-event script, since no actual XML data is written
+    in this script.
 
     \b
     AGENT_NAME: The name of the agent.
     """
-    premis_event(**kwargs)
+    create_agent(**kwargs)
     return 0
 
 
@@ -89,7 +91,7 @@ def _attribute_values(given_params):
             attributes[key] = given_params[key]
 
     if not any((attributes["agent_type"] == 'software',
-               attributes["agent_type"] == 'hardware')):
+                attributes["agent_type"] == 'hardware')):
         attributes["agent_version"] = None
 
     if not attributes["agent_identifier"]:
@@ -107,20 +109,24 @@ def _attribute_values(given_params):
     return attributes
 
 
-def premis_event(**kwargs):
+def create_agent(**kwargs):
     """
     The script creates provenance metadata for the package. The metadata
-    contains the agent and linking information to the event.
+    contains the agent and linking information to the event. The result
+    is a JSON file containing metadata about the agent and its role in
+    relation to the event.
 
     :kwargs: Given arguments
-             agent_name: PREMIS agent name
+             agent_name: agent name
              workspace: Workspace path
-             agent_type: PREMIS agent type
+             agent_type: agent type
              agent_version: Agent version if agent type is "software"
-             agent_role: PREMIS agent role in relation to the event
+             agent_role: agent role in relation to the event
              agent_identifier: Agent identifier type and value (tuple)
              output_file: The name of the JSON file that collects agent
                           information in relation to the event
+
+    :returns: The agent identifier value as a string
     """
     attributes = _attribute_values(kwargs)
 
@@ -149,7 +155,8 @@ def premis_event(**kwargs):
         json.dump(agents_list, outfile, indent=4)
 
     print(
-        "Created agent with identifier %s" % attributes["agent_identifier"][1])
+        "Collected agent metadata with identifier %s" %
+        attributes["agent_identifier"][1])
 
     return attributes["agent_identifier"][1]
 
