@@ -102,7 +102,7 @@ UNKNOWN_VERSION = '(:unav)'
     help='Order number of the digital object')
 @click.option(
     '--stdout', is_flag=True, help='Print result also to stdout')
-#pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments
 def main(**kwargs):
     """Import files to generate digital objects. If attributes --charset,
     --file_format, --identifier, --checksum or --date_created are not given,
@@ -186,10 +186,12 @@ def import_object(**kwargs):
         if attributes["order"] is not None:
             properties['order'] = six.text_type(attributes["order"])
 
-        creator.add_premis_md(
+        (_, scraper_info) = creator.add_premis_md(
             filepath, attributes, filerel=filerel, properties=properties)
 
     creator.write(stdout=attributes["stdout"])
+
+    agents = _parse_scraper_tools(scraper_info)
 
     # Create events documenting the technical metadata creation
     _create_events(
@@ -198,7 +200,8 @@ def import_object(**kwargs):
         event_targets=attributes["filepaths"],
         checksum_event=not bool(attributes["checksum"]),
         validation_event=not attributes["skip_wellformed_check"],
-        identification_event=not bool(attributes["file_format"])
+        identification_event=not bool(attributes["file_format"]),
+        agents=agents
     )
 
 
@@ -226,7 +229,7 @@ class PremisCreator(MetsSectionCreator):
                      checksum: Checksum algorithm and value (tuple),
                      date_created: Creation date of a file
         :filerel: Relative path from base_path to file
-        :returns: Stream dict from file-scraper
+        :returns: Stream dict and info from file-scraper as a tuple
         """
         if not attributes["file_format"]:
             mimetype = None
@@ -235,7 +238,7 @@ class PremisCreator(MetsSectionCreator):
             mimetype = attributes["file_format"][0]
             version = attributes["file_format"][1]
 
-        streams = scrape_file(
+        (streams, info) = scrape_file(
             filepath=filepath,
             skip_well_check=attributes["skip_wellformed_check"],
             mimetype=mimetype,
@@ -257,9 +260,9 @@ class PremisCreator(MetsSectionCreator):
                 self.add_md(
                     premis_stream, filerel, index, given_metadata_dict=streams)
 
-        return streams
+        return (streams, info)
 
-    #pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
     def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3",
               othermdtype=None, section=None, stdout=False,
               file_metadata_dict=None,
@@ -336,7 +339,7 @@ def check_metadata(mimetype, version, streams, fname):
                          'found.')
 
 
-#pylint: disable=too-many-locals
+# pylint: disable=too-many-locals
 def create_premis_object(fname, streams, **attributes):
     """
     Create Premis object for given file.
@@ -470,11 +473,25 @@ def creation_date(path_to_file):
             return datetime.datetime.fromtimestamp(stat.st_mtime).isoformat()
 
 
+def _parse_scraper_tools(scraper_info):
+    """Helper function to parse the used third party components used
+    when identifying files and extracting technical metadata to be used
+    as agents when creating events documenting the packaging process.
+
+    :returns: a list of agents
+    """
+    agents = []
+    for index in scraper_info:
+        if 'class' in scraper_info[index]:
+            agents.append(scraper_info[index]['class'])
+    return agents
+
+
 def _create_events(
         workspace,
         base_path,
         event_targets,
-        agents=["file-scraper"],
+        agents=None,
         checksum_event=False,
         validation_event=False,
         identification_event=False):

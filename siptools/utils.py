@@ -99,7 +99,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
     :charset: Encoding of digital object (if text file)
     :skip_well_check: True skips well-formedness checking
     :skip_json: True does scraping and does not try to find JSON file
-    :returns: Metadata dict of streams
+    :returns: Metadata dict of streams and scraper info as a tuple
     :raises: ValueError If metadata collecting fails.
              IOError If file does not exist.
     """
@@ -108,7 +108,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
     if not skip_json:
         streams = read_json_streams(filerel, workspace)
     if streams is not None:
-        return streams
+        return (streams, None)
 
     scraper = Scraper(filepath, mimetype=mimetype,
                       version=version, charset=charset)
@@ -132,7 +132,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
         if info['class'] == 'ScraperNotFound':
             raise ValueError('File format is not supported.')
 
-    return scraper.streams
+    return (scraper.streams, scraper.info)
 
 
 def fix_missing_metadata(streams, filename, allow_unav, allow_zero):

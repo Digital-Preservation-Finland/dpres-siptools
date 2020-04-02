@@ -97,7 +97,7 @@ class MixCreator(MetsSectionCreator):
                         filename=(filerel if filerel else filepath))
 
     # Change the default write parameters
-    #pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
     def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None,
               section=None, stdout=False, file_metadata_dict=None,
               ref_file="create-mix-md-references.xml"):
@@ -137,8 +137,8 @@ def create_mix_metadata(filename, filerel=None, workspace=None, streams=None):
     :returns: MIX XML element
     """
     if streams is None:
-        streams = scrape_file(filepath=filename, filerel=filerel,
-                              workspace=workspace, skip_well_check=True)
+        (streams, _) = scrape_file(filepath=filename, filerel=filerel,
+                                   workspace=workspace, skip_well_check=True)
     stream_md = streams[0]
     check_missing_metadata(stream_md, filename)
 

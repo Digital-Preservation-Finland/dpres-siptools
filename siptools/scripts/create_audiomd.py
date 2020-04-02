@@ -98,7 +98,7 @@ class AudiomdCreator(MetsSectionCreator):
                             filename=(filerel if filerel else filepath),
                             stream=index)
 
-    #pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="AudioMD", section=None, stdout=False,
               file_metadata_dict=None,
@@ -123,8 +123,8 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None,
     :returns: Dict of AudioMD XML sections.
     """
     if streams is None:
-        streams = scrape_file(filepath=filename, filerel=filerel,
-                              workspace=workspace, skip_well_check=True)
+        (streams, _) = scrape_file(filepath=filename, filerel=filerel,
+                                   workspace=workspace, skip_well_check=True)
     fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     audiomd_dict = {}
