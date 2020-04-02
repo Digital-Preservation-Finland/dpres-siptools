@@ -465,3 +465,49 @@ def test_streams(testpath, run_cli):
     assert len(root.xpath(
         '//premis:relatedObjectIdentifierValue[.="%s"]' % stream_id[1],
         namespaces=NAMESPACES)) == 1
+
+
+def test_import_description_event_agent(testpath, run_cli):
+    """ Test that the script import_object creates an event and
+    agents with the proper metadata.
+    """
+    input_file = 'tests/data/structured/Documentation files/readme.txt'
+    arguments = ['--workspace', testpath, '--skip_wellformed_check',
+                 input_file]
+    run_cli(import_object.main, arguments)
+
+    event_output = get_amd_file(
+        testpath,
+        input_file,
+        ref_file='premis-event-md-references.xml',
+        suffix='-PREMIS%3AEVENT-amd.xml')
+
+    event_output_path = os.path.join(testpath, event_output)
+    event_root = ET.parse(event_output_path).getroot()
+    assert event_root.xpath('./*/*/*/*/*')[0].tag == \
+        '{info:lc/xmlns/premis-v2}event'
+    assert event_root.xpath(
+        './/premis:eventType',
+        namespaces=NAMESPACES)[0].text == 'metadata extraction'
+    assert event_root.xpath(
+        './/premis:eventOutcomeDetailNote',
+        namespaces=NAMESPACES)[0].text == ('Premis metadata successfully '
+                                           'created from extracted technical '
+                                           'metadata.')
+
+    # Assert that more than one agent is linked to the event
+    assert len(event_root.xpath('.//premis:linkingAgentIdentifier',
+                                namespaces=NAMESPACES)) > 1
+
+    agent_output = get_amd_file(
+        testpath,
+        input_file,
+        ref_file='premis-event-md-references.xml',
+        suffix='-PREMIS%3AAGENT-amd.xml')
+    agent_output_path = os.path.join(testpath, agent_output)
+    agent_root = ET.parse(agent_output_path).getroot()
+    assert agent_root.xpath('./*/*/*/*/*')[0].tag == \
+        '{info:lc/xmlns/premis-v2}agent'
+    assert agent_root.xpath(
+        './/premis:agentType',
+        namespaces=NAMESPACES)[0].text == 'software'
