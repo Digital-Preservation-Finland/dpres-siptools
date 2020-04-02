@@ -49,7 +49,7 @@ def test_import_description_valid_file(testpath, run_cli):
     assert root.xpath('./*/*/*/*')[0].tag == \
         '{http://purl.org/dc/elements/1.1/}title'
 
-    # Assert that event has been created
+    # Assert that an event has been created
     event_output = get_md_file(
         testpath,
         dmdsec_target,

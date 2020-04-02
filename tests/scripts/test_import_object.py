@@ -15,21 +15,25 @@ from siptools.utils import fsdecode_path, load_scraper_json
 from siptools.xml.mets import NAMESPACES
 
 
-def get_amd_file(path, input_file, stream=None):
+def get_amd_file(path,
+                 input_file,
+                 stream=None,
+                 ref_file='import-object-md-references.xml',
+                 suffix='-PREMIS%3AOBJECT-amd.xml'):
     """Get id"""
-    ref = os.path.join(path, 'import-object-md-references.xml')
-
-    root = ET.parse(ref).getroot()
+    root = ET.parse(os.path.join(path, ref_file)).getroot()
     decoded_input_file = fsdecode_path(input_file)
     if stream is None:
-        amdref = root.xpath("/mdReferences/mdReference[not(@stream) "
-                            "and @file='%s']" % decoded_input_file)[0]
+        id_xpath = ("/mdReferences/mdReference[not(@stream) "
+                    "and @file='%s']" % decoded_input_file)
     else:
-        amdref = root.xpath("/mdReferences/mdReference[@stream='%s' and "
-                            "@file='%s']" % (stream, decoded_input_file))[0]
-    output = os.path.join(path, amdref.text[1:] +
-                          "-PREMIS%3AOBJECT-amd.xml")
-    return output
+        id_xpath = ("/mdReferences/mdReference[@stream='%s' and "
+                    "@file='%s']" % (stream, decoded_input_file))
+    for amdref in root.xpath(id_xpath):
+        output = os.path.join(path, amdref.text[1:] + suffix)
+        if os.path.exists(output):
+            return output
+    return None
 
 
 def test_import_object_ok(testpath, run_cli):
@@ -46,12 +50,23 @@ def test_import_object_ok(testpath, run_cli):
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
 
+    # Assert that an event has been created
+    event_output = get_amd_file(
+        testpath,
+        input_file,
+        ref_file='premis-event-md-references.xml',
+        suffix='-PREMIS%3AEVENT-amd.xml')
+    event_output_path = os.path.join(testpath, event_output)
+    event_root = ET.parse(event_output_path).getroot()
+    assert event_root.xpath('./*/*/*/*/*')[0].tag == \
+        '{info:lc/xmlns/premis-v2}event'
 
-#pylint: disable=invalid-name
+
+# pylint: disable=invalid-name
 def test_import_object_illegal_html_valid_text(testpath, run_cli):
     """
     Test import_object.main function --skip_well_formed argument.
-    
+
     Test that a non-wellformed HTML file is passed and valid as
     plain text file.
     """
@@ -70,11 +85,11 @@ def test_import_object_illegal_html_valid_text(testpath, run_cli):
                           namespaces=NAMESPACES)) == 1
 
 
-#pylint: disable=invalid-name
+# pylint: disable=invalid-name
 def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
     """
     Test import_object.main function --skip_well_formed argument.
-    
+
     Test that a non-wellformed HTML file is passed with metadata
     collection, since well-formedness checking is bypassed.
     """
@@ -94,7 +109,7 @@ def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
                           namespaces=NAMESPACES)) == 1
 
 
-#pylint: disable=invalid-name
+# pylint: disable=invalid-name
 def test_import_object_skip_wellformed_check_nodate_ok(testpath, run_cli):
     """
     Test import_object.main function without --date_created argument.
@@ -116,7 +131,7 @@ def test_import_object_skip_wellformed_check_nodate_ok(testpath, run_cli):
                           namespaces=NAMESPACES)) == 1
 
 
-#pylint: disable=invalid-name
+# pylint: disable=invalid-name
 def test_import_object_structured_ok(testpath, run_cli):
     # TODO: Missing function docstring. What is the purpose of this test?
     workspace = os.path.abspath(testpath)
@@ -197,7 +212,7 @@ def test_import_object_identifier(testpath, run_cli):
                       namespaces=NAMESPACES)[0].text == 'test-id'
 
 
-#pylint: disable=invalid-name
+# pylint: disable=invalid-name
 def test_import_object_format_registry(testpath, run_cli):
     """Test digital object format registry argument"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
@@ -276,7 +291,7 @@ def test_import_object_utf8(testpath, run_cli):
          'audio wav v2'),
     ]
 )
-#pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments
 def test_import_object_cases(testpath, input_file, expected_mimetype,
                              expected_version, case_name, run_cli):
     """Test the import_object tool function when run as terminal client.
@@ -341,8 +356,8 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
          'audio wav v2'),
     ]
 )
-#pylint: disable=invalid-name
-#pylint: disable=too-many-arguments
+# pylint: disable=invalid-name
+# pylint: disable=too-many-arguments
 def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
                                       expected_version, case_name, run_cli):
     """Test the import_object tool function when run as terminal client
