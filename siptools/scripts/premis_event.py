@@ -370,13 +370,14 @@ def _resolve_agents(**attributes):
     """
     agent_list = []
 
-    agents_filepath = os.path.join(attributes["workspace"],
-                                   attributes["import_agents_file"] + '.json')
+    agents_filepath = os.path.join(
+        attributes["workspace"],
+        attributes["import_agents_file"] + '-AGENTS-amd.json')
 
     if attributes["import_agents_file"] and os.path.exists(agents_filepath):
 
-        with open(agents_filepath) as feedsjson:
-            agents = json.load(feedsjson)
+        with open(agents_filepath) as in_file:
+            agents = json.load(in_file)
 
         for agent in agents:
             attributes["agent_name"] = agent["agent_name"]

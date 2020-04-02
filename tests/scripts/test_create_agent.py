@@ -53,11 +53,11 @@ def test_create_agent_ok(
         identifier_type = 'test'
 
     # Read output files
-    output_file = os.path.join(testpath, 'test-file.json')
+    output_file = os.path.join(testpath, 'test-file-AGENTS-amd.json')
     assert os.path.exists(output_file)
 
-    with io.open(output_file, 'rt') as feedsjson:
-        agent_data = json.load(feedsjson)
+    with io.open(output_file, 'rt') as in_file:
+        agent_data = json.load(in_file)
 
     assert len(agent_data) == ag_count
     for agent in agent_data:

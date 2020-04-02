@@ -141,13 +141,14 @@ def create_agent(**kwargs):
     if attributes["agent_role"]:
         agent_dict["agent_role"] = attributes["agent_role"]
 
-    output_path = os.path.join(attributes["workspace"],
-                               attributes["output_file"] + '.json')
+    output_path = os.path.join(
+        attributes["workspace"],
+        attributes["output_file"] + '-AGENTS-amd.json')
 
     agents_list = []
     if os.path.exists(output_path):
-        with open(output_path) as feedsjson:
-            agents_list = json.load(feedsjson)
+        with open(output_path) as in_file:
+            agents_list = json.load(in_file)
 
     agents_list.append(agent_dict)
 
