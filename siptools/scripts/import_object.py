@@ -183,15 +183,11 @@ def import_object(**kwargs):
         properties = {}
         if attributes["order"] is not None:
             properties['order'] = six.text_type(attributes["order"])
-        # Add new properties of a file for other script files, e.g. structMap
 
-        file_metadata_dict = creator.add_premis_md(
-            filepath, attributes, filerel=filerel)
-        if properties:
-            file_metadata_dict[0]['properties'] = properties
+        creator.add_premis_md(
+            filepath, attributes, filerel=filerel, properties=properties)
 
-        creator.write(stdout=attributes["stdout"],
-                      file_metadata_dict=file_metadata_dict)
+    creator.write(stdout=attributes["stdout"])
 
 
 class PremisCreator(MetsSectionCreator):
@@ -199,7 +195,8 @@ class PremisCreator(MetsSectionCreator):
     for files and streams.
     """
 
-    def add_premis_md(self, filepath, attributes, filerel=None):
+    def add_premis_md(
+            self, filepath, attributes, filerel=None, properties=None):
         """
         Create metadata for PREMIS metadata. This method:
         - Scrapes a file
@@ -235,13 +232,18 @@ class PremisCreator(MetsSectionCreator):
             skip_json=True
         )
 
+        # Add new properties of a file for other script files, e.g. structMap
+        if properties:
+            streams[0]['properties'] = properties
+
         premis_elem = create_premis_object(filepath, streams, **attributes)
-        self.add_md(premis_elem, filerel)
+        self.add_md(premis_elem, filerel, given_metadata_dict=streams)
         premis_list = create_streams(streams, premis_elem)
 
         if premis_list is not None:
             for index, premis_stream in six.iteritems(premis_list):
-                self.add_md(premis_stream, filerel, index)
+                self.add_md(
+                    premis_stream, filerel, index, given_metadata_dict=streams)
 
         return streams
 

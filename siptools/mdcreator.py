@@ -51,7 +51,12 @@ class MetsSectionCreator(object):
         references['directory'] = directory
         self.references.append(references)
 
-    def add_md(self, metadata, filename=None, stream=None, directory=None):
+    def add_md(self,
+               metadata,
+               filename=None,
+               stream=None,
+               directory=None,
+               given_metadata_dict=None):
         """
         Append metadata XML element into self.md_elements list.
         self.md_elements is read by write() function and all the elements
@@ -69,9 +74,11 @@ class MetsSectionCreator(object):
         :filename: Path of the file linking to the MD element
         :stream: Stream index, or None if not a stream
         :directory: Path of the directory linking to the MD element
+        :given_metadata_dict: Dict of file metadata
         """
 
-        md_element = (metadata, filename, stream, directory)
+        md_element = (
+            metadata, filename, stream, directory, given_metadata_dict)
         self.md_elements.append(md_element)
 
     def write_references(self, ref_file):
@@ -213,11 +220,17 @@ class MetsSectionCreator(object):
         :ref_file (string): Reference file name
         """
         # Write lxml.etree XML and append self.references
-        for metadata, filename, stream, directory in self.md_elements:
+        for (metadata,
+             filename,
+             stream,
+             directory,
+             given_metadata_dict) in self.md_elements:
             md_id, _ = self.write_md(
                 metadata, mdtype, mdtypeversion, othermdtype=othermdtype,
                 section=section, stdout=stdout
             )
+            if given_metadata_dict:
+                file_metadata_dict = given_metadata_dict
             if file_metadata_dict and stream is None:
                 self.write_dict(file_metadata_dict, md_id)
             self.add_reference(md_id, filename, stream, directory)
