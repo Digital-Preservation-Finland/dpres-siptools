@@ -7,6 +7,7 @@ import os
 import platform
 import sys
 from uuid import uuid4
+import pkg_resources
 
 import click
 import six
@@ -481,9 +482,18 @@ def _parse_scraper_tools(scraper_info):
     :returns: a list of agents
     """
     agents = []
+    scraper_version = pkg_resources.get_distribution('file-scraper').version
     for index in scraper_info:
-        if 'class' in scraper_info[index]:
-            agents.append(scraper_info[index]['class'])
+        agent_name = scraper_info[index]['class']
+        agent_version = scraper_version
+        tools = ''
+        tools_list = []
+        if 'tools' in scraper_info[index]:
+            for tool in scraper_info[index]['tools']:
+                tools_list.append(tool)
+        if tools_list:
+            tools = 'Used tools (name-version): ' + ', '.join(tools_list)
+        agents.append((agent_name, agent_version, tools))
     return agents
 
 
@@ -503,7 +513,8 @@ def _create_events(
     :base_path: Base path (see --base_path)
     :event_targets: The targets of the metadata creation,
                     i.e. "filepaths"
-    :agents: The software used to extract the metadata
+    :agents: The software name and version used to extract the metadata
+             as a tuple
     :checksum_event: Boolean to indicate whether the message digest of
                      digital objects were calculated. False if they were
                      given to the script.
@@ -514,11 +525,14 @@ def _create_events(
                            objects were identified (mimetype and version)
                            during the extraction of technical metadata.
     """
-    for agent_name in agents:
+    for agent in agents:
         create_agent(
             workspace=workspace,
-            agent_name=agent_name,
+            agent_name=agent[0],
+            agent_version=agent[1],
+            agent_note=agent[2],
             agent_type='software',
+            agent_role='executing program',
             output_file='import-object-agents')
     event_datetime = datetime.datetime.now().isoformat()
     for event_target in event_targets:
