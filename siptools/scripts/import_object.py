@@ -193,8 +193,6 @@ def import_object(**kwargs):
         creator.write(stdout=attributes["stdout"],
                       file_metadata_dict=file_metadata_dict)
 
-    return file_metadata_dict
-
 
 class PremisCreator(MetsSectionCreator):
     """Subclass of MetsSectionCreator, which generates PREMIS metadata
