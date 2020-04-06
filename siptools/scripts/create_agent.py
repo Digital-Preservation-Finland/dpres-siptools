@@ -46,6 +46,10 @@ def _list2str(lst):
               metavar='<AGENT ROLE>',
               help=('The role of the agent in relation to the event in '
                     'question'))
+@click.option('--agent_note',
+              type=str,
+              metavar='<AGENT NOTE>',
+              help=('The agent note'))
 @click.option('--agent_identifier', nargs=2,
               type=str,
               metavar='<IDENTIFIER TYPE> <IDENTIFIER VALUE>',
@@ -83,6 +87,7 @@ def _attribute_values(given_params):
         "agent_type":  given_params["agent_type"],
         "agent_version": None,
         "agent_role": None,
+        "agent_note": None,
         "agent_identifier": (),
         "output_file": given_params["output_file"],
     }
@@ -122,6 +127,7 @@ def create_agent(**kwargs):
              agent_type: agent type
              agent_version: Agent version if agent type is "software"
              agent_role: agent role in relation to the event
+             agent_note: Agent note as a string
              agent_identifier: Agent identifier type and value (tuple)
              output_file: The name of the JSON file that collects agent
                           information in relation to the event
@@ -140,6 +146,8 @@ def create_agent(**kwargs):
         agent_dict["agent_version"] = attributes["agent_version"]
     if attributes["agent_role"]:
         agent_dict["agent_role"] = attributes["agent_role"]
+    if attributes["agent_note"]:
+        agent_dict["agent_note"] = attributes["agent_note"]
 
     output_path = os.path.join(
         attributes["workspace"],

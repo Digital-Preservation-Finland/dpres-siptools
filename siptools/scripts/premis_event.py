@@ -166,6 +166,7 @@ def premis_event(**kwargs):
         attributes["agent_identifier"] = agent["agent_identifier"]
         attributes["agent_name"] = agent["agent_name"]
         attributes["agent_type"] = agent["agent_type"]
+        attributes["agent_note"] = agent["agent_note"]
 
         attributes["linking_agents"].add(
             (agent["agent_identifier"][0],
@@ -302,8 +303,10 @@ def create_premis_agent(**attributes):
         identifier_type=attributes["agent_identifier"][0],
         identifier_value=attributes["agent_identifier"][1], prefix='agent'
     )
-    premis_agent = premis.agent(agent_identifier, attributes["agent_name"],
-                                attributes["agent_type"])
+    premis_agent = premis.agent(agent_identifier,
+                                attributes["agent_name"],
+                                attributes["agent_type"],
+                                note=attributes["agent_note"])
 
     return premis_agent
 
@@ -395,8 +398,11 @@ def _resolve_agents(**attributes):
                 "agent_identifier": attributes["agent_identifier"],
                 "agent_name": attributes["agent_name"],
                 "agent_type": attributes["agent_type"],
+                "agent_note": None,
                 "agent_role": None
             }
+            if 'agent_note' in agent:
+                agent_dict["agent_note"] = agent["agent_note"]
             if 'agent_role' in agent:
                 agent_dict["agent_role"] = agent["agent_role"]
 
@@ -414,6 +420,7 @@ def _resolve_agents(**attributes):
             "agent_identifier": attributes["agent_identifier"],
             "agent_name": attributes["agent_name"],
             "agent_type": attributes["agent_type"],
+            "agent_note": None,
             "agent_role": None
         }
         agent_list.append(agent_dict)

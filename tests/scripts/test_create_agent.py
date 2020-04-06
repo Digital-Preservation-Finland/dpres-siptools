@@ -37,6 +37,7 @@ def test_create_agent_ok(
             '--workspace', testpath,
             '--agent_type', ag_type,
             '--agent_version', version,
+            '--agent_note', 'Notes',
             '--output_file', 'test-file',
         ]
         if given_identifier:
@@ -72,3 +73,4 @@ def test_create_agent_ok(
             assert "agent_version" not in agent
         if ag_type == 'software':
             assert agent["agent_version"] == version
+        assert agent["agent_note"] == 'Notes'
