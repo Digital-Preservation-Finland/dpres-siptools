@@ -190,8 +190,8 @@ def import_object(**kwargs):
         if properties:
             file_metadata_dict[0]['properties'] = properties
 
-    creator.write(stdout=attributes["stdout"],
-                  file_metadata_dict=file_metadata_dict)
+        creator.write(stdout=attributes["stdout"],
+                      file_metadata_dict=file_metadata_dict)
 
     return file_metadata_dict
 
