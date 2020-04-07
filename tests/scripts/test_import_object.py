@@ -137,6 +137,32 @@ def test_import_object_structured_ok(testpath, run_cli):
                               namespaces=NAMESPACES)) == 1
 
 
+# pylint: disable=invalid-name
+def test_import_object_multiple(testpath, run_cli):
+    """Tests that mport object works for multiple files when filepaths
+    is a directory. The test asserts that an equal amount of premis
+    object metadata files have been created to the amount of imported
+    files. The test also checks that the numer of links in the reference
+    file equals that amount.
+    """
+    arguments = ['--workspace', testpath, '--skip_wellformed_check',
+                 'tests/data/structured']
+    run_cli(import_object.main, arguments)
+
+    expected_files = 9
+
+    ref_file = os.path.join(testpath, 'import-object-md-references.xml')
+
+    root = ET.parse(ref_file).getroot()
+    assert len(root.xpath('./*')) == expected_files
+
+    count = 0
+    for filename in os.listdir(testpath):
+        if filename.endswith('-PREMIS%3AOBJECT-amd.xml'):
+            count += 1
+    assert count == expected_files
+
+
 def test_import_object_order(testpath, run_cli):
     """Test file order"""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
