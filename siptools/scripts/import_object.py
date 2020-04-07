@@ -131,7 +131,7 @@ def _attribute_values(given_params):
         "charset": None,
         "file_format": (),
         "format_registry": (),
-        "identifier": ("UUID", six.text_type(uuid4())),
+        "identifier": (),
         "checksum": (),
         "date_created": None,
         "order": None,
@@ -370,9 +370,16 @@ def create_premis_object(fname, streams, **attributes):
             raise ValueError('Invalid charset.')
         charset_mime = '; charset={}'.format(charset)
 
+    if attributes["identifier"]:
+        identifier_type = attributes["identifier"][0]
+        identifier_value = attributes["identifier"][1]
+    else:
+        identifier_type = 'UUID'
+        identifier_value = six.text_type(uuid4())
+
     object_identifier = premis.identifier(
-        identifier_type=attributes["identifier"][0],
-        identifier_value=attributes["identifier"][1]
+        identifier_type=identifier_type,
+        identifier_value=identifier_value
     )
 
     premis_fixity = premis.fixity(attributes["checksum"][1],
