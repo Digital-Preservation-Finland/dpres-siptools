@@ -497,6 +497,9 @@ def _parse_scraper_tools(scraper_info):
     return agents
 
 
+# TODO: The checksum_event, validation_event and identifiecation_event are
+# placeholders. Creating events based on these boolean values is not in the
+# scope of this ticket SAPA-381
 def _create_events(
         workspace,
         base_path,
