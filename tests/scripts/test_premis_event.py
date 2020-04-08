@@ -278,6 +278,8 @@ def test_import_agents(
     agent_name = 'testing agent'
     agent_type = 'person'
 
+    agent_identifier_values = []
+
     # Create agent testdata
     agent_id = create_agent(
         workspace=testpath,
@@ -286,16 +288,19 @@ def test_import_agents(
         agent_name=agent_name,
         agent_role='testing')
 
+    if create_agent_file:
+        agent_identifier_type = 'local'
+        agent_identifier_values.append(agent_id)
+    elif agent_identifier_value:
+        agent_identifier_values.append(agent_identifier_value)
+
     if agents_count > 1:
-        create_agent(
+        second_agent_id = create_agent(
             workspace=testpath,
             agent_type=agent_type,
             create_agent_file=create_agent_file,
             agent_name='second agent')
-
-    if create_agent_file:
-        agent_identifier_value = agent_id
-        agent_identifier_type = 'local'
+        agent_identifier_values.append(second_agent_id)
 
     cli_args = [
         "creation",
@@ -331,10 +336,10 @@ def test_import_agents(
     assert event_root.xpath(
         '//premis:linkingAgentIdentifierType',
         namespaces=NAMESPACES)[0].text == agent_identifier_type
-    if agent_identifier_value:
+    if agent_identifier_values:
         assert event_root.xpath(
             '//premis:linkingAgentIdentifierValue',
-            namespaces=NAMESPACES)[0].text == agent_identifier_value
+            namespaces=NAMESPACES)[0].text in agent_identifier_values
     if create_agent_file:
         assert event_root.xpath(
             '//premis:linkingAgentRole',

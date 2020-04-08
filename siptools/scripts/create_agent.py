@@ -109,13 +109,10 @@ def _attribute_values(given_params):
         attributes["agent_version"] = None
 
     if not attributes["agent_identifier"]:
-        if attributes["agent_version"]:
-            message_string = attributes["agent_name"] + \
-                attributes["agent_version"] + attributes["agent_type"]
-        else:
-            message_string = attributes["agent_name"] + \
-                             attributes["agent_type"]
-
+        message_string = '{name}{version}{agent_type}'.format(
+            name=attributes['agent_name'],
+            version=attributes.get('agent_version', ''),
+            agent_type=attributes['agent_type'])
         message = hashlib.md5()
         message.update(message_string)
         attributes["agent_identifier"] = ("local", message.hexdigest())
