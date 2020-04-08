@@ -79,7 +79,6 @@ def _attribute_values(given_params):
         "dmdsec_target": None,
         "dmd_source": "external source",
         "dmd_agent": (),
-        "dmdsec_target": None,
         "without_uuid": False,
         "remove_root": False,
         "stdout": False,
@@ -103,7 +102,6 @@ def import_description(**kwargs):
              dmdsec_target: Target of descriptive metadata
              dmd_source: The descriptive metadata source
              dmd_agent: The agent that extracted the metadata
-             dmdsec_target: Target of descriptive metadata
              without_uuid: If true, output file named without UUID prefix
              remove_root: If true, remove root element from metadata
              stdout: If true, print output to stdout
