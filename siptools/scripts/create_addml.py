@@ -43,7 +43,7 @@ click.disable_unicode_literals_warning = True
 @click.option('--quot', 'quoting_char', type=str, required=True,
               metavar='<QUOTING CHAR>',
               help="Quoting character used in the CSV file")
-#pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments
 def main(**kwargs):
     """Tool for creating ADDML metadata for a CSV file. The
     ADDML metadata is written to <hash>-ADDML-amd.xml
@@ -168,7 +168,7 @@ class AddmlCreator(MetsSectionCreator):
         self.etrees[key] = metadata
         self.filenames[key] = [attributes["csv_file"]]
 
-    #pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
     def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML",
               section=None, stdout=False, file_metadata_dict=None,
               ref_file="create-addml-md-references.xml"):
@@ -303,7 +303,7 @@ def append_lines(fname, xml_elem, append):
                     f_out.write(" " * indent + new_line)
 
 
-#pylint: disable=too-many-locals
+# pylint: disable=too-many-locals
 def create_addml_metadata(**attributes):
     """Creates ADDML metadata for a CSV file by default
     without flatFile element, which is added by the

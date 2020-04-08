@@ -54,7 +54,7 @@ click.disable_unicode_literals_warning = True
                    'metadata file')
 @click.option('--stdout', is_flag=True,
               help='Print output to stdout')
-#pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments
 def main(**kwargs):
     """Create METS documents that contains descriptive metadata
     imported from XML file.
@@ -139,12 +139,12 @@ def import_description(**kwargs):
 
     # Create an event documenting the metadata import
     _create_event(
-         workspace=attributes["workspace"],
-         base_path=attributes["base_path"],
-         event_target=attributes["dmdsec_target"],
-         dmd_source=attributes["dmd_source"],
-         dmd_agent=attributes["dmd_agent"]
-     )
+        workspace=attributes["workspace"],
+        base_path=attributes["base_path"],
+        event_target=attributes["dmdsec_target"],
+        dmd_source=attributes["dmd_source"],
+        dmd_agent=attributes["dmd_agent"]
+    )
 
     print("import_description created file: %s" % output_file)
 

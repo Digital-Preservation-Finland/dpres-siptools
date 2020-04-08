@@ -83,7 +83,7 @@ def read_json_streams(filerel, workspace):
     return None
 
 
-#pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments
 def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
                 version=None, charset=None, skip_well_check=False,
                 skip_json=False):

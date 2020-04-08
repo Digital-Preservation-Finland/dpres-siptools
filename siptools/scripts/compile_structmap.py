@@ -369,8 +369,8 @@ def get_fileid(filesec, path):
     return element.attrib['ID']
 
 
-#pylint: disable=too-many-arguments
-#pylint: disable=too-many-locals
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
 def create_div(divs, parent, filesec, attributes, path=''):
     """Recursively create fileSec and structmap divs based on directory
     structure.

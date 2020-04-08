@@ -31,7 +31,7 @@ class MetsSectionCreator(object):
         self.md_elements = []
         self.references = []
 
-    #pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
     def add_reference(self, md_id, filepath, stream=None, directory=None):
         """
         Add metadata reference information to the references list, which is
@@ -123,8 +123,8 @@ class MetsSectionCreator(object):
                               xml_declaration=True,
                               encoding="utf-8")
 
-    #pylint: disable=too-many-arguments
-    #pylint: disable=too-many-locals
+    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-locals
     def write_md(self, metadata, mdtype, mdtypeversion, othermdtype=None,
                  section=None, stdout=False):
         """
@@ -197,7 +197,7 @@ class MetsSectionCreator(object):
                 json.dump(file_metadata_dict, outfile)
             print("Wrote technical data to: %s" % (outfile.name))
 
-    #pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments
     def write(self, mdtype="type", mdtypeversion="version",
               othermdtype=None, section=None, stdout=False,
               file_metadata_dict=None, ref_file=None):
@@ -314,6 +314,7 @@ def read_md_references(workspace, ref_file):
     if os.path.isfile(reference_file):
         return lxml.etree.parse(reference_file).getroot()
     return None
+
 
 def get_md_references(element_tree, path=None, stream=None, directory=None):
     """
