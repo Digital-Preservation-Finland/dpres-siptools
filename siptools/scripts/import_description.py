@@ -16,6 +16,7 @@ import mets
 from siptools.xml.mets import METS_MDTYPES
 from siptools.mdcreator import MetsSectionCreator
 from siptools.scripts.premis_event import premis_event
+from siptools.scripts.create_agent import create_agent
 
 click.disable_unicode_literals_warning = True
 
@@ -260,10 +261,12 @@ def _create_event(
     :dmd_agent: The agent software that extracted the descriptive
                 metadata
     """
-    agent_name = None
-    agent_type = None
     if dmd_agent:
-        (agent_name, agent_type) = dmd_agent
+        create_agent(
+            workspace=workspace,
+            agent_name=dmd_agent[0],
+            agent_type=dmd_agent[1],
+            create_agent_file='import-description')
 
     event_datetime = datetime.datetime.now().isoformat()
     premis_event(event_type="metadata extraction",
@@ -275,9 +278,8 @@ def _create_event(
                                        "mets dmdSec from %s" % dmd_source),
                  workspace=workspace,
                  base_path=base_path,
-                 agent_name=agent_name,
-                 agent_type=agent_type,
-                 event_target=event_target)
+                 event_target=event_target,
+                 create_agent_file='import-description')
 
 
 if __name__ == '__main__':
