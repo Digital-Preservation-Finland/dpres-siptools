@@ -165,7 +165,6 @@ def import_object(**kwargs):
                  date_created: Creation date of a file,
                  order: Order number of a file,
                  stdout: True prints output to stdout
-    :returns: Dictionary of the scraped file metadata
     """
     attributes = _attribute_values(kwargs)
     # Loop files and create premis objects
@@ -231,7 +230,7 @@ class PremisCreator(MetsSectionCreator):
                      checksum: Checksum algorithm and value (tuple),
                      date_created: Creation date of a file
         :filerel: Relative path from base_path to file
-        :returns: Stream dict and info from file-scraper as a tuple
+        :returns: Stream dict and info dict from file-scraper as a tuple
         """
         if not attributes["file_format"]:
             mimetype = None
