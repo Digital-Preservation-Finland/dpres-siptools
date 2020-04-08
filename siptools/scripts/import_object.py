@@ -172,6 +172,7 @@ def import_object(**kwargs):
     files = collect_filepaths(dirs=attributes["filepaths"],
                               base=attributes["base_path"])
     creator = PremisCreator(attributes["workspace"])
+    agents = set()
     for filepath in files:
 
         # If the given path is an absolute path and base_path is current
@@ -189,10 +190,10 @@ def import_object(**kwargs):
 
         (_, scraper_info) = creator.add_premis_md(
             filepath, attributes, filerel=filerel, properties=properties)
+        for index in scraper_info:
+            agents.add(_parse_scraper_tools(scraper_info[index]))
 
     creator.write(stdout=attributes["stdout"])
-
-    agents = _parse_scraper_tools(scraper_info)
 
     # Create events documenting the technical metadata creation
     _create_events(
@@ -481,20 +482,17 @@ def _parse_scraper_tools(scraper_info):
 
     :returns: a list of agents
     """
-    agents = []
     scraper_version = pkg_resources.get_distribution('file-scraper').version
-    for index in scraper_info:
-        agent_name = scraper_info[index]['class']
-        agent_version = scraper_version
-        tools = ''
-        tools_list = []
-        if 'tools' in scraper_info[index]:
-            for tool in scraper_info[index]['tools']:
-                tools_list.append(tool)
-        if tools_list:
-            tools = 'Used tools (name-version): ' + ', '.join(tools_list)
-        agents.append((agent_name, agent_version, tools))
-    return agents
+    agent_name = scraper_info['class']
+    agent_version = scraper_version
+    tools = ''
+    tools_list = []
+    if 'tools' in scraper_info:
+        for tool in scraper_info['tools']:
+            tools_list.append(tool)
+    if tools_list:
+        tools = 'Used tools (name-version): ' + ', '.join(tools_list)
+    return (agent_name, agent_version, tools)
 
 
 # TODO: The checksum_event, validation_event and identifiecation_event are
