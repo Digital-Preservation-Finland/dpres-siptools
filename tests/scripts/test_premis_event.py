@@ -252,7 +252,7 @@ def test_reuse_agent(testpath, run_cli):
 
 @pytest.mark.parametrize(
     ("agent_identifier_type", "agent_identifier_value",
-     "import_agents_file", "agents_count"), [
+     "create_agent_file", "agents_count"), [
         (None, "", "", 1),
         ("acme", "foo", "", 1),
         ("acme", "foo", "testing", 1),
@@ -263,7 +263,7 @@ def test_import_agents(
         run_cli,
         agent_identifier_type,
         agent_identifier_value,
-        import_agents_file,
+        create_agent_file,
         agents_count):
     """Tests that the correct number of  agents are created and linked
     as intended.
@@ -271,9 +271,9 @@ def test_import_agents(
     Tests with following cases:
     1) agent_name and agent_type given
     2) agent_identifier given in addition to name and type
-    3) import_agents_file is given, that should override the other agent
+    3) create_agent_file is given, that should override the other agent
        information given
-    4) Multiple agents given through the import_agents_file
+    4) Multiple agents given through the create_agent_file
     """
     agent_name = 'testing agent'
     agent_type = 'person'
@@ -282,7 +282,7 @@ def test_import_agents(
     agent_id = create_agent(
         workspace=testpath,
         agent_type=agent_type,
-        output_file=import_agents_file,
+        create_agent_file=create_agent_file,
         agent_name=agent_name,
         agent_role='testing')
 
@@ -290,10 +290,10 @@ def test_import_agents(
         create_agent(
             workspace=testpath,
             agent_type=agent_type,
-            output_file=import_agents_file,
+            create_agent_file=create_agent_file,
             agent_name='second agent')
 
-    if import_agents_file:
+    if create_agent_file:
         agent_identifier_value = agent_id
         agent_identifier_type = 'local'
 
@@ -306,7 +306,7 @@ def test_import_agents(
         "--event_outcome_detail", "Test ok",
         "--agent_name", agent_name,
         "--agent_type", agent_type,
-        "--import_agents_file", import_agents_file,
+        "--create_agent_file", create_agent_file,
         ]
     if agent_identifier_value:
         cli_args.append("--agent_identifier")
@@ -335,7 +335,7 @@ def test_import_agents(
         assert event_root.xpath(
             '//premis:linkingAgentIdentifierValue',
             namespaces=NAMESPACES)[0].text == agent_identifier_value
-    if import_agents_file:
+    if create_agent_file:
         assert event_root.xpath(
             '//premis:linkingAgentRole',
             namespaces=NAMESPACES)[0].text == 'testing'

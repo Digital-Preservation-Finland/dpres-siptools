@@ -78,10 +78,10 @@ def _list2str(lst):
               type=str,
               metavar='<AGENT TYPE>',
               help='Agent type.')
-@click.option('--import_agents_file',
+@click.option('--create_agent_file',
               type=str,
-              metavar='<AGENTS FILE>',
-              help='The output file listing multiple created agents '
+              metavar='<CREATE AGENTS FILE>',
+              help='The file containing (multiple) created agents '
                    'relating to the current event. Will overrride the '
                    'other given agent options if used.')
 @click.option('--stdout',
@@ -119,7 +119,7 @@ def _attribute_values(given_params):
         "agent_name": None,
         "agent_type": None,
         "agent_identifier": None,
-        "import_agents_file": "",
+        "create_agent_file": "",
         "stdout": False,
         "linking_agents": set(),
     }
@@ -150,8 +150,8 @@ def premis_event(**kwargs):
              agent_name: Agent name
              agent_type: PREMIS agent type
              agent_identifier: Agent identifier type and value (tuple)
-             import_agents_file: External file containing agents created
-                                 by the create-agents script
+             create_agent_file: External file containing agents created
+                                by the create-agents script
              stdout: Tru prints output to stdout
              linking_agents: Empty set that is to be populated with
                              agent linked to the event
@@ -364,7 +364,7 @@ def _resolve_agents(**attributes):
     """Resolves linked agents that can be added to the event in a few
     different ways and outputs the agent information as json.
 
-    First, if the import_agents_file option is provided, the linked
+    First, if the create_agent_file option is provided, the linked
     agent information is read from the file.
     If the list was not provided, the agent provided in the agent_name
     and agent_type options are used.
@@ -375,9 +375,9 @@ def _resolve_agents(**attributes):
 
     agents_filepath = os.path.join(
         attributes["workspace"],
-        attributes["import_agents_file"] + '-AGENTS-amd.json')
+        attributes["create_agent_file"] + '-AGENTS-amd.json')
 
-    if attributes["import_agents_file"] and os.path.exists(agents_filepath):
+    if attributes["create_agent_file"] and os.path.exists(agents_filepath):
 
         with open(agents_filepath) as in_file:
             agents = json.load(in_file)

@@ -536,7 +536,7 @@ def _create_events(
             agent_note=agent[2],
             agent_type='software',
             agent_role='executing program',
-            output_file='import-object-agents')
+            create_agent_file='import-object-agents')
     event_datetime = datetime.datetime.now().isoformat()
     for event_target in event_targets:
         premis_event(event_type="metadata extraction",
@@ -550,7 +550,7 @@ def _create_events(
                      workspace=workspace,
                      base_path=base_path,
                      event_target=event_target,
-                     import_agents_file='import-object-agents')
+                     create_agent_file='import-object-agents')
 
 
 if __name__ == "__main__":

@@ -38,7 +38,7 @@ def test_create_agent_ok(
             '--agent_type', ag_type,
             '--agent_version', version,
             '--agent_note', 'Notes',
-            '--output_file', 'test-file',
+            '--create_agent_file', 'test-file',
         ]
         if given_identifier:
             cli_args.append('--agent_identifier')
@@ -54,10 +54,10 @@ def test_create_agent_ok(
         identifier_type = 'test'
 
     # Read output files
-    output_file = os.path.join(testpath, 'test-file-AGENTS-amd.json')
-    assert os.path.exists(output_file)
+    create_agent_file = os.path.join(testpath, 'test-file-AGENTS-amd.json')
+    assert os.path.exists(create_agent_file)
 
-    with io.open(output_file, 'rt') as in_file:
+    with io.open(create_agent_file, 'rt') as in_file:
         agent_data = json.load(in_file)
 
     assert len(agent_data) == ag_count

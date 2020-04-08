@@ -54,18 +54,27 @@ def _list2str(lst):
               type=str,
               metavar='<IDENTIFIER TYPE> <IDENTIFIER VALUE>',
               help=('Agent identifier type and value'))
-@click.option('--output_file',
+@click.option('--create_agent_file',
               type=str, required=True,
-              metavar='<OUTPUT FILE>',
+              metavar='<CREATE AGENT FILE>',
               help=('The name of the JSON file that collects all agents '
                     'related to the event in question'))
 # pylint: disable=too-many-arguments
 def main(**kwargs):
     """The script collects provenance metadata for the package. The
-    metadata contains the agent and linking information for the event
-    that the agent relates to. If used, this script must be run prior
-    to the premis-event script, since no actual XML data is written
-    in this script.
+    metadata consist of an agent and its relation to an event.  The
+    script collects the metadata and the linking information for the
+    event to a JSON file, that is read by the subsequent premis-event
+    script.
+
+    If used, this script must be run prior to the premis-event script,
+    since no actual XML data is written in this script and the agent
+    is given only in relation an event. The create-agent file created
+    in this script must also be passed to the premis-event script,
+    allowing it to collect the metadata created by this script.
+
+    When multiple agents relate to the same event, this script needs
+    to be run for each agent using the same --create_agent_file value.
 
     \b
     AGENT_NAME: The name of the agent.
@@ -89,7 +98,7 @@ def _attribute_values(given_params):
         "agent_role": None,
         "agent_note": None,
         "agent_identifier": (),
-        "output_file": given_params["output_file"],
+        "create_agent_file": given_params["create_agent_file"],
     }
     for key in given_params:
         if given_params[key]:
@@ -116,10 +125,14 @@ def _attribute_values(given_params):
 
 def create_agent(**kwargs):
     """
-    The script creates provenance metadata for the package. The metadata
-    contains the agent and linking information to the event. The result
-    is a JSON file containing metadata about the agent and its role in
+    The script collects provenance metadata for the package. The metadata
+    consists of information about the agent and linking information to
+    the event that the agent relates to. The result of this function is
+    a JSON file containing metadata about the agent and its role in
     relation to the event.
+    If the given JSON file exists, the new agent metadata is appended
+    to the existing data, allowing for multiple agents to be related to
+    the same event.
 
     :kwargs: Given arguments
              agent_name: agent name
@@ -129,8 +142,9 @@ def create_agent(**kwargs):
              agent_role: agent role in relation to the event
              agent_note: Agent note as a string
              agent_identifier: Agent identifier type and value (tuple)
-             output_file: The name of the JSON file that collects agent
-                          information in relation to the event
+             create_agent_file: The name of the JSON file that collects
+                                agent information in relation to the
+                                event
 
     :returns: The agent identifier value as a string
     """
@@ -151,7 +165,7 @@ def create_agent(**kwargs):
 
     output_path = os.path.join(
         attributes["workspace"],
-        attributes["output_file"] + '-AGENTS-amd.json')
+        attributes["create_agent_file"] + '-AGENTS-amd.json')
 
     agents_list = []
     if os.path.exists(output_path):
