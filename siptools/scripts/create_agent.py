@@ -112,7 +112,7 @@ def _attribute_values(given_params):
         message_string = '{name}{version}{agent_type}'.format(
             name=attributes['agent_name'],
             version=attributes.get('agent_version', ''),
-            agent_type=attributes['agent_type'])
+            agent_type=attributes['agent_type']).encode('utf-8')
         message = hashlib.md5()
         message.update(message_string)
         attributes["agent_identifier"] = ("local", message.hexdigest())
