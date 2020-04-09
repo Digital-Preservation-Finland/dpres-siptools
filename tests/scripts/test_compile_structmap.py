@@ -47,6 +47,23 @@ def test_compile_structmap_ok(testpath, run_cli):
     assert len(sm_root.xpath('//mets:div[@TYPE="Software files"]',
                              namespaces=NAMESPACES)) == 1
 
+    # Assert that an event has been created
+    root = lxml.etree.parse(
+        os.path.join(testpath, 'premis-event-md-references.xml')).getroot()
+    id_xpath = "/mdReferences/mdReference[@directory='.']"
+    for amdref in root.xpath(id_xpath):
+        output = os.path.join(
+            testpath, amdref.text[1:] + '-PREMIS%3AEVENT-amd.xml')
+        if os.path.exists(output):
+            event_output = output
+    event_output_path = os.path.join(testpath, event_output)
+    event_root = lxml.etree.parse(event_output_path).getroot()
+    assert event_root.xpath('./*/*/*/*/*')[0].tag == \
+        '{info:lc/xmlns/premis-v2}event'
+    assert event_root.xpath(
+        '//premis:eventDetail',
+        namespaces=NAMESPACES)[0].text == 'Creation of structural metadata'
+
 
 def test_compile_structmap_dmdsecid(testpath, run_cli):
     """Test the compile_structmap script for workspace that contains

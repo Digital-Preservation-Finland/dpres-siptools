@@ -5,6 +5,7 @@ from __future__ import unicode_literals, print_function
 import os
 import sys
 from uuid import uuid4
+import datetime
 
 import click
 
@@ -13,8 +14,12 @@ import mets
 import xml_helpers.utils as xml_utils
 from siptools.mdcreator import (get_objectlist, read_all_amd_references,
                                 read_md_references, get_md_references)
+from siptools.scripts.create_agent import create_agent
+from siptools.scripts.premis_event import premis_event
 from siptools.utils import add, encode_path, tree, load_scraper_json
 from siptools.xml.mets import NAMESPACES
+
+import siptools
 
 click.disable_unicode_literals_warning = True
 
@@ -124,6 +129,13 @@ def compile_structmap(**kwargs):
              dmdsec_loc: Location of structured descriptive metadata
              stdout: True to print output to stdout
     """
+    # Create an event documenting the structmap creation
+    _create_event(
+         workspace=kwargs["workspace"],
+         structmap_type=kwargs["structmap_type"],
+         root_type=kwargs["root_type"]
+     )
+
     attributes = _attribute_values(kwargs)
 
     if attributes["structmap_type"] == 'EAD3-logical':
@@ -548,6 +560,51 @@ def collect_dao_hrefs(ead3_c):
                 hrefs.append(elem.xpath("./@href")[0].lstrip('/'))
 
     return hrefs
+
+
+def _create_event(
+        workspace='./workspace/',
+        structmap_type=None,
+        root_type='directory'):
+    """Helper function to create an event for documenting the
+    descriptive metadata import and the source from where the metadata
+    was extracted.
+
+    The function calls the premis_event script, creating the premis
+    event and agent metadata and linking them to the same target as the
+    descriptive metadata.
+
+    :workspace: The path to the workspace
+    :base_path: Base path (see --base_path)
+    :event_target: The target of the descriptive metadata
+    :dmd_source: The source that the descriptive metadata was extracted
+                 from
+    :dmd_agent: The agent software that extracted the descriptive
+                metadata
+    """
+    if not structmap_type and root_type:
+        structmap_type = root_type
+    else:
+        structmap_type = 'directory'
+
+    create_agent(
+        workspace=workspace,
+        agent_name='compile-structmap',
+        agent_version=siptools.__version__,
+        agent_type='software',
+        agent_role='executing program',
+        create_agent_file='compile-structmap-agents')
+
+    event_datetime = datetime.datetime.now().isoformat()
+    premis_event(event_type="creation",
+                 event_datetime=event_datetime,
+                 event_detail=("Creation of structural metadata"),
+                 event_outcome="success",
+                 event_outcome_detail=(
+                     "Created METS structural map of type %s"
+                     % structmap_type),
+                 workspace=workspace,
+                 create_agent_file='compile-structmap-agents')
 
 
 if __name__ == '__main__':
