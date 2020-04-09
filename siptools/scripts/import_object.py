@@ -7,7 +7,7 @@ import os
 import platform
 import sys
 from uuid import uuid4
-import pkg_resources
+import file_scraper
 
 import click
 import six
@@ -199,10 +199,10 @@ def import_object(**kwargs):
         workspace=attributes["workspace"],
         base_path=attributes["base_path"],
         event_targets=attributes["filepaths"],
+        agents=agents,
         checksum_event=not bool(attributes["checksum"]),
         validation_event=not attributes["skip_wellformed_check"],
-        identification_event=not bool(attributes["file_format"]),
-        agents=agents
+        identification_event=not bool(attributes["file_format"])
     )
 
 
@@ -481,9 +481,8 @@ def _parse_scraper_tools(scraper_info):
 
     :returns: a list of agents
     """
-    scraper_version = pkg_resources.get_distribution('file-scraper').version
     agent_name = scraper_info['class']
-    agent_version = scraper_version
+    agent_version = file_scraper.__version__
     tools = ''
     tools_list = []
     if 'tools' in scraper_info:

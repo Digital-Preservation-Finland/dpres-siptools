@@ -386,7 +386,7 @@ def _resolve_agents(**attributes):
             attributes["agent_name"] = agent["agent_name"]
             if 'agent_version' in agent:
                 attributes["agent_name"] = agent["agent_name"] + \
-                    '-' + agent["agent_version"]
+                    '-v' + agent["agent_version"]
             attributes["agent_identifier"] = find_premis_agent_identifier(
                 attributes)
             if not attributes["agent_identifier"]:
