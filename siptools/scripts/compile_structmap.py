@@ -84,7 +84,7 @@ def _attribute_values(given_params):
         if given_params[key]:
             attributes[key] = given_params[key]
 
-    return get_reference_lists(**attributes)
+    return attributes
 
 
 def get_reference_lists(**attributes):
@@ -129,14 +129,17 @@ def compile_structmap(**kwargs):
              dmdsec_loc: Location of structured descriptive metadata
              stdout: True to print output to stdout
     """
+    attributes = _attribute_values(kwargs)
+
     # Create an event documenting the structmap creation
     _create_event(
-         workspace=kwargs["workspace"],
-         structmap_type=kwargs["structmap_type"],
-         root_type=kwargs["root_type"]
+         workspace=attributes["workspace"],
+         structmap_type=attributes["structmap_type"],
+         root_type=attributes["root_type"]
      )
 
-    attributes = _attribute_values(kwargs)
+    # Get reference list only after the structmap creation event
+    attributes = get_reference_lists(**attributes)
 
     if attributes["structmap_type"] == 'EAD3-logical':
         # If structured descriptive metadata for structMap divs is used, also
@@ -184,7 +187,7 @@ def create_filesec(**attributes):
                  filelist: Sorted list of digital objects (file paths)
     :returns: METS XML Element tree including file section element
     """
-    attributes = _attribute_values(attributes)
+    attributes = get_reference_lists(**_attribute_values(attributes))
     filegrp = mets.filegrp()
     filesec = mets.filesec(child_elements=[filegrp])
 
@@ -213,7 +216,7 @@ def create_structmap(filesec, **attributes):
                  workspace: Workspace path
     :returns: structural map element
     """
-    attributes = _attribute_values(attributes)
+    attributes = get_reference_lists(**_attribute_values(attributes))
     amdids = get_md_references(attributes["all_amd_refs"], directory='.')
     dmdids = get_md_references(attributes["all_dmd_refs"], directory='.')
 
