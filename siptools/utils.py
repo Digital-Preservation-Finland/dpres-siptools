@@ -62,20 +62,24 @@ def read_json_streams(filerel, workspace):
     """
     ref_exists = False
     if workspace is not None:
-        ref = os.path.join(workspace, 'import-object-md-references.xml')
-        if os.path.isfile(ref):
+        refs_file = os.path.join(workspace, 'import-object-md-references.json')
+        if os.path.isfile(refs_file):
             ref_exists = True
 
     if ref_exists:
-        root = lxml.etree.parse(ref).getroot()
-        filerel = fsdecode_path(filerel)
+        with open(refs_file) as in_file:
+            refs = json.load(in_file)
 
-        amdref = root.xpath("/mdReferences/mdReference[not(@stream) "
-                            "and @file='%s']" % filerel)
+        filerel = fsdecode_path(filerel)
+        try:
+            amdrefs = refs[filerel]['md_ids']
+        except KeyError:
+            amdrefs = []
+
         json_name = None
-        for ref in amdref:
+        for amdref in amdrefs:
             json_name = os.path.join(
-                workspace, '{}-scraper.json'.format(ref.text[1:]))
+                workspace, '{}-scraper.json'.format(amdref[1:]))
             if json_name and os.path.isfile(json_name):
                 break
         if json_name:
