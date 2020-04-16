@@ -227,7 +227,7 @@ class PremisCreator(MetsSectionCreator):
     # pylint: disable=too-many-arguments
     def write(self, mdtype="PREMIS", mdtypeversion="2.3", othermdtype=None,
               section="digiprovmd", stdout=False, file_metadata_dict=None,
-              ref_file="premis-event-md-references.xml"):
+              ref_file="premis-event-md-references.json"):
         super(PremisCreator, self).write(
             mdtype=mdtype,
             mdtypeversion=mdtypeversion,

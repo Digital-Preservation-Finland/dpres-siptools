@@ -195,7 +195,7 @@ class DmdCreator(MetsSectionCreator):
 
         self.add_md(metadata=dmd_xml, directory=dmd_target)
         self.add_reference(dmd_id, None, directory=dmd_target)
-        self.write_references(ref_file="import-description-md-references.xml")
+        self.write_references(ref_file="import-description-md-references.json")
 
 
 def create_mets(input_file, dmd_id, remove_root=False):

@@ -264,7 +264,7 @@ def clean_metsparts(path):
         for name in files:
             if (name.endswith(('-amd.xml', 'dmdsec.xml', 'structmap.xml',
                                'filesec.xml', 'rightsmd.xml',
-                               'md-references.xml',
+                               'md-references.json',
                                '-scraper.json', '-amd.json'))):
                 os.remove(os.path.join(root, name))
 
@@ -277,7 +277,7 @@ def copy_objects(workspace, data_dir):
     :data_dir: Path to digital objects
     """
     files = get_objectlist(read_md_references(
-        workspace, "import-object-md-references.xml"
+        workspace, "import-object-md-references.json"
     ))
     for source in files:
         target = os.path.join(workspace, source)

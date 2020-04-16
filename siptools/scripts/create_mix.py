@@ -100,7 +100,7 @@ class MixCreator(MetsSectionCreator):
     # pylint: disable=too-many-arguments
     def write(self, mdtype="NISOIMG", mdtypeversion="2.0", othermdtype=None,
               section=None, stdout=False, file_metadata_dict=None,
-              ref_file="create-mix-md-references.xml"):
+              ref_file="create-mix-md-references.json"):
         """
         Write MIX metadata.
         """

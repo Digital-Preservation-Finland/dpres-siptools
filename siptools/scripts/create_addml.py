@@ -48,7 +48,7 @@ def main(**kwargs):
     """Tool for creating ADDML metadata for a CSV file. The
     ADDML metadata is written to <hash>-ADDML-amd.xml
     METS XML file in the workspace directory. The ADDML
-    techMD reference is written to md-references.xml.
+    techMD reference is written to md-references.json.
     If similar ADDML metadata is already found in workspace,
     just the new CSV file name is appended to the existing
     metadata.
@@ -171,7 +171,7 @@ class AddmlCreator(MetsSectionCreator):
     # pylint: disable=too-many-arguments
     def write(self, mdtype="OTHER", mdtypeversion="8.3", othermdtype="ADDML",
               section=None, stdout=False, file_metadata_dict=None,
-              ref_file="create-addml-md-references.xml"):
+              ref_file="create-addml-md-references.json"):
         """
         Write all the METS XML files and md-reference file.
         Base class write is overwritten to handle the references

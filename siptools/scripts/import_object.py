@@ -264,7 +264,7 @@ class PremisCreator(MetsSectionCreator):
     def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3",
               othermdtype=None, section=None, stdout=False,
               file_metadata_dict=None,
-              ref_file="import-object-md-references.xml"):
+              ref_file="import-object-md-references.json"):
         """
         Write PREMIS metadata.
         """

@@ -104,7 +104,7 @@ def get_reference_lists(**attributes):
     """
     attributes["object_refs"] = attributes.get(
         "object_refs", read_md_references(
-            attributes["workspace"], "import-object-md-references.xml"
+            attributes["workspace"], "import-object-md-references.json"
         ))
     attributes["filelist"] = attributes.get(
         "filelist", get_objectlist(attributes["object_refs"]))
@@ -112,7 +112,7 @@ def get_reference_lists(**attributes):
         "all_amd_refs", read_all_amd_references(attributes["workspace"]))
     attributes["all_dmd_refs"] = attributes.get(
         "all_dmd_refs", read_md_references(
-            attributes["workspace"], "import-description-md-references.xml"
+            attributes["workspace"], "import-description-md-references.json"
         ))
 
     return attributes
