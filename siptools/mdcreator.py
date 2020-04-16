@@ -9,10 +9,32 @@ import json
 
 import six
 
-import lxml.etree
 import mets
 import xml_helpers
 from siptools.utils import generate_digest, encode_path
+
+
+def _parse_refs(ref):
+    """A helper function to parse the given reference according
+    to the type.
+    """
+    reference = ''
+    if isinstance(ref, six.binary_type):
+        reference = ref.decode(sys.getfilesystemencoding())
+    elif isinstance(ref, six.text_type):
+        reference = ref
+    elif ref:
+        reference = six.text_type(ref)
+
+    return reference
+
+
+def _uniques_list(reference_list, reference):
+    """A helper function to append only unique values to a list."""
+    set_list = set(reference_list)
+    set_list.add(reference)
+
+    return list(set_list)
 
 
 class MetsSectionCreator(object):
@@ -46,9 +68,14 @@ class MetsSectionCreator(object):
         """
         references = {}
         references['md_id'] = md_id
-        references['file'] = filepath
         references['stream'] = stream
-        references['directory'] = directory
+
+        references['path'] = filepath
+        references['path_type'] = 'file'
+        if directory:
+            references['path'] = directory
+            references['path_type'] = 'directory'
+
         self.references.append(references)
 
     def add_md(self,
@@ -83,45 +110,60 @@ class MetsSectionCreator(object):
 
     def write_references(self, ref_file):
         """
-        Write "md-references.xml" file, which is read by the compile-structmap
-        script when fileSec and structMap elements are created for lxml.etree
-        XML.
+        Write "md-references.json" file, which is read by the
+        compile-structmap script when fileSec and structMap elements are
+        created for lxml.etree XML.
         """
 
-        reference_file = os.path.join(self.workspace, ref_file)
+        reference_file = os.path.join(
+            self.workspace,
+            os.path.splitext(ref_file)[0] + '.json')
+
+        paths = {}
 
         # read existing reference list file or create new file
         if os.path.exists(reference_file):
-            with open(reference_file) as file_:
-                # Remove blank text to enable pretty printing
-                parser = lxml.etree.XMLParser(remove_blank_text=True)
-                references_tree = lxml.etree.parse(file_, parser)
-                references = references_tree.getroot()
-        else:
-            references = lxml.etree.Element('mdReferences')
-            references_tree = lxml.etree.ElementTree(references)
+            with open(reference_file) as in_file:
+                paths = json.load(in_file)
 
-        # Add all the references
         for ref in self.references:
-            reference = lxml.etree.Element('mdReference')
-            reference.text = ref['md_id']
-            for key in ref:
-                if key == 'md_id':
-                    pass
-                elif isinstance(ref[key], six.binary_type):
-                    reference.set(
-                        key, ref[key].decode(sys.getfilesystemencoding()))
-                elif isinstance(ref[key], six.text_type):
-                    reference.set(key, ref[key])
-                elif ref[key]:
-                    reference.set(key, six.text_type(ref[key]))
-                references.append(reference)
+            ref_path = _parse_refs(ref['path'])
+
+            if ref_path in paths:
+                existing_path = paths[ref_path]
+
+                if ref['stream']:
+                    found_stream = False
+                    if ref['stream'] in existing_path['streams']:
+                        stream_refs = existing_path['streams'][ref['stream']]
+                        stream_refs = _uniques_list(
+                                stream_refs, ref['md_id'])
+                        found_stream = True
+                    if not found_stream:
+                        stream_ids = []
+                        stream_ids.append(ref['md_id'])
+                        existing_path['streams'][ref['stream']] = stream_ids
+
+                else:
+                    existing_path['md_ids'] = _uniques_list(
+                        existing_path['md_ids'], ref['md_id'])
+            else:
+                reference = {
+                    "path_type": ref['path_type'],
+                    "streams": {},
+                    "md_ids": []
+                }
+                if ref['stream']:
+                    stream_ids = []
+                    stream_ids.append(ref['md_id'])
+                    reference['streams'][ref['stream']] = stream_ids
+                else:
+                    reference["md_ids"].append(ref['md_id'])
+                paths[ref_path] = reference
 
         # Write reference list file
-        references_tree.write(reference_file,
-                              pretty_print=True,
-                              xml_declaration=True,
-                              encoding="utf-8")
+        with open(reference_file, 'wt') as outfile:
+            json.dump(paths, outfile)
 
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-locals
@@ -242,36 +284,35 @@ class MetsSectionCreator(object):
         self.__init__(self.workspace)
 
 
-def get_objectlist(xml, file_path=None):
-    """Get unique and sorted list of files or streams from md-references.xml
+def get_objectlist(refs_dict, file_path=None):
+    """Get unique and sorted list of files or streams from
+    md-references.json
 
-    :xml: XML tree of objects
+    :refs_dict: Dictionary of objects
     :file_path: If given, finds streams of the given file.
                 If None, finds a sorted list all file paths.
     :returns: Sorted list of files, or streams of a given file
     """
     objectset = set()
     if file_path is not None:
-        streams = xml.xpath(
-            '/mdReferences/mdReference[@file="%s"]/@stream'
-            '' % file_path)
-        for stream in streams:
+        for stream in refs_dict[file_path]['streams']:
             objectset.add(stream)
     else:
-        files = xml.xpath('/mdReferences/mdReference/@file')
-        for path in files:
-            objectset.add(path)
+        for key, value in refs_dict.iteritems():
+            if value['path_type'] == 'file':
+                objectset.add(key)
+
     return sorted(objectset)
 
 
 def remove_dmdsec_references(workspace):
     """
-    Removes the reference to the dmdSecs in the md-references.xml file.
+    Removes the reference to the dmdSecs in the md-references.json file.
 
     :workspace: Workspace path
     """
     refs_file = os.path.join(workspace,
-                             'import-description-md-references.xml')
+                             'import-description-md-references.json')
     if os.path.exists(refs_file):
         os.remove(refs_file)
 
@@ -283,27 +324,39 @@ def read_all_amd_references(workspace):
     :workspace: path to workspace directory
     :returns: a set of administrative MD IDs
     """
-    references = None
-    for ref_file in ["import-object-md-references.xml",
-                     "create-addml-md-references.xml",
-                     "create-audiomd-md-references.xml",
-                     "create-mix-md-references.xml",
-                     "create-videomd-md-references.xml",
-                     "premis-event-md-references.xml"]:
+    references = {}
+    for ref_file in ["import-object-md-references.json",
+                     "create-addml-md-references.json",
+                     "create-audiomd-md-references.json",
+                     "create-mix-md-references.json",
+                     "create-videomd-md-references.json",
+                     "premis-event-md-references.json"]:
         if references is None:
             references = read_md_references(workspace, ref_file)
         else:
             refs = read_md_references(workspace, ref_file)
-            if refs is not None:
+            if refs:
                 for ref in refs:
-                    references.append(ref)
+                    if ref in references:
+                        references[ref]['md_ids'].extend(refs[ref]['md_ids'])
+
+                        for stream in refs[ref]['streams']:
+                            if stream in references[ref]['streams']:
+                                references[ref]['streams'][stream].extend(
+                                    refs[ref]['streams'][stream])
+                            else:
+                                references[ref]['streams'][stream] = \
+                                    refs[ref]['streams'][stream]
+
+                    else:
+                        references[ref] = refs[ref]
 
     return references
 
 
 def read_md_references(workspace, ref_file):
     """If MD reference file exists in workspace, read
-    all the MD IDs as element_tree.
+    all the MD IDs as a dictionary.
 
     :workspace: path to workspace directory
     :ref_file: Metadata reference file
@@ -312,41 +365,39 @@ def read_md_references(workspace, ref_file):
     reference_file = os.path.join(workspace, ref_file)
 
     if os.path.isfile(reference_file):
-        return lxml.etree.parse(reference_file).getroot()
+        with open(reference_file) as in_file:
+            return json.load(in_file)
     return None
 
 
-def get_md_references(element_tree, path=None, stream=None, directory=None):
+def get_md_references(refs_dict, path=None, stream=None, directory=None):
     """
     Return filtered references from a set of given references.
-    :element_tree: XML etree of references to be filtered
+    :refs_dict: Dictionary of references to be filtered
     :path: Filter by given file path
     :stream: Filter by given strean index
     :directory: Filter by given directory path
     """
-    if element_tree is None:
+    if refs_dict is None:
         return None
 
-    if directory is None and path is None and stream is None:
-        reference_elements = element_tree.xpath(
-            '/mdReferences/mdReference'
-        )
-    elif directory:
-        directory = os.path.normpath(directory)
-        reference_elements = element_tree.xpath(
-            '/mdReferences/mdReference'
-            '[@directory="%s"]' % directory
-        )
-    elif stream is None:
-        reference_elements = element_tree.xpath(
-            '/mdReferences/mdReference[@file="%s" '
-            'and not(@stream)]' % path
-        )
-    else:
-        reference_elements = element_tree.xpath(
-            '/mdReferences/mdReference[@file="%s" '
-            'and @stream="%s"]' % (path, stream)
-        )
-    md_ids = [element.text for element in reference_elements]
+    md_ids = []
+    try:
+        if directory is None and path is None and stream is None:
+            for ref_path in refs_dict:
+                md_ids.extend(ref_path['md_ids'])
+        elif directory:
+            directory = os.path.normpath(directory)
+            md_ids = refs_dict[directory]['md_ids']
+
+        elif stream is None:
+            md_ids = refs_dict[path]['md_ids']
+        else:
+            md_ref = refs_dict[path]
+            for ref_stream in md_ref['streams']:
+                if ref_stream == stream:
+                    md_ids = md_ref['streams'][ref_stream]
+    except KeyError:
+        pass
 
     return set(md_ids)
