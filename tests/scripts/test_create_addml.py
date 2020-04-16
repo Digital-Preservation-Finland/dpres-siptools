@@ -2,6 +2,8 @@
 from __future__ import unicode_literals
 
 import os
+import io
+import json
 
 import pytest
 
@@ -98,7 +100,7 @@ def test_create_addml_creator(testpath, isheader, exp_amd_files, exp_fields):
     # Check that md-reference and the ADDML-amd files with correct content
     # are created
     assert os.path.isfile(
-        os.path.join(testpath, 'create-addml-md-references.xml')
+        os.path.join(testpath, 'create-addml-md-references.json')
     )
 
     for amd_file_index, exp_amd_file in enumerate(exp_amd_files):
@@ -150,9 +152,11 @@ def test_paths(testpath, file_, base_path, run_cli):
             '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
             '--workspace', testpath, file_])
 
-    assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        open(os.path.join(testpath,
-                          'create-addml-md-references.xml')).read()
+    with io.open(os.path.join(testpath,
+                              'create-addml-md-references.json'),
+                 "rt") as in_file:
+        references = json.load(in_file)
+    assert os.path.normpath(file_) in references
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))
 

@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import os
 import io
+import json
 
 import lxml.etree as ET
 
@@ -15,16 +16,14 @@ from siptools.xml.mets import NAMESPACES
 
 def get_md_file(path,
                 input_target='.',
-                ref_file='premis-event-md-references.xml',
+                ref_file='premis-event-md-references.json',
                 output_suffix='-PREMIS%3AEVENT-amd.xml'):
     """Get id"""
-    root = ET.parse(os.path.join(path, ref_file)).getroot()
-    id_xpath = "/mdReferences/mdReference[@directory='%s']" % \
-        fsdecode_path(input_target)
-
-    for amdref in root.xpath(id_xpath):
-        output = os.path.join(path, amdref.text[1:] +
-                              output_suffix)
+    with open(os.path.join(path, ref_file)) as in_file:
+        refs = json.load(in_file)
+    reference = refs[fsdecode_path(input_target)]
+    for amdref in reference['md_ids']:
+        output = os.path.join(path, amdref[1:] + output_suffix)
         if os.path.exists(output):
             return output
     return None
@@ -105,13 +104,13 @@ def test_amd_links_root(testpath, run_cli):
         '--event_outcome_detail', 'Test ok',
         '--workspace', testpath
     ])
+    refs_file = os.path.join(testpath, 'premis-event-md-references.json')
+    assert os.path.isfile(refs_file)
+    with open(refs_file) as in_file:
+        refs = json.load(in_file)
 
-    ref = os.path.join(testpath, 'premis-event-md-references.xml')
-    assert os.path.isfile(ref)
-
-    root = ET.parse(ref).getroot()
-    dir_ref = root.xpath("/mdReferences/mdReference")[0].get('directory')
-    assert dir_ref == '.'
+    assert '.' in refs
+    assert refs['.']['path_type'] == 'directory'
 
 
 def test_amd_links_file(testpath, run_cli):
@@ -129,12 +128,12 @@ def test_amd_links_file(testpath, run_cli):
         '--event_target', target
     ])
 
-    ref = os.path.join(testpath, 'premis-event-md-references.xml')
-    assert os.path.isfile(ref)
+    refs_file = os.path.join(testpath, 'premis-event-md-references.json')
+    assert os.path.isfile(refs_file)
+    with open(refs_file) as in_file:
+        refs = json.load(in_file)
 
-    root = ET.parse(ref).getroot()
-    dir_ref = root.xpath("/mdReferences/mdReference")[0].get('file')
-    assert dir_ref == target
+    assert target in refs
 
 
 def test_amd_links_dir(testpath, run_cli):
@@ -152,12 +151,12 @@ def test_amd_links_dir(testpath, run_cli):
         '--event_target', target
     ])
 
-    ref = os.path.join(testpath, 'premis-event-md-references.xml')
-    assert os.path.isfile(ref)
+    refs_file = os.path.join(testpath, 'premis-event-md-references.json')
+    assert os.path.isfile(refs_file)
+    with open(refs_file) as in_file:
+        refs = json.load(in_file)
 
-    root = ET.parse(ref).getroot()
-    dir_ref = root.xpath("/mdReferences/mdReference")[0].get('directory')
-    assert dir_ref == target
+    assert target in refs
 
 
 def test_premis_event_fail(testpath, run_cli):
@@ -386,9 +385,9 @@ def test_paths(testpath, file_, base_path, run_cli):
             "success", "creation", "2020-02-02T20:20:20"
         ])
 
-    with io.open(os.path.join(testpath, "premis-event-md-references.xml"),
-                 "rt") as md_ref:
-        md_references = md_ref.read()
+    with io.open(os.path.join(testpath, "premis-event-md-references.json"),
+                 "rt") as in_file:
+        md_references = json.load(in_file)
 
-    assert 'file=\"%s\"' % os.path.normpath(file_) in md_references
+    assert os.path.normpath(file_) in md_references
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

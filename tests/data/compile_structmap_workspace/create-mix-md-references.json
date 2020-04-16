@@ -1,0 +1,17 @@
+{
+    "sample_images/sample_tiff1.tif": {
+        "path_type": "file",
+        "md_ids": ["_e50655691d21e110a3c4b38da52fb91c"],
+        "streams": {}
+    },
+    "sample_images/sample_tiff2.tif": {
+        "path_type": "file",
+        "md_ids": ["_e50655691d21e110a3c4b38da52fb91c"],
+        "streams": {}
+    },
+    "sample_images/sample_tiff1_compressed.tif": {
+        "path_type": "file",
+        "md_ids": ["_c08061e439bd40407c9e5332fec6084e"],
+        "streams": {}
+    }
+}

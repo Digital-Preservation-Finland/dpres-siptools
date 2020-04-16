@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import os
 import io
+import json
 
 import pytest
 
@@ -15,18 +16,17 @@ from siptools.xml.mets import NAMESPACES
 
 def get_md_file(path,
                 input_target,
-                ref_file='import-description-md-references.xml',
+                ref_file='import-description-md-references.json',
                 output_suffix='-dmdsec.xml'):
     """Get id"""
-    root = ET.parse(os.path.join(path, ref_file)).getroot()
-    id_xpath = "/mdReferences/mdReference[@directory='%s']" % \
-        fsdecode_path(input_target)
-
-    for amdref in root.xpath(id_xpath):
-        output = os.path.join(path, amdref.text[1:] +
-                              output_suffix)
+    with open(os.path.join(path, ref_file)) as in_file:
+        refs = json.load(in_file)
+    reference = refs[fsdecode_path(input_target)]
+    for dmdref in reference['md_ids']:
+        output = os.path.join(path, dmdref[1:] + output_suffix)
         if os.path.exists(output):
             return output
+
     return None
 
 
@@ -53,7 +53,7 @@ def test_import_description_valid_file(testpath, run_cli):
     event_output = get_md_file(
         testpath,
         dmdsec_target,
-        ref_file='premis-event-md-references.xml',
+        ref_file='premis-event-md-references.json',
         output_suffix='-PREMIS%3AEVENT-amd.xml')
     event_output_path = os.path.join(testpath, event_output)
     event_root = ET.parse(event_output_path).getroot()
@@ -164,11 +164,11 @@ def test_paths(testpath, directory, base_path, run_cli):
         ])
 
     with io.open(os.path.join(testpath,
-                              "import-description-md-references.xml"),
-                 "rt") as md_ref:
-        md_references = md_ref.read()
+                              "import-description-md-references.json"),
+                 "rt") as in_file:
+        md_references = json.load(in_file)
 
-    assert 'directory=\"%s\"' % os.path.normpath(directory) in md_references
+    assert os.path.normpath(directory) in md_references
     assert os.path.isdir(os.path.normpath(os.path.join(base_path, directory)))
 
 
@@ -188,7 +188,7 @@ def test_import_description_event_agent(testpath, run_cli):
     event_output = get_md_file(
         testpath,
         dmdsec_target,
-        ref_file='premis-event-md-references.xml',
+        ref_file='premis-event-md-references.json',
         output_suffix='-PREMIS%3AEVENT-amd.xml')
     event_output_path = os.path.join(testpath, event_output)
     event_root = ET.parse(event_output_path).getroot()
@@ -204,7 +204,7 @@ def test_import_description_event_agent(testpath, run_cli):
     agent_output = get_md_file(
         testpath,
         dmdsec_target,
-        ref_file='premis-event-md-references.xml',
+        ref_file='premis-event-md-references.json',
         output_suffix='-PREMIS%3AAGENT-amd.xml')
     agent_output_path = os.path.join(testpath, agent_output)
     agent_root = ET.parse(agent_output_path).getroot()

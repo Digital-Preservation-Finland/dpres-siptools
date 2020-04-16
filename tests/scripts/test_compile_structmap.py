@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import os
 import shutil
+import json
 
 import lxml.etree
 import mets
@@ -48,12 +49,13 @@ def test_compile_structmap_ok(testpath, run_cli):
                              namespaces=NAMESPACES)) == 1
 
     # Assert that an event has been created
-    root = lxml.etree.parse(
-        os.path.join(testpath, 'premis-event-md-references.xml')).getroot()
-    id_xpath = "/mdReferences/mdReference[@directory='.']"
-    for amdref in root.xpath(id_xpath):
+    with open(os.path.join(testpath,
+                           'premis-event-md-references.json')) as in_file:
+        references = json.load(in_file)
+
+    for amdref in references['.']['md_ids']:
         output = os.path.join(
-            testpath, amdref.text[1:] + '-PREMIS%3AEVENT-amd.xml')
+            testpath, amdref[1:] + '-PREMIS%3AEVENT-amd.xml')
         if os.path.exists(output):
             event_output = output
     event_output_path = os.path.join(testpath, event_output)
@@ -91,11 +93,11 @@ def test_compile_structmap_dmdsecid(testpath, run_cli):
     # The root div of structMap should have reference to dmdSec element in
     # dmdsec.xml
 
-    ref = os.path.join(testpath, 'import-description-md-references.xml')
-    root = lxml.etree.parse(ref).getroot()
-    dmdref = root.xpath("/mdReferences/mdReference"
-                        "[@directory='.']")[0]
-    dmdsecid = dmdref.text
+    refs_file = os.path.join(testpath, 'import-description-md-references.json')
+    with open(refs_file) as in_file:
+        refs = json.load(in_file)
+
+    dmdsecid = refs['.']['md_ids'][0]
 
     structmap = lxml.etree.parse(os.path.join(testpath, 'structmap.xml'))
     assert len(

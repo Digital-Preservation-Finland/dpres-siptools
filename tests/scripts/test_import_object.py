@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import datetime
 import io
 import os.path
+import json
 
 import pytest
 import six
@@ -18,21 +19,23 @@ from siptools.xml.mets import NAMESPACES
 def get_amd_file(path,
                  input_file,
                  stream=None,
-                 ref_file='import-object-md-references.xml',
+                 ref_file='import-object-md-references.json',
                  suffix='-PREMIS%3AOBJECT-amd.xml'):
     """Get id"""
-    root = ET.parse(os.path.join(path, ref_file)).getroot()
-    decoded_input_file = fsdecode_path(input_file)
-    if stream is None:
-        id_xpath = ("/mdReferences/mdReference[not(@stream) "
-                    "and @file='%s']" % decoded_input_file)
+    with open(os.path.join(path, ref_file)) as in_file:
+        refs = json.load(in_file)
+    reference = refs[fsdecode_path(input_file)]
+
+    if not stream:
+        amdrefs = reference['md_ids']
     else:
-        id_xpath = ("/mdReferences/mdReference[@stream='%s' and "
-                    "@file='%s']" % (stream, decoded_input_file))
-    for amdref in root.xpath(id_xpath):
-        output = os.path.join(path, amdref.text[1:] + suffix)
+        amdrefs = reference['streams'][stream]
+
+    for amdref in amdrefs:
+        output = os.path.join(path, amdref[1:] + suffix)
         if os.path.exists(output):
             return output
+
     return None
 
 
@@ -54,7 +57,7 @@ def test_import_object_ok(testpath, run_cli):
     event_output = get_amd_file(
         testpath,
         input_file,
-        ref_file='premis-event-md-references.xml',
+        ref_file='premis-event-md-references.json',
         suffix='-PREMIS%3AEVENT-amd.xml')
     event_output_path = os.path.join(testpath, event_output)
     event_root = ET.parse(event_output_path).getroot()
@@ -166,10 +169,10 @@ def test_import_object_multiple(testpath, run_cli):
 
     expected_files = 9
 
-    ref_file = os.path.join(testpath, 'import-object-md-references.xml')
-
-    root = ET.parse(ref_file).getroot()
-    assert len(root.xpath('./*')) == expected_files
+    refs_file = os.path.join(testpath, 'import-object-md-references.json')
+    with open(refs_file) as in_file:
+        refs = json.load(in_file)
+    assert len(refs) == expected_files
 
     count = 0
     for filename in os.listdir(testpath):
@@ -479,7 +482,7 @@ def test_import_description_event_agent(testpath, run_cli):
     event_output = get_amd_file(
         testpath,
         input_file,
-        ref_file='premis-event-md-references.xml',
+        ref_file='premis-event-md-references.json',
         suffix='-PREMIS%3AEVENT-amd.xml')
 
     event_output_path = os.path.join(testpath, event_output)
@@ -502,7 +505,7 @@ def test_import_description_event_agent(testpath, run_cli):
     agent_output = get_amd_file(
         testpath,
         input_file,
-        ref_file='premis-event-md-references.xml',
+        ref_file='premis-event-md-references.json',
         suffix='-PREMIS%3AAGENT-amd.xml')
     agent_output_path = os.path.join(testpath, agent_output)
     agent_root = ET.parse(agent_output_path).getroot()

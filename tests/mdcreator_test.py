@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import os
+import json
 import lxml.etree
 from siptools.mdcreator import (MetsSectionCreator, get_md_references,
                                 remove_dmdsec_references)
@@ -53,48 +54,41 @@ def test_add_mdreference(testpath):
     md_creator.add_reference('abcd1234', 'path/to/file1')
     md_creator.add_reference('abcd1234', 'path/to/file2')
 
-    md_creator.write_references('md-references.xml')
+    md_creator.write_references('md-references.json')
 
     # Read created file. Reference should be found for both files
-    etree = lxml.etree.parse(os.path.join(testpath, 'md-references.xml'))
-    reference = etree.xpath(
-        '/mdReferences/mdReference[@file="path/to/file1"]'
-    )
-    assert reference[0].text == 'abcd1234'
-    reference = etree.xpath(
-        '/mdReferences/mdReference[@file="path/to/file2"]'
-    )
-    assert reference[0].text == 'abcd1234'
+    with open(os.path.join(testpath, 'md-references.json')) as in_file:
+        references = json.load(in_file)
+
+    reference = references["path/to/file1"]
+    assert reference['md_ids'][0] == 'abcd1234'
+
+    reference = references["path/to/file2"]
+    assert reference['md_ids'][0] == 'abcd1234'
 
 
 def test_get_md_references():
     """Test get_md_references function. Reads the administrative MD IDs from
     a file.
     """
-    xml = lxml.etree.parse('tests/data/sample_md-references.xml').getroot()
+    with open('tests/data/sample_md-references.json') as in_file:
+        references = json.load(in_file)
 
     # The sample file contains two references for file2
-    ids = get_md_references(xml, 'path/to/file2')
+    ids = get_md_references(references, 'path/to/file2')
     assert set(ids) == set(['abcd1234', 'efgh5678'])
 
 
 def test_remove_dmdsec_references(testpath):
     """Tests the remove_dmdsec_references function."""
-    xml = ('<mdReferences><mdReference file="sample_images/sample_tiff1.tif">'
-           '_e50655691d21e110a3c4b38da52fb91c</mdReference><mdReference '
-           'file="sample_images/sample_tiff2.tif">'
-           '_e50655691d21e110a3c4b38da52fb91c'
-           '</mdReference><mdReference '
-           'file="sample_images/sample_tiff1_compressed.tif">'
-           '_c08061e439bd40407c9e5332fec6084e</mdReference>'
-           '<mdReference directory="." ref_type="dmd">'
-           'aabbcc</mdReference></mdReferences>')
+    refs = ('{".": {"path_type": "directory", '
+            '"md_ids": ["aabbcc"], "streams": []}}')
 
-    with open(os.path.join(testpath, 'import-description-md-references.xml'),
+    with open(os.path.join(testpath, 'import-description-md-references.json'),
               'w+') as outfile:
-        outfile.write(xml)
+        outfile.write(refs)
 
     remove_dmdsec_references(testpath)
 
     assert not os.path.exists(os.path.join(
-        testpath, 'import-description-md-references.xml'))
+        testpath, 'import-description-md-references.json'))

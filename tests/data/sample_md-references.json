@@ -1,0 +1,12 @@
+{
+    "path/to/file1": {
+        "path_type": "file",
+        "md_ids": ["abcd1234"],
+        "streams": {}
+    },
+    "path/to/file2": {
+        "path_type": "file",
+        "md_ids": ["abcd1234", "efgh5678"],
+        "streams": {}
+    }
+}

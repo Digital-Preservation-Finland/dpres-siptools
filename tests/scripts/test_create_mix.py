@@ -10,7 +10,6 @@ import sys
 
 import pytest
 
-import lxml.etree
 import siptools.scripts.create_mix as create_mix
 
 
@@ -18,7 +17,8 @@ def test_create_mix_techmdfile(testpath):
     """Test for ``create_mix_techmdfile`` function. Creates MIX techMD for
     three different image files. Two of the image files share the same MIX
     metadata, so only two MIX techMD files should be created in workspace.
-    References to MIX techMD should be written into md-references.xml file.
+    References to MIX techMD should be written into md-references.json
+    file.
     """
 
     creator = create_mix.MixCreator(testpath)
@@ -43,9 +43,11 @@ def test_create_mix_techmdfile(testpath):
 
     # Count the references written to md-reference file. There should be
     # one reference per image file.
-    xml = lxml.etree.parse(os.path.join(testpath,
-                                        'create-mix-md-references.xml'))
-    assert len(xml.xpath('//mdReference')) == 3
+    with open(os.path.join(testpath,
+                           'create-mix-md-references.json')) as in_file:
+        refs = json.load(in_file)
+
+    assert len(refs) == 3
 
 
 def test_main_utf8_files(testpath, run_cli):
@@ -68,9 +70,11 @@ def test_main_utf8_files(testpath, run_cli):
     )
 
     # Check that filename is found in md-reference file.
-    xml = lxml.etree.parse(os.path.join(testpath,
-                                        'create-mix-md-references.xml'))
-    assert len(xml.xpath('//mdReference[@file="data/äöå.tif"]')) == 1
+    with io.open(os.path.join(
+            testpath,
+            'create-mix-md-references.json'), "rt") as infile:
+        refs = json.load(infile)
+    assert refs["data/äöå.tif"]
 
 
 def test_create_mix():
@@ -130,13 +134,11 @@ def test_existing_scraper_result(testpath):
     amdid = 'f54380dfc2960793badf5e81c9b1627c'
     file_ = 'tests/data/images/tiff1.tif'
     namespaces = {'mix': "http://www.loc.gov/mix/v20"}
-    xml = """<?xml version='1.0' encoding='UTF-8'?>
-          <mdReferences>
-          <mdReference file="{}">_{}</mdReference>
-          </mdReferences>""".format(file_, amdid).encode("utf-8")
-    with open(os.path.join(testpath, 'import-object-md-references.xml'),
+    ref = """{{"{}": {{"path_type": "file", "streams":  {{}},
+          "md_ids": ["_{}"]}}}}""".format(file_, amdid).encode("utf-8")
+    with open(os.path.join(testpath, 'import-object-md-references.json'),
               'wb') as out:
-        out.write(xml)
+        out.write(ref)
 
     stream_dict = {0: {
         'bps_unit': 'integer', 'bps_value': '8', 'colorspace': 'srgb',
@@ -184,8 +186,10 @@ def test_paths(testpath, file_, base_path, run_cli):
     else:
         run_cli(create_mix.main, ['--workspace', testpath, file_])
 
-    assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        io.open(os.path.join(testpath, 'create-mix-md-references.xml'),
-                "rt").read()
+    with io.open(os.path.join(
+            testpath,
+            'create-mix-md-references.json'), "rt") as infile:
+        refs = json.load(infile)
+    assert refs[os.path.normpath(file_)]
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

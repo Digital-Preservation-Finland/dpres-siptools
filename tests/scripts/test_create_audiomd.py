@@ -142,7 +142,7 @@ def test_create_audiomd(testpath):
 
     # Check that md-reference and one AudioMD-amd files are created
     assert os.path.isfile(os.path.join(testpath,
-                                       'create-audiomd-md-references.xml'))
+                                       'create-audiomd-md-references.json'))
 
     filepath = os.path.join(
         testpath, 'eae4d239422e21f3a8cfa57bb2afcb9e-AudioMD-amd.xml'
@@ -173,8 +173,10 @@ def test_main_utf8_files(testpath, run_cli):
     )
 
     # Check that filename is found in amd-reference file.
-    xml = ET.parse(os.path.join(testpath, 'create-audiomd-md-references.xml'))
-    assert len(xml.xpath('//mdReference[@file="data/äöå.wav"]')) == 1
+    with open(os.path.join(testpath,
+                           'create-audiomd-md-references.json')) as in_file:
+        refs = json.load(in_file)
+    assert refs["data/äöå.wav"]
 
 
 def test_existing_scraper_result(testpath):
@@ -184,13 +186,11 @@ def test_existing_scraper_result(testpath):
     """
     amdid = 'eeca492963963af467f844701ad28104'
     file_ = 'tests/data/audio/valid__wav.wav'
-    xml = """<?xml version='1.0' encoding='UTF-8'?>
-          <mdReferences>
-          <mdReference file="{}">_{}</mdReference>
-          </mdReferences>""".format(file_, amdid).encode("utf-8")
+    ref = """{{"{}": {{"path_type": "file", "streams":  {{}},
+          "md_ids": ["_{}"]}}}}""".format(file_, amdid).encode("utf-8")
     with open(os.path.join(testpath,
-                           'import-object-md-references.xml'), 'wb') as out:
-        out.write(xml)
+                           'import-object-md-references.json'), 'wb') as out:
+        out.write(ref)
 
     stream_dict = {0: {
         'audio_data_encoding': 'PCM', 'bits_per_sample': '8',
@@ -237,8 +237,10 @@ def test_paths(testpath, file_, base_path, run_cli):
     else:
         run_cli(create_audiomd.main, ['--workspace', testpath, file_])
 
-    assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        io.open(os.path.join(testpath,
-                             'create-audiomd-md-references.xml'), "rt").read()
+    with io.open(os.path.join(testpath,
+                              'create-audiomd-md-references.json'),
+                 "rt") as in_file:
+        references = json.load(in_file)
+    assert os.path.normpath(file_) in references
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

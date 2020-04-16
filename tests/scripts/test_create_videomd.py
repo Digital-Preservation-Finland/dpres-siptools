@@ -173,7 +173,7 @@ def test_create_videomd(testpath):
 
     # Check that mdreference and one VideoMD-amd files are created
     assert os.path.isfile(os.path.join(testpath,
-                                       'create-videomd-md-references.xml'))
+                                       'create-videomd-md-references.json'))
 
     filepath = os.path.join(
         testpath, '36260c626dac2f82359d7c22ef378392-VideoMD-amd.xml'
@@ -202,9 +202,10 @@ def test_main_utf8_files(testpath, run_cli):
     )
 
     # Check that filename is found in md-reference file.
-    xml = ET.parse(os.path.join(testpath,
-                                'create-videomd-md-references.xml'))
-    assert len(xml.xpath(u'//mdReference[@file="data/äöå.m1v"]')) == 1
+    with open(os.path.join(testpath,
+                           'create-videomd-md-references.json')) as in_file:
+        refs = json.load(in_file)
+    assert refs["data/äöå.m1v"]
 
 
 def test_existing_scraper_result(testpath):
@@ -214,13 +215,11 @@ def test_existing_scraper_result(testpath):
     """
     amdid = '36260c626dac2f82359d7c22ef378392'
     file_ = 'tests/data/video/valid_1.m1v'
-    xml = """<?xml version='1.0' encoding='UTF-8'?>
-          <mdReferences>
-          <mdReference file="{}">_{}</mdReference>
-          </mdReferences>""".format(file_, amdid).encode("utf-8")
+    ref = """{{"{}": {{"path_type": "file", "streams":  {{}},
+          "md_ids": ["_{}"]}}}}""".format(file_, amdid).encode("utf-8")
     with open(os.path.join(testpath,
-                           'import-object-md-references.xml'), 'wb') as out:
-        out.write(xml)
+                           'import-object-md-references.json'), 'wb') as out:
+        out.write(ref)
 
     stream_dict = {0: {
         'mimetype': 'video/mpeg', 'index': 0, 'par': '1', 'frame_rate': '30',
@@ -269,8 +268,10 @@ def test_paths(testpath, file_, base_path, run_cli):
         run_cli(create_videomd.main, [
             '--workspace', testpath, file_])
 
-    assert "file=\"" + os.path.normpath(file_) + "\"" in \
-        io.open(os.path.join(testpath,
-                             'create-videomd-md-references.xml'), "rt").read()
+    with io.open(os.path.join(testpath,
+                              'create-videomd-md-references.json'),
+                 "rt") as in_file:
+        references = json.load(in_file)
+    assert os.path.normpath(file_) in references
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

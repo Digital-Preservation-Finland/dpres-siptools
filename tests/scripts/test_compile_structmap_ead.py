@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import os
+import json
 import mets
 import pytest
 
@@ -148,9 +149,9 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
 
     xml = ET.fromstring(div_elem)
     attrs = {}
-    attrs["all_amd_refs"] = ET.parse(
-        os.path.join(testpath, "import-object-md-references.xml")
-    )
+    with open(os.path.join(testpath,
+                           "import-object-md-references.json")) as in_file:
+        attrs["all_amd_refs"] = json.load(in_file)
     attrs["object_refs"] = attrs["all_amd_refs"]
     attrs["workspace"] = testpath
     attrs["filelist"] = [
