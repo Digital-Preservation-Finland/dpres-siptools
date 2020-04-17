@@ -297,7 +297,7 @@ def get_objectlist(refs_dict, file_path=None):
     if file_path is not None:
         for stream in refs_dict[file_path]['streams']:
             objectset.add(stream)
-    else:
+    elif refs_dict:
         for key, value in six.iteritems(refs_dict):
             if value['path_type'] == 'file':
                 objectset.add(key)
@@ -385,7 +385,7 @@ def get_md_references(refs_dict, path=None, stream=None, directory=None):
     try:
         if directory is None and path is None and stream is None:
             for ref_path in refs_dict:
-                md_ids.extend(ref_path['md_ids'])
+                md_ids.extend(refs_dict[ref_path]['md_ids'])
         elif directory:
             directory = os.path.normpath(directory)
             md_ids = refs_dict[directory]['md_ids']
