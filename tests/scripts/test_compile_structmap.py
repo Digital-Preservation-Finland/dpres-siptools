@@ -250,5 +250,5 @@ def test_get_fileid():
 
     filegrp = mets.filegrp(child_elements=files)
 
-    assert compile_structmap.get_fileid(filegrp, 'path/to/file name1') \
-        == 'identifier1'
+    assert compile_structmap.get_fileid(
+        filegrp, 'path/to/file name1', file_ids={}) == 'identifier1'

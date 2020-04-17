@@ -78,6 +78,7 @@ def _attribute_values(given_params):
         "root_type": "directory",
         "structmap_type": None,
         "dmdsec_loc": None,
+        "file_ids": {},
         "stdout": False,
     }
     for key in given_params:
@@ -127,16 +128,17 @@ def compile_structmap(**kwargs):
              structmap_type: Type of structmap
              root_type: Type of root div
              dmdsec_loc: Location of structured descriptive metadata
+             file_ids: Dict to be populated with file paths and IDs
              stdout: True to print output to stdout
     """
     attributes = _attribute_values(kwargs)
 
     # Create an event documenting the structmap creation
     _create_event(
-         workspace=attributes["workspace"],
-         structmap_type=attributes["structmap_type"],
-         root_type=attributes["root_type"]
-     )
+        workspace=attributes["workspace"],
+        structmap_type=attributes["structmap_type"],
+        root_type=attributes["root_type"]
+    )
 
     # Get reference list only after the structmap creation event
     attributes = get_reference_lists(**attributes)
@@ -151,7 +153,10 @@ def compile_structmap(**kwargs):
 
         structmap = create_ead3_structmap(filegrp, attributes)
     else:
-        filesec = create_filesec(**attributes)
+        (filesec, file_ids) = create_filesec(**attributes)
+
+        # Add file path and ID dict to attributes
+        attributes['file_ids'] = file_ids
         structmap = create_structmap(filesec.getroot(), **attributes)
 
     if attributes["stdout"]:
@@ -185,19 +190,22 @@ def create_filesec(**attributes):
                  all_amd_refs: XML element tree of administrative metadata
                                references
                  filelist: Sorted list of digital objects (file paths)
-    :returns: METS XML Element tree including file section element
+    :returns: A tuple of METS XML Element tree including file section
+              element and a dict of file paths and identifiers
     """
     attributes = get_reference_lists(**_attribute_values(attributes))
     filegrp = mets.filegrp()
     filesec = mets.filesec(child_elements=[filegrp])
 
+    file_ids = {}
     for path in attributes["filelist"]:
-        add_file_to_filesec(attributes["all_amd_refs"],
-                            attributes["object_refs"], path, filegrp)
+        fileid = add_file_to_filesec(attributes["all_amd_refs"],
+                                     attributes["object_refs"], path, filegrp)
+        file_ids[path] = fileid
 
     mets_element = mets.mets(child_elements=[filesec])
     ET.cleanup_namespaces(mets_element)
-    return ET.ElementTree(mets_element)
+    return (ET.ElementTree(mets_element), file_ids)
 
 
 def create_structmap(filesec, **attributes):
@@ -213,6 +221,7 @@ def create_structmap(filesec, **attributes):
                  filelist: Sorted list of digital objects (file paths)
                  structmap_type: TYPE attribute of structMap element
                  root_type: TYPE attribute of root div element
+                 file_ids: Dict with file paths and identifiers
                  workspace: Workspace path
     :returns: structural map element
     """
@@ -366,22 +375,29 @@ def add_file_to_filesec(all_amd_refs, object_refs, path, filegrp):
     return fileid
 
 
-def get_fileid(filesec, path):
-    """Find a file with `path` from fileSec. Returns the ID attribute of
-    matching file element.
+def get_fileid(filesec, path, file_ids=None):
+    """Returns the ID for a file. Either finds a file with `path` from
+    fileSec or reads the ID from a dict of `path` and `ID`. Returns the
+    ID attribute of the matching file element.
 
     :filesec: fileSec element
     :path: path of the file
-    :returns: file element identifier
+    :file_ids: Dict of file paths and file IDs
+    :returns: file identifier
     """
-    encoded_path = encode_path(path, safe='/')
-    element = filesec.xpath(
-        '//mets:fileGrp/mets:file/mets:FLocat[@xlink:href="file://%s"]/..'
-        % encoded_path,
-        namespaces=NAMESPACES
-    )[0]
+    if not file_ids:
+        encoded_path = encode_path(path, safe='/')
+        element = filesec.xpath(
+            '//mets:fileGrp/mets:file/mets:FLocat[@xlink:href="file://%s"]/..'
+            % encoded_path,
+            namespaces=NAMESPACES
+        )[0]
 
-    return element.attrib['ID']
+        fileid = element.attrib['ID']
+    else:
+        fileid = file_ids[path]
+
+    return fileid
 
 
 # pylint: disable=too-many-arguments
@@ -400,6 +416,7 @@ def create_div(divs, parent, filesec, attributes, path=''):
                                references
                  filelist: Sorted list of digital objects (file paths)
                  type_attr: Structmap type
+                 file_ids: Dict with file paths and identifiers
                  workspace: Workspace path
     :path: Current path in directory structure walkthrough
     :returns: ``None``
@@ -411,7 +428,8 @@ def create_div(divs, parent, filesec, attributes, path=''):
         div_path = os.path.join(path, div)
         # It's a file, lets create file+fptr elements
         if div_path in attributes["filelist"]:
-            fptr = mets.fptr(get_fileid(filesec, div_path))
+            fptr = mets.fptr(
+                get_fileid(filesec, div_path, attributes['file_ids']))
             div_elem = add_file_div(div_path, fptr, attributes)
             if div_elem is not None:
                 property_list.append(div_elem)
