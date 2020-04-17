@@ -298,7 +298,7 @@ def get_objectlist(refs_dict, file_path=None):
         for stream in refs_dict[file_path]['streams']:
             objectset.add(stream)
     else:
-        for key, value in refs_dict.iteritems():
+        for key, value in six.iteritems(refs_dict):
             if value['path_type'] == 'file':
                 objectset.add(key)
 
