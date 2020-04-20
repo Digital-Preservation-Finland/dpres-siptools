@@ -199,10 +199,7 @@ def import_object(**kwargs):
         workspace=attributes["workspace"],
         base_path=attributes["base_path"],
         event_targets=attributes["filepaths"],
-        agents=agents,
-        checksum_event=not bool(attributes["checksum"]),
-        validation_event=not attributes["skip_wellformed_check"],
-        identification_event=not bool(attributes["file_format"])
+        agents=agents
     )
 
 
@@ -493,17 +490,11 @@ def _parse_scraper_tools(scraper_info):
     return (agent_name, agent_version, tools)
 
 
-# TODO: The checksum_event, validation_event and identifiecation_event are
-# placeholders. Creating events based on these boolean values is not in the
-# scope of this ticket SAPA-381
 def _create_events(
         workspace,
         base_path,
         event_targets,
-        agents=None,
-        checksum_event=False,
-        validation_event=False,
-        identification_event=False):
+        agents=None):
     """Function to create events documenting the extraction of technical
     metadata as well as the potential message digest calculation and
     the identification and validation of digital objects.
