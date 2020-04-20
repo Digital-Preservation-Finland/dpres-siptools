@@ -505,15 +505,6 @@ def _create_events(
                     i.e. "filepaths"
     :agents: The software name and version used to extract the metadata
              as a tuple
-    :checksum_event: Boolean to indicate whether the message digest of
-                     digital objects were calculated. False if they were
-                     given to the script.
-    :validation_event:  Boolean to indicate whether the digital objects
-                        were validated during the extraction of technical
-                        metadata.
-    :identification_event: Boolean to indicate whether the digital
-                           objects were identified (mimetype and version)
-                           during the extraction of technical metadata.
     """
     for agent in agents:
         create_agent(
