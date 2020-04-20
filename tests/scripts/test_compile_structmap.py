@@ -64,6 +64,11 @@ def test_compile_structmap_ok(testpath, run_cli):
         '//premis:eventDetail',
         namespaces=NAMESPACES)[0].text == ('Creation of structural metadata '
                                            'with the compile-structmap script')
+    assert event_root.xpath(
+          '//premis:eventOutcomeDetailNote',
+          namespaces=NAMESPACES)[0].text == ('Created METS structural map of '
+                                             'type directory')
+
 
 
 def test_compile_structmap_dmdsecid(testpath, run_cli):
