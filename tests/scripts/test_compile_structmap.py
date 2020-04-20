@@ -62,7 +62,8 @@ def test_compile_structmap_ok(testpath, run_cli):
         '{info:lc/xmlns/premis-v2}event'
     assert event_root.xpath(
         '//premis:eventDetail',
-        namespaces=NAMESPACES)[0].text == 'Creation of structural metadata'
+        namespaces=NAMESPACES)[0].text == ('Creation of structural metadata '
+                                           'with the compile-structmap script')
 
 
 def test_compile_structmap_dmdsecid(testpath, run_cli):
