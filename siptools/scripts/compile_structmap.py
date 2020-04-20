@@ -580,10 +580,11 @@ def _create_event(
     :structmap_type: Type of structmap
     :root_type: Type of root div
     """
-    if not structmap_type and root_type:
-        structmap_type = root_type
-    else:
-        structmap_type = 'directory'
+    if not structmap_type:
+        if root_type:
+            structmap_type = root_type
+        else:
+            structmap_type = 'directory'
 
     create_agent(
         workspace=workspace,
