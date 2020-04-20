@@ -16,19 +16,9 @@ import xml_helpers.utils
 from siptools.mdcreator import MetsSectionCreator
 from siptools.xml.mets import NAMESPACES
 from siptools.xml.premis import PREMIS_EVENT_OUTCOME_TYPES
+from siptools.utils import list2str
 
 click.disable_unicode_literals_warning = True
-
-
-def _list2str(lst):
-    """Create a human readable list of words from list of strings.
-
-    :param lst: list of strings
-    :returns: list formatted as single string
-    """
-    first_words = ['"{}"'.format(string) for string in lst[:-1]]
-    last_word = '"{}"'.format(lst[-1])
-    return ', '.join(first_words) + ', and ' + last_word
 
 
 @click.command()
@@ -58,7 +48,7 @@ def _list2str(lst):
               required=True,
               metavar='<EVENT OUTCOME>',
               help=('Event outcome type. Possible values are: ' +
-                    _list2str(PREMIS_EVENT_OUTCOME_TYPES)))
+                    list2str(PREMIS_EVENT_OUTCOME_TYPES)))
 @click.option('--event_outcome_detail',
               type=str, required=True,
               metavar='<EVENT OUTCOME DETAIL>',
@@ -82,7 +72,7 @@ def _list2str(lst):
               type=str,
               metavar='<CREATE AGENTS FILE>',
               help='The file containing (multiple) created agents '
-                   'relating to the current event. Will overrride the '
+                   'relating to the current event. Will override the '
                    'other given agent options if used.')
 @click.option('--stdout',
               is_flag=True,
@@ -368,7 +358,7 @@ def _resolve_agents(**attributes):
     agent information is read from the file.
     If the list was not provided, the agent provided in the agent_name
     and agent_type options are used.
-    If the agent_identifier is is provided, that identifier is used,
+    If the agent_identifier is provided, that identifier is used,
     otherwise a UUID identifier is created.
     """
     agent_list = []

@@ -353,3 +353,14 @@ def generate_digest(etree):
     xml_data = b"".join([xml_data, attr_data])
 
     return hashlib.md5(xml_data).hexdigest()
+
+
+def list2str(lst):
+    """Create a human readable list of words from list of strings.
+
+    :param lst: list of strings
+    :returns: list formatted as single string
+    """
+    first_words = ['"{}"'.format(string) for string in lst[:-1]]
+    last_word = '"{}"'.format(lst[-1])
+    return ', '.join(first_words) + ', and ' + last_word

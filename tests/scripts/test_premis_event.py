@@ -253,11 +253,11 @@ def test_reuse_agent(testpath, run_cli):
 @pytest.mark.parametrize(
     ("agent_identifier_type", "agent_identifier_value",
      "create_agent_file", "agents_count"), [
-        (None, "", "", 1),
-        ("acme", "foo", "", 1),
-        ("acme", "foo", "testing", 1),
-        ("acme", "foo", "testing", 2),
-    ])
+         (None, "", "", 1),
+         ("acme", "foo", "", 1),
+         ("acme", "foo", "testing", 1),
+         ("acme", "foo", "testing", 2),
+     ])
 def test_import_agents(
         testpath,
         run_cli,

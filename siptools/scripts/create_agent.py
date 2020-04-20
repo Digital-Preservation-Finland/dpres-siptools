@@ -8,20 +8,10 @@ import hashlib
 
 import click
 
+from siptools.utils import list2str
 from siptools.xml.premis import PREMIS_AGENT_TYPES
 
 click.disable_unicode_literals_warning = True
-
-
-def _list2str(lst):
-    """Create a human readable list of words from list of strings.
-
-    :param lst: list of strings
-    :returns: list formatted as single string
-    """
-    first_words = ['"{}"'.format(string) for string in lst[:-1]]
-    last_word = '"{}"'.format(lst[-1])
-    return ', '.join(first_words) + ', and ' + last_word
 
 
 @click.command()
@@ -35,7 +25,7 @@ def _list2str(lst):
 @click.option('--agent_type', required=True,
               type=click.Choice(PREMIS_AGENT_TYPES),
               help=('The type of the agent. Possible values are: ' +
-                    _list2str(PREMIS_AGENT_TYPES)))
+                    list2str(PREMIS_AGENT_TYPES)))
 @click.option('--agent_version',
               type=str,
               metavar='<AGENT VERSION>',
@@ -104,8 +94,7 @@ def _attribute_values(given_params):
         if given_params[key]:
             attributes[key] = given_params[key]
 
-    if not any((attributes["agent_type"] == 'software',
-                attributes["agent_type"] == 'hardware')):
+    if attributes["agent_type"] not in ['software', 'hardware']:
         attributes["agent_version"] = None
 
     if not attributes["agent_identifier"]:
