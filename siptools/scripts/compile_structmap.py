@@ -570,20 +570,15 @@ def _create_event(
         structmap_type=None,
         root_type='directory'):
     """Helper function to create an event for documenting the
-    descriptive metadata import and the source from where the metadata
-    was extracted.
+    creation of the structural map and its type (either the
+    structmap type or the root type).
 
-    The function calls the premis_event script, creating the premis
-    event and agent metadata and linking them to the same target as the
-    descriptive metadata.
+    The function calls the premis_event script for creating the premis
+    event and agent metadata.
 
     :workspace: The path to the workspace
-    :base_path: Base path (see --base_path)
-    :event_target: The target of the descriptive metadata
-    :dmd_source: The source that the descriptive metadata was extracted
-                 from
-    :dmd_agent: The agent software that extracted the descriptive
-                metadata
+    :structmap_type: Type of structmap
+    :root_type: Type of root div
     """
     if not structmap_type and root_type:
         structmap_type = root_type
