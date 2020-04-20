@@ -588,7 +588,7 @@ def _create_event(
 
     create_agent(
         workspace=workspace,
-        agent_name='compile-structmap',
+        agent_name='dpres-siptools',
         agent_version=siptools.__version__,
         agent_type='software',
         agent_role='executing program',
@@ -597,7 +597,8 @@ def _create_event(
     event_datetime = datetime.datetime.now().isoformat()
     premis_event(event_type="creation",
                  event_datetime=event_datetime,
-                 event_detail=("Creation of structural metadata"),
+                 event_detail=("Creation of structural metadata with the "
+                               "compile-structmap script"),
                  event_outcome="success",
                  event_outcome_detail=(
                      "Created METS structural map of type %s"
