@@ -86,12 +86,13 @@ def test_compile_structmap_ok(testpath, run_cli):
         namespaces=NAMESPACES)[1].get('ORDER') == '2'
 
     # Assert that an event has been created
-    root = ET.parse(
-        os.path.join(testpath, 'premis-event-md-references.xml')).getroot()
-    id_xpath = "/mdReferences/mdReference[@directory='.']"
-    for amdref in root.xpath(id_xpath):
+    with open(os.path.join(testpath,
+                           'premis-event-md-references.json')) as in_file:
+        references = json.load(in_file)
+
+    for amdref in references['.']['md_ids']:
         output = os.path.join(
-            testpath, amdref.text[1:] + '-PREMIS%3AEVENT-amd.xml')
+            testpath, amdref[1:] + '-PREMIS%3AEVENT-amd.xml')
         if os.path.exists(output):
             event_output = output
     event_output_path = os.path.join(testpath, event_output)
