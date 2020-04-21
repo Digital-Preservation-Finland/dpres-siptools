@@ -136,8 +136,8 @@ class MetsSectionCreator(object):
                     found_stream = False
                     if ref['stream'] in existing_path['streams']:
                         stream_refs = existing_path['streams'][ref['stream']]
-                        stream_refs = _uniques_list(
-                                stream_refs, ref['md_id'])
+                        stream_refs = _uniques_list(stream_refs, ref['md_id'])
+                        existing_path['streams'][ref['stream']] = stream_refs
                         found_stream = True
                     if not found_stream:
                         stream_ids = []
