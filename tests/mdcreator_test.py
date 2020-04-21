@@ -65,12 +65,12 @@ def test_create_amdfile(testpath):
                          'md_ids': [],
                          'streams': {'1': ['abcd1234', 'abcd5678']}}})),
     ([['abcd1234', 'path/to/file1', None],
-      ['abcd1234', 'path/to/file2', None]],
+      ['abcd5678', 'path/to/file2', None]],
      ({'path/to/file1': {'path_type': 'file',
                          'md_ids': ['abcd1234'],
                          'streams': {}},
        'path/to/file2': {'path_type': 'file',
-                         'md_ids': ['abcd1234'],
+                         'md_ids': ['abcd5678'],
                          'streams': {}}})),
     ([['abcd1234', 'path/to/file1', 1],
       ['abcd5678', 'path/to/file1', 2]],
@@ -128,22 +128,25 @@ def test_add_mdreference(testpath, references, expected):
 
     md_creator.write_references('md-references.json')
 
-    # Read created file. Reference should be found for all links
     with open(os.path.join(testpath, 'md-references.json')) as in_file:
         created_references = json.load(in_file)
 
     assert len(created_references) == len(expected)
 
-    for path in created_references:
-        assert path in expected
+    for path in expected:
+        assert path in created_references
         assert len(created_references[path]['md_ids']) \
             == len(expected[path]['md_ids'])
         assert len(created_references[path]['streams']) \
             == len(expected[path]['streams'])
-        for ref in created_references[path]['md_ids']:
-            assert ref in expected[path]['md_ids']
-        for stream in created_references[path]['streams']:
-            assert stream in expected[path]['streams']
+        for ref in expected[path]['md_ids']:
+            assert ref in created_references[path]['md_ids']
+        for stream in expected[path]['streams']:
+            assert stream in created_references[path]['streams']
+            assert len(created_references[path]['streams'][stream]) \
+                == len(expected[path]['streams'][stream])
+            for stream_id in expected[path]['streams'][stream]:
+                assert stream_id in created_references[path]['streams'][stream]
 
 
 def test_get_md_references():

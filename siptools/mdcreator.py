@@ -128,39 +128,26 @@ class MetsSectionCreator(object):
 
         for ref in self.references:
             ref_path = _parse_refs(ref['path'])
-
-            if ref_path in paths:
-                existing_path = paths[ref_path]
-
-                if ref['stream']:
-                    found_stream = False
-                    if ref['stream'] in existing_path['streams']:
-                        stream_refs = existing_path['streams'][ref['stream']]
-                        stream_refs = _uniques_list(stream_refs, ref['md_id'])
-                        existing_path['streams'][ref['stream']] = stream_refs
-                        found_stream = True
-                    if not found_stream:
-                        stream_ids = []
-                        stream_ids.append(ref['md_id'])
-                        existing_path['streams'][ref['stream']] = stream_ids
-
-                else:
-                    existing_path['md_ids'] = _uniques_list(
-                        existing_path['md_ids'], ref['md_id'])
-            else:
-                reference = {
-                    "path_type": ref['path_type'],
-                    "streams": {},
-                    "md_ids": []
+            try:
+                path = paths[ref_path]
+            except KeyError:
+                path = {
+                    'path_type': ref['path_type'],
+                    'streams': dict(),
+                    "md_ids": list()
                 }
-                if ref['stream']:
-                    stream_ids = []
+                paths[ref_path] = path
+            if ref['stream']:
+                try:
+                    stream_ids = _uniques_list(path['streams'][ref['stream']],
+                                               ref['md_id'])
+                except KeyError:
+                    stream_ids = list()
                     stream_ids.append(ref['md_id'])
-                    reference['streams'][ref['stream']] = stream_ids
-                else:
-                    reference["md_ids"].append(ref['md_id'])
-                paths[ref_path] = reference
-
+                path['streams'][ref['stream']] = stream_ids
+            else:
+                ids = _uniques_list(path['md_ids'], ref['md_id'])
+                paths[ref_path]['md_ids'] = ids
         # Write reference list file
         with open(reference_file, 'wt') as outfile:
             json.dump(paths, outfile)
