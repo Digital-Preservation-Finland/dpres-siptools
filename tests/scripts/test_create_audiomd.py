@@ -186,11 +186,16 @@ def test_existing_scraper_result(testpath):
     """
     amdid = 'eeca492963963af467f844701ad28104'
     file_ = 'tests/data/audio/valid__wav.wav'
-    ref = """{{"{}": {{"path_type": "file", "streams":  {{}},
-          "md_ids": ["_{}"]}}}}""".format(file_, amdid).encode("utf-8")
+    ref = {
+        file_: {
+            "path_type": "file",
+            "streams":  {},
+            "md_ids": ["_" + amdid]
+        }
+    }
     with open(os.path.join(testpath,
-                           'import-object-md-references.json'), 'wb') as out:
-        out.write(ref)
+                           'import-object-md-references.json'), 'wt') as out:
+        json.dump(ref, out)
 
     stream_dict = {0: {
         'audio_data_encoding': 'PCM', 'bits_per_sample': '8',

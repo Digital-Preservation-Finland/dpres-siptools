@@ -163,12 +163,17 @@ def test_get_md_references():
 
 def test_remove_dmdsec_references(testpath):
     """Tests the remove_dmdsec_references function."""
-    refs = ('{".": {"path_type": "directory", '
-            '"md_ids": ["aabbcc"], "streams": []}}')
+    refs = {
+        ".": {
+            "path_type": "directory",
+            "md_ids": ["aabbcc"],
+            "streams": []
+        }
+    }
 
     with open(os.path.join(testpath, 'import-description-md-references.json'),
               'w+') as outfile:
-        outfile.write(refs)
+        outfile.write(json.dumps(refs))
 
     remove_dmdsec_references(testpath)
 

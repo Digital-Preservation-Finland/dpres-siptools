@@ -115,9 +115,7 @@ class MetsSectionCreator(object):
         created for lxml.etree XML.
         """
 
-        reference_file = os.path.join(
-            self.workspace,
-            os.path.splitext(ref_file)[0] + '.json')
+        reference_file = os.path.join(self.workspace, ref_file)
 
         paths = {}
 

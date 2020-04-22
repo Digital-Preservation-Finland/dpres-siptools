@@ -215,11 +215,16 @@ def test_existing_scraper_result(testpath):
     """
     amdid = '36260c626dac2f82359d7c22ef378392'
     file_ = 'tests/data/video/valid_1.m1v'
-    ref = """{{"{}": {{"path_type": "file", "streams":  {{}},
-          "md_ids": ["_{}"]}}}}""".format(file_, amdid).encode("utf-8")
+    ref = {
+        file_: {
+            "path_type": "file",
+            "streams":  {},
+            "md_ids": ["_" + amdid]
+        }
+    }
     with open(os.path.join(testpath,
-                           'import-object-md-references.json'), 'wb') as out:
-        out.write(ref)
+                           'import-object-md-references.json'), 'wt') as out:
+        json.dump(ref, out)
 
     stream_dict = {0: {
         'mimetype': 'video/mpeg', 'index': 0, 'par': '1', 'frame_rate': '30',

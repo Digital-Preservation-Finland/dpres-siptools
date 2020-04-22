@@ -70,9 +70,8 @@ def test_main_utf8_files(testpath, run_cli):
     )
 
     # Check that filename is found in md-reference file.
-    with io.open(os.path.join(
-            testpath,
-            'create-mix-md-references.json'), "rt") as infile:
+    with io.open(os.path.join(testpath, 'create-mix-md-references.json'),
+                 "rt") as infile:
         refs = json.load(infile)
     assert refs["data/äöå.tif"]
 
@@ -134,11 +133,16 @@ def test_existing_scraper_result(testpath):
     amdid = 'f54380dfc2960793badf5e81c9b1627c'
     file_ = 'tests/data/images/tiff1.tif'
     namespaces = {'mix': "http://www.loc.gov/mix/v20"}
-    ref = """{{"{}": {{"path_type": "file", "streams":  {{}},
-          "md_ids": ["_{}"]}}}}""".format(file_, amdid).encode("utf-8")
+    ref = {
+        file_: {
+            "path_type": "file",
+            "streams":  {},
+            "md_ids": ["_" + amdid]
+        }
+    }
     with open(os.path.join(testpath, 'import-object-md-references.json'),
-              'wb') as out:
-        out.write(ref)
+              'wt') as out:
+        json.dump(ref, out)
 
     stream_dict = {0: {
         'bps_unit': 'integer', 'bps_value': '8', 'colorspace': 'srgb',
@@ -186,9 +190,8 @@ def test_paths(testpath, file_, base_path, run_cli):
     else:
         run_cli(create_mix.main, ['--workspace', testpath, file_])
 
-    with io.open(os.path.join(
-            testpath,
-            'create-mix-md-references.json'), "rt") as infile:
+    with io.open(os.path.join(testpath, 'create-mix-md-references.json'),
+                 "rt") as infile:
         refs = json.load(infile)
     assert refs[os.path.normpath(file_)]
 
