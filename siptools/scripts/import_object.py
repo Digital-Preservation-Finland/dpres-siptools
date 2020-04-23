@@ -555,6 +555,7 @@ def _create_events(
                 agent_type='software',
                 agent_role='executing program',
                 create_agent_file='import-object')
+    if not found_event or not event_target:
         for target in event_targets:
             premis_event(event_type=event_type,
                          event_datetime=event_datetime,

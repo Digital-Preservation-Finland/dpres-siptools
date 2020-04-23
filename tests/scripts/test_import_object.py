@@ -470,7 +470,7 @@ def test_streams(testpath, run_cli):
         namespaces=NAMESPACES)) == 1
 
 
-def test_import_description_event_agent(testpath, run_cli):
+def test_import_object_event_agent(testpath, run_cli):
     """ Test that the script import_object creates an event and
     agents with the proper metadata.
     """
@@ -516,8 +516,8 @@ def test_import_description_event_agent(testpath, run_cli):
         namespaces=NAMESPACES)[0].text == 'software'
     
 
-def test_impor_object_event_target_date(testpath, run_cli):
-    """ Test that the script import_object creates only one event
+def test_import_object_event_target_date(testpath, run_cli):
+    """Test that the script import_object creates only one event
     when run several times but with the same event_target. Also checks
     that new agents aren't created or linked.
     """
