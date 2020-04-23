@@ -5,21 +5,20 @@ import datetime
 import fnmatch
 import os
 import platform
-import glob
 import sys
+import json
 from uuid import uuid4
 import file_scraper
 
 import click
 import six
-import lxml.etree
+import xml_helpers.utils as xml_utils
 
 import premis
 from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import scrape_file, calc_checksum
 from siptools.scripts.premis_event import premis_event
 from siptools.scripts.create_agent import create_agent
-from siptools.xml.mets import NAMESPACES
 
 
 click.disable_unicode_literals_warning = True
@@ -110,6 +109,10 @@ UNKNOWN_VERSION = '(:unav)'
     metavar='<EVENT DATETIME>',
     help='Timestamp of the event documenting the script actions.')
 @click.option(
+    '--event_target', type=str,
+    metavar='<EVENT TARGET>',
+    help='Target for events, if it is not given the FILEPATHS are used.')
+@click.option(
     '--stdout', is_flag=True, help='Print result also to stdout')
 # pylint: disable=too-many-arguments
 def main(**kwargs):
@@ -147,6 +150,7 @@ def _attribute_values(given_params):
         "date_created": None,
         "order": None,
         "event_datetime": datetime.datetime.now().isoformat(),
+        "event_target": None,
         "stdout": False,
     }
     for key in given_params:
@@ -174,6 +178,7 @@ def import_object(**kwargs):
                  date_created: Creation date of a file,
                  order: Order number of a file,
                  event_datetime: Timestamp of the event
+                 event_target: The target of the event
                  stdout: True prints output to stdout
     """
     attributes = _attribute_values(kwargs)
@@ -208,8 +213,9 @@ def import_object(**kwargs):
     _create_events(
         workspace=attributes["workspace"],
         base_path=attributes["base_path"],
-        event_targets=attributes["filepaths"],
+        filepaths=attributes["filepaths"],
         event_datetime=attributes["event_datetime"],
+        event_target=attributes["event_target"],
         agents=agents
     )
 
@@ -504,8 +510,9 @@ def _parse_scraper_tools(scraper_info):
 def _create_events(
         workspace,
         base_path,
-        event_targets,
+        filepaths,
         event_datetime,
+        event_target=None,
         agents=None):
     """Function to create events documenting the extraction of technical
     metadata as well as the potential message digest calculation and
@@ -528,7 +535,14 @@ def _create_events(
 
     found_event = _find_event(
         workspace,
-        (event_type, event_detail, event_outcome, event_outcome_detail))
+        (event_type, event_detail, event_outcome, event_outcome_detail),
+        event_target=event_target)
+
+    event_targets = []
+    if event_target:
+        event_targets.append(event_target)
+    else:
+        event_targets = filepaths
 
     if not found_event:
         for agent in agents:
@@ -540,37 +554,47 @@ def _create_events(
                 agent_type='software',
                 agent_role='executing program',
                 create_agent_file='import-object')
-    for event_target in event_targets:
-        premis_event(event_type=event_type,
-                     event_datetime=event_datetime,
-                     event_detail=event_detail,
-                     event_outcome=event_outcome,
-                     event_outcome_detail=event_outcome_detail,
-                     workspace=workspace,
-                     base_path=base_path,
-                     event_target=event_target,
-                     create_agent_file='import-object')
+        for target in event_targets:
+            premis_event(event_type=event_type,
+                         event_datetime=event_datetime,
+                         event_detail=event_detail,
+                         event_outcome=event_outcome,
+                         event_outcome_detail=event_outcome_detail,
+                         workspace=workspace,
+                         base_path=base_path,
+                         event_target=target,
+                         create_agent_file='import-object')
 
 
-def _find_event(workspace, event_metadata):
+def _find_event(workspace, event_metadata, event_target):
     """Helper function to find if a similar event already is created."""
-    search_path = os.path.join(workspace, "*EVENT-amd.xml")
 
-    for path in glob.glob(search_path):
-        element = lxml.etree.parse(path).getroot()[0]
-        event = element.find(
-            ".//premis:event", namespaces=NAMESPACES
-        )
-        found_type = premis.parse_event_type(event)
-        found_detail = premis.parse_detail(event)
-        found_outcome = premis.parse_outcome(event)
-        found_outcome_detail_note = premis.parse_outcome_detail_note(event)
+    ref_file = os.path.join(workspace, 'premis-event-md-references.json')
+    if os.path.exists(ref_file):
+        with open(ref_file) as in_file:
+            refs = json.load(in_file)
+    else:
+        return False
 
-        if all((found_type == event_metadata[0],
-                found_detail == event_metadata[1],
-                found_outcome == event_metadata[2],
-                found_outcome_detail_note == event_metadata[3])):
-            return True
+    try:
+        for md_id in refs[event_target]['md_ids']:
+            event_file = os.path.join(
+                workspace, md_id[1:] + '-PREMIS%3AEVENT-amd.xml')
+            if not os.path.exists(event_file):
+                continue
+            event = xml_utils.readfile(event_file).getroot()
+            found_type = premis.parse_event_type(event)
+            found_detail = premis.parse_detail(event)
+            found_outcome = premis.parse_outcome(event)
+            found_outcome_detail_note = premis.parse_outcome_detail_note(
+                event)
+            if all((found_type == event_metadata[0],
+                    found_detail == event_metadata[1],
+                    found_outcome == event_metadata[2],
+                    found_outcome_detail_note == event_metadata[3])):
+                return True
+    except KeyError:
+        pass
 
     return False
 
