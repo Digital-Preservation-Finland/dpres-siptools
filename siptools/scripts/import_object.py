@@ -5,18 +5,22 @@ import datetime
 import fnmatch
 import os
 import platform
+import glob
 import sys
 from uuid import uuid4
 import file_scraper
 
 import click
 import six
+import lxml.etree
 
 import premis
 from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import scrape_file, calc_checksum
 from siptools.scripts.premis_event import premis_event
 from siptools.scripts.create_agent import create_agent
+from siptools.xml.mets import NAMESPACES
+
 
 click.disable_unicode_literals_warning = True
 
@@ -515,28 +519,60 @@ def _create_events(
     :agents: The software name and version used to extract the metadata
              as a tuple
     """
-    for agent in agents:
-        create_agent(
-            workspace=workspace,
-            agent_name=agent[0],
-            agent_version=agent[1],
-            agent_note=agent[2],
-            agent_type='software',
-            agent_role='executing program',
-            create_agent_file='import-object')
+    event_type = 'metadata extraction'
+    event_detail = ('Technical metadata extraction as premis metadata from '
+                    'digital objects')
+    event_outcome = 'success'
+    event_outcome_detail = ('Premis metadata successfully created from '
+                            'extracted technical metadata.')
+
+    found_event = _find_event(
+        workspace,
+        (event_type, event_detail, event_outcome, event_outcome_detail))
+
+    if not found_event:
+        for agent in agents:
+            create_agent(
+                workspace=workspace,
+                agent_name=agent[0],
+                agent_version=agent[1],
+                agent_note=agent[2],
+                agent_type='software',
+                agent_role='executing program',
+                create_agent_file='import-object')
     for event_target in event_targets:
-        premis_event(event_type="metadata extraction",
+        premis_event(event_type=event_type,
                      event_datetime=event_datetime,
-                     event_detail=("Technical metadata extraction as premis "
-                                   "metadata from digital objects"),
-                     event_outcome="success",
-                     event_outcome_detail=("Premis metadata successfully "
-                                           "created from extracted technical "
-                                           "metadata."),
+                     event_detail=event_detail,
+                     event_outcome=event_outcome,
+                     event_outcome_detail=event_outcome_detail,
                      workspace=workspace,
                      base_path=base_path,
                      event_target=event_target,
                      create_agent_file='import-object')
+
+
+def _find_event(workspace, event_metadata):
+    """Helper function to find if a similar event already is created."""
+    search_path = os.path.join(workspace, "*EVENT-amd.xml")
+
+    for path in glob.glob(search_path):
+        element = lxml.etree.parse(path).getroot()[0]
+        event = element.find(
+            ".//premis:event", namespaces=NAMESPACES
+        )
+        found_type = premis.parse_event_type(event)
+        found_detail = premis.parse_detail(event)
+        found_outcome = premis.parse_outcome(event)
+        found_outcome_detail_note = premis.parse_outcome_detail_note(event)
+
+        if all((found_type == event_metadata[0],
+                found_detail == event_metadata[1],
+                found_outcome == event_metadata[2],
+                found_outcome_detail_note == event_metadata[3])):
+            return True
+
+    return False
 
 
 if __name__ == "__main__":
