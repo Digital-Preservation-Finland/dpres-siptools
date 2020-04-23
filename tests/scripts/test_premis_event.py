@@ -49,7 +49,7 @@ def test_premis_event_ok(testpath, run_cli):
     event_xml = ET.parse(
         os.path.join(
             testpath,
-            '4a4a5d87842b048eef1c59ab3fef286d-PREMIS%3AEVENT-amd.xml')
+            'ab5a33c51b05845a1a050361652752de-PREMIS%3AEVENT-amd.xml')
     ).getroot()
     agent_xml = ET.parse(
         os.path.join(
@@ -223,8 +223,8 @@ def test_reuse_agent(testpath, run_cli):
         ])
 
     event_files = [
-        "f448570b93ec399729014c9045281cf2-PREMIS%3AEVENT-amd.xml",
-        "d7aa4c0d764dcf46e6b4168529e372a2-PREMIS%3AEVENT-amd.xml"
+        "df6c33ef84d498880516439770f9e641-PREMIS%3AEVENT-amd.xml",
+        "dc76068c4e317b0b25eb239d08db2437-PREMIS%3AEVENT-amd.xml"
     ]
     events = [
         ET.parse(os.path.join(testpath, path)).getroot()

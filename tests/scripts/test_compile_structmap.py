@@ -7,6 +7,7 @@ import json
 
 import lxml.etree
 import mets
+import premis
 from siptools.scripts import (compile_structmap, create_audiomd,
                               import_description, import_object, premis_event)
 from siptools.xml.mets import NAMESPACES
@@ -57,20 +58,21 @@ def test_compile_structmap_ok(testpath, run_cli):
         output = os.path.join(
             testpath, amdref[1:] + '-PREMIS%3AEVENT-amd.xml')
         if os.path.exists(output):
-            event_output = output
-    event_output_path = os.path.join(testpath, event_output)
-    event_root = lxml.etree.parse(event_output_path).getroot()
-    assert event_root.xpath('./*/*/*/*/*')[0].tag == \
+            event_output_path = os.path.join(testpath, output)
+            event_root = lxml.etree.parse(event_output_path).getroot()
+            if premis.parse_event_type(event_root) != 'creation':
+                continue
+            found_root = event_root
+    assert found_root.xpath('./*/*/*/*/*')[0].tag == \
         '{info:lc/xmlns/premis-v2}event'
-    assert event_root.xpath(
+    assert found_root.xpath(
         '//premis:eventDetail',
         namespaces=NAMESPACES)[0].text == ('Creation of structural metadata '
                                            'with the compile-structmap script')
-    assert event_root.xpath(
-          '//premis:eventOutcomeDetailNote',
-          namespaces=NAMESPACES)[0].text == ('Created METS structural map of '
-                                             'type directory')
-
+    assert found_root.xpath(
+        '//premis:eventOutcomeDetailNote',
+        namespaces=NAMESPACES)[0].text == ('Created METS structural map of '
+                                           'type directory')
 
 
 def test_compile_structmap_dmdsecid(testpath, run_cli):

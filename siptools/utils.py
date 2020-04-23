@@ -294,23 +294,19 @@ def _pop_attributes(attributes, attrib_list, path):
         attrib_list.append('%s="%s" @ %s\n' % (key, attribute, path))
 
 
-def _remove_identifiers(metadata, prefix, linking_prefix=None):
+def _remove_elements(metadata, element_name):
     """
-    Removes the unique identifier and the linking identifiers for the
-    PREMIS XML metadata.
+    Removes the unique elements like identifiers and the linking
+    agents for the PREMIS XML metadata.
 
-    :metadata: Metadata where identifiers are removed
-    :prefix: Prefix in the identifier element name
-    :linking_prefix: Prefix in the linking identifier element name
+    :metadata: Metadata where identifiers and linking elements are
+               removed
+    :element_name: The name of the element to be removed
     :returns: Edited metadata
     """
-    for identifier in premis.iter_elements(
-            metadata, '%sIdentifierValue' % prefix):
-        identifier.getparent().remove(identifier)
-    if linking_prefix:
-        for linking_identifier in premis.iter_elements(
-                metadata, 'linking%sIdentifierValue' % linking_prefix):
-            linking_identifier.getparent().remove(linking_identifier)
+    for element_to_remove in premis.iter_elements(
+            metadata, element_name):
+        element_to_remove.getparent().remove(element_to_remove)
 
     return metadata
 
@@ -339,9 +335,10 @@ def generate_digest(etree):
     elem_tree = lxml.etree.ElementTree(root)
     attrib_list = []
 
-    # Remove premis identifiers before metadata comparison
-    elem_tree = _remove_identifiers(elem_tree, 'event', 'Agent')
-    elem_tree = _remove_identifiers(elem_tree, 'agent')
+    # Remove premis identifiers and linking elements before metadata comparison
+    elem_tree = _remove_elements(elem_tree, 'eventIdentifierValue')
+    elem_tree = _remove_elements(elem_tree, 'agentIdentifierValue')
+    elem_tree = _remove_elements(elem_tree, 'linkingAgentIdentifier')
 
     # pop all attributes
     for element in root.iter():
@@ -355,7 +352,6 @@ def generate_digest(etree):
     # Add the sorted attributes at the end of the serialized XML
     attr_data = b"".join([attr.encode("utf-8") for attr in attrib_list])
     xml_data = b"".join([xml_data, attr_data])
-
     return hashlib.md5(xml_data).hexdigest()
 
 

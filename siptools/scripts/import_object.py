@@ -102,6 +102,10 @@ UNKNOWN_VERSION = '(:unav)'
     metavar='<ORDER NUMBER>',
     help='Order number of the digital object')
 @click.option(
+    '--event_datetime', type=str,
+    metavar='<EVENT DATETIME>',
+    help='Timestamp of the event documenting the script actions.')
+@click.option(
     '--stdout', is_flag=True, help='Print result also to stdout')
 # pylint: disable=too-many-arguments
 def main(**kwargs):
@@ -138,6 +142,7 @@ def _attribute_values(given_params):
         "checksum": (),
         "date_created": None,
         "order": None,
+        "event_datetime": datetime.datetime.now().isoformat(),
         "stdout": False,
     }
     for key in given_params:
@@ -164,6 +169,7 @@ def import_object(**kwargs):
                  checksum: Checksum algorithm and value (tuple),
                  date_created: Creation date of a file,
                  order: Order number of a file,
+                 event_datetime: Timestamp of the event
                  stdout: True prints output to stdout
     """
     attributes = _attribute_values(kwargs)
@@ -199,6 +205,7 @@ def import_object(**kwargs):
         workspace=attributes["workspace"],
         base_path=attributes["base_path"],
         event_targets=attributes["filepaths"],
+        event_datetime=attributes["event_datetime"],
         agents=agents
     )
 
@@ -494,6 +501,7 @@ def _create_events(
         workspace,
         base_path,
         event_targets,
+        event_datetime,
         agents=None):
     """Function to create events documenting the extraction of technical
     metadata as well as the potential message digest calculation and
@@ -503,6 +511,7 @@ def _create_events(
     :base_path: Base path (see --base_path)
     :event_targets: The targets of the metadata creation,
                     i.e. "filepaths"
+    :event_datetime: The timestamp for the event
     :agents: The software name and version used to extract the metadata
              as a tuple
     """
@@ -515,7 +524,6 @@ def _create_events(
             agent_type='software',
             agent_role='executing program',
             create_agent_file='import-object')
-    event_datetime = datetime.datetime.now().isoformat()
     for event_target in event_targets:
         premis_event(event_type="metadata extraction",
                      event_datetime=event_datetime,
