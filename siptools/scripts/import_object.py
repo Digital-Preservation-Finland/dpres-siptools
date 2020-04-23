@@ -6,19 +6,18 @@ import fnmatch
 import os
 import platform
 import sys
-import json
 from uuid import uuid4
 import file_scraper
 
 import click
 import six
-import xml_helpers.utils as xml_utils
 
 import premis
 from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import scrape_file, calc_checksum
-from siptools.scripts.premis_event import premis_event
+from siptools.scripts.premis_event import premis_event, create_premis_event
 from siptools.scripts.create_agent import create_agent
+from siptools.utils import generate_digest, encode_path
 
 
 click.disable_unicode_literals_warning = True
@@ -533,10 +532,12 @@ def _create_events(
     event_outcome_detail = ('Premis metadata successfully created from '
                             'extracted technical metadata.')
 
-    found_event = _find_event(
-        workspace,
-        (event_type, event_detail, event_outcome, event_outcome_detail),
-        event_target=event_target)
+    found_event = _find_event(workspace,
+                              event_type,
+                              event_datetime,
+                              event_detail,
+                              event_outcome,
+                              event_outcome_detail)
 
     event_targets = []
     if event_target:
@@ -566,37 +567,28 @@ def _create_events(
                          create_agent_file='import-object')
 
 
-def _find_event(workspace, event_metadata, event_target):
-    """Helper function to find if a similar event already is created."""
+def _find_event(workspace,
+                event_type,
+                event_datetime,
+                event_detail,
+                event_outcome,
+                event_outcome_detail):
+    """Helper function to find if a similar event already is created
+    by using the digest of the metadata to see if a file already
+    exist.
+    """
 
-    ref_file = os.path.join(workspace, 'premis-event-md-references.json')
-    if os.path.exists(ref_file):
-        with open(ref_file) as in_file:
-            refs = json.load(in_file)
-    else:
-        return False
+    event = create_premis_event(
+        event_type=event_type,
+        event_datetime=event_datetime,
+        event_detail=event_detail,
+        event_outcome=event_outcome,
+        event_outcome_detail=event_outcome_detail)
 
-    try:
-        for md_id in refs[event_target]['md_ids']:
-            event_file = os.path.join(
-                workspace, md_id[1:] + '-PREMIS%3AEVENT-amd.xml')
-            if not os.path.exists(event_file):
-                continue
-            event = xml_utils.readfile(event_file).getroot()
-            found_type = premis.parse_event_type(event)
-            found_detail = premis.parse_detail(event)
-            found_outcome = premis.parse_outcome(event)
-            found_outcome_detail_note = premis.parse_outcome_detail_note(
-                event)
-            if all((found_type == event_metadata[0],
-                    found_detail == event_metadata[1],
-                    found_outcome == event_metadata[2],
-                    found_outcome_detail_note == event_metadata[3])):
-                return True
-    except KeyError:
-        pass
+    digest = generate_digest(event)
+    expected_filename = encode_path("%s-PREMIS:EVENT-amd.xml" % digest)
 
-    return False
+    return os.path.exists(os.path.join(workspace, expected_filename))
 
 
 if __name__ == "__main__":

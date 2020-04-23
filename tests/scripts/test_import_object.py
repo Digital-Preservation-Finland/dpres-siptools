@@ -514,3 +514,48 @@ def test_import_description_event_agent(testpath, run_cli):
     assert agent_root.xpath(
         './/premis:agentType',
         namespaces=NAMESPACES)[0].text == 'software'
+    
+
+def test_impor_object_event_target_date(testpath, run_cli):
+    """ Test that the script import_object creates only one event
+    when run several times but with the same event_target. Also checks
+    that new agents aren't created or linked.
+    """
+    input_file = 'tests/data/structured/Documentation files/readme.txt'
+    arguments = ['--workspace', testpath, '--skip_wellformed_check',
+                 input_file, '--event_target', '.', '--event_datetime',
+                 '2020']
+    run_cli(import_object.main, arguments)
+
+    ev_count = 0
+    for filename in os.listdir(testpath):
+        if filename.endswith('-PREMIS%3AEVENT-amd.xml'):
+            ev_count += 1
+    assert ev_count == 1
+
+    ag_count = 0
+    for filename in os.listdir(testpath):
+        if filename.endswith('-PREMIS%3AAGENT-amd.xml'):
+            ag_count += 1
+    assert ag_count > 0
+
+    input_files = ['tests/data/structured/Documentation files/readme.txt']
+
+    for input_file in input_files:
+        arguments = ['--workspace', testpath, '--skip_wellformed_check',
+                     input_file, '--event_target', '.', '--event_datetime',
+                     '2020']
+        run_cli(import_object.main, arguments)
+
+    # Still only one event should have been created
+    new_ev_count = 0
+    for filename in os.listdir(testpath):
+        if filename.endswith('-PREMIS%3AEVENT-amd.xml'):
+            new_ev_count += 1
+    assert new_ev_count == 1
+
+    new_ag_count = 0
+    for filename in os.listdir(testpath):
+        if filename.endswith('-PREMIS%3AAGENT-amd.xml'):
+            new_ag_count += 1
+    assert new_ag_count == ag_count
