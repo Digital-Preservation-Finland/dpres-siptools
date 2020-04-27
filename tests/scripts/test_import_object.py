@@ -31,12 +31,13 @@ def get_amd_file(path,
     else:
         amdrefs = reference['streams'][stream]
 
+    output = []
     for amdref in amdrefs:
-        output = os.path.join(path, amdref[1:] + suffix)
-        if os.path.exists(output):
-            return output
+        output_file = os.path.join(path, amdref[1:] + suffix)
+        if os.path.exists(output_file):
+            output.append(output_file)
 
-    return None
+    return output
 
 
 def test_import_object_ok(testpath, run_cli):
@@ -47,7 +48,7 @@ def test_import_object_ok(testpath, run_cli):
     run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
+    tree = ET.parse(output[0])
     root = tree.getroot()
 
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
@@ -59,7 +60,7 @@ def test_import_object_ok(testpath, run_cli):
         input_file,
         ref_file='premis-event-md-references.json',
         suffix='-PREMIS%3AEVENT-amd.xml')
-    event_output_path = os.path.join(testpath, event_output)
+    event_output_path = os.path.join(testpath, event_output[0])
     event_root = ET.parse(event_output_path).getroot()
     assert event_root.xpath('./*/*/*/*/*')[0].tag == \
         '{info:lc/xmlns/premis-v2}event'
@@ -81,7 +82,7 @@ def test_import_object_illegal_html_valid_text(testpath, run_cli):
     run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
+    tree = ET.parse(output[0])
     root = tree.getroot()
 
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
@@ -105,7 +106,7 @@ def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
     run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
+    tree = ET.parse(output[0])
     root = tree.getroot()
 
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
@@ -127,7 +128,7 @@ def test_import_object_skip_wellformed_check_nodate_ok(testpath, run_cli):
     run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
+    tree = ET.parse(output[0])
     root = tree.getroot()
 
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
@@ -148,7 +149,7 @@ def test_import_object_structured_ok(testpath, run_cli):
         test_file = os.path.relpath(element, os.curdir)
 
         output = get_amd_file(testpath, test_file)
-        tree = ET.parse(output)
+        tree = ET.parse(output[0])
         root = tree.getroot()
 
         assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
@@ -188,7 +189,7 @@ def test_import_object_order(testpath, run_cli):
                  '--order', '5', input_file]
     run_cli(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
-    path = output.replace('-PREMIS%3AOBJECT-amd.xml',
+    path = output[0].replace('-PREMIS%3AOBJECT-amd.xml',
                           '-scraper.json')
     assert os.path.isfile(path)
 
@@ -206,7 +207,7 @@ def test_import_object_identifier(testpath, run_cli):
     run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
+    tree = ET.parse(output[0])
     root = tree.getroot()
 
     assert root.xpath('//premis:objectIdentifierType',
@@ -224,7 +225,7 @@ def test_import_object_format_registry(testpath, run_cli):
     run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
+    tree = ET.parse(output[0])
     root = tree.getroot()
 
     assert root.xpath('//premis:formatRegistryName',
@@ -256,7 +257,7 @@ def test_import_object_utf8(testpath, run_cli):
 
     # Check output
     output = get_amd_file(testpath, utf8_file)
-    tree = ET.parse(output)
+    tree = ET.parse(output[0])
     root = tree.getroot()
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
@@ -310,7 +311,7 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
     arguments = ['--workspace', testpath, input_file]
     run_cli(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
+    tree = ET.parse(output[0])
     root = tree.getroot()
 
     comparison = {
@@ -377,7 +378,7 @@ def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
                  '--skip_wellformed_check']
     run_cli(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
+    tree = ET.parse(output[0])
     root = tree.getroot()
 
     comparison = {
@@ -429,7 +430,7 @@ def test_streams(testpath, run_cli):
     stream_id = []
     for i in [1, 2]:
         output = get_amd_file(testpath, input_file, six.text_type(i))
-        tree = ET.parse(output)
+        tree = ET.parse(output[0])
         root = tree.getroot()
         if i == 2:
             mime = 'audio/mp4'
@@ -450,7 +451,7 @@ def test_streams(testpath, run_cli):
 
     # Container
     output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output)
+    tree = ET.parse(output[0])
     root = tree.getroot()
     assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
                           namespaces=NAMESPACES)) == 1
@@ -470,33 +471,56 @@ def test_streams(testpath, run_cli):
         namespaces=NAMESPACES)) == 1
 
 
-def test_import_object_event_agent(testpath, run_cli):
-    """ Test that the script import_object creates an event and
+@pytest.mark.parametrize(
+    ('file_format', 'skip_wellformed_check', 'count_events'), [
+        (('text/plain', ''), True, 1),
+        (None, True, 2)]
+)
+# pylint: disable=too-many-locals
+def test_import_object_event_agent(
+        testpath, run_cli, file_format, skip_wellformed_check, count_events):
+    """ Test that the script import_object creates events and
     agents with the proper metadata.
     """
     input_file = 'tests/data/structured/Documentation files/readme.txt'
-    arguments = ['--workspace', testpath, '--skip_wellformed_check',
-                 input_file]
+    arguments = ['--workspace', testpath, input_file]
+    if file_format:
+        arguments.append('--file_format')
+        arguments.append(file_format[0])
+        arguments.append(file_format[1])
+    if skip_wellformed_check:
+        arguments.append('--skip_wellformed_check')
     run_cli(import_object.main, arguments)
 
-    event_output = get_amd_file(
+    events_output = get_amd_file(
         testpath,
         input_file,
         ref_file='premis-event-md-references.json',
         suffix='-PREMIS%3AEVENT-amd.xml')
 
-    event_output_path = os.path.join(testpath, event_output)
-    event_root = ET.parse(event_output_path).getroot()
-    assert event_root.xpath('./*/*/*/*/*')[0].tag == \
-        '{info:lc/xmlns/premis-v2}event'
-    assert event_root.xpath(
-        './/premis:eventType',
-        namespaces=NAMESPACES)[0].text == 'metadata extraction'
-    assert event_root.xpath(
-        './/premis:eventOutcomeDetailNote',
-        namespaces=NAMESPACES)[0].text == ('Premis metadata successfully '
-                                           'created from extracted technical '
-                                           'metadata.')
+    # Allow only part of values in the lists based on the number of different
+    # events created
+    allowed_types = ['metadata extraction',
+                     'format identification'][:count_events]
+    allowed_details = [
+        ('Premis metadata successfully created from extracted technical '
+         'metadata.'),
+        ('File MIME type and format version successfully '
+         'identified')][:count_events]
+
+    # Assert that the event metadata is as expected
+    assert len(events_output) == count_events
+    for event_output in events_output:
+        event_output_path = os.path.join(testpath, event_output)
+        event_root = ET.parse(event_output_path).getroot()
+        assert event_root.xpath('./*/*/*/*/*')[0].tag == \
+            '{info:lc/xmlns/premis-v2}event'
+        assert event_root.xpath(
+            './/premis:eventType',
+            namespaces=NAMESPACES)[0].text in allowed_types
+        assert event_root.xpath(
+            './/premis:eventOutcomeDetailNote',
+            namespaces=NAMESPACES)[0].text in allowed_details
 
     # Assert that more than one agent is linked to the event
     assert len(event_root.xpath('.//premis:linkingAgentIdentifier',
@@ -507,14 +531,14 @@ def test_import_object_event_agent(testpath, run_cli):
         input_file,
         ref_file='premis-event-md-references.json',
         suffix='-PREMIS%3AAGENT-amd.xml')
-    agent_output_path = os.path.join(testpath, agent_output)
+    agent_output_path = os.path.join(testpath, agent_output[0])
     agent_root = ET.parse(agent_output_path).getroot()
     assert agent_root.xpath('./*/*/*/*/*')[0].tag == \
         '{info:lc/xmlns/premis-v2}agent'
     assert agent_root.xpath(
         './/premis:agentType',
         namespaces=NAMESPACES)[0].text == 'software'
-    
+
 
 def test_import_object_event_target_date(testpath, run_cli):
     """Test that the script import_object creates only one event
@@ -524,7 +548,7 @@ def test_import_object_event_target_date(testpath, run_cli):
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  input_file, '--event_target', '.', '--event_datetime',
-                 '2020']
+                 '2020', '--file_format', 'text/plain', '']
     run_cli(import_object.main, arguments)
 
     ev_count = 0
@@ -544,7 +568,7 @@ def test_import_object_event_target_date(testpath, run_cli):
     for input_file in input_files:
         arguments = ['--workspace', testpath, '--skip_wellformed_check',
                      input_file, '--event_target', '.', '--event_datetime',
-                     '2020']
+                     '2020', '--file_format', 'text/plain', '']
         run_cli(import_object.main, arguments)
 
     # Still only one event should have been created

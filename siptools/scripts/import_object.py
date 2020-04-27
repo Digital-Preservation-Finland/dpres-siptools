@@ -215,6 +215,7 @@ def import_object(**kwargs):
         filepaths=attributes["filepaths"],
         event_datetime=attributes["event_datetime"],
         event_target=attributes["event_target"],
+        identification_event=not bool(attributes["file_format"]),
         agents=agents
     )
 
@@ -512,6 +513,7 @@ def _create_events(
         filepaths,
         event_datetime,
         event_target=None,
+        identification_event=False,
         agents=None):
     """Function to create events documenting the extraction of technical
     metadata as well as the potential message digest calculation and
@@ -522,22 +524,32 @@ def _create_events(
     :event_targets: The targets of the metadata creation,
                     i.e. "filepaths"
     :event_datetime: The timestamp for the event
+    :identification_event: Boolean to indicate whether the digital
+                           objects were validated during the extraction
+                           of technical metadata.
     :agents: The software name and version used to extract the metadata
              as a tuple
     """
-    event_type = 'metadata extraction'
-    event_detail = ('Technical metadata extraction as premis metadata from '
-                    'digital objects')
-    event_outcome = 'success'
-    event_outcome_detail = ('Premis metadata successfully created from '
-                            'extracted technical metadata.')
+    events = {
+        'extraction': {
+            'event_type': 'metadata extraction',
+            'event_datetime': event_datetime,
+            'event_detail': ('Technical metadata extraction as premis '
+                             'metadata from digital objects'),
+            'event_outcome': 'success',
+            'event_outcome_detail': ('Premis metadata successfully created '
+                                     'from extracted technical metadata.')},
+        'identification': {
+            'event_type': 'format identification',
+            'event_datetime': event_datetime,
+            'event_detail': 'MIME type and version identification',
+            'event_outcome': 'success',
+            'event_outcome_detail': ('File MIME type and format version '
+                                     'successfully identified')},
+    }
 
-    found_event = _find_event(workspace,
-                              event_type,
-                              event_datetime,
-                              event_detail,
-                              event_outcome,
-                              event_outcome_detail)
+    if not identification_event:
+        events.pop('identification')
 
     event_targets = []
     if event_target:
@@ -545,27 +557,36 @@ def _create_events(
     else:
         event_targets = filepaths
 
-    if not found_event:
-        for agent in agents:
-            create_agent(
-                workspace=workspace,
-                agent_name=agent[0],
-                agent_version=agent[1],
-                agent_note=agent[2],
-                agent_type='software',
-                agent_role='executing program',
-                create_agent_file='import-object')
-    if not found_event or not event_target:
-        for target in event_targets:
-            premis_event(event_type=event_type,
-                         event_datetime=event_datetime,
-                         event_detail=event_detail,
-                         event_outcome=event_outcome,
-                         event_outcome_detail=event_outcome_detail,
-                         workspace=workspace,
-                         base_path=base_path,
-                         event_target=target,
-                         create_agent_file='import-object')
+    for event in six.itervalues(events):
+        found_event = _find_event(workspace,
+                                  event['event_type'],
+                                  event['event_datetime'],
+                                  event['event_detail'],
+                                  event['event_outcome'],
+                                  event['event_outcome_detail'])
+
+        if not found_event:
+            for agent in agents:
+                create_agent(
+                    workspace=workspace,
+                    agent_name=agent[0],
+                    agent_version=agent[1],
+                    agent_note=agent[2],
+                    agent_type='software',
+                    agent_role='executing program',
+                    create_agent_file='import-object')
+        if not found_event or not event_target:
+            for target in event_targets:
+                premis_event(event_type=event['event_type'],
+                             event_datetime=event['event_datetime'],
+                             event_detail=event['event_detail'],
+                             event_outcome=event['event_outcome'],
+                             event_outcome_detail=event[
+                                 'event_outcome_detail'],
+                             workspace=workspace,
+                             base_path=base_path,
+                             event_target=target,
+                             create_agent_file='import-object')
 
 
 def _find_event(workspace,
