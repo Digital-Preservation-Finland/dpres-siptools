@@ -185,7 +185,7 @@ def import_object(**kwargs):
     files = collect_filepaths(dirs=attributes["filepaths"],
                               base=attributes["base_path"])
     creator = PremisCreator(attributes["workspace"])
-    agents = set()
+    agents = []
     for filepath in files:
 
         # If the given path is an absolute path and base_path is current
@@ -204,7 +204,7 @@ def import_object(**kwargs):
         (_, scraper_info) = creator.add_premis_md(
             filepath, attributes, filerel=filerel, properties=properties)
         for index in scraper_info:
-            agents.add(_parse_scraper_tools(scraper_info[index]))
+            agents.append(_parse_scraper_tools(scraper_info[index]))
 
     creator.write(stdout=attributes["stdout"])
 
@@ -493,10 +493,18 @@ def _parse_scraper_tools(scraper_info):
     when identifying files and extracting technical metadata to be used
     as agents when creating events documenting the packaging process.
 
-    :returns: a list of agents
+    :returns: a dict of agent metadata
     """
-    agent_name = scraper_info['class']
-    agent_version = file_scraper.__version__
+    agent = {'agent_name': None,
+             'detector': False,
+             'agent_version': None,
+             'tools': None,
+             'detail_note': None}
+
+    agent['agent_name'] = scraper_info['class']
+    if 'Detector' in scraper_info['class']:
+        agent['detector'] = True
+    agent['agent_version'] = file_scraper.__version__
     tools = ''
     tools_list = []
     if 'tools' in scraper_info:
@@ -504,7 +512,11 @@ def _parse_scraper_tools(scraper_info):
             tools_list.append(tool)
     if tools_list:
         tools = 'Used tools (name-version): ' + ', '.join(tools_list)
-    return (agent_name, agent_version, tools)
+        agent['tools'] = tools
+    detail_notes = scraper_info['messages'] + scraper_info['errors']
+    agent['detail_note'] = ', '.join(detail_notes)
+
+    return agent
 
 
 def _create_events(
@@ -527,8 +539,7 @@ def _create_events(
     :identification_event: Boolean to indicate whether the digital
                            objects were validated during the extraction
                            of technical metadata.
-    :agents: The software name and version used to extract the metadata
-             as a tuple
+    :agents: A set of the softwares used to extract the metadata
     """
     events = {
         'extraction': {
@@ -557,7 +568,7 @@ def _create_events(
     else:
         event_targets = filepaths
 
-    for event in six.itervalues(events):
+    for event_name, event in six.iteritems(events):
         found_event = _find_event(workspace,
                                   event['event_type'],
                                   event['event_datetime'],
@@ -567,14 +578,16 @@ def _create_events(
 
         if not found_event:
             for agent in agents:
+                if event_name == 'identification' and not agent['detector']:
+                    continue
                 create_agent(
                     workspace=workspace,
-                    agent_name=agent[0],
-                    agent_version=agent[1],
-                    agent_note=agent[2],
+                    agent_name=agent['agent_name'],
+                    agent_version=agent['agent_version'],
+                    agent_note=agent['tools'],
                     agent_type='software',
                     agent_role='executing program',
-                    create_agent_file='import-object')
+                    create_agent_file='import-object-%s' % event_name)
         if not found_event or not event_target:
             for target in event_targets:
                 premis_event(event_type=event['event_type'],
@@ -586,7 +599,7 @@ def _create_events(
                              workspace=workspace,
                              base_path=base_path,
                              event_target=target,
-                             create_agent_file='import-object')
+                             create_agent_file='import-object-%s' % event_name)
 
 
 def _find_event(workspace,
