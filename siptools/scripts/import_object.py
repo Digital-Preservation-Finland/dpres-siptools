@@ -539,7 +539,8 @@ def _create_events(
     :identification_event: Boolean to indicate whether the digital
                            objects were validated during the extraction
                            of technical metadata.
-    :agents: A set of the softwares used to extract the metadata
+    :agents: A list of the software, as dicts, used to extract the
+             metadata
     """
     events = {
         'extraction': {
