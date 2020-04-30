@@ -187,12 +187,17 @@ class MetsSectionCreator(object):
                         if key not in paths_updated:
                             out_file.write(line)
 
-        for path in paths:
-            with open('%s.tmp' % reference_file, 'at') as out_file:
-                json.dump(path, out_file)
-                out_file.write('\n')
+            for path in paths:
+                with open('%s.tmp' % reference_file, 'at') as out_file:
+                    json.dump(path, out_file)
+                    out_file.write('\n')
+        else:
+            for path in paths:
+                with open(reference_file, 'at') as out_file:
+                    json.dump(path, out_file)
+                    out_file.write('\n')
 
-        if paths:
+        if os.path.exists('%s.tmp' % reference_file):
             os.rename('%s.tmp' % reference_file, reference_file)
 
     # pylint: disable=too-many-arguments
