@@ -8,6 +8,8 @@ import pytest
 
 import lxml.etree as ET
 import premis
+
+from siptools.mdcreator import read_md_references
 from siptools.scripts import compile_structmap, import_object
 from siptools.xml.mets import NAMESPACES
 
@@ -87,9 +89,8 @@ def test_compile_structmap_ok(testpath, run_cli):
         namespaces=NAMESPACES)[1].get('ORDER') == '2'
 
     # Assert that an event has been created
-    with open(os.path.join(testpath,
-                           'premis-event-md-references.json')) as in_file:
-        references = json.load(in_file)
+    references = read_md_references(testpath,
+                                    'premis-event-md-references.json')
 
     for amdref in references['.']['md_ids']:
         output = os.path.join(
@@ -101,7 +102,7 @@ def test_compile_structmap_ok(testpath, run_cli):
                 continue
             found_root = event_root
     assert found_root.xpath('./*/*/*/*/*')[0].tag == \
-        '{info:lc/xmlns/premis-v2}event'
+           '{info:lc/xmlns/premis-v2}event'
     assert found_root.xpath(
         '//premis:eventDetail',
         namespaces=NAMESPACES)[0].text == ('Creation of structural metadata '
@@ -135,10 +136,10 @@ def test_collect_dao_hrefs():
      (['koodi.java', 'publication.txt', 'fooo'], 2, 'div', True),
      (['koodi.java', 'publication.txt'], 2, 'fptr', False)],
     ids=(
-        'One href: add ORDER to existing div',
-        'Two hrefs: add new divs for each href',
-        'One non-existing href: add just the existing hrefs',
-        'No file properties: just fptr elements added'
+            'One href: add ORDER to existing div',
+            'Two hrefs: add new divs for each href',
+            'One non-existing href: add just the existing hrefs',
+            'No file properties: just fptr elements added'
     )
 )
 # pylint: disable=too-many-arguments
@@ -153,9 +154,10 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
 
     xml = ET.fromstring(div_elem)
     attrs = {}
-    with open(os.path.join(testpath,
-                           "import-object-md-references.json")) as in_file:
-        attrs["all_amd_refs"] = json.load(in_file)
+    attrs["all_amd_refs"] = read_md_references(
+        testpath,
+        "import-object-md-references.json"
+    )
     attrs["object_refs"] = attrs["all_amd_refs"]
     attrs["workspace"] = testpath
     attrs["filelist"] = [

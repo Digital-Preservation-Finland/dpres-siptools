@@ -11,6 +11,8 @@ import pytest
 import six
 
 import lxml.etree as ET
+
+from siptools.mdcreator import read_md_references
 from siptools.scripts import import_object
 from siptools.utils import fsdecode_path, load_scraper_json
 from siptools.xml.mets import NAMESPACES
@@ -22,8 +24,7 @@ def get_amd_file(path,
                  ref_file='import-object-md-references.json',
                  suffix='-PREMIS%3AOBJECT-amd.xml'):
     """Get id"""
-    with open(os.path.join(path, ref_file)) as in_file:
-        refs = json.load(in_file)
+    refs = read_md_references(path, ref_file)
     reference = refs[fsdecode_path(input_file)]
 
     if not stream:
@@ -63,7 +64,7 @@ def test_import_object_ok(testpath, run_cli):
     event_output_path = os.path.join(testpath, event_output[0])
     event_root = ET.parse(event_output_path).getroot()
     assert event_root.xpath('./*/*/*/*/*')[0].tag == \
-        '{info:lc/xmlns/premis-v2}event'
+           '{info:lc/xmlns/premis-v2}event'
 
 
 # pylint: disable=invalid-name
@@ -170,9 +171,7 @@ def test_import_object_multiple(testpath, run_cli):
 
     expected_files = 9
 
-    refs_file = os.path.join(testpath, 'import-object-md-references.json')
-    with open(refs_file) as in_file:
-        refs = json.load(in_file)
+    refs = read_md_references(testpath, 'import-object-md-references.json')
     assert len(refs) == expected_files
 
     count = 0
@@ -534,7 +533,7 @@ def test_import_object_event_agent(
     agent_output_path = os.path.join(testpath, agent_output[0])
     agent_root = ET.parse(agent_output_path).getroot()
     assert agent_root.xpath('./*/*/*/*/*')[0].tag == \
-        '{info:lc/xmlns/premis-v2}agent'
+           '{info:lc/xmlns/premis-v2}agent'
     assert agent_root.xpath(
         './/premis:agentType',
         namespaces=NAMESPACES)[0].text == 'software'

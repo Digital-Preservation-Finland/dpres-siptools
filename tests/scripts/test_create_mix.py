@@ -11,6 +11,7 @@ import sys
 import pytest
 
 import siptools.scripts.create_mix as create_mix
+from siptools.mdcreator import read_md_references
 
 
 def test_create_mix_techmdfile(testpath):
@@ -43,9 +44,7 @@ def test_create_mix_techmdfile(testpath):
 
     # Count the references written to md-reference file. There should be
     # one reference per image file.
-    with open(os.path.join(testpath,
-                           'create-mix-md-references.json')) as in_file:
-        refs = json.load(in_file)
+    refs = read_md_references(testpath, 'create-mix-md-references.json')
 
     assert len(refs) == 3
 
@@ -85,8 +84,8 @@ def test_create_mix():
     namespaces = {'mix': "http://www.loc.gov/mix/v20"}
 
     # compression
-    xpath = '/mix:mix/mix:BasicDigitalObjectInformation/mix:Compression/'\
-        'mix:compressionScheme'
+    xpath = '/mix:mix/mix:BasicDigitalObjectInformation/mix:Compression/' \
+            'mix:compressionScheme'
     # python-wand returns different values for versions 0.4.x and 0.5.x
     assert xml.xpath(xpath, namespaces=namespaces)[0].text in ["b44a", "no"]
 
@@ -95,33 +94,33 @@ def test_create_mix():
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "little endian"
 
     # width
-    xpath = '/mix:mix/mix:BasicImageInformation/'\
-        'mix:BasicImageCharacteristics/mix:imageWidth'
+    xpath = '/mix:mix/mix:BasicImageInformation/' \
+            'mix:BasicImageCharacteristics/mix:imageWidth'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "2"
 
     # height
-    xpath = '/mix:mix/mix:BasicImageInformation/'\
+    xpath = '/mix:mix/mix:BasicImageInformation/' \
             'mix:BasicImageCharacteristics/mix:imageHeight'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "2"
 
     # colorspace
-    xpath = '/mix:mix/mix:BasicImageInformation/'\
-            'mix:BasicImageCharacteristics/mix:PhotometricInterpretation/'\
+    xpath = '/mix:mix/mix:BasicImageInformation/' \
+            'mix:BasicImageCharacteristics/mix:PhotometricInterpretation/' \
             'mix:colorSpace'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "srgb"
 
     # bitspresample
-    xpath = '/mix:mix/mix:ImageAssessmentMetadata/mix:ImageColorEncoding/'\
+    xpath = '/mix:mix/mix:ImageAssessmentMetadata/mix:ImageColorEncoding/' \
             'mix:BitsPerSample/mix:bitsPerSampleValue'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "8"
 
     # bpsunit
-    xpath = '/mix:mix/mix:ImageAssessmentMetadata/mix:ImageColorEncoding/'\
+    xpath = '/mix:mix/mix:ImageAssessmentMetadata/mix:ImageColorEncoding/' \
             'mix:BitsPerSample/mix:bitsPerSampleUnit'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "integer"
 
     # samplesperpixel
-    xpath = '/mix:mix/mix:ImageAssessmentMetadata/mix:ImageColorEncoding/'\
+    xpath = '/mix:mix/mix:ImageAssessmentMetadata/mix:ImageColorEncoding/' \
             'mix:samplesPerPixel'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "3"
 
@@ -136,7 +135,7 @@ def test_existing_scraper_result(testpath):
     ref = {
         file_: {
             "path_type": "file",
-            "streams":  {},
+            "streams": {},
             "md_ids": ["_" + amdid]
         }
     }

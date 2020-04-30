@@ -8,6 +8,8 @@ import json
 import lxml.etree
 import mets
 import premis
+
+from siptools.mdcreator import read_md_references
 from siptools.scripts import (compile_structmap, create_audiomd,
                               import_description, import_object, premis_event)
 from siptools.xml.mets import NAMESPACES
@@ -50,9 +52,8 @@ def test_compile_structmap_ok(testpath, run_cli):
                              namespaces=NAMESPACES)) == 1
 
     # Assert that an event has been created
-    with open(os.path.join(testpath,
-                           'premis-event-md-references.json')) as in_file:
-        references = json.load(in_file)
+    references = read_md_references(testpath,
+                                    'premis-event-md-references.json')
 
     for amdref in references['.']['md_ids']:
         output = os.path.join(
@@ -64,7 +65,7 @@ def test_compile_structmap_ok(testpath, run_cli):
                 continue
             found_root = event_root
     assert found_root.xpath('./*/*/*/*/*')[0].tag == \
-        '{info:lc/xmlns/premis-v2}event'
+           '{info:lc/xmlns/premis-v2}event'
     assert found_root.xpath(
         '//premis:eventDetail',
         namespaces=NAMESPACES)[0].text == ('Creation of structural metadata '
@@ -164,16 +165,16 @@ def test_othermd_references(testpath, run_cli):
     # This dictonary maps filepath to MIX techMD IDs excpected to be referenced
     # in fileSec
     amd_ids = {"sample_images/sample_tiff1_compressed.tif":
-               "_c08061e439bd40407c9e5332fec6084e",
+                   "_c08061e439bd40407c9e5332fec6084e",
                "sample_images/sample_tiff1.tif":
-               "_e50655691d21e110a3c4b38da52fb91c",
+                   "_e50655691d21e110a3c4b38da52fb91c",
                "sample_images/sample_tiff2.tif":
-               "_e50655691d21e110a3c4b38da52fb91c"}
+                   "_e50655691d21e110a3c4b38da52fb91c"}
 
     for filepath in amd_ids:
         # Find file element from mets based on filepath
         xpath = '//mets:FLocat[@xlink:href="file://%s"]/parent::mets:file' \
-            % filepath
+                % filepath
         file_element = mets_document.xpath(xpath, namespaces=namespaces)
 
         # The file element should have reference to techMD element defined in
