@@ -115,22 +115,53 @@ class MetsSectionCreator(object):
         created for lxml.etree XML.
         """
 
+        def _get_path_from_reference_file(ref_path):
+            """An inner function to help read an existing JSON lines file.
+
+            :param ref_path: The ref_path key to look for.
+            :return: Dictionary on finding, None when none is found.
+            """
+            with open(reference_file, 'r') as out_file:
+                for line in out_file:
+                    try:
+                        return json.loads(line)[ref_path]
+                    except KeyError:
+                        continue
+            return None
+
+        def _setup_new_path(path_type):
+            """Sets up a new path dictionary. For cases when no prior path data
+            is found among references.
+
+            :param path_type: Path type in question in string.
+            :return: Newly constructed dictionary.
+            """
+            return dict(
+                path_type=path_type,
+                streams=dict(),
+                md_ids=list()
+            )
+
         reference_file = os.path.join(self.workspace, ref_file)
 
-        # Whether or not the file initially exists.
-        file_exists = os.path.exists(reference_file)
         path_map = {}
         paths = []
+        # Whether or not the file initially exists.
+        file_exists = os.path.exists(reference_file)
+        # Collection of paths that underwent an update.
+        paths_updated = set()
         for ref in self.references:
             ref_path = _parse_refs(ref['path'])
             try:
                 path = paths[path_map[ref_path]][ref_path]
             except KeyError:
-                path = {
-                    'path_type': ref['path_type'],
-                    'streams': dict(),
-                    "md_ids": list()
-                }
+                path = None
+                if file_exists:
+                    path = _get_path_from_reference_file(ref_path)
+                    if path is not None:
+                        paths_updated.add(ref_path)
+                if path is None:
+                    path = _setup_new_path(ref['path_type'])
                 paths.append({ref_path: path})
                 path_map[ref_path] = len(paths) - 1
             if ref['stream']:
@@ -146,10 +177,20 @@ class MetsSectionCreator(object):
                 paths[path_map[ref_path]][ref_path]['md_ids'] = ids
 
         # Write reference list JSON line file
+        if paths_updated:
+            # Existing reference file must be updated.
+            with open(reference_file, 'rt') as in_file, open(
+                    '%s.tmp' % reference_file, 'at') as out_file:
+                for line in in_file:
+                    existing_json_data = json.loads(line)
+                    for key in existing_json_data:
+                        if key not in paths_updated:
+                            out_file.write(line)
+
         for path in paths:
-            with open('%s.tmp' % reference_file, 'at') as outfile:
-                json.dump(path, outfile)
-                outfile.write('\n')
+            with open('%s.tmp' % reference_file, 'at') as out_file:
+                json.dump(path, out_file)
+                out_file.write('\n')
 
         if paths:
             os.rename('%s.tmp' % reference_file, reference_file)
