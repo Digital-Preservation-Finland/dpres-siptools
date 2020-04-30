@@ -7,7 +7,7 @@ import json
 import pytest
 import lxml.etree
 from siptools.mdcreator import (MetsSectionCreator, get_md_references,
-                                remove_dmdsec_references)
+                                remove_dmdsec_references, read_md_references)
 
 
 def test_create_amdfile(testpath):
@@ -39,9 +39,9 @@ def test_create_amdfile(testpath):
     # mdWrap and xmlData elements
     sample_data_elements \
         = amd_elements[0].xpath(
-            '//mets:mdWrap/mets:xmlData/sampleData',
-            namespaces={"mets": "http://www.loc.gov/METS/"}
-        )
+        '//mets:mdWrap/mets:xmlData/sampleData',
+        namespaces={"mets": "http://www.loc.gov/METS/"}
+    )
     assert len(sample_data_elements) == 1
 
 
@@ -128,23 +128,22 @@ def test_add_mdreference(testpath, references, expected):
 
     md_creator.write_references('md-references.json')
 
-    with open(os.path.join(testpath, 'md-references.json')) as in_file:
-        created_references = json.load(in_file)
+    created_references = read_md_references(testpath, 'md-references.json')
 
     assert len(created_references) == len(expected)
 
     for path in expected:
         assert path in created_references
         assert len(created_references[path]['md_ids']) \
-            == len(expected[path]['md_ids'])
+               == len(expected[path]['md_ids'])
         assert len(created_references[path]['streams']) \
-            == len(expected[path]['streams'])
+               == len(expected[path]['streams'])
         for ref in expected[path]['md_ids']:
             assert ref in created_references[path]['md_ids']
         for stream in expected[path]['streams']:
             assert stream in created_references[path]['streams']
             assert len(created_references[path]['streams'][stream]) \
-                == len(expected[path]['streams'][stream])
+                   == len(expected[path]['streams'][stream])
             for stream_id in expected[path]['streams'][stream]:
                 assert stream_id in created_references[path]['streams'][stream]
 
