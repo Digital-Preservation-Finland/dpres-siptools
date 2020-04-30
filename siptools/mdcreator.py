@@ -117,24 +117,22 @@ class MetsSectionCreator(object):
 
         reference_file = os.path.join(self.workspace, ref_file)
 
-        paths = {}
-
-        # read existing reference list file or create new file
-        if os.path.exists(reference_file):
-            with open(reference_file) as in_file:
-                paths = json.load(in_file)
-
+        # Whether or not the file initially exists.
+        file_exists = os.path.exists(reference_file)
+        path_map = {}
+        paths = []
         for ref in self.references:
             ref_path = _parse_refs(ref['path'])
             try:
-                path = paths[ref_path]
+                path = paths[path_map[ref_path]][ref_path]
             except KeyError:
                 path = {
                     'path_type': ref['path_type'],
                     'streams': dict(),
                     "md_ids": list()
                 }
-                paths[ref_path] = path
+                paths.append({ref_path: path})
+                path_map[ref_path] = len(paths) - 1
             if ref['stream']:
                 try:
                     stream_ids = _uniques_list(path['streams'][ref['stream']],
@@ -145,10 +143,16 @@ class MetsSectionCreator(object):
                 path['streams'][ref['stream']] = stream_ids
             else:
                 ids = _uniques_list(path['md_ids'], ref['md_id'])
-                paths[ref_path]['md_ids'] = ids
-        # Write reference list file
-        with open(reference_file, 'wt') as outfile:
-            json.dump(paths, outfile)
+                paths[path_map[ref_path]][ref_path]['md_ids'] = ids
+
+        # Write reference list JSON line file
+        for path in paths:
+            with open('%s.tmp' % reference_file, 'at') as outfile:
+                json.dump(path, outfile)
+                outfile.write('\n')
+
+        if paths:
+            os.rename('%s.tmp' % reference_file, reference_file)
 
     # pylint: disable=too-many-arguments
     # pylint: disable=too-many-locals
@@ -316,25 +320,22 @@ def read_all_amd_references(workspace):
                      "create-mix-md-references.json",
                      "create-videomd-md-references.json",
                      "premis-event-md-references.json"]:
-        if references is None:
-            references = read_md_references(workspace, ref_file)
-        else:
-            refs = read_md_references(workspace, ref_file)
-            if refs:
-                for ref in refs:
-                    if ref in references:
-                        references[ref]['md_ids'].extend(refs[ref]['md_ids'])
+        refs = read_md_references(workspace, ref_file)
+        if refs:
+            for ref in refs:
+                if ref in references:
+                    references[ref]['md_ids'].extend(refs[ref]['md_ids'])
 
-                        for stream in refs[ref]['streams']:
-                            if stream in references[ref]['streams']:
-                                references[ref]['streams'][stream].extend(
-                                    refs[ref]['streams'][stream])
-                            else:
-                                references[ref]['streams'][stream] = \
-                                    refs[ref]['streams'][stream]
+                    for stream in refs[ref]['streams']:
+                        if stream in references[ref]['streams']:
+                            references[ref]['streams'][stream].extend(
+                                refs[ref]['streams'][stream])
+                        else:
+                            references[ref]['streams'][stream] = \
+                                refs[ref]['streams'][stream]
 
-                    else:
-                        references[ref] = refs[ref]
+                else:
+                    references[ref] = refs[ref]
 
     return references
 
@@ -350,8 +351,11 @@ def read_md_references(workspace, ref_file):
     reference_file = os.path.join(workspace, ref_file)
 
     if os.path.isfile(reference_file):
+        references = {}
         with open(reference_file) as in_file:
-            return json.load(in_file)
+            for line in in_file:
+                references.update(json.loads(line))
+        return references
     return None
 
 
