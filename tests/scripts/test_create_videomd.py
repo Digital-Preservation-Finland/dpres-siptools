@@ -11,7 +11,7 @@ import pytest
 
 import lxml.etree as ET
 import siptools.scripts.create_videomd as create_videomd
-from siptools.utils import fsencode_path
+from siptools.utils import fsencode_path, read_md_references
 
 VIDEOMD_NS = 'http://www.loc.gov/videoMD/'
 NAMESPACES = {"vmd": VIDEOMD_NS}
@@ -44,7 +44,7 @@ def test_create_videomd_elem():
 
     path = "%s/vmd:compression/vmd:codecName" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == \
-        'MPEG Video'
+           'MPEG Video'
 
     path = "%s/vmd:compression/vmd:codecQuality" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossy'
@@ -99,7 +99,7 @@ def test_stream():
 
     path = "%s/vmd:compression/vmd:codecCreatorApp" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == \
-        'Lavf56.40.101'
+           'Lavf56.40.101'
 
     path = "%s/vmd:compression/vmd:codecCreatorAppVersion" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '56.40.101'
@@ -173,7 +173,7 @@ def test_create_videomd(testpath):
 
     # Check that mdreference and one VideoMD-amd files are created
     assert os.path.isfile(os.path.join(testpath,
-                                       'create-videomd-md-references.json'))
+                                       'create-videomd-md-references.jsonl'))
 
     filepath = os.path.join(
         testpath, '36260c626dac2f82359d7c22ef378392-VideoMD-amd.xml'
@@ -202,9 +202,7 @@ def test_main_utf8_files(testpath, run_cli):
     )
 
     # Check that filename is found in md-reference file.
-    with open(os.path.join(testpath,
-                           'create-videomd-md-references.json')) as in_file:
-        refs = json.load(in_file)
+    refs = read_md_references(testpath, 'create-videomd-md-references.jsonl')
     assert refs["data/äöå.m1v"]
 
 
@@ -218,12 +216,12 @@ def test_existing_scraper_result(testpath):
     ref = {
         file_: {
             "path_type": "file",
-            "streams":  {},
+            "streams": {},
             "md_ids": ["_" + amdid]
         }
     }
     with open(os.path.join(testpath,
-                           'import-object-md-references.json'), 'wt') as out:
+                           'import-object-md-references.jsonl'), 'wt') as out:
         json.dump(ref, out)
 
     stream_dict = {0: {
@@ -273,10 +271,9 @@ def test_paths(testpath, file_, base_path, run_cli):
         run_cli(create_videomd.main, [
             '--workspace', testpath, file_])
 
-    with io.open(os.path.join(testpath,
-                              'create-videomd-md-references.json'),
-                 "rt") as in_file:
-        references = json.load(in_file)
+    references = read_md_references(
+        testpath,
+        'create-videomd-md-references.jsonl')
     assert os.path.normpath(file_) in references
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

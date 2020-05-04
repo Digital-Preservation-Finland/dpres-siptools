@@ -98,7 +98,7 @@ class VideomdCreator(MetsSectionCreator):
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="VideoMD", section=None, stdout=False,
               file_metadata_dict=None,
-              ref_file="create-videomd-md-references.json"):
+              ref_file="create-videomd-md-references.jsonl"):
         super(VideomdCreator, self).write(
             mdtype=mdtype, mdtypeversion=mdtypeversion,
             othermdtype=othermdtype, ref_file=ref_file

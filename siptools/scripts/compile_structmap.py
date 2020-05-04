@@ -13,10 +13,11 @@ import lxml.etree as ET
 import mets
 import xml_helpers.utils as xml_utils
 from siptools.mdcreator import (get_objectlist, read_all_amd_references,
-                                read_md_references, get_md_references)
+                                get_md_references)
 from siptools.scripts.create_agent import create_agent
 from siptools.scripts.premis_event import premis_event
-from siptools.utils import add, encode_path, tree, load_scraper_json
+from siptools.utils import add, encode_path, tree, load_scraper_json, \
+    read_md_references
 from siptools.xml.mets import NAMESPACES
 
 import siptools
@@ -105,7 +106,7 @@ def get_reference_lists(**attributes):
     """
     attributes["object_refs"] = attributes.get(
         "object_refs", read_md_references(
-            attributes["workspace"], "import-object-md-references.json"
+            attributes["workspace"], "import-object-md-references.jsonl"
         ))
     attributes["filelist"] = attributes.get(
         "filelist", get_objectlist(attributes["object_refs"]))
@@ -113,7 +114,7 @@ def get_reference_lists(**attributes):
         "all_amd_refs", read_all_amd_references(attributes["workspace"]))
     attributes["all_dmd_refs"] = attributes.get(
         "all_dmd_refs", read_md_references(
-            attributes["workspace"], "import-description-md-references.json"
+            attributes["workspace"], "import-description-md-references.jsonl"
         ))
 
     return attributes

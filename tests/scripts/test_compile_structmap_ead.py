@@ -9,7 +9,7 @@ import pytest
 import lxml.etree as ET
 import premis
 
-from siptools.mdcreator import read_md_references
+from siptools.utils import read_md_references
 from siptools.scripts import compile_structmap, import_object
 from siptools.xml.mets import NAMESPACES
 
@@ -90,7 +90,7 @@ def test_compile_structmap_ok(testpath, run_cli):
 
     # Assert that an event has been created
     references = read_md_references(testpath,
-                                    'premis-event-md-references.json')
+                                    'premis-event-md-references.jsonl')
 
     for amdref in references['.']['md_ids']:
         output = os.path.join(
@@ -156,7 +156,7 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
     attrs = {}
     attrs["all_amd_refs"] = read_md_references(
         testpath,
-        "import-object-md-references.json"
+        "import-object-md-references.jsonl"
     )
     attrs["object_refs"] = attrs["all_amd_refs"]
     attrs["workspace"] = testpath

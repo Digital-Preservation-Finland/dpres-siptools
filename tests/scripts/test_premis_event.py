@@ -8,15 +8,16 @@ import json
 import lxml.etree as ET
 
 import pytest
+
 from siptools.scripts.create_agent import create_agent
 from siptools.scripts import premis_event
-from siptools.utils import fsdecode_path
+from siptools.utils import fsdecode_path, read_md_references
 from siptools.xml.mets import NAMESPACES
 
 
 def get_md_file(path,
                 input_target='.',
-                ref_file='premis-event-md-references.json',
+                ref_file='premis-event-md-references.jsonl',
                 output_suffix='-PREMIS%3AEVENT-amd.xml'):
     """Get id"""
     with open(os.path.join(path, ref_file)) as in_file:
@@ -73,7 +74,7 @@ def test_premis_event_ok(testpath, run_cli):
             (".//premis:eventOutcomeDetailNote", 'Outcome detail')
     ):
         assert event_xml.findall(element, namespaces=namespaces)[0].text \
-            == content
+               == content
 
     # Check thait agent.xml contains required elements with correct content
     for element, content in (
@@ -81,7 +82,7 @@ def test_premis_event_ok(testpath, run_cli):
             (".//premis:agentType", 'software')
     ):
         assert agent_xml.findall(element, namespaces=namespaces)[0].text \
-            == content
+               == content
 
     # event.xml file should contain link to agent-element in agent.xml file
     assert \
@@ -104,11 +105,9 @@ def test_amd_links_root(testpath, run_cli):
         '--event_outcome_detail', 'Test ok',
         '--workspace', testpath
     ])
-    refs_file = os.path.join(testpath, 'premis-event-md-references.json')
+    refs_file = os.path.join(testpath, 'premis-event-md-references.jsonl')
     assert os.path.isfile(refs_file)
-    with open(refs_file) as in_file:
-        refs = json.load(in_file)
-
+    refs = read_md_references(testpath, 'premis-event-md-references.jsonl')
     assert '.' in refs
     assert refs['.']['path_type'] == 'directory'
 
@@ -128,11 +127,9 @@ def test_amd_links_file(testpath, run_cli):
         '--event_target', target
     ])
 
-    refs_file = os.path.join(testpath, 'premis-event-md-references.json')
+    refs_file = os.path.join(testpath, 'premis-event-md-references.jsonl')
     assert os.path.isfile(refs_file)
-    with open(refs_file) as in_file:
-        refs = json.load(in_file)
-
+    refs = read_md_references(testpath, 'premis-event-md-references.jsonl')
     assert target in refs
 
 
@@ -151,11 +148,9 @@ def test_amd_links_dir(testpath, run_cli):
         '--event_target', target
     ])
 
-    refs_file = os.path.join(testpath, 'premis-event-md-references.json')
+    refs_file = os.path.join(testpath, 'premis-event-md-references.jsonl')
     assert os.path.isfile(refs_file)
-    with open(refs_file) as in_file:
-        refs = json.load(in_file)
-
+    refs = read_md_references(testpath, 'premis-event-md-references.jsonl')
     assert target in refs
 
 
@@ -252,11 +247,11 @@ def test_reuse_agent(testpath, run_cli):
 @pytest.mark.parametrize(
     ("agent_identifier_type", "agent_identifier_value",
      "create_agent_file", "agents_count"), [
-         (None, "", "", 1),
-         ("acme", "foo", "", 1),
-         ("acme", "foo", "testing", 1),
-         ("acme", "foo", "testing", 2),
-     ])
+        (None, "", "", 1),
+        ("acme", "foo", "", 1),
+        ("acme", "foo", "testing", 1),
+        ("acme", "foo", "testing", 2),
+    ])
 def test_import_agents(
         testpath,
         run_cli,
@@ -311,7 +306,7 @@ def test_import_agents(
         "--agent_name", agent_name,
         "--agent_type", agent_type,
         "--create_agent_file", create_agent_file,
-        ]
+    ]
     if agent_identifier_value:
         cli_args.append("--agent_identifier")
         cli_args.append(agent_identifier_type)
@@ -385,9 +380,7 @@ def test_paths(testpath, file_, base_path, run_cli):
             "success", "creation", "2020-02-02T20:20:20"
         ])
 
-    with io.open(os.path.join(testpath, "premis-event-md-references.json"),
-                 "rt") as in_file:
-        md_references = json.load(in_file)
-
+    md_references = read_md_references(testpath,
+                                       'premis-event-md-references.jsonl')
     assert os.path.normpath(file_) in md_references
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

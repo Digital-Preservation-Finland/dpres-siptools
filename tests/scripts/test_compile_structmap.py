@@ -9,7 +9,7 @@ import lxml.etree
 import mets
 import premis
 
-from siptools.mdcreator import read_md_references
+from siptools.utils import read_md_references
 from siptools.scripts import (compile_structmap, create_audiomd,
                               import_description, import_object, premis_event)
 from siptools.xml.mets import NAMESPACES
@@ -53,7 +53,7 @@ def test_compile_structmap_ok(testpath, run_cli):
 
     # Assert that an event has been created
     references = read_md_references(testpath,
-                                    'premis-event-md-references.json')
+                                    'premis-event-md-references.jsonl')
 
     for amdref in references['.']['md_ids']:
         output = os.path.join(
@@ -95,11 +95,8 @@ def test_compile_structmap_dmdsecid(testpath, run_cli):
 
     # The root div of structMap should have reference to dmdSec element in
     # dmdsec.xml
-
-    refs_file = os.path.join(testpath, 'import-description-md-references.json')
-    with open(refs_file) as in_file:
-        refs = json.load(in_file)
-
+    refs = read_md_references(testpath,
+                              'import-description-md-references.jsonl')
     dmdsecid = refs['.']['md_ids'][0]
 
     structmap = lxml.etree.parse(os.path.join(testpath, 'structmap.xml'))

@@ -7,7 +7,8 @@ import json
 import pytest
 import lxml.etree
 from siptools.mdcreator import (MetsSectionCreator, get_md_references,
-                                remove_dmdsec_references, read_md_references)
+                                remove_dmdsec_references)
+from siptools.utils import read_md_references
 
 
 def test_create_amdfile(testpath):
@@ -170,11 +171,11 @@ def test_remove_dmdsec_references(testpath):
         }
     }
 
-    with open(os.path.join(testpath, 'import-description-md-references.json'),
+    with open(os.path.join(testpath, 'import-description-md-references.jsonl'),
               'w+') as outfile:
         outfile.write(json.dumps(refs))
 
     remove_dmdsec_references(testpath)
 
     assert not os.path.exists(os.path.join(
-        testpath, 'import-description-md-references.json'))
+        testpath, 'import-description-md-references.jsonl'))

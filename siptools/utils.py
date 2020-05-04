@@ -62,14 +62,14 @@ def read_json_streams(filerel, workspace):
     """
     ref_exists = False
     if workspace is not None:
-        refs_file = os.path.join(workspace, 'import-object-md-references.json')
+        refs_file = os.path.join(workspace,
+                                 'import-object-md-references.jsonl')
         if os.path.isfile(refs_file):
             ref_exists = True
 
     if ref_exists:
-        with open(refs_file) as in_file:
-            refs = json.load(in_file)
-
+        refs = read_md_references(workspace,
+                                  'import-object-md-references.jsonl')
         filerel = fsdecode_path(filerel)
         try:
             amdrefs = refs[filerel]['md_ids']
@@ -125,7 +125,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
         error_str = "\n".join(errors)
         if skip_well_check:
             error_head = "Metadata of file %s could not " \
-                "be collected due to errors.\n" % filepath
+                         "be collected due to errors.\n" % filepath
             error_str = error_head + error_str
         raise ValueError(six.text_type(error_str))
 
@@ -364,3 +364,22 @@ def list2str(lst):
     first_words = ['"{}"'.format(string) for string in lst[:-1]]
     last_word = '"{}"'.format(lst[-1])
     return ', '.join(first_words) + ', and ' + last_word
+
+
+def read_md_references(workspace, ref_file):
+    """If MD reference file exists in workspace, read
+    all the MD IDs as a dictionary.
+
+    :workspace: path to workspace directory
+    :ref_file: Metadata reference file
+    :returns: Root of the reference tree
+    """
+    reference_file = os.path.join(workspace, ref_file)
+
+    if os.path.isfile(reference_file):
+        references = {}
+        with open(reference_file) as in_file:
+            for line in in_file:
+                references.update(json.loads(line))
+        return references
+    return None

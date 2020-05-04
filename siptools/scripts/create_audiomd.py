@@ -102,7 +102,7 @@ class AudiomdCreator(MetsSectionCreator):
     def write(self, mdtype="OTHER", mdtypeversion="2.0",
               othermdtype="AudioMD", section=None, stdout=False,
               file_metadata_dict=None,
-              ref_file="create-audiomd-md-references.json"):
+              ref_file="create-audiomd-md-references.jsonl"):
         """
         Write AudioMD metadata.
         """

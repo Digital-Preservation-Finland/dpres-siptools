@@ -11,6 +11,7 @@ import sys
 import lxml.etree as ET
 import pytest
 import siptools.scripts.create_audiomd as create_audiomd
+from siptools.utils import read_md_references
 
 AUDIOMD_NS = 'http://www.loc.gov/audioMD/'
 NAMESPACES = {"amd": AUDIOMD_NS}
@@ -41,7 +42,7 @@ def test_create_audiomd_elem():
 
     path = "%s/amd:compression/amd:codecCreatorApp" % file_data
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == \
-        'Lavf56.40.101'
+           'Lavf56.40.101'
 
     path = "%s/amd:compression/amd:codecCreatorAppVersion" % file_data
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '56.40.101'
@@ -86,7 +87,7 @@ def test_stream():
 
     path = "%s/amd:compression/amd:codecCreatorApp" % file_data
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == \
-        'Lavf56.40.101'
+           'Lavf56.40.101'
 
     path = "%s/amd:compression/amd:codecCreatorAppVersion" % file_data
     assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '56.40.101'
@@ -142,7 +143,7 @@ def test_create_audiomd(testpath):
 
     # Check that md-reference and one AudioMD-amd files are created
     assert os.path.isfile(os.path.join(testpath,
-                                       'create-audiomd-md-references.json'))
+                                       'create-audiomd-md-references.jsonl'))
 
     filepath = os.path.join(
         testpath, 'eae4d239422e21f3a8cfa57bb2afcb9e-AudioMD-amd.xml'
@@ -173,9 +174,7 @@ def test_main_utf8_files(testpath, run_cli):
     )
 
     # Check that filename is found in amd-reference file.
-    with open(os.path.join(testpath,
-                           'create-audiomd-md-references.json')) as in_file:
-        refs = json.load(in_file)
+    refs = read_md_references(testpath, 'create-audiomd-md-references.jsonl')
     assert refs["data/äöå.wav"]
 
 
@@ -189,12 +188,12 @@ def test_existing_scraper_result(testpath):
     ref = {
         file_: {
             "path_type": "file",
-            "streams":  {},
+            "streams": {},
             "md_ids": ["_" + amdid]
         }
     }
     with open(os.path.join(testpath,
-                           'import-object-md-references.json'), 'wt') as out:
+                           'import-object-md-references.jsonl'), 'wt') as out:
         json.dump(ref, out)
 
     stream_dict = {0: {
@@ -243,7 +242,7 @@ def test_paths(testpath, file_, base_path, run_cli):
         run_cli(create_audiomd.main, ['--workspace', testpath, file_])
 
     with io.open(os.path.join(testpath,
-                              'create-audiomd-md-references.json'),
+                              'create-audiomd-md-references.jsonl'),
                  "rt") as in_file:
         references = json.load(in_file)
     assert os.path.normpath(file_) in references

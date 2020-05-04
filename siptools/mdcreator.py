@@ -11,7 +11,7 @@ import six
 
 import mets
 import xml_helpers
-from siptools.utils import generate_digest, encode_path
+from siptools.utils import generate_digest, encode_path, read_md_references
 
 
 def _parse_refs(ref):
@@ -40,7 +40,7 @@ def _uniques_list(reference_list, reference):
 class MetsSectionCreator(object):
     """
     Class for generating lxml.etree XML for different METS metadata sections
-    and corresponing md-references files efficiently.
+    and corresponding md-references files efficiently.
     """
 
     def __init__(self, workspace):
@@ -110,7 +110,7 @@ class MetsSectionCreator(object):
 
     def write_references(self, ref_file):
         """
-        Write "md-references.json" file, which is read by the
+        Write "md-references.jsonl" file, which is read by the
         compile-structmap script when fileSec and structMap elements are
         created for lxml.etree XML.
         """
@@ -321,7 +321,7 @@ class MetsSectionCreator(object):
 
 def get_objectlist(refs_dict, file_path=None):
     """Get unique and sorted list of files or streams from
-    md-references.json
+    md-references.jsonl
 
     :refs_dict: Dictionary of objects
     :file_path: If given, finds streams of the given file.
@@ -342,12 +342,12 @@ def get_objectlist(refs_dict, file_path=None):
 
 def remove_dmdsec_references(workspace):
     """
-    Removes the reference to the dmdSecs in the md-references.json file.
+    Removes the reference to the dmdSecs in the md-references.jsonl file.
 
     :workspace: Workspace path
     """
     refs_file = os.path.join(workspace,
-                             'import-description-md-references.json')
+                             'import-description-md-references.jsonl')
     if os.path.exists(refs_file):
         os.remove(refs_file)
 
@@ -360,12 +360,12 @@ def read_all_amd_references(workspace):
     :returns: a set of administrative MD IDs
     """
     references = {}
-    for ref_file in ["import-object-md-references.json",
-                     "create-addml-md-references.json",
-                     "create-audiomd-md-references.json",
-                     "create-mix-md-references.json",
-                     "create-videomd-md-references.json",
-                     "premis-event-md-references.json"]:
+    for ref_file in ["import-object-md-references.jsonl",
+                     "create-addml-md-references.jsonl",
+                     "create-audiomd-md-references.jsonl",
+                     "create-mix-md-references.jsonl",
+                     "create-videomd-md-references.jsonl",
+                     "premis-event-md-references.jsonl"]:
         refs = read_md_references(workspace, ref_file)
         if refs:
             for ref in refs:
@@ -384,25 +384,6 @@ def read_all_amd_references(workspace):
                     references[ref] = refs[ref]
 
     return references
-
-
-def read_md_references(workspace, ref_file):
-    """If MD reference file exists in workspace, read
-    all the MD IDs as a dictionary.
-
-    :workspace: path to workspace directory
-    :ref_file: Metadata reference file
-    :returns: Root of the reference tree
-    """
-    reference_file = os.path.join(workspace, ref_file)
-
-    if os.path.isfile(reference_file):
-        references = {}
-        with open(reference_file) as in_file:
-            for line in in_file:
-                references.update(json.loads(line))
-        return references
-    return None
 
 
 def get_md_references(refs_dict, path=None, stream=None, directory=None):

@@ -16,7 +16,8 @@ import lxml.etree
 import mets
 import xml_helpers.utils as xml_utils
 from scandir import scandir
-from siptools.mdcreator import get_objectlist, read_md_references
+from siptools.mdcreator import get_objectlist
+from siptools.utils import read_md_references
 from siptools.xml.mets import (METS_CATALOG, METS_PROFILE, METS_SPECIFICATION,
                                NAMESPACES, RECORD_STATUS_TYPES, mets_extend)
 
@@ -277,7 +278,7 @@ def copy_objects(workspace, data_dir):
     :data_dir: Path to digital objects
     """
     files = get_objectlist(read_md_references(
-        workspace, "import-object-md-references.json"
+        workspace, "import-object-md-references.jsonl"
     ))
     for source in files:
         target = os.path.join(workspace, source)

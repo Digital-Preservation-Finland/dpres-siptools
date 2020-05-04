@@ -9,7 +9,7 @@ import pytest
 
 import lxml.etree as ET
 import siptools.scripts.create_addml as create_addml
-from siptools.utils import decode_path
+from siptools.utils import decode_path, read_md_references
 
 CSV_FILE = "tests/data/csvfile.csv"
 DELIMITER = ";"
@@ -32,12 +32,12 @@ def test_create_addml(is_header):
 
     # Check namespace
     assert addml_etree.nsmap['addml'] == \
-        'http://www.arkivverket.no/standarder/addml'
+           'http://www.arkivverket.no/standarder/addml'
 
     # Check schema
     assert addml_etree.get(
         '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation'
-    ) == "http://www.arkivverket.no/standarder/addml "\
+    ) == "http://www.arkivverket.no/standarder/addml " \
          "http://schema.arkivverket.no/ADDML/latest/addml.xsd"
 
     # Check individual elements
@@ -100,7 +100,7 @@ def test_create_addml_creator(testpath, isheader, exp_amd_files, exp_fields):
     # Check that md-reference and the ADDML-amd files with correct content
     # are created
     assert os.path.isfile(
-        os.path.join(testpath, 'create-addml-md-references.json')
+        os.path.join(testpath, 'create-addml-md-references.jsonl')
     )
 
     for amd_file_index, exp_amd_file in enumerate(exp_amd_files):
@@ -152,10 +152,8 @@ def test_paths(testpath, file_, base_path, run_cli):
             '--sep', RECORDSEPARATOR, '--quot', QUOTINGCHAR,
             '--workspace', testpath, file_])
 
-    with io.open(os.path.join(testpath,
-                              'create-addml-md-references.json'),
-                 "rt") as in_file:
-        references = json.load(in_file)
+    references = read_md_references(testpath,
+                                    'create-addml-md-references.jsonl')
     assert os.path.normpath(file_) in references
 
     assert os.path.isfile(os.path.normpath(os.path.join(base_path, file_)))

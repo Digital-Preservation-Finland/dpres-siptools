@@ -12,16 +12,15 @@ import six
 
 import lxml.etree as ET
 
-from siptools.mdcreator import read_md_references
 from siptools.scripts import import_object
-from siptools.utils import fsdecode_path, load_scraper_json
+from siptools.utils import fsdecode_path, load_scraper_json, read_md_references
 from siptools.xml.mets import NAMESPACES
 
 
 def get_amd_file(path,
                  input_file,
                  stream=None,
-                 ref_file='import-object-md-references.json',
+                 ref_file='import-object-md-references.jsonl',
                  suffix='-PREMIS%3AOBJECT-amd.xml'):
     """Get id"""
     refs = read_md_references(path, ref_file)
@@ -59,7 +58,7 @@ def test_import_object_ok(testpath, run_cli):
     event_output = get_amd_file(
         testpath,
         input_file,
-        ref_file='premis-event-md-references.json',
+        ref_file='premis-event-md-references.jsonl',
         suffix='-PREMIS%3AEVENT-amd.xml')
     event_output_path = os.path.join(testpath, event_output[0])
     event_root = ET.parse(event_output_path).getroot()
@@ -171,7 +170,7 @@ def test_import_object_multiple(testpath, run_cli):
 
     expected_files = 9
 
-    refs = read_md_references(testpath, 'import-object-md-references.json')
+    refs = read_md_references(testpath, 'import-object-md-references.jsonl')
     assert len(refs) == expected_files
 
     count = 0
@@ -494,7 +493,7 @@ def test_import_object_event_agent(
     events_output = get_amd_file(
         testpath,
         input_file,
-        ref_file='premis-event-md-references.json',
+        ref_file='premis-event-md-references.jsonl',
         suffix='-PREMIS%3AEVENT-amd.xml')
 
     # Allow only part of values in the lists based on the number of different
@@ -528,7 +527,7 @@ def test_import_object_event_agent(
     agent_output = get_amd_file(
         testpath,
         input_file,
-        ref_file='premis-event-md-references.json',
+        ref_file='premis-event-md-references.jsonl',
         suffix='-PREMIS%3AAGENT-amd.xml')
     agent_output_path = os.path.join(testpath, agent_output[0])
     agent_root = ET.parse(agent_output_path).getroot()
