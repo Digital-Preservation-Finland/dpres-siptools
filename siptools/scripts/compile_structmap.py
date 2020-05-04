@@ -619,9 +619,8 @@ def _create_event(
                  event_detail=("Creation of structural metadata with the "
                                "compile-structmap script"),
                  event_outcome="success",
-                 event_outcome_detail=(
-                         "Created METS structural map of type %s"
-                         % structmap_type),
+                 event_outcome_detail=("Created METS structural map of type %s"
+                                       % structmap_type),
                  workspace=workspace,
                  create_agent_file='compile-structmap-agents')
 
