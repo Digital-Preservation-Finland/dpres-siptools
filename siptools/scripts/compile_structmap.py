@@ -292,7 +292,7 @@ def create_ead3_structmap(filegrp, attributes):
     div_ead = mets.div(type_attr='archdesc', label=label, dmdid=dmdids,
                        admid=amdids)
 
-    if len(root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES)) > 0:
+    if root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES):
         for elem in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
             if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
                 ead3_c_div(elem, div_ead, filegrp, attributes)
@@ -620,8 +620,8 @@ def _create_event(
                                "compile-structmap script"),
                  event_outcome="success",
                  event_outcome_detail=(
-                     "Created METS structural map of type %s"
-                     % structmap_type),
+                         "Created METS structural map of type %s"
+                         % structmap_type),
                  workspace=workspace,
                  create_agent_file='compile-structmap-agents')
 

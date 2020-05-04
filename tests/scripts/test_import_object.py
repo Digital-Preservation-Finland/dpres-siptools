@@ -439,10 +439,10 @@ def test_streams(testpath, run_cli):
                               namespaces=NAMESPACES)) == 1
         assert root.xpath('//premis:formatName',
                           namespaces=NAMESPACES)[0].text == mime
-        assert len(root.xpath('//premis:messageDigest',
-                              namespaces=NAMESPACES)) == 0
-        assert len(root.xpath('//premis:relationship',
-                              namespaces=NAMESPACES)) == 0
+        assert not root.xpath('//premis:messageDigest',
+                              namespaces=NAMESPACES)
+        assert not root.xpath('//premis:relationship',
+                              namespaces=NAMESPACES)
         assert root.xpath('//premis:object/@xsi:type',
                           namespaces=NAMESPACES)[0] == 'premis:bitstream'
 

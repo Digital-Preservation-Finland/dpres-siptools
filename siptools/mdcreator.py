@@ -179,8 +179,9 @@ class MetsSectionCreator(object):
         # Write reference list JSON line file
         if paths_updated:
             # Existing reference file must be updated.
-            with open(reference_file, 'rt') as in_file, open(
-                    '%s.tmp' % reference_file, 'at') as out_file:
+            with open(reference_file,
+                      'rt') as in_file, open('%s.tmp' % reference_file,
+                                             'at') as out_file:
                 for line in in_file:
                     existing_json_data = json.loads(line)
                     for key in existing_json_data:

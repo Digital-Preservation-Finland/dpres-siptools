@@ -134,12 +134,10 @@ def test_collect_dao_hrefs():
      (['koodi.java', 'publication.txt'], 2, 'div', True),
      (['koodi.java', 'publication.txt', 'fooo'], 2, 'div', True),
      (['koodi.java', 'publication.txt'], 2, 'fptr', False)],
-    ids=(
-            'One href: add ORDER to existing div',
-            'Two hrefs: add new divs for each href',
-            'One non-existing href: add just the existing hrefs',
-            'No file properties: just fptr elements added'
-    )
+    ids=('One href: add ORDER to existing div',
+         'Two hrefs: add new divs for each href',
+         'One non-existing href: add just the existing hrefs',
+         'No file properties: just fptr elements added')
 )
 # pylint: disable=too-many-arguments
 def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,

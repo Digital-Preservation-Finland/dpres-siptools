@@ -129,8 +129,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
             error_str = error_head + error_str
         raise ValueError(six.text_type(error_str))
 
-    if scraper.info[0]['class'] == 'FileExists' and \
-            len(scraper.info[0]['errors']) > 0:
+    if scraper.info[0]['class'] == 'FileExists' and scraper.info[0]['errors']:
         raise IOError(scraper.info[0]['errors'])
     for _, info in six.iteritems(scraper.info):
         if info['class'] == 'ScraperNotFound':

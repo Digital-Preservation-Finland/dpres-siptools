@@ -234,8 +234,7 @@ def _open_csv_file(file_path, charset):
     """
     if six.PY2:
         return io.open(file_path, "rb")
-    else:
-        return io.open(file_path, "rt", encoding=charset)
+    return io.open(file_path, "rt", encoding=charset)
 
 
 def csv_header(attributes):

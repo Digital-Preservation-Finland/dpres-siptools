@@ -215,8 +215,8 @@ def test_import_description_event_agent(testpath, run_cli):
         namespaces=NAMESPACES)[0].text == 'software'
 
     # Test that the agent is linked to the event
-    assert event_root.xpath(
-        './/premis:linkingAgentIdentifierValue',
-        namespaces=NAMESPACES)[0].text == agent_root.xpath(
-        './/premis:agentIdentifierValue',
-        namespaces=NAMESPACES)[0].text
+    linking_value = event_root.xpath('.//premis:linkingAgentIdentifierValue',
+                                     namespaces=NAMESPACES)[0].text
+    agent_value = agent_root.xpath('.//premis:agentIdentifierValue',
+                                   namespaces=NAMESPACES)[0].text
+    assert linking_value == agent_value
