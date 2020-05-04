@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import os
 import shutil
-import json
 
 import lxml.etree
 import mets
@@ -64,8 +63,8 @@ def test_compile_structmap_ok(testpath, run_cli):
             if premis.parse_event_type(event_root) != 'creation':
                 continue
             found_root = event_root
-    assert found_root.xpath('./*/*/*/*/*')[0].tag == \
-           '{info:lc/xmlns/premis-v2}event'
+    assert found_root.xpath('./*/*/*/*/*')[0].tag == ('{info:lc/xmlns/'
+                                                      'premis-v2}event')
     assert found_root.xpath(
         '//premis:eventDetail',
         namespaces=NAMESPACES)[0].text == ('Creation of structural metadata '
@@ -100,12 +99,9 @@ def test_compile_structmap_dmdsecid(testpath, run_cli):
     dmdsecid = refs['.']['md_ids'][0]
 
     structmap = lxml.etree.parse(os.path.join(testpath, 'structmap.xml'))
-    assert len(
-        structmap.xpath(
-            '/mets:mets/mets:structMap/mets:div[@DMDID="%s"]' % dmdsecid,
-            namespaces=NAMESPACES
-        )
-    ) == 1
+    assert len(structmap.xpath(
+        '/mets:mets/mets:structMap/mets:div[@DMDID="%s"]' % dmdsecid,
+        namespaces=NAMESPACES)) == 1
 
 
 def test_compile_structmap_not_ok(testpath, run_cli):
@@ -161,12 +157,12 @@ def test_othermd_references(testpath, run_cli):
 
     # This dictonary maps filepath to MIX techMD IDs excpected to be referenced
     # in fileSec
-    amd_ids = {"sample_images/sample_tiff1_compressed.tif":
-                   "_c08061e439bd40407c9e5332fec6084e",
-               "sample_images/sample_tiff1.tif":
-                   "_e50655691d21e110a3c4b38da52fb91c",
-               "sample_images/sample_tiff2.tif":
-                   "_e50655691d21e110a3c4b38da52fb91c"}
+    amd_ids = {
+        "sample_images/sample_tiff1_compressed.tif":
+            "_c08061e439bd40407c9e5332fec6084e",
+        "sample_images/sample_tiff1.tif": "_e50655691d21e110a3c4b38da52fb91c",
+        "sample_images/sample_tiff2.tif": "_e50655691d21e110a3c4b38da52fb91c"
+    }
 
     for filepath in amd_ids:
         # Find file element from mets based on filepath

@@ -2,8 +2,6 @@
 from __future__ import unicode_literals
 
 import os
-import io
-import json
 
 import pytest
 
@@ -46,8 +44,8 @@ def test_import_description_valid_file(testpath, run_cli):
     tree = ET.parse(output_path)
     root = tree.getroot()
     assert len(root.xpath('./*/*/*/*')) == 4
-    assert root.xpath('./*/*/*/*')[0].tag == \
-           '{http://purl.org/dc/elements/1.1/}title'
+    assert root.xpath('./*/*/*/*')[0].tag == ('{http://purl.org/dc/'
+                                              'elements/1.1/}title')
 
     # Assert that an event has been created
     event_output = get_md_file(
@@ -57,8 +55,8 @@ def test_import_description_valid_file(testpath, run_cli):
         output_suffix='-PREMIS%3AEVENT-amd.xml')
     event_output_path = os.path.join(testpath, event_output)
     event_root = ET.parse(event_output_path).getroot()
-    assert event_root.xpath('./*/*/*/*/*')[0].tag == \
-           '{info:lc/xmlns/premis-v2}event'
+    assert event_root.xpath('./*/*/*/*/*')[0].tag == ('{info:lc/xmlns/'
+                                                      'premis-v2}event')
 
 
 @pytest.mark.parametrize(
@@ -163,8 +161,9 @@ def test_paths(testpath, directory, base_path, run_cli):
             "tests/data/import_description/metadata/dc_description.xml"
         ])
 
-    md_references = read_md_references(testpath,
-                                       'import-description-md-references.jsonl')
+    md_references = read_md_references(
+        testpath,
+        'import-description-md-references.jsonl')
 
     assert os.path.normpath(directory) in md_references
     assert os.path.isdir(os.path.normpath(os.path.join(base_path, directory)))
@@ -190,8 +189,8 @@ def test_import_description_event_agent(testpath, run_cli):
         output_suffix='-PREMIS%3AEVENT-amd.xml')
     event_output_path = os.path.join(testpath, event_output)
     event_root = ET.parse(event_output_path).getroot()
-    assert event_root.xpath('./*/*/*/*/*')[0].tag == \
-           '{info:lc/xmlns/premis-v2}event'
+    assert event_root.xpath('./*/*/*/*/*')[0].tag == ('{info:lc/xmlns/'
+                                                      'premis-v2}event')
     assert event_root.xpath(
         './/premis:eventType',
         namespaces=NAMESPACES)[0].text == 'metadata extraction'
@@ -206,8 +205,8 @@ def test_import_description_event_agent(testpath, run_cli):
         output_suffix='-PREMIS%3AAGENT-amd.xml')
     agent_output_path = os.path.join(testpath, agent_output)
     agent_root = ET.parse(agent_output_path).getroot()
-    assert agent_root.xpath('./*/*/*/*/*')[0].tag == \
-           '{info:lc/xmlns/premis-v2}agent'
+    assert agent_root.xpath('./*/*/*/*/*')[0].tag == ('{info:lc/xmlns/'
+                                                      'premis-v2}agent')
     assert agent_root.xpath(
         './/premis:agentName',
         namespaces=NAMESPACES)[0].text == 'database-client'

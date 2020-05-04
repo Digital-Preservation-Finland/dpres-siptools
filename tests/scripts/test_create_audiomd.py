@@ -34,39 +34,26 @@ def test_create_audiomd_elem():
     path = "/amd:AUDIOMD[@ANALOGDIGITALFLAG='FileDigital']"
     assert len(audiomd.xpath(path, namespaces=NAMESPACES)) == 1
 
-    path = "%s/amd:audioDataEncoding" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PCM'
-
-    path = "%s/amd:bitsPerSample" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '8'
-
-    path = "%s/amd:compression/amd:codecCreatorApp" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == \
-           'Lavf56.40.101'
-
-    path = "%s/amd:compression/amd:codecCreatorAppVersion" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '56.40.101'
-
-    path = "%s/amd:compression/amd:codecName" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PCM'
-
-    path = "%s/amd:compression/amd:codecQuality" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossless'
-
-    path = "%s/amd:dataRate" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '706'
-
-    path = "%s/amd:dataRateMode" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Fixed'
-
-    path = "%s/amd:samplingFrequency" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '44.1'
-
-    path = "%s/amd:duration" % audio_info
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT0.86S'
-
-    path = "%s/amd:numChannels" % audio_info
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '2'
+    file_data_paths = (
+        ('%s/amd:audioDataEncoding', 'PCM'),
+        ('%s/amd:bitsPerSample', '8'),
+        ('%s/amd:compression/amd:codecCreatorApp', 'Lavf56.40.101'),
+        ('%s/amd:compression/amd:codecCreatorAppVersion', '56.40.101'),
+        ('%s/amd:compression/amd:codecName', 'PCM'),
+        ('%s/amd:compression/amd:codecQuality', 'lossless'),
+        ('%s/amd:dataRate', '706'),
+        ('%s/amd:dataRateMode', 'Fixed'),
+        ('%s/amd:samplingFrequency', '44.1'),
+    )
+    audio_info_paths = (
+        ('%s/amd:duration', 'PT0.86S'),
+        ('%s/amd:numChannels', '2')
+    )
+    for prefix, paths in ((file_data, file_data_paths),
+                          (audio_info, audio_info_paths)):
+        for path, expected in paths:
+            assert audiomd.xpath(path % prefix,
+                                 namespaces=NAMESPACES)[0].text == expected
 
 
 def test_stream():
@@ -79,39 +66,26 @@ def test_stream():
     file_data = "/amd:AUDIOMD/amd:fileData"
     audio_info = "/amd:AUDIOMD/amd:audioInfo"
 
-    path = "%s/amd:audioDataEncoding" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'AAC'
-
-    path = "%s/amd:bitsPerSample" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '0'
-
-    path = "%s/amd:compression/amd:codecCreatorApp" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == \
-           'Lavf56.40.101'
-
-    path = "%s/amd:compression/amd:codecCreatorAppVersion" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '56.40.101'
-
-    path = "%s/amd:compression/amd:codecName" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'AAC'
-
-    path = "%s/amd:compression/amd:codecQuality" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossy'
-
-    path = "%s/amd:dataRate" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '135'
-
-    path = "%s/amd:dataRateMode" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'Fixed'
-
-    path = "%s/amd:samplingFrequency" % file_data
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '44.1'
-
-    path = "%s/amd:duration" % audio_info
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == 'PT0.86S'
-
-    path = "%s/amd:numChannels" % audio_info
-    assert audiomd.xpath(path, namespaces=NAMESPACES)[0].text == '2'
+    file_data_paths = (
+        ('%s/amd:audioDataEncoding', 'AAC'),
+        ('%s/amd:bitsPerSample', '0'),
+        ('%s/amd:compression/amd:codecCreatorApp', 'Lavf56.40.101'),
+        ('%s/amd:compression/amd:codecCreatorAppVersion', '56.40.101'),
+        ('%s/amd:compression/amd:codecName', 'AAC'),
+        ('%s/amd:compression/amd:codecQuality', 'lossy'),
+        ('%s/amd:dataRate', '135'),
+        ('%s/amd:dataRateMode', 'Fixed'),
+        ('%s/amd:samplingFrequency', '44.1'),
+    )
+    audio_info_paths = (
+        ('%s/amd:duration', 'PT0.86S'),
+        ('%s/amd:numChannels', '2')
+    )
+    for prefix, paths in ((file_data, file_data_paths),
+                          (audio_info, audio_info_paths)):
+        for path, expected in paths:
+            assert audiomd.xpath(path % prefix,
+                                 namespaces=NAMESPACES)[0].text == expected
 
 
 def test_invalid_wav_file():

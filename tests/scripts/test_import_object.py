@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import datetime
 import io
 import os.path
-import json
 
 import pytest
 import six
@@ -62,8 +61,8 @@ def test_import_object_ok(testpath, run_cli):
         suffix='-PREMIS%3AEVENT-amd.xml')
     event_output_path = os.path.join(testpath, event_output[0])
     event_root = ET.parse(event_output_path).getroot()
-    assert event_root.xpath('./*/*/*/*/*')[0].tag == \
-           '{info:lc/xmlns/premis-v2}event'
+    assert event_root.xpath('./*/*/*/*/*')[0].tag == ('{info:lc/xmlns/'
+                                                      'premis-v2}event')
 
 
 # pylint: disable=invalid-name
@@ -531,8 +530,8 @@ def test_import_object_event_agent(
         suffix='-PREMIS%3AAGENT-amd.xml')
     agent_output_path = os.path.join(testpath, agent_output[0])
     agent_root = ET.parse(agent_output_path).getroot()
-    assert agent_root.xpath('./*/*/*/*/*')[0].tag == \
-           '{info:lc/xmlns/premis-v2}agent'
+    assert agent_root.xpath('./*/*/*/*/*')[0].tag == ('{info:lc/xmlns/'
+                                                      'premis-v2}agent')
     assert agent_root.xpath(
         './/premis:agentType',
         namespaces=NAMESPACES)[0].text == 'software'

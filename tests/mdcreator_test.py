@@ -38,8 +38,7 @@ def test_create_amdfile(testpath):
 
     # The techMD element should contain one sampleData element wrapped in
     # mdWrap and xmlData elements
-    sample_data_elements \
-        = amd_elements[0].xpath(
+    sample_data_elements = amd_elements[0].xpath(
         '//mets:mdWrap/mets:xmlData/sampleData',
         namespaces={"mets": "http://www.loc.gov/METS/"}
     )
@@ -135,16 +134,16 @@ def test_add_mdreference(testpath, references, expected):
 
     for path in expected:
         assert path in created_references
-        assert len(created_references[path]['md_ids']) \
-               == len(expected[path]['md_ids'])
-        assert len(created_references[path]['streams']) \
-               == len(expected[path]['streams'])
+        assert len(created_references[path]['md_ids']) == len(
+            expected[path]['md_ids'])
+        assert len(created_references[path]['streams']) == len(
+            expected[path]['streams'])
         for ref in expected[path]['md_ids']:
             assert ref in created_references[path]['md_ids']
         for stream in expected[path]['streams']:
             assert stream in created_references[path]['streams']
-            assert len(created_references[path]['streams'][stream]) \
-                   == len(expected[path]['streams'][stream])
+            assert len(created_references[path]['streams'][stream]) == len(
+                expected[path]['streams'][stream])
             for stream_id in expected[path]['streams'][stream]:
                 assert stream_id in created_references[path]['streams'][stream]
 

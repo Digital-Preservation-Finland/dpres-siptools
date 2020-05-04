@@ -2,8 +2,6 @@
 from __future__ import unicode_literals
 
 import os
-import io
-import json
 
 import pytest
 
@@ -31,14 +29,14 @@ def test_create_addml(is_header):
     )
 
     # Check namespace
-    assert addml_etree.nsmap['addml'] == \
-           'http://www.arkivverket.no/standarder/addml'
+    assert addml_etree.nsmap['addml'] == ('http://www.arkivverket.no/'
+                                          'standarder/addml')
 
     # Check schema
     assert addml_etree.get(
         '{http://www.w3.org/2001/XMLSchema-instance}schemaLocation'
-    ) == "http://www.arkivverket.no/standarder/addml " \
-         "http://schema.arkivverket.no/ADDML/latest/addml.xsd"
+    ) == ('http://www.arkivverket.no/standarder/addml '
+          'http://schema.arkivverket.no/ADDML/latest/addml.xsd')
 
     # Check individual elements
     tags = ["fieldSeparatingChar", "charset", "recordSeparator", "quotingChar"]

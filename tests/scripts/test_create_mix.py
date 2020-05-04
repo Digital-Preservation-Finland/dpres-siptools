@@ -2,7 +2,6 @@
 """Tests for ``siptools.scripts.create_mix`` module"""
 from __future__ import unicode_literals
 
-import io
 import os
 import json
 import shutil

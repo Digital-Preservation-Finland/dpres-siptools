@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 import os
-import json
 import mets
 import pytest
 
@@ -101,8 +100,8 @@ def test_compile_structmap_ok(testpath, run_cli):
             if premis.parse_event_type(event_root) != 'creation':
                 continue
             found_root = event_root
-    assert found_root.xpath('./*/*/*/*/*')[0].tag == \
-           '{info:lc/xmlns/premis-v2}event'
+    assert found_root.xpath('./*/*/*/*/*')[0].tag == ('{info:lc/xmlns/'
+                                                      'premis-v2}event')
     assert found_root.xpath(
         '//premis:eventDetail',
         namespaces=NAMESPACES)[0].text == ('Creation of structural metadata '

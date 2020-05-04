@@ -2,7 +2,6 @@
 """Tests for ``siptools.scripts.create_videomd`` module"""
 from __future__ import unicode_literals
 
-import io
 import os.path
 import json
 import shutil
@@ -43,8 +42,7 @@ def test_create_videomd_elem():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '(:unav)'
 
     path = "%s/vmd:compression/vmd:codecName" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == \
-           'MPEG Video'
+    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'MPEG Video'
 
     path = "%s/vmd:compression/vmd:codecQuality" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == 'lossy'
@@ -98,8 +96,8 @@ def test_stream():
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '8'
 
     path = "%s/vmd:compression/vmd:codecCreatorApp" % file_data
-    assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == \
-           'Lavf56.40.101'
+    assert videomd.xpath(path,
+                         namespaces=NAMESPACES)[0].text == 'Lavf56.40.101'
 
     path = "%s/vmd:compression/vmd:codecCreatorAppVersion" % file_data
     assert videomd.xpath(path, namespaces=NAMESPACES)[0].text == '56.40.101'
