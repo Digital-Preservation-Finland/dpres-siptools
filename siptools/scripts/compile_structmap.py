@@ -12,12 +12,11 @@ import click
 import lxml.etree as ET
 import mets
 import xml_helpers.utils as xml_utils
-from siptools.mdcreator import (get_objectlist, read_all_amd_references,
-                                get_md_references)
 from siptools.scripts.create_agent import create_agent
 from siptools.scripts.premis_event import premis_event
 from siptools.utils import add, encode_path, tree, load_scraper_json, \
-    read_md_references
+    read_md_references, get_objectlist, read_all_amd_references, \
+    get_md_references
 from siptools.xml.mets import NAMESPACES
 
 import siptools

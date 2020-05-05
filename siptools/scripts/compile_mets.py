@@ -16,8 +16,7 @@ import lxml.etree
 import mets
 import xml_helpers.utils as xml_utils
 from scandir import scandir
-from siptools.mdcreator import get_objectlist
-from siptools.utils import read_md_references
+from siptools.utils import read_md_references, get_objectlist
 from siptools.xml.mets import (METS_CATALOG, METS_PROFILE, METS_SPECIFICATION,
                                NAMESPACES, RECORD_STATUS_TYPES, mets_extend)
 

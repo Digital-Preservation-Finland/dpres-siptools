@@ -6,9 +6,9 @@ import os
 import json
 import pytest
 import lxml.etree
-from siptools.mdcreator import (MetsSectionCreator, get_md_references,
-                                remove_dmdsec_references)
-from siptools.utils import read_md_references
+from siptools.mdcreator import (MetsSectionCreator)
+from siptools.utils import read_md_references, remove_dmdsec_references, \
+    get_md_references
 
 
 def test_create_amdfile(testpath):

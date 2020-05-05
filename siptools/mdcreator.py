@@ -11,7 +11,7 @@ import six
 
 import mets
 import xml_helpers
-from siptools.utils import generate_digest, encode_path, read_md_references
+from siptools.utils import generate_digest, encode_path
 
 
 def _parse_refs(ref):
@@ -327,103 +327,3 @@ class MetsSectionCreator(object):
 
         # Clear references and md_elements
         self.__init__(self.workspace)
-
-
-def get_objectlist(refs_dict, file_path=None):
-    """Get unique and sorted list of files or streams from
-    md-references.jsonl
-
-    :refs_dict: Dictionary of objects
-    :file_path: If given, finds streams of the given file.
-                If None, finds a sorted list all file paths.
-    :returns: Sorted list of files, or streams of a given file
-    """
-    objectset = set()
-    if file_path is not None:
-        for stream in refs_dict[file_path]['streams']:
-            objectset.add(stream)
-    elif refs_dict:
-        for key, value in six.iteritems(refs_dict):
-            if value['path_type'] == 'file':
-                objectset.add(key)
-
-    return sorted(objectset)
-
-
-def remove_dmdsec_references(workspace):
-    """
-    Removes the reference to the dmdSecs in the md-references.jsonl file.
-
-    :workspace: Workspace path
-    """
-    refs_file = os.path.join(workspace,
-                             'import-description-md-references.jsonl')
-    if os.path.exists(refs_file):
-        os.remove(refs_file)
-
-
-def read_all_amd_references(workspace):
-    """
-    Collect all administrative references.
-
-    :workspace: path to workspace directory
-    :returns: a set of administrative MD IDs
-    """
-    references = {}
-    for ref_file in ["import-object-md-references.jsonl",
-                     "create-addml-md-references.jsonl",
-                     "create-audiomd-md-references.jsonl",
-                     "create-mix-md-references.jsonl",
-                     "create-videomd-md-references.jsonl",
-                     "premis-event-md-references.jsonl"]:
-        refs = read_md_references(workspace, ref_file)
-        if refs:
-            for ref in refs:
-                if ref in references:
-                    references[ref]['md_ids'].extend(refs[ref]['md_ids'])
-
-                    for stream in refs[ref]['streams']:
-                        if stream in references[ref]['streams']:
-                            references[ref]['streams'][stream].extend(
-                                refs[ref]['streams'][stream])
-                        else:
-                            references[ref]['streams'][stream] = \
-                                refs[ref]['streams'][stream]
-
-                else:
-                    references[ref] = refs[ref]
-
-    return references
-
-
-def get_md_references(refs_dict, path=None, stream=None, directory=None):
-    """
-    Return filtered references from a set of given references.
-    :refs_dict: Dictionary of references to be filtered
-    :path: Filter by given file path
-    :stream: Filter by given strean index
-    :directory: Filter by given directory path
-    """
-    if refs_dict is None:
-        return None
-
-    md_ids = []
-    try:
-        if directory is None and path is None and stream is None:
-            for ref_path in refs_dict:
-                md_ids.extend(refs_dict[ref_path]['md_ids'])
-        elif directory:
-            directory = os.path.normpath(directory)
-            md_ids = refs_dict[directory]['md_ids']
-
-        elif stream is None:
-            md_ids = refs_dict[path]['md_ids']
-        else:
-            md_ref = refs_dict[path]
-            for ref_stream in md_ref['streams']:
-                if ref_stream == stream:
-                    md_ids = md_ref['streams'][ref_stream]
-    except KeyError:
-        pass
-
-    return set(md_ids)
