@@ -37,6 +37,36 @@ def _uniques_list(reference_list, reference):
     return list(set_list)
 
 
+def _get_path_from_reference_file(reference_file, ref_path):
+    """An inner function to help read an existing JSON lines file.
+
+    :reference_file: JSON Line reference file to read from.
+    :ref_path: The ref_path key to look for.
+    :return: Dictionary on finding, None when none is found.
+    """
+    with open(reference_file, 'r') as out_file:
+        for line in out_file:
+            try:
+                return json.loads(line)[ref_path]
+            except KeyError:
+                continue
+    return None
+
+
+def _setup_new_path(path_type):
+    """Sets up a new path dictionary. For cases when no prior path data
+    is found among references.
+
+    :path_type: Path type in question in string.
+    :return: Newly constructed dictionary.
+    """
+    return dict(
+        path_type=path_type,
+        streams=dict(),
+        md_ids=list()
+    )
+
+
 class MetsSectionCreator(object):
     """
     Class for generating lxml.etree XML for different METS metadata sections
@@ -115,33 +145,6 @@ class MetsSectionCreator(object):
         created for lxml.etree XML.
         """
 
-        def _get_path_from_reference_file(ref_path):
-            """An inner function to help read an existing JSON lines file.
-
-            :param ref_path: The ref_path key to look for.
-            :return: Dictionary on finding, None when none is found.
-            """
-            with open(reference_file, 'r') as out_file:
-                for line in out_file:
-                    try:
-                        return json.loads(line)[ref_path]
-                    except KeyError:
-                        continue
-            return None
-
-        def _setup_new_path(path_type):
-            """Sets up a new path dictionary. For cases when no prior path data
-            is found among references.
-
-            :param path_type: Path type in question in string.
-            :return: Newly constructed dictionary.
-            """
-            return dict(
-                path_type=path_type,
-                streams=dict(),
-                md_ids=list()
-            )
-
         reference_file = os.path.join(self.workspace, ref_file)
 
         path_map = {}
@@ -157,7 +160,8 @@ class MetsSectionCreator(object):
             except KeyError:
                 path = None
                 if file_exists:
-                    path = _get_path_from_reference_file(ref_path)
+                    path = _get_path_from_reference_file(reference_file,
+                                                         ref_path)
                     if path is not None:
                         paths_updated.add(ref_path)
                 if path is None:
