@@ -371,7 +371,7 @@ def read_md_references(workspace, ref_file):
 
     :workspace: path to workspace directory
     :ref_file: Metadata reference file
-    :returns: Root of the reference tree
+    :returns: A dict of references or None if reference file doesn't exist
     """
     reference_file = os.path.join(workspace, ref_file)
 
