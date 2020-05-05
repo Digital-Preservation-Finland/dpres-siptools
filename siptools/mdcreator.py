@@ -155,30 +155,44 @@ class MetsSectionCreator(object):
         paths_updated = set()
         for ref in self.references:
             ref_path = _parse_refs(ref['path'])
+
+            # We'll first set data to path-variable for processing.
             try:
+                # Set a reference if path being processed already exists.
                 path = paths[path_map[ref_path]][ref_path]
             except KeyError:
                 path = None
                 if file_exists:
+                    # Get existing path entry from a file.
                     path = _get_path_from_reference_file(reference_file,
                                                          ref_path)
                     if path is not None:
+                        # Existing entry found.
                         paths_updated.add(ref_path)
                 if path is None:
+                    # No prior existing path so setting up new one.
                     path = _setup_new_path(ref['path_type'])
+                # Map to list of paths that underwent processing.
                 paths.append({ref_path: path})
                 path_map[ref_path] = len(paths) - 1
+
+            # Based on whether or not stream exists for the reference, we'll
+            # update the reference list.
             if ref['stream']:
                 try:
-                    stream_ids = _uniques_list(path['streams'][ref['stream']],
-                                               ref['md_id'])
+                    path['streams'][ref['stream']] = _uniques_list(
+                        path['streams'][ref['stream']],
+                        ref['md_id']
+                    )
                 except KeyError:
-                    stream_ids = list()
-                    stream_ids.append(ref['md_id'])
-                path['streams'][ref['stream']] = stream_ids
+                    path['streams'][ref['stream']] = list()
+                    path['streams'][ref['stream']].append(ref['md_id'])
             else:
-                ids = _uniques_list(path['md_ids'], ref['md_id'])
-                paths[path_map[ref_path]][ref_path]['md_ids'] = ids
+                path['md_ids'] = _uniques_list(path['md_ids'], ref['md_id'])
+
+            # After path-variable has been modified enough, set the updated
+            # path dictionary back paths-collection.
+            paths[path_map[ref_path]][ref_path] = path
 
         # Write reference list JSON line file
         if paths_updated:
