@@ -264,7 +264,7 @@ def clean_metsparts(path):
         for name in files:
             if (name.endswith(('-amd.xml', 'dmdsec.xml', 'structmap.xml',
                                'filesec.xml', 'rightsmd.xml',
-                               'md-references.json',
+                               'md-references.jsonl',
                                '-scraper.json', '-amd.json'))):
                 os.remove(os.path.join(root, name))
 
