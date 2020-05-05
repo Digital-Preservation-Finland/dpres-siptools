@@ -182,7 +182,8 @@ class MetsSectionCreator(object):
 
         # Write reference list JSON line file
         if paths_updated:
-            # Existing reference file must be updated.
+            # Existing entries in reference file must be updated.
+            # We'll proceed to write to a separate temporary file.
             with open(reference_file,
                       'rt') as in_file, open('%s.tmp' % reference_file,
                                              'at') as out_file:
@@ -197,11 +198,15 @@ class MetsSectionCreator(object):
                     json.dump(path, out_file)
                     out_file.write('\n')
         else:
+            # If no existing entries required update, we'll append directly
+            # to reference file.
             for path in paths:
                 with open(reference_file, 'at') as out_file:
                     json.dump(path, out_file)
                     out_file.write('\n')
 
+        # If temporary file was written, it'll replace the existing reference
+        # file as a whole.
         if os.path.exists('%s.tmp' % reference_file):
             os.rename('%s.tmp' % reference_file, reference_file)
 
