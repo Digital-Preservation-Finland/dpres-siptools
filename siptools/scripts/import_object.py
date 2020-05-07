@@ -561,7 +561,7 @@ def _create_events(
     }
 
     if not identification_event:
-        events.pop('identification')
+        del events['identification']
 
     event_targets = []
     if event_target:
