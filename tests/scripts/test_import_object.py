@@ -186,8 +186,7 @@ def test_import_object_order(testpath, run_cli):
                  '--order', '5', input_file]
     run_cli(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
-    path = output[0].replace('-PREMIS%3AOBJECT-amd.xml',
-                          '-scraper.json')
+    path = output[0].replace('-PREMIS%3AOBJECT-amd.xml', '-scraper.json')
     assert os.path.isfile(path)
 
     streams = load_scraper_json(path)
@@ -499,11 +498,10 @@ def test_import_object_event_agent(
     # events created
     allowed_types = ['metadata extraction',
                      'format identification'][:count_events]
-    allowed_details = [
-        ('Premis metadata successfully created from extracted technical '
-         'metadata.'),
-        ('File MIME type and format version successfully '
-         'identified')][:count_events]
+    allowed_details = [('Premis metadata successfully created from extracted '
+                        'technical metadata.'),
+                       ('File MIME type and format version successfully '
+                        'identified')][:count_events]
 
     # Assert that the event metadata is as expected
     assert len(events_output) == count_events
@@ -511,7 +509,7 @@ def test_import_object_event_agent(
         event_output_path = os.path.join(testpath, event_output)
         event_root = ET.parse(event_output_path).getroot()
         assert event_root.xpath('./*/*/*/*/*')[0].tag == \
-            '{info:lc/xmlns/premis-v2}event'
+               '{info:lc/xmlns/premis-v2}event'
         assert event_root.xpath(
             './/premis:eventType',
             namespaces=NAMESPACES)[0].text in allowed_types
