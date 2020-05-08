@@ -508,8 +508,8 @@ def test_import_object_event_agent(
     for event_output in events_output:
         event_output_path = os.path.join(testpath, event_output)
         event_root = ET.parse(event_output_path).getroot()
-        assert event_root.xpath('./*/*/*/*/*')[0].tag == \
-               '{info:lc/xmlns/premis-v2}event'
+        event_tag = event_root.xpath('./*/*/*/*/*')[0].tag
+        assert event_tag == '{info:lc/xmlns/premis-v2}event'
         assert event_root.xpath(
             './/premis:eventType',
             namespaces=NAMESPACES)[0].text in allowed_types
