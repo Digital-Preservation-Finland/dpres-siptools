@@ -562,14 +562,15 @@ def _create_events(
             'event_detail': 'MIME type and version identification',
             'event_outcome': 'success',
             'event_outcome_detail': ('File MIME type and format version '
-                                     'successfully identified')},
+                                     'successfully identified.')},
         'validation': {
             'event_type': 'validation',
             'event_datetime': event_datetime,
             'event_detail': 'Digital object validation',
             'event_outcome': 'success',
             'event_outcome_detail': ('Digital object(s) validated '
-                                     'successfully')},
+                                     'successfully, all digital objects are '
+                                     'well-formed and valid.')},
     }
 
     # Do not create events for steps that haven't been performed by the script

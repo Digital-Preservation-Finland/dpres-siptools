@@ -503,9 +503,10 @@ def test_import_object_event_agent(
     allowed_details = [('Premis metadata successfully created from extracted '
                         'technical metadata.'),
                        ('File MIME type and format version successfully '
-                        'identified'),
-                       ('Digital object(s) validated '
-                        'successfully')][:count_events]
+                        'identified.'),
+                       ('Digital object(s) validated successfully, all '
+                        'digital objects are well-formed and '
+                        'valid.')][:count_events]
 
     # Assert that the event metadata is as expected
     assert len(events_output) == count_events
