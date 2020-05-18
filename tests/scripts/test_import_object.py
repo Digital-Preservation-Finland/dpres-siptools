@@ -470,7 +470,8 @@ def test_streams(testpath, run_cli):
 @pytest.mark.parametrize(
     ('file_format', 'skip_wellformed_check', 'count_events'), [
         (('text/plain', ''), True, 1),
-        (None, True, 2)]
+        (None, True, 2),
+        (None, False, 3)]
 )
 # pylint: disable=too-many-locals
 def test_import_object_event_agent(
@@ -497,11 +498,14 @@ def test_import_object_event_agent(
     # Allow only part of values in the lists based on the number of different
     # events created
     allowed_types = ['metadata extraction',
-                     'format identification'][:count_events]
+                     'format identification',
+                     'validation'][:count_events]
     allowed_details = [('Premis metadata successfully created from extracted '
                         'technical metadata.'),
                        ('File MIME type and format version successfully '
-                        'identified')][:count_events]
+                        'identified'),
+                       ('Digital object(s) validated '
+                        'successfully')][:count_events]
 
     # Assert that the event metadata is as expected
     assert len(events_output) == count_events

@@ -216,6 +216,7 @@ def import_object(**kwargs):
         event_datetime=attributes["event_datetime"],
         event_target=attributes["event_target"],
         identification_event=not bool(attributes["file_format"]),
+        validation_event=not bool(attributes["skip_wellformed_check"]),
         agents=agents
     )
 
@@ -526,6 +527,7 @@ def _create_events(
         event_datetime,
         event_target=None,
         identification_event=False,
+        validation_event=False,
         agents=None):
     """Function to create events documenting the extraction of technical
     metadata as well as the potential message digest calculation and
@@ -536,9 +538,12 @@ def _create_events(
     :event_targets: The targets of the metadata creation,
                     i.e. "filepaths"
     :event_datetime: The timestamp for the event
-    :identification_event: Boolean to indicate whether the digital
-                           objects were validated during the extraction
+    :identification_event: Boolean to indicate whether the file formats
+                           were identified during the extraction
                            of technical metadata.
+    :validation_event: Boolean to indicate whether the digital
+                       objects were validated during the extraction
+                       of technical metadata.
     :agents: A list of the software, as dicts, used to extract the
              metadata
     """
@@ -558,10 +563,20 @@ def _create_events(
             'event_outcome': 'success',
             'event_outcome_detail': ('File MIME type and format version '
                                      'successfully identified')},
+        'validation': {
+            'event_type': 'validation',
+            'event_datetime': event_datetime,
+            'event_detail': 'Digital object validation',
+            'event_outcome': 'success',
+            'event_outcome_detail': ('Digital object(s) validated '
+                                     'successfully')},
     }
 
+    # Do not create events for steps that haven't been performed by the script
     if not identification_event:
         del events['identification']
+    if not validation_event:
+        del events['validation']
 
     event_targets = []
     if event_target:
