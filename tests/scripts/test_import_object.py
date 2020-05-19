@@ -536,9 +536,9 @@ def test_import_object_event_agent(
             './/premis:eventOutcomeDetailNote',
             namespaces=NAMESPACES)[0].text in allowed_details
 
-    # Assert that more than one agent is linked to the event
-    assert len(event_root.xpath('.//premis:linkingAgentIdentifier',
-                                namespaces=NAMESPACES)) > 1
+    # Assert that at least one agent is linked to the event
+    assert event_root.xpath('.//premis:linkingAgentIdentifier',
+                            namespaces=NAMESPACES)
 
     agent_output = get_amd_file(
         testpath,
