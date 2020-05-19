@@ -583,9 +583,8 @@ def _create_events(
             'event_datetime': event_datetime,
             'event_detail': 'Checksum calculation for digital objects',
             'event_outcome': 'success',
-            'event_outcome_detail': ('MD5 checksums succesfully calculated '
-                                     'for digital objects and stored in the '
-                                     'premis metadata as messageDigest.')},
+            'event_outcome_detail': ('Checksum(s) successfully calculated '
+                                     'for digital object(s).')},
     }
 
     # Do not create events for steps that haven't been performed by the script

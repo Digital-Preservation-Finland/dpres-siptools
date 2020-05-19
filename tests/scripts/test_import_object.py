@@ -516,9 +516,8 @@ def test_import_object_event_agent(
                         'technical metadata.'),
                        ('File MIME type and format version successfully '
                         'identified.'),
-                       ('MD5 checksums succesfully calculated for digital '
-                        'objects and stored in the premis metadata as '
-                        'messageDigest.'),
+                       ('Checksum(s) successfully calculated for digital '
+                        'object(s).'),
                        ('Digital object(s) evaluated as well-formed and '
                         'valid.')][:count_events]
 
