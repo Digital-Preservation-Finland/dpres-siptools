@@ -217,6 +217,7 @@ def import_object(**kwargs):
         event_target=attributes["event_target"],
         identification_event=not bool(attributes["file_format"]),
         validation_event=not bool(attributes["skip_wellformed_check"]),
+        checksum_event=not bool(attributes["checksum"]),
         agents=agents
     )
 
@@ -528,6 +529,7 @@ def _create_events(
         event_target=None,
         identification_event=False,
         validation_event=False,
+        checksum_event=False,
         agents=None):
     """Function to create events documenting the extraction of technical
     metadata as well as the potential message digest calculation and
@@ -540,10 +542,16 @@ def _create_events(
     :event_datetime: The timestamp for the event
     :identification_event: Boolean to indicate whether the file formats
                            were identified during the extraction
-                           of technical metadata.
+                           of technical metadata. If True, creates an
+                           file format identifiaction event.
     :validation_event: Boolean to indicate whether the digital
                        objects were validated during the extraction
-                       of technical metadata.
+                       of technical metadata. If True, creates a digital
+                       object validation event.
+    :checksum_event: Boolean to indicate whether the message digest for
+                     digital objects were calculated during the
+                     extraction of technical metadata. If True, creates
+                     a message digest calculation event.
     :agents: A list of the software, as dicts, used to extract the
              metadata
     """
@@ -570,6 +578,14 @@ def _create_events(
             'event_outcome': 'success',
             'event_outcome_detail': ('Digital object(s) evaluated as '
                                      'well-formed and valid.')},
+        'checksum': {
+            'event_type': 'message digest calculation',
+            'event_datetime': event_datetime,
+            'event_detail': 'Checksum calculation for digital objects',
+            'event_outcome': 'success',
+            'event_outcome_detail': ('MD5 checksums succesfully calculated '
+                                     'for digital objects and stored in the '
+                                     'premis metadata as messageDigest.')},
     }
 
     # Do not create events for steps that haven't been performed by the script
@@ -577,6 +593,8 @@ def _create_events(
         del events['identification']
     if not validation_event:
         del events['validation']
+    if not checksum_event:
+        del events['checksum']
 
     event_targets = []
     if event_target:
@@ -593,9 +611,19 @@ def _create_events(
                                   event['event_outcome_detail'])
 
         if not found_event:
+            if event_name == 'checksum':
+                create_agent(
+                    workspace=workspace,
+                    agent_name='file-scraper',
+                    agent_version=file_scraper.__version__,
+                    agent_type='software',
+                    agent_role='executing program',
+                    create_agent_file='import-object-%s' % event_name)
             for agent in agents:
                 if event_name == 'identification' and not agent['detector']:
                     continue
+                if event_name == 'checksum':
+                    break
                 create_agent(
                     workspace=workspace,
                     agent_name=agent['agent_name'],

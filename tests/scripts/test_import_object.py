@@ -468,14 +468,20 @@ def test_streams(testpath, run_cli):
 
 
 @pytest.mark.parametrize(
-    ('file_format', 'skip_wellformed_check', 'count_events'), [
-        (('text/plain', ''), True, 1),
-        (None, True, 2),
-        (None, False, 3)]
+    ('file_format', 'checksum', 'skip_wellformed_check', 'count_events'), [
+        (('text/plain', ''), ('MD5', 'aabbccdd'), True, 1),
+        (None, ('MD5', 'aabbccdd'), True, 2),
+        (None, None, True, 3),
+        (None, None, False, 4)]
 )
 # pylint: disable=too-many-locals
 def test_import_object_event_agent(
-        testpath, run_cli, file_format, skip_wellformed_check, count_events):
+        testpath,
+        run_cli,
+        file_format,
+        checksum,
+        skip_wellformed_check,
+        count_events):
     """ Test that the script import_object creates events and
     agents with the proper metadata.
     """
@@ -487,6 +493,11 @@ def test_import_object_event_agent(
         arguments.append(file_format[1])
     if skip_wellformed_check:
         arguments.append('--skip_wellformed_check')
+    if checksum:
+        arguments.append('--checksum')
+        arguments.append(checksum[0])
+        arguments.append(checksum[1])
+
     run_cli(import_object.main, arguments)
 
     events_output = get_amd_file(
@@ -499,11 +510,15 @@ def test_import_object_event_agent(
     # events created
     allowed_types = ['metadata extraction',
                      'format identification',
+                     'message digest calculation',
                      'validation'][:count_events]
     allowed_details = [('Premis metadata successfully created from extracted '
                         'technical metadata.'),
                        ('File MIME type and format version successfully '
                         'identified.'),
+                       ('MD5 checksums succesfully calculated for digital '
+                        'objects and stored in the premis metadata as '
+                        'messageDigest.'),
                        ('Digital object(s) evaluated as well-formed and '
                         'valid.')][:count_events]
 
@@ -547,7 +562,8 @@ def test_import_object_event_target_date(testpath, run_cli):
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  input_file, '--event_target', '.', '--event_datetime',
-                 '2020', '--file_format', 'text/plain', '']
+                 '2020', '--file_format', 'text/plain', '', '--checksum',
+                 'MD5', 'aabbccdd']
     run_cli(import_object.main, arguments)
 
     ev_count = 0
@@ -567,7 +583,8 @@ def test_import_object_event_target_date(testpath, run_cli):
     for input_file in input_files:
         arguments = ['--workspace', testpath, '--skip_wellformed_check',
                      input_file, '--event_target', '.', '--event_datetime',
-                     '2020', '--file_format', 'text/plain', '']
+                     '2020', '--file_format', 'text/plain', '', '--checksum',
+                     'MD5', 'aabbccdd']
         run_cli(import_object.main, arguments)
 
     # Still only one event should have been created
