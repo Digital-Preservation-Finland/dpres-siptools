@@ -568,8 +568,7 @@ def _create_events(
             'event_datetime': event_datetime,
             'event_detail': 'Digital object validation',
             'event_outcome': 'success',
-            'event_outcome_detail': ('Digital object(s) validated '
-                                     'successfully, all digital objects are '
+            'event_outcome_detail': ('Digital object(s) evaluated as '
                                      'well-formed and valid.')},
     }
 

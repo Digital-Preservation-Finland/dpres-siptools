@@ -504,8 +504,7 @@ def test_import_object_event_agent(
                         'technical metadata.'),
                        ('File MIME type and format version successfully '
                         'identified.'),
-                       ('Digital object(s) validated successfully, all '
-                        'digital objects are well-formed and '
+                       ('Digital object(s) evaluated as well-formed and '
                         'valid.')][:count_events]
 
     # Assert that the event metadata is as expected
