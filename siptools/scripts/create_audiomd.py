@@ -25,7 +25,7 @@ ALLOW_ZERO = ['bits_per_sample', 'data_rate', 'sampling_frequency']
 
 @click.command()
 @click.argument(
-    'filename', type=str)
+    'filename', type=click.Path(exists=True))
 @click.option(
     '--workspace', type=click.Path(exists=True),
     default='./workspace/',

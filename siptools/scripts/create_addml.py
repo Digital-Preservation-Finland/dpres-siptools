@@ -17,7 +17,7 @@ click.disable_unicode_literals_warning = True
 
 
 @click.command()
-@click.argument('filename', type=str)
+@click.argument('filename', type=click.Path(exists=True))
 @click.option('--workspace', type=click.Path(exists=True),
               default='./workspace/',
               metavar='<WORKSPACE PATH>',

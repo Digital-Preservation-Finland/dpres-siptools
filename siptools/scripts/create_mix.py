@@ -34,7 +34,7 @@ class MixGenerationError(ValueError):
 
 @click.command()
 @click.argument(
-    'filename', type=str)
+    'filename', type=click.Path(exists=True))
 @click.option(
     '--workspace', type=click.Path(exists=True),
     default='./workspace/',
