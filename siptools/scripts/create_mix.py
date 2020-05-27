@@ -34,7 +34,7 @@ class MixGenerationError(ValueError):
 
 @click.command()
 @click.argument(
-    'filename', type=click.Path(exists=True))
+    'filename', type=str)
 @click.option(
     '--workspace', type=click.Path(exists=True),
     default='./workspace/',
@@ -52,6 +52,9 @@ def main(filename, workspace, base_path):
     FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
+    if not os.path.exists(os.path.join(base_path, filename)):
+        raise click.UsageError("File does not exist")
+
     create_mix(filename, workspace, base_path)
 
     return 0

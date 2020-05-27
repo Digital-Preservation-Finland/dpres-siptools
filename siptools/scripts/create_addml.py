@@ -17,7 +17,7 @@ click.disable_unicode_literals_warning = True
 
 
 @click.command()
-@click.argument('filename', type=click.Path(exists=True))
+@click.argument('filename', type=str)
 @click.option('--workspace', type=click.Path(exists=True),
               default='./workspace/',
               metavar='<WORKSPACE PATH>',
@@ -54,6 +54,9 @@ def main(filename, charset, delim, sep, quot, header, workspace, base_path):
     FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
+    if not os.path.exists(os.path.join(base_path, filename)):
+        raise click.UsageError("File does not exist")
+
     create_addml(
         filename, charset, delim, sep, quot, header, workspace, base_path
     )
