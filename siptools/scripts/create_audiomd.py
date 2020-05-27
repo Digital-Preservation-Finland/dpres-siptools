@@ -26,7 +26,7 @@ ALLOW_ZERO = ['bits_per_sample', 'data_rate', 'sampling_frequency']
 
 @click.command()
 @click.argument(
-    'filename', type=click.Path(exists=True))
+    'filename', type=str)
 @click.option(
     '--workspace', type=click.Path(exists=True),
     default='./workspace/',
@@ -60,6 +60,8 @@ def create_audiomd(filename, workspace="./workspace/", base_path="."):
 
     filerel = os.path.normpath(filename)
     filepath = os.path.normpath(os.path.join(base_path, filename))
+    if not os.path.exists(filepath):
+        raise click.UsageError("File does not exist")
 
     creator = AudiomdCreator(workspace)
     creator.add_audiomd_md(filepath, filerel)
