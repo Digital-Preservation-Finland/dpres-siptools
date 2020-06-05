@@ -106,6 +106,9 @@ tests/data/structured followingly::
 
 You may use this script as many times as needed to import all your digital object.
 
+For information on provenance metadata created during the importing of digital objects,
+see the section on Provenance metadata in the packaging process below.
+
 **Create file format specific technical metadata**
 
 If your dataset contains image data, create MIX metadata for each of the image files::
@@ -182,7 +185,7 @@ that the events have different agents linked to them.
 
 Script appends descriptive metadata into a METS XML wrapper. Metadata must be in a accepted format::
 
-    import-description 'tests/data/import_description/metadata/dc_description.xml' --workspace ./workspace --dmdsec_target 'tests/data/structured' --remove_root
+    import-description 'tests/data/import_description/metadata/dc_description.xml' --workspace ./workspace --dmdsec_target 'tests/data/structured' --dmd_source 'my database' --dmd_agent 'database client' 'software' --remove_root 
 
 The argument '--remove_root' removes the root element from the given descriptive metadata.
 This may be needed, if the metadata is given in a container element belonging to another metadata format.
@@ -193,6 +196,9 @@ if the structural map is created based on EAD3 structure with compile_structmap.
 
 Currently importing multiple descriptive metadata files for the same --dmdsec_target is not supported.
 However, it is possible to add multiple descriptive metadata files, when each of these have different targets.
+
+For information on provenance metadata created during the importing of descriptive
+metadata, see the section on Provenance metadata in the packaging process below. 
 
 **Compile file section and structural map**
 
@@ -249,10 +255,10 @@ of the file path(s) given to the script and using the same timestamp ('--event_d
 allows the reusing of the created provenance metadata each time import-object is run.
 
 **Note that is is highly recommended to use both arguments if import-object is run
-separately for each individual file in a package!** By supplying the same values for
-these arguments each time the script is run all files will link to the same provenance
-metadata in the METS document. Otherwise, new provenance metadata is created each time
-the script is run.
+separately for each individual digital object in a package!** By supplying the same
+values for these arguments each time the script is run all digital objects will link
+to the same provenance metadata in the METS document. Otherwise, new provenance
+metadata is created each time the script is run.
 
 For documenting the source of the descriptive metadata, the script import-description
 has two arguments:, '--dmd_source' and '--dmd_agent'. These are used for documenting
