@@ -245,14 +245,21 @@ import-description
     creates a ``metadata extraction`` type event, documenting the source of the
     descriptive metadata
 compile-structmap
-    creates a ``creation`` typ event, documenting the creation of the structural
+    creates a ``creation`` type event, documenting the creation of the structural
     metadata
 
-The scipt import-object has two arguments relating to provenance metadata, '--event_target'
-and '--event_datetime'. These allow the provenance metadata to be linked to a
-specific part of the contents ('--event_target'), for example the package root, regardless
-of the file path(s) given to the script and using the same timestamp ('--event_datetime')
-allows the reusing of the created provenance metadata each time import-object is run.
+The script import-object has two arguments relating to provenance metadata, '--event_target'
+and '--event_datetime'. The first argument ('--event_target') allows the provenance
+metadata to be linked to a specific part of the contents, for example the package root,
+regardless of the file path(s) given to the script. The second argument
+('--event_datetime') sets the timestamp of the event, which allows reusing the
+same provenance metadata each time import-object is run::
+
+    import-object 'tests/data/structured' --workspace ./workspace --event_datetime 2020-06-05 --event_target '.' 
+
+The example above allows import-object to be run multiple times for different file paths
+while still creating the provenance metadata only once with the timestamp '2020-06-05' and
+linking the provenance metadata to the package root '.'.
 
 **Note that is is highly recommended to use both arguments if import-object is run
 separately for each individual digital object in a package!** By supplying the same
