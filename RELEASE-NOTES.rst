@@ -4,7 +4,7 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
-New features added in v0.45 or since v0.40:
+New features added in v0.45:
 
     * import-description
 
@@ -36,6 +36,9 @@ New features added in v0.45 or since v0.40:
 
     The temporary pickle files created when importing digital objects have been
     replaced with json files.
+    
+    The tool has been optimized for improved running time for large packages with
+    several files.
 
 Bugfix in v0.28:
 
