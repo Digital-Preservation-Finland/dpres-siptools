@@ -84,6 +84,9 @@ sign-mets
 compress
     for wrapping the created submission information package directory to a TAR file.
 
+create-agent
+    helper function to create detailed agent metadata to be used with the premis-event script
+
 Usage
 -----
 
@@ -148,6 +151,32 @@ You may call this script several times to create multiple provenance metadata se
 If several digital objects are linked to the same event and agent, run the
 script for each object with only the --event_target changed in the parameters.
 This will create links to the same event for each digital object.
+
+The helper script called ``create-agent`` can be used to create detailed agent metadata
+and to link several agents to the same event. If used, this helper script must be run
+before the ``premis-event`` script. This script will, unlike the other scripts, not
+produce ready XML data, but rather collect metadata to a JSON file. This JSON data is
+then passed to the ``premis-event`` script as an argument. An example how to use the
+script::
+
+    create-agent 'my software' --agent_type software --agent_version 1.0 --agent_role 'executing program' --create_agent_file 'my_event_1'
+
+This will create an agent which is a software used to execute something. The '--agent_role'
+argument specifies the role of the agent in relation to the event and is used when linking
+the agent to the event. The required argument '--create_agent_file' is the name of the
+JSON file that collects the agent metadata. If multiple agents are created for the same
+event by running the ``create-agent`` script several times, they should all use the same
+value for the '--create_agent_file' argument. This value is then passed on to
+``premis-event`` like this::
+
+    premis-event creation '2016-10-13T12:30:55' --workspace ./workspace --event_detail Testing --event_outcome success --event_outcome_detail 'Outcome detail'  --create_agent_file 'my_event_1'
+
+The ``premis-event`` script will the create the actual XML data for every agent in the
+"my_event_1" JSON file and link the agent(s) to the event created by the script. Note
+that when the '--create_agent_file' argument is used, this will override any eventual
+agent information passed to the premis-event script by the arguments '--agent_name' and
+--agent_type'. The '--create_agent_file' value should be unique for each event, presuming
+that the events have different agents linked to them.
 
 **Add existing descriptive metadata**
 
