@@ -27,7 +27,7 @@ The software is tested with Python 2.7 with Centos 7.x / RHEL 7.x releases.
 Packages openssl-devel, swig and gcc are required in your system to install M2Crypto,
 which is used for signing the packages with digital signature.
 
-Get python-virtuelenv software::
+Get python-virtualenv software::
 
     sudo yum install python-virtualenv
 
@@ -45,7 +45,7 @@ Install the required software with command::
 See the README from file-scraper repository for additional installation requirements:
 https://github.com/Digital-Preservation-Finland/file-scraper/blob/master/README.rst
 
-To deactivate the virtual enviroment, run ``deactivate``.
+To deactivate the virtual environment, run ``deactivate``.
 To reactivate it, run the ``source`` command above.
 
 Scripts
@@ -123,7 +123,7 @@ A flag --header should be given if CSV file has headers. --sep flag defines the 
 separate records and --delim the character used to separate fields. --quot defines the 
 quotation character used.
 
-AudioMD metadata for a audio stream file can be created by running::
+AudioMD metadata for an audio stream file can be created by running::
 
     create-audiomd path/to/audio/audio.wav --workspace ./workspace
 
@@ -183,7 +183,7 @@ that the events have different agents linked to them.
 
 **Add existing descriptive metadata**
 
-Script appends descriptive metadata into a METS XML wrapper. Metadata must be in a accepted format::
+Script appends descriptive metadata into a METS XML wrapper. Metadata must be in an accepted format::
 
     import-description 'tests/data/import_description/metadata/dc_description.xml' --workspace ./workspace --dmdsec_target 'tests/data/structured' --dmd_source 'my database' --dmd_agent 'database client' 'software' --remove_root 
 
@@ -221,7 +221,7 @@ Compile a METS document file from the previous results::
 The argument --copy_files copies the files to the workspace.
 The argument --clean cleans the workspace from the METS parts created in previous scripts.
 
-Digitally sign the a METS document::
+Digitally sign the METS document::
 
     sign-mets tests/data/rsa-keys.crt --workspace ./workspace
 
@@ -239,7 +239,7 @@ produce provenance metadata when running them:
 import-object
     creates ``metadata extraction``, ``validation``, ``message digest calculation``
     and ``format identification`` type events, depending on the arguments supplied to
-    the sctipt. This provenance metadata documents the creation of the technical metadata
+    the script. This provenance metadata documents the creation of the technical metadata
     and the software used in that process
 import-description
     creates a ``metadata extraction`` type event, documenting the source of the
@@ -261,7 +261,7 @@ The example above allows import-object to be run multiple times for different fi
 while still creating the provenance metadata only once with the timestamp '2020-06-05' and
 linking the provenance metadata to the package root '.'.
 
-**Note that is is highly recommended to use both arguments if import-object is run
+**Note that is highly recommended to use both arguments if import-object is run
 separately for each individual digital object in a package!** By supplying the same
 values for these arguments each time the script is run all digital objects will link
 to the same provenance metadata in the METS document. Otherwise, new provenance
