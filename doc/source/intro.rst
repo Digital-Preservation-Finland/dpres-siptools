@@ -131,6 +131,9 @@ about what has been done and premis:agent who/what performed the event. The crea
 the whole SIP by default. If the event is only for a single file --event_target parameter should be 
 used.
 
+Please note that the Pre-Ingest Tool will create some events during the running of the scripts. These
+events document the packaging process, i.e. how and where the metadata originates from.
+
 .. _event history: http://digitalpreservation.fi
 
 **Descriptive Metadata**
