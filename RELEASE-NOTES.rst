@@ -4,6 +4,39 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+New features added in v0.45 or since v0.40:
+
+    * import-description
+
+        * ``--dmd_source`` option added, used to document the source of
+          the descriptive metadata
+        * ``--dmd_agent`` option added, used to document the agent exporting
+          the descriptive metadata from the source
+
+    * import-object
+
+        * ``--event_datetime`` option added, used to give a timestamp for
+          for the event(s) created by the script, otherwise the current execution
+          time of the script is used
+        * ``--event_target`` option added, used to give the target for the event(s)
+          created by the script, otherwise the FILEPATHS argument value is used
+
+    * premis-event
+
+        * ``--create_agent_file`` option added, used when agent metadata has been
+          created by the create-agent script
+
+    * create-agent
+
+        New helper script to create detailed agent metadata for the premis-event
+        script and to allow for multiple agents to link to the same event
+
+    The temporary linking files created by the scripts are now jsonl instead of
+    XML.
+
+    The temporary pickle files created when importing digital objects have been
+    replaced with json files.
+
 Bugfix in v0.28:
 
     * ``--order`` attribute value (given in import-object) was handled
