@@ -223,6 +223,43 @@ Create a TAR file::
 
     compress ./workspace --tar_filename sip.tar
 
+Provenance metadata in the packaging process
+--------------------------------------------
+
+The Pre-Ingest Tool documents the packaging process by creating provenance metadata
+as PREMIS events and agents when running the scripts. The following scripts will
+produce provenance metadata when running them:
+
+import-object
+    creates ``metadata extraction``, ``validation``, ``message digest calculation``
+    and ``format identification`` type events, depending on the arguments supplied to
+    the sctipt. This provenance metadata documents the creation of the technical metadata
+    and the software used in that process
+import-description
+    creates a ``metadata extraction`` type event, documenting the source of the
+    descriptive metadata
+compile-structmap
+    creates a ``creation`` typ event, documenting the creation of the structural
+    metadata
+
+The scipt import-object has two arguments relating to provenance metadata, '--event_target'
+and '--event_datetime'. These allow the provenance metadata to be linked to a
+specific part of the contents ('--event_target'), for example the package root, regardless
+of the file path(s) given to the script and using the same timestamp ('--event_datetime')
+allows the reusing of the created provenance metadata each time import-object is run.
+
+**Note that is is highly recommended to use both arguments if import-object is run
+separately for each individual file in a package!** By supplying the same values for
+these arguments each time the script is run all files will link to the same provenance
+metadata in the METS document. Otherwise, new provenance metadata is created each time
+the script is run.
+
+For documenting the source of the descriptive metadata, the script import-description
+has two arguments:, '--dmd_source' and '--dmd_agent'. These are used for documenting
+the source, e.g. database or system, for the descriptive metadata and the agent used
+to export the metadata from the source, e.g. a database client or API.
+
+
 Additional notes
 ----------------
 This software is able to collect metadata and check well-formedness of a limited set of file
