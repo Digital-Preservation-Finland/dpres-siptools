@@ -34,7 +34,7 @@ NAMESPACES = {
 
 METS_MDTYPES = {
     'http://purl.org/dc/elements/1.1/': {
-        'mdtype': 'DC', 'version': '1.1'
+        'mdtype': 'DC', 'version': '2008'
     },
     'http://www.loc.gov/MARC21/slim': {
         'mdtype': 'MARC', 'version': 'marcxml=1.2; marc=marc21'
@@ -49,7 +49,7 @@ METS_MDTYPES = {
         'mdtype': 'OTHER', 'othermdtype': 'EAD3', 'version': '1.1.0'
     },
     'urn:isbn:1-931666-33-4': {
-        'mdtype': 'EAC', 'version': '2010'
+        'mdtype': 'EAC', 'version': '2010_revised'
     },
     'http://www.lido-schema.org': {
         'mdtype': 'LIDO', 'version': '1.0'
@@ -61,7 +61,7 @@ METS_MDTYPES = {
         'mdtype': 'DDI', 'version': '3.1'
     },
     'ddi:codebook:2_5': {
-        'mdtype': 'DDI', 'version': '2.5'
+        'mdtype': 'DDI', 'version': '2.5.1'
     },
     'http://www.icpsr.umich.edu/DDI': {
         'mdtype': 'DDI', 'version': '2.1'
@@ -73,7 +73,7 @@ METS_MDTYPES = {
         'mdtype': 'OTHER', 'othermdtype': 'ADDML', 'version': '8.3'
     },
     'http://datacite.org/schema/kernel-4': {
-        'mdtype': 'OTHER', 'othermdtype': 'DATACITE', 'version': '4.1'
+        'mdtype': 'OTHER', 'othermdtype': 'DATACITE', 'version': '4.3'
     },
     'http://www.loc.gov/audioMD/': {
         'mdtype': 'OTHER', 'othermdtype': 'AudioMD', 'version': '2.0'
@@ -92,9 +92,9 @@ METS_PROFILE = {
 
 METS_SCHEMA = 'http://digitalpreservation.fi/schemas/mets/mets.xsd'
 
-METS_CATALOG = "1.7.1"
+METS_CATALOG = "1.7.2"
 
-METS_SPECIFICATION = "1.7.1"
+METS_SPECIFICATION = "1.7.2"
 
 RECORD_STATUS_TYPES = [
     'submission',
