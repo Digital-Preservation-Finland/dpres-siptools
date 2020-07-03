@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+New features added in v0.46:
+
+    * Add support for national specifications 1.7.2.
+
 New features added in v0.45:
 
     * import-description
