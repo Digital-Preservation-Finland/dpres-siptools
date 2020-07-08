@@ -2,6 +2,9 @@
 """Tests for the utility functions."""
 from __future__ import unicode_literals
 
+import pytest
+import six
+
 import lxml.etree
 import siptools.utils as utils
 
@@ -108,3 +111,13 @@ def test_different_ids_same_hash():
     xml2 = lxml.etree.fromstring(event2)
 
     assert utils.generate_digest(xml1) == utils.generate_digest(xml2)
+
+def test_filescraper_error():
+    """Test that file scraper error works if
+       message contains non-ascii characters"""
+
+    with pytest.raises(ValueError) as error:
+        utils.scrape_file("tests/data/invalid_empty_text-file-åäö.txt", skip_well_check=True)
+
+    filename = six.ensure_str("invalid_empty_text-file-åäö.txt")
+    assert filename in error.value.args[0]
