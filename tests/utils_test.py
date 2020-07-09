@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 import pytest
-import six
 
 import lxml.etree
 import siptools.utils as utils
@@ -116,9 +115,7 @@ def test_filescraper_error():
     """Test that file scraper error works if
        message contains non-ascii characters"""
 
-    with pytest.raises(ValueError) as error:
-        utils.scrape_file("tests/data/invalid_empty_text-file-åäö.txt", skip_well_check=True)
-
     filename = utils.ensure_str("invalid_empty_text-file-åäö.txt")
-    message = str(error.value)
-    assert filename in message
+
+    with pytest.raises(ValueError, match=filename):
+        utils.scrape_file("tests/data/invalid_empty_text-file-åäö.txt", skip_well_check=True)
