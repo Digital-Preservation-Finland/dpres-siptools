@@ -119,5 +119,6 @@ def test_filescraper_error():
     with pytest.raises(ValueError) as error:
         utils.scrape_file("tests/data/invalid_empty_text-file-åäö.txt", skip_well_check=True)
 
-    filename = six.ensure_str("invalid_empty_text-file-åäö.txt")
-    assert filename in error.value.args[0]
+    filename = utils.ensure_str("invalid_empty_text-file-åäö.txt")
+    message = str(error.value)
+    assert filename in message

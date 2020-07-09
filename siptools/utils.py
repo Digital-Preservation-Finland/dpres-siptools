@@ -129,7 +129,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
             error_str = error_head + error_str
         # Ensure exception is printed in full on both Python 2 & 3 by coercing
         # to 'str'
-        raise ValueError(six.ensure_str(error_str))
+        raise ValueError(ensure_str(error_str))
 
     if scraper.info[0]['class'] == 'FileExists' and scraper.info[0]['errors']:
         raise IOError(scraper.info[0]['errors'])
@@ -139,6 +139,33 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
 
     return (scraper.streams, scraper.info)
 
+# Adaptation of ensure_str function from new versions of six,
+# included for compatibility with older six versions
+def ensure_str(s, encoding='utf-8', errors='strict'):
+    """Coerce *s* to `str`.
+    For Python 2:
+      - `unicode` -> encoded to `str`
+      - `str` -> `str`
+    For Python 3:
+      - `str` -> `str`
+      - `bytes` -> decoded to `str`
+    """
+    if six.PY3:
+        text_type = str
+        binary_type = bytes
+    else:
+        text_type = unicode
+        binary_type = str
+
+    if type(s) is str:
+        return s
+    if six.PY2 and isinstance(s, text_type):
+        return s.encode(encoding, errors)
+    elif six.PY3 and isinstance(s, binary_type):
+        return s.decode(encoding, errors)
+    elif not isinstance(s, (text_type, binary_type)):
+        raise TypeError("not expecting type '%s'" % type(s))
+    return s
 
 def fix_missing_metadata(streams, filename, allow_unav, allow_zero):
     """
