@@ -12,9 +12,7 @@ import nisomix
 from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import scrape_file
 
-
 click.disable_unicode_literals_warning = True
-
 
 SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'LAB': '3', 'HSV': '3', 'RGBA': '4', 'CMYK': '4',
@@ -123,7 +121,8 @@ def check_missing_metadata(stream, filename):
             continue
         if element in [None, '(:unav)']:
             raise MixGenerationError(
-                'Missing metadata value for key %s for file %s' % key, filename
+                'Missing metadata value for key %s for file %s' % (key,
+                                                                   filename)
             )
 
 
