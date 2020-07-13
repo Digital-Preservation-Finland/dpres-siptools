@@ -9,6 +9,7 @@ import click
 import six
 
 import nisomix
+from file_scraper.defaults import UNAV
 from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import scrape_file
 
@@ -116,10 +117,15 @@ def check_missing_metadata(stream, filename):
     :stream: Image metadata stream.
     :filename: Image file name
     """
+    allowed_keys = ('icc_profile_name',
+                    'index',
+                    'mimetype',
+                    'stream_type',
+                    'version')
     for key, element in six.iteritems(stream):
-        if key in ['mimetype', 'stream_type', 'index', 'version']:
+        if key in allowed_keys:
             continue
-        if element in [None, '(:unav)']:
+        if element in [None, UNAV]:
             raise MixGenerationError(
                 'Missing metadata value for key %s for file %s' % (key,
                                                                    filename)
@@ -160,11 +166,18 @@ def create_mix_metadata(filename, filerel=None, workspace=None, streams=None):
     else:
         byte_order = stream_md["byte_order"]
 
+    if stream_md['icc_profile_name'] is not UNAV:
+        color_profile = [nisomix.color_profile(
+            icc_name=stream_md['icc_profile_name'])]
+    else:
+        color_profile = None
+
     basic_do_info = nisomix.digital_object_information(
         byte_order=byte_order, child_elements=[mix_compression])
 
     photom_interpret = nisomix.photometric_interpretation(
-        color_space=stream_md["colorspace"])
+        color_space=stream_md["colorspace"],
+        child_elements=color_profile)
     img_characteristics = nisomix.image_characteristics(
         width=stream_md["width"], height=stream_md["height"],
         child_elements=[photom_interpret])
