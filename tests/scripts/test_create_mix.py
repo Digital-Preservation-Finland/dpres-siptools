@@ -77,7 +77,8 @@ def test_create_mix():
     function and check that result XML element contains expected elements.
     """
 
-    xml = create_mix.create_mix_metadata('tests/data/images/tiff1.tif')
+    xml = create_mix.create_mix_metadata(
+        'tests/data/images/tiff_icc_profile_sRGB.tif')
     namespaces = {'mix': "http://www.loc.gov/mix/v20"}
 
     # compression
@@ -105,6 +106,12 @@ def test_create_mix():
             'mix:BasicImageCharacteristics/mix:PhotometricInterpretation/' \
             'mix:colorSpace'
     assert xml.xpath(xpath, namespaces=namespaces)[0].text == "srgb"
+
+    # ICC profile
+    xpath = '/mix:mix/mix:BasicImageInformation/' \
+            'mix:BasicImageCharacteristics/mix:PhotometricInterpretation/' \
+            'mix:ColorProfile/mix:IccProfile/mix:iccProfileName'
+    assert xml.xpath(xpath, namespaces=namespaces)[0].text == "sRGB"
 
     # bitspresample
     xpath = '/mix:mix/mix:ImageAssessmentMetadata/mix:ImageColorEncoding/' \
@@ -141,10 +148,19 @@ def test_existing_scraper_result(testpath):
         json.dump(ref, out)
 
     stream_dict = {0: {
-        'bps_unit': 'integer', 'bps_value': '8', 'colorspace': 'srgb',
-        'compression': 'lzw', 'height': '400', 'mimetype': 'image/tiff',
-        'samples_per_pixel': '3', 'stream_type': 'image', 'version': '6.0',
-        'width': '1234', 'byte_order': 'little endian', 'index': 0}}
+        'bps_unit': 'integer',
+        'bps_value': '8',
+        'colorspace': 'srgb',
+        'compression': 'lzw',
+        'height': '400',
+        'icc_profile_name': 'sRGB',
+        'mimetype': 'image/tiff',
+        'samples_per_pixel': '3',
+        'stream_type': 'image',
+        'version': '6.0',
+        'width': '1234',
+        'byte_order': 'little endian',
+        'index': 0}}
     with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wt') \
             as outfile:
         json.dump(stream_dict, outfile)
