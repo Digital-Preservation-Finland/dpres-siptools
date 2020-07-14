@@ -231,6 +231,24 @@ def test_compile_structmap_order(testpath, run_cli):
                              namespaces=NAMESPACES)) == 1
 
 
+def test_native_file(testpath, run_cli):
+    """Test that a file is marked as native."""
+    run_cli(import_object.main, [
+        "--workspace", testpath,
+        "--file_format", "foo_mime", "foo_version",
+        "--bit_level", "native",
+        "tests/data/text-file.txt"])
+    run_cli(compile_structmap.main, ["--workspace", testpath])
+    output_filesec = os.path.join(testpath, "filesec.xml")
+    fs_tree = lxml.etree.parse(output_filesec)
+    fs_root = fs_tree.getroot()
+    assert fs_root.xpath(
+        "/mets:mets/mets:fileSec/mets:fileGrp/mets:file"
+        "[mets:FLocat/@xlink:href='file://tests/data/text-file.txt']/"
+        "@USE",
+        namespaces=NAMESPACES)[0] == "no-file-format-validation"
+
+
 def test_get_fileid():
     """Test get_fileid function. Create a fileGrp element with few files and
     test that the function finds correct file IDs.
