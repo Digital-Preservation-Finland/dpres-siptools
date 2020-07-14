@@ -189,7 +189,9 @@ def create_filesec(**attributes):
     :attributes: Attribute values as a dict
                  all_amd_refs: XML element tree of administrative metadata
                                references
+                 object_refs: XML tree of digital objects.
                  filelist: Sorted list of digital objects (file paths)
+                 workspace: Workspace path
     :returns: A tuple of METS XML Element tree including file section
               element and a dict of file paths and identifiers
     """
@@ -199,8 +201,7 @@ def create_filesec(**attributes):
 
     file_ids = {}
     for path in attributes["filelist"]:
-        fileid = add_file_to_filesec(attributes["all_amd_refs"],
-                                     attributes["object_refs"], path, filegrp)
+        fileid = add_file_to_filesec(attributes, path, filegrp)
         file_ids[path] = fileid
 
     mets_element = mets.mets(child_elements=[filesec])
@@ -338,11 +339,14 @@ def ead3_c_div(parent, div, filegrp, attributes):
     div.append(c_div)
 
 
-def add_file_to_filesec(all_amd_refs, object_refs, path, filegrp):
+def add_file_to_filesec(attributes, path, filegrp):
     """Add file element to fileGrp element given as parameter.
 
-    :all_amd_refs: XML element tree of administrative metadata references
-    :object_refs: XML tree of object references
+    :attributes: Attribute values as a dict
+                 all_amd_refs: XML element tree of administrative metadata
+                               references
+                 object_refs: XML tree of digital objects.
+                 workspace: Workspace path
     :path: url encoded path of the file
     :filegrp: fileGrp element
     :returns: unique identifier of file element
@@ -350,7 +354,12 @@ def add_file_to_filesec(all_amd_refs, object_refs, path, filegrp):
     fileid = '_{}'.format(uuid4())
 
     # Create list of IDs of amdID elements
-    amdids = get_md_references(all_amd_refs, path=path)
+    amdids = get_md_references(attributes["all_amd_refs"], path=path)
+
+    use = None
+    properties = file_properties(path, attributes)
+    if properties and properties["bit_level"] == "native":
+        use = "no-file-format-validation"
 
     # Create XML element and add it to fileGrp
     file_el = mets.file_elem(
@@ -359,14 +368,15 @@ def add_file_to_filesec(all_amd_refs, object_refs, path, filegrp):
         loctype='URL',
         xlink_href='file://%s' % encode_path(path, safe='/'),
         xlink_type='simple',
-        groupid=None
+        groupid=None,
+        use=use
     )
 
-    streams = get_objectlist(object_refs, path)
+    streams = get_objectlist(attributes["object_refs"], path)
     if streams:
         for stream in streams:
             stream_ids = get_md_references(
-                all_amd_refs, path=path, stream=stream)
+                attributes["all_amd_refs"], path=path, stream=stream)
             stream_el = mets.stream(admid_elements=stream_ids)
             file_el.append(stream_el)
 
@@ -539,10 +549,7 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
             break
         amd_file = amd_file[0]
         properties = file_properties(amd_file, attributes)
-        fileid = add_file_to_filesec(attributes["all_amd_refs"],
-                                     attributes["object_refs"],
-                                     amd_file,
-                                     filegrp)
+        fileid = add_file_to_filesec(attributes, amd_file, filegrp)
         fptr = mets.fptr(fileid=fileid)
 
         if properties and 'order' in properties:

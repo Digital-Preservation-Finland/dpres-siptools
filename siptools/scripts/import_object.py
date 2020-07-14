@@ -25,10 +25,6 @@ click.disable_unicode_literals_warning = True
 ALLOWED_CHARSETS = ['ISO-8859-15', 'UTF-8', 'UTF-16', 'UTF-32']
 
 DEFAULT_VERSIONS = {
-    'text/xml': '1.0',
-    'text/plain': '',
-    'text/csv': '',
-    'image/tiff': '6.0',
     'application/vnd.oasis.opendocument.text': '1.0',
     'application/vnd.oasis.opendocument.spreadsheet': '1.0',
     'application/vnd.oasis.opendocument.presentation': '1.0',
@@ -43,14 +39,6 @@ DEFAULT_VERSIONS = {
     'application/msword': '11.0',
     'application/vnd.ms-excel': '11.0',
     'application/vnd.ms-powerpoint': '11.0',
-    'audio/x-wav': '',
-    'video/mp4': '',
-    'image/jp2': '',
-    'video/dv': '',
-    'audio/mp4': '',
-    'video/MP1S': '',
-    'video/MP2P': '',
-    'video/MP2T': '',
 }
 
 # For mimetypes that has no version applicable for them.
@@ -74,10 +62,10 @@ UNKNOWN_VERSION = '(:unav)'
          "relation to this base path.")
 @click.option(
     '--skip_wellformed_check', is_flag=True,
-    help='Skip file format well-formed check')
+    help='Skip file format well-formed check.')
 @click.option(
     '--charset', type=str, metavar='<CHARSET>',
-    help='Charset encoding of a file')
+    help='Charset encoding of a file.')
 @click.option(
     '--file_format', nargs=2, type=str,
     metavar='<MIMETYPE> <FORMAT VERSION>',
@@ -86,23 +74,23 @@ UNKNOWN_VERSION = '(:unav)'
 @click.option(
     '--format_registry', type=str, nargs=2,
     metavar='<REGISTRY NAME> <REGISTRY KEY>',
-    help='The format registry name and key of the digital object')
+    help='The format registry name and key of the digital object.')
 @click.option(
     '--identifier', nargs=2, type=str,
     metavar='<IDENTIFIER TYPE> <IDENTIFIER VALUE>',
-    help='The identifier type and value of a digital object')
+    help='The identifier type and value of a digital object.')
 @click.option(
     '--checksum', nargs=2, type=str,
     metavar='<CHECKSUM ALGORITHM> <CHECKSUM VALUE>',
-    help='Checksum algorithm and value of a given file')
+    help='Checksum algorithm and value of a given file.')
 @click.option(
     '--date_created', type=str,
-    metavar='<EDTF TIME>',
-    help='The actual or approximate date and time the object was created')
+    metavar='<ISO-8601 TIME>',
+    help='The actual or approximate date and time the object was created.')
 @click.option(
     '--order', type=int,
     metavar='<ORDER NUMBER>',
-    help='Order number of the digital object')
+    help='Order number of the digital object.')
 @click.option(
     '--event_datetime', type=str,
     metavar='<EVENT DATETIME>',
@@ -112,7 +100,12 @@ UNKNOWN_VERSION = '(:unav)'
     metavar='<EVENT TARGET>',
     help='Target for events, if it is not given the FILEPATHS are used.')
 @click.option(
-    '--stdout', is_flag=True, help='Print result also to stdout')
+    '--stdout', is_flag=True, help='Print result also to stdout.')
+@click.option(
+    '--bit_level', type=str,
+    metavar='<BIT-LEVEL STATUS>',
+    help='Mark only for bit-level preservation. Currently only "native" '
+         'status is supported. If used, then --file_format is mandatory.')
 # pylint: disable=too-many-arguments
 def main(**kwargs):
     """Import files to generate digital objects. If attributes --charset,
@@ -151,10 +144,14 @@ def _attribute_values(given_params):
         "event_datetime": datetime.datetime.now().isoformat(),
         "event_target": None,
         "stdout": False,
+        "bit_level": None
     }
     for key in given_params:
         if given_params[key]:
             attributes[key] = given_params[key]
+    if attributes["bit_level"] == "native" and not attributes["file_format"]:
+        ValueError("Argument --file_format is mandatory if --bit_level is "
+                   "given.")
 
     return attributes
 
@@ -179,6 +176,7 @@ def import_object(**kwargs):
                  event_datetime: Timestamp of the event
                  event_target: The target of the event
                  stdout: True prints output to stdout
+                 bit_level: Object status for only bit-level preservation.
     """
     attributes = _attribute_values(kwargs)
     # Loop files and create premis objects
@@ -200,6 +198,7 @@ def import_object(**kwargs):
         properties = {}
         if attributes["order"] is not None:
             properties['order'] = six.text_type(attributes["order"])
+        properties["bit_level"] = attributes["bit_level"]
 
         (_, scraper_info) = creator.add_premis_md(
             filepath, attributes, filerel=filerel, properties=properties)
@@ -249,20 +248,27 @@ class PremisCreator(MetsSectionCreator):
         :returns: Stream dict and info dict from file-scraper as a tuple
         """
         if not attributes["file_format"]:
-            mimetype = None
-            version = None
+            mimetype = "(:unav)"
+            version = "(:unav)"
         else:
             mimetype = attributes["file_format"][0]
             version = attributes["file_format"][1]
 
-        (streams, info) = scrape_file(
-            filepath=filepath,
-            skip_well_check=attributes["skip_wellformed_check"],
-            mimetype=mimetype,
-            version=version,
-            charset=attributes["charset"],
-            skip_json=True
-        )
+        if attributes["bit_level"] is None:
+            (streams, info) = scrape_file(
+                filepath=filepath,
+                skip_well_check=attributes["skip_wellformed_check"],
+                mimetype=mimetype,
+                version=version,
+                charset=attributes["charset"],
+                skip_json=True
+            )
+        else:
+            streams = {0: {"stream_type": "binary",
+                           "index": 0,
+                           "mimetype": mimetype,
+                           "version": version}}
+            info = {}
 
         # Add new properties of a file for other script files, e.g. structMap
         if properties:
@@ -340,10 +346,10 @@ def check_metadata(mimetype, version, streams, fname):
     :fname: File name of the digital object
     :raises: ValueError if metadata checking results errors
     """
-    if mimetype is None:
+    if mimetype in [None, "(:unav)"]:
         raise ValueError('MIME type could not be identified for '
                          'file %s' % fname)
-    if version is None:
+    if version in [None, "(:unav)"]:
         raise ValueError('File format version could not be identified for '
                          'file %s' % fname)
     if streams[0]['stream_type'] not in ['videocontainer'] and \
@@ -641,7 +647,7 @@ def _create_events(
                                  'event_outcome_detail'],
                              workspace=workspace,
                              base_path=base_path,
-                             event_target=target,
+                             event_target=(target,),
                              create_agent_file='import-object-%s' % event_name)
 
 

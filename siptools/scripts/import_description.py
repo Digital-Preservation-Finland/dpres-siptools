@@ -279,7 +279,7 @@ def _create_event(
                                        "mets dmdSec from %s" % dmd_source),
                  workspace=workspace,
                  base_path=base_path,
-                 event_target=event_target,
+                 event_target=(event_target,),
                  create_agent_file='import-description')
 
 

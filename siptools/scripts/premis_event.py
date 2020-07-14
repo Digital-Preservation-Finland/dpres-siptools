@@ -12,11 +12,10 @@ import lxml.etree
 import six
 
 import premis
-import xml_helpers.utils
 from siptools.mdcreator import MetsSectionCreator
 from siptools.xml.mets import NAMESPACES
 from siptools.xml.premis import PREMIS_EVENT_OUTCOME_TYPES
-from siptools.utils import list2str
+from siptools.utils import list2str, read_linking_object_id
 
 click.disable_unicode_literals_warning = True
 
@@ -34,11 +33,16 @@ click.disable_unicode_literals_warning = True
               metavar='<BASE PATH>',
               help=("Source base path of event_target. If used, give "
                     "event_target in relation to this base path."))
+@click.option('--event_source',
+              type=str, multiple=True,
+              metavar='<EVENT SOURCE PATH>',
+              help=('Source for the event. Default is the root of '
+                    'digital objects. May be used multiple times.'))
 @click.option('--event_target',
-              type=str,
+              type=str, multiple=True,
               metavar='<EVENT TARGET PATH>',
               help=('Target for the event. Default is the root of '
-                    'digital objects.'))
+                    'digital objects. May be used multiple times.'))
 @click.option('--event_detail',
               type=str, required=True,
               metavar='<EVENT DETAIL>',
@@ -74,6 +78,10 @@ click.disable_unicode_literals_warning = True
               help='The file containing (multiple) created agents '
                    'relating to the current event. Will override the '
                    'other given agent options if used.')
+@click.option('--add_linking_objects',
+              is_flag=True,
+              help='Add PREMIS linking objects to event. Requires that'
+                   'import_object has been run already.')
 @click.option('--stdout',
               is_flag=True,
               help='Print output to stdout')
@@ -102,7 +110,8 @@ def _attribute_values(given_params):
         "event_datetime": given_params["event_datetime"],
         "workspace": "./workspace/",
         "base_path": ".",
-        "event_target": None,
+        "event_source": (),
+        "event_target": (),
         "event_detail": given_params["event_detail"],
         "event_outcome": given_params["event_outcome"],
         "event_outcome_detail": given_params["event_outcome_detail"],
@@ -111,7 +120,9 @@ def _attribute_values(given_params):
         "agent_identifier": None,
         "create_agent_file": "",
         "stdout": False,
+        "add_linking_objects": False,
         "linking_agents": set(),
+        "linking_objects": set()
     }
     for key in given_params:
         if given_params[key]:
@@ -133,7 +144,8 @@ def premis_event(**kwargs):
              event_datetime: Timestamp of the event
              workspace: Workspace path
              base_path: Base path of digital objects
-             event_target: Target path of the event
+             event_source: Source paths of the event
+             event_target: Target paths of the event
              event_detail: Short information about the event
              event_outcome: Event outcome
              event_outcome_detail: Deteiled information about the event
@@ -142,74 +154,88 @@ def premis_event(**kwargs):
              agent_identifier: Agent identifier type and value (tuple)
              create_agent_file: External file containing agents created
                                 by the create-agents script
-             stdout: Tru prints output to stdout
-             linking_agents: Empty set that is to be populated with
-                             agent linked to the event
+             stdout: True prints output to stdout
+             add_linking_objects: True for adding linking objects. Requires
+                                  that import-object script has already been
+                                  used.
     """
     attributes = _attribute_values(kwargs)
-    (directory, event_file) = event_target_path(
-        attributes["base_path"], attributes["event_target"])
+    creator = PremisCreator(attributes["workspace"])
 
     agents = _resolve_agents(**attributes)
 
     for agent in agents:
-        attributes["agent_identifier"] = agent["agent_identifier"]
-        attributes["agent_name"] = agent["agent_name"]
-        attributes["agent_type"] = agent["agent_type"]
-        attributes["agent_note"] = agent["agent_note"]
 
         attributes["linking_agents"].add(
             (agent["agent_identifier"][0],
              agent["agent_identifier"][1],
              agent["agent_role"]))
 
-        agent = create_premis_agent(**attributes)
+        agent = create_premis_agent(**agent)
 
         agent_creator = PremisCreator(attributes["workspace"])
-        agent_creator.add_md(agent, event_file, directory=directory)
+        for (directory, event_file, role) in iterate_event_paths(attributes):
+            agent_creator.add_md(agent, event_file, directory=directory)
         agent_creator.write(mdtype="PREMIS:AGENT",
                             stdout=attributes["stdout"])
-        if attributes["stdout"]:
-            print(xml_helpers.utils.serialize(agent).decode("utf-8"))
+
+    for (directory, event_file, role) in iterate_event_paths(attributes):
+        if event_file is not None and attributes["add_linking_objects"]:
+            linking_object = read_linking_object_id(
+                event_file, attributes["workspace"])
+            attributes["linking_objects"].add(
+                (linking_object[0], linking_object[1], role))
 
     event = create_premis_event(**attributes)
 
-    creator = PremisCreator(attributes["workspace"])
-    creator.add_md(event, event_file, directory=directory)
+    for (directory, event_file, role) in iterate_event_paths(attributes):
+        creator.add_md(event, event_file, directory=directory)
+
     creator.write(mdtype="PREMIS:EVENT", stdout=attributes["stdout"])
 
-    if attributes["stdout"]:
-        print(xml_helpers.utils.serialize(event).decode("utf-8"))
 
-
-def event_target_path(base_path, event_target=None):
+def iterate_event_paths(attributes):
     """
-    Return the path to the event_target based on the base_path and
-    event_target. If event_target is None, the event concerns the whole
+    """
+    for event_path in attributes["event_source"]:
+        yield normalized_event_path(
+            attributes["base_path"], event_path) + ("source",)
+    for event_path in attributes["event_target"]:
+        yield normalized_event_path(
+            attributes["base_path"], event_path) + ("target",)
+    if not attributes["event_target"]:
+        yield (".", None) + ("target",)
+
+
+def normalized_event_path(base_path, event_path=None):
+    """
+    Return the path to the event_source or event_target based on the base_path
+    and event_path. If event_path is None, the event concerns the whole
     package.
 
     :base_path: Base path
-    :event_target: Target directory or file of the event
+    :event_path: Source or target directory or file of the event
     :returns: a tuple of directory and event_file.
     """
     event_file = None
     directory = None
 
-    # If the given target path is an absolute path and base_path is
+    # If the given link path is an absolute path and base_path is
     # current path (i.e. not given), relpath will return ../../..
     # sequences, if current path is not part of the absolute path. In
     # such case we will use the absolute path for eventpath and omit
     # base_path relation.
-    if event_target:
+    if event_path:
         if base_path not in ['.']:
-            eventpath = os.path.normpath(os.path.join(base_path, event_target))
+            eventpath = os.path.normpath(
+                os.path.join(base_path, event_path))
         else:
-            eventpath = os.path.normpath(event_target)
+            eventpath = os.path.normpath(event_path)
 
         if os.path.isdir(eventpath):
-            directory = os.path.normpath(event_target)
+            directory = os.path.normpath(event_path)
         elif os.path.isfile(eventpath):
-            event_file = os.path.normpath(event_target)
+            event_file = os.path.normpath(event_path)
         else:
             raise IOError
     else:
@@ -309,12 +335,13 @@ def create_premis_event(**attributes):
     :attributes: The following keys:
                   event_type: PREMIS event type
                   event_datetime: Timestamp of the event
-                  event_target: Target path of the event
                   event_detail: Short information about the event
                   event_outcome: Event outcome
                   event_outcome_detail: Deteiled information about the event
                   linking_agents: Linking agent identifier type,
                                   identifier value and role (tuple)
+                  linking_objects: linking object identifier type, value and
+                                   role (tuple)
     :returns: PREMIS event XML element
     """
     attributes = _attribute_values(attributes)
@@ -338,6 +365,16 @@ def create_premis_event(**attributes):
             role=linking_agent[2]
         )
         child_elements.append(linking_agent_identifier)
+
+    # Create linkingObjectIdentifier element if object identifiers are given
+    for linking_object in attributes["linking_objects"]:
+        linking_object_identifier = premis.identifier(
+            identifier_type=linking_object[0],
+            identifier_value=linking_object[1],
+            prefix='linkingObject',
+            role=linking_object[2]
+        )
+        child_elements.append(linking_object_identifier)
 
     premis_event_elem = premis.event(
         event_identifier,

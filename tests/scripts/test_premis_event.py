@@ -9,23 +9,27 @@ import lxml.etree as ET
 import pytest
 
 from siptools.scripts.create_agent import create_agent
-from siptools.scripts import premis_event
+from siptools.scripts import premis_event, import_object
 from siptools.utils import fsdecode_path, read_md_references
 from siptools.xml.mets import NAMESPACES
 
 
 def get_md_file(path,
-                input_target='.',
+                input_target=".",
+                event_type="creation",
                 ref_file='premis-event-md-references.jsonl',
                 output_suffix='-PREMIS%3AEVENT-amd.xml'):
     """Get id"""
-    with open(os.path.join(path, ref_file)) as in_file:
-        refs = json.load(in_file)
-    reference = refs[fsdecode_path(input_target)]
+    refs = read_md_references(path, ref_file)
+    reference = refs[input_target]
     for amdref in reference['md_ids']:
         output = os.path.join(path, amdref[1:] + output_suffix)
         if os.path.exists(output):
-            return output
+            root = ET.parse(output).getroot()
+            if root.xpath(
+                    "//premis:eventType",
+                    namespaces=NAMESPACES)[0].text == event_type:
+                return output
     return None
 
 
@@ -182,21 +186,21 @@ def test_premis_event_fail(testpath, run_cli):
       'structured/Access and use rights files/access_file.txt', None,
       'structured/Access and use rights files/access_file.txt')]
 )
-def test_event_target_path(base_path, event_target, directory, event_file):
-    """Tests the event_target_path function."""
-    (ev_directory, ev_file) = premis_event.event_target_path(
+def test_normalized_event_path(base_path, event_target, directory, event_file):
+    """Tests the normalized_event_path function."""
+    (ev_directory, ev_file) = premis_event.normalized_event_path(
         base_path, event_target)
 
     assert ev_directory == directory
     assert ev_file == event_file
 
 
-def test_invalid_event_target_path():
-    """Tests that event_target_path raises IOError if given
+def test_invalid_normalized_event_path():
+    """Tests that normalized_event_path raises IOError if given
     event_target path doesn't exist.
     """
     with pytest.raises(IOError):
-        premis_event.event_target_path('.', 'foo/bar')
+        premis_event.normalized_event_path('.', 'foo/bar')
 
 
 def test_reuse_agent(testpath, run_cli):
@@ -345,6 +349,66 @@ def test_import_agents(
         if filename.endswith('-PREMIS%3AAGENT-amd.xml'):
             count += 1
     assert count == agents_count
+
+
+def test_migration_event(testpath, run_cli):
+    """
+    """
+    arguments = ["--workspace", testpath,
+                 "--file_format", "foo_format1", "0.1",
+                 "--identifier", "idtype1", "idvalue1",
+                 "--bit_level", "native", "tests/data/simple_csv.csv"]
+    run_cli(import_object.main, arguments)
+    arguments = ["--workspace", testpath,
+                 "--file_format", "foo_format2", "0.2",
+                 "--identifier", "idtype2", "idvalue2",
+                 "--bit_level", "native", "tests/data/simple_csv_2.csv"]
+    run_cli(import_object.main, arguments)
+    arguments = ["--workspace", testpath,
+                 "--file_format", "text/csv", "", "--skip_wellformed_check",
+                 "--identifier", "idtype3", "idvalue3",
+                 "tests/data/valid_utf8.csv"]
+    run_cli(import_object.main, arguments)
+    arguments = ["--workspace", testpath,
+                 "--file_format", "text/csv", "", "--skip_wellformed_check",
+                 "--identifier", "idtype4", "idvalue4",
+                 "tests/data/valid_iso8859-15.csv"]
+    run_cli(import_object.main, arguments)
+
+    run_cli(premis_event.main, [
+       "--workspace", testpath,
+       "--event_source", "tests/data/simple_csv.csv",
+       "--event_source", "tests/data/simple_csv_2.csv",
+       "--event_target", "tests/data/valid_utf8.csv",
+       "--event_target", "tests/data/valid_iso8859-15.csv",
+       "--event_detail", "foo",
+       "--event_outcome", "success",
+       "--event_outcome_detail", "Migration test ok",
+       "--add_linking_objects",
+       "migration", "2020-02-02T20:20:20"
+    ])
+    event_output = get_md_file(
+        testpath, input_target="tests/data/simple_csv.csv",
+        event_type="migration")
+    root = ET.parse(event_output).getroot()
+
+    for index in range(4):
+        id_elem = root.xpath(
+            "//premis:linkingObjectIdentifier[premis:"
+            "linkingObjectIdentifierType='idtype%s']" % str(index+1),
+            namespaces=NAMESPACES)[0]
+
+        assert id_elem.xpath("premis:linkingObjectIdentifierValue",
+            namespaces=NAMESPACES)[0].text == "idvalue%s" % str(index+1)
+
+        if index < 2:
+            assert id_elem.xpath(
+                "premis:linkingObjectRole",
+                namespaces=NAMESPACES)[0].text == "source"
+        else:
+            assert id_elem.xpath(
+                "premis:linkingObjectRole",
+                namespaces=NAMESPACES)[0].text == "target"
 
 
 @pytest.mark.parametrize("file_, base_path", [

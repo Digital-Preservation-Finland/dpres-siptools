@@ -519,3 +519,15 @@ def get_md_references(refs_dict, path=None, stream=None, directory=None):
         pass
 
     return set(md_ids)
+
+
+def read_linking_object_id(path, workspace):
+    """
+    """
+    object_refs = read_md_references(
+        workspace, "import-object-md-references.jsonl")
+    premis_file = "%s-PREMIS%%3AOBJECT-amd.xml" \
+        % object_refs[path]["md_ids"][0][1:]
+    root = lxml.etree.parse(os.path.join(workspace, premis_file))
+    return premis.parse_identifier_type_value(
+        premis.parse_identifier(root))
