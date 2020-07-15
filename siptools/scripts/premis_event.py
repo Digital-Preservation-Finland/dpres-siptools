@@ -15,7 +15,7 @@ import premis
 from siptools.mdcreator import MetsSectionCreator
 from siptools.xml.mets import NAMESPACES
 from siptools.xml.premis import PREMIS_EVENT_OUTCOME_TYPES
-from siptools.utils import list2str, read_linking_object_id
+from siptools.utils import list2str, read_object_id
 
 click.disable_unicode_literals_warning = True
 
@@ -146,7 +146,7 @@ def premis_event(**kwargs):
              event_datetime: Timestamp of the event
              workspace: Workspace path
              base_path: Base path of digital objects
-             event_path: Roles and paths of the event
+             event_path: Roled paths of the event
              event_target: Target paths of the event
              event_detail: Short information about the event
              event_outcome: Event outcome
@@ -183,7 +183,7 @@ def premis_event(**kwargs):
 
     for (directory, event_file, role) in iterate_event_paths(attributes):
         if event_file is not None and attributes["add_linking_objects"]:
-            linking_object = read_linking_object_id(
+            linking_object = read_object_id(
                 event_file, attributes["workspace"])
             attributes["linking_objects"].add(
                 (linking_object[0], linking_object[1], role))
@@ -198,6 +198,15 @@ def premis_event(**kwargs):
 
 def iterate_event_paths(attributes):
     """
+    Iterate event paths given by the user.
+    :attirbutes: The following keys:
+                 event_path: Roled paths of the event
+                 event_target: Target paths of the event
+                 base_path: Base path of digital objects
+    :returns: Tuple of directory, file and role. Directory is given if
+              path to yield is a directory, file is given if path to
+              yield is a file. Role is the given role or "target" by
+              default.
     """
     for event_path in attributes["event_path"]:
         yield normalized_event_path(
@@ -251,7 +260,6 @@ class PremisCreator(MetsSectionCreator):
     Subclass of MetsSectionCreator, which generates PREMIS event or agent
     metadata.
     """
-
     # pylint: disable=too-many-arguments
     def write(self, mdtype="PREMIS", mdtypeversion="2.3", othermdtype=None,
               section="digiprovmd", stdout=False, file_metadata_dict=None,

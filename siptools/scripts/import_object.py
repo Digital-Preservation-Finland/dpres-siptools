@@ -47,6 +47,9 @@ NO_VERSION = '(:unap)'
 # For cases where scraper does not know the version
 UNKNOWN_VERSION = '(:unav)'
 
+# Supported bit-level preservation types
+BIT_LEVELS = ["native"]
+
 
 @click.command()
 @click.argument('filepaths', nargs=-1, type=str)
@@ -102,7 +105,7 @@ UNKNOWN_VERSION = '(:unav)'
 @click.option(
     '--stdout', is_flag=True, help='Print result also to stdout.')
 @click.option(
-    '--bit_level', type=str,
+    '--bit_level', type=click.Choice(BIT_LEVELS),
     metavar='<BIT-LEVEL STATUS>',
     help='Mark only for bit-level preservation. Currently only "native" '
          'status is supported. If used, then --file_format is mandatory.')

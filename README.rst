@@ -105,6 +105,9 @@ tests/data/structured followingly::
     import-object 'tests/data/structured' --workspace ./workspace
 
 You may use this script as many times as needed to import all your digital object.
+There are also lots of other options that can be given to this script in command line. See::
+
+    import-object --help
 
 For information on provenance metadata created during the importing of digital objects,
 see the section on Provenance metadata in the packaging process below.
@@ -151,9 +154,15 @@ not created.
 
 You may call this script several times to create multiple provenance metadata sections.
 
-If several digital objects are linked to the same event and agent, run the
-script for each object with only the --event_target changed in the parameters.
-This will create links to the same event for each digital object.
+If several digital objects are linked to the same event and agent, use --event_target
+multiple times. You may also want to consider using --event_path and --add_linking_objects
+in the following way::
+
+    premis-event --event_path source pat/to/source_file --add_linking_objects ...
+
+This will create object link to the event with a given role ``source``.  --event_path
+may be used several times. --event_target is same as using --event_path with a
+role ``target```.
 
 The helper script called ``create-agent`` can be used to create detailed agent metadata
 and to link several agents to the same event. If used, this helper script must be run
@@ -228,6 +237,35 @@ Digitally sign the METS document::
 Create a TAR file::
 
     compress ./workspace --tar_filename sip.tar
+
+Adding native files to package with corresponding normalized files
+------------------------------------------------------------------
+
+Native file is an original file which is applicable only for bit-level preservation.
+This requires a migrated file suitable for preservation, and a normalization event.
+In this case ``import-object`` script must be run before ``premis-event`` script.
+In ``import-object``, argument ``--file_format`` is mandatory for native files.
+Use value ``normalization`` or ``migration`` as event type in ``premis-event``.
+Here is the basic functionality::
+
+    import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file
+    import-object ... path/to/migrated_file
+    premis_event normalization ... --event_path source path/to/native_file --event_path outcome path/to/migrated_file
+    ...
+
+Sometimes a migration may be a combination of multiple source and/or outcome files.
+In such case, use ``import-object`` for each of them and create the migration event
+with using ``--event_path`` multiple times. For example combining two native files as
+one migrated file, do the following::
+
+    import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file
+    import-object --file_format my_mimetype my_version --bit_level native ... path/to/another_native_file
+    import-object ... path/to/migrated_file
+    premis_event migration ... --event_path source path/to/native_file --event_path source path/to/another_native_file --event_path outcome path/to/migrated_file
+    ...
+
+We omit some of the required parameters above, for example timestamp or ``--event_detail``.
+However, these parameters are still required.
 
 Provenance metadata in the packaging process
 --------------------------------------------

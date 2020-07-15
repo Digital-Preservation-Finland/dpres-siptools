@@ -521,8 +521,12 @@ def get_md_references(refs_dict, path=None, stream=None, directory=None):
     return set(md_ids)
 
 
-def read_linking_object_id(path, workspace):
+def read_object_id(path, workspace):
     """
+    Find PREMIS Object ID of a given file.
+    :path: Path of file related to current path or base path.
+    :workspace: Workspace path
+    :returns: Tuple of ID type and value
     """
     object_refs = read_md_references(
         workspace, "import-object-md-references.jsonl")

@@ -196,7 +196,7 @@ def test_import_object_order(testpath, run_cli):
 
 
 def test_import_object_native(testpath, run_cli):
-    """Test native file import"""
+    """Test importing native file"""
     input_file = "tests/data/structured/Documentation files/readme.txt"
     arguments = ["--workspace", testpath,
                  "--file_format", "foo_format", "0.0",
@@ -221,6 +221,7 @@ def test_import_object_native(testpath, run_cli):
 
 def test_native_missig_format(run_cli):
     """
+    Test that error occurs if native file is given without file format.
     """
     arguments = ["--bit_level", "native", "tests/data/text-file.txt"]
     result = run_cli(import_object.main, arguments, success=False)

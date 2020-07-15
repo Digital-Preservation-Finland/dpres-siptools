@@ -2,15 +2,13 @@
 from __future__ import unicode_literals
 
 import os
-import json
-
 import lxml.etree as ET
 
 import pytest
 
 from siptools.scripts.create_agent import create_agent
 from siptools.scripts import premis_event, import_object
-from siptools.utils import fsdecode_path, read_md_references
+from siptools.utils import read_md_references
 from siptools.xml.mets import NAMESPACES
 
 
@@ -353,6 +351,8 @@ def test_import_agents(
 
 def test_migration_event(testpath, run_cli):
     """
+    Test migration event of a single migration of two outcomes from two
+    different incomes.
     """
     arguments = ["--workspace", testpath,
                  "--file_format", "foo_format1", "0.1",
@@ -376,16 +376,16 @@ def test_migration_event(testpath, run_cli):
     run_cli(import_object.main, arguments)
 
     run_cli(premis_event.main, [
-       "--workspace", testpath,
-       "--event_path", "source", "tests/data/simple_csv.csv",
-       "--event_path", "source", "tests/data/simple_csv_2.csv",
-       "--event_path", "outcome", "tests/data/valid_utf8.csv",
-       "--event_path", "outcome", "tests/data/valid_iso8859-15.csv",
-       "--event_detail", "foo",
-       "--event_outcome", "success",
-       "--event_outcome_detail", "Migration test ok",
-       "--add_linking_objects",
-       "migration", "2020-02-02T20:20:20"
+        "--workspace", testpath,
+        "--event_path", "source", "tests/data/simple_csv.csv",
+        "--event_path", "source", "tests/data/simple_csv_2.csv",
+        "--event_path", "outcome", "tests/data/valid_utf8.csv",
+        "--event_path", "outcome", "tests/data/valid_iso8859-15.csv",
+        "--event_detail", "foo",
+        "--event_outcome", "success",
+        "--event_outcome_detail", "Migration test ok",
+        "--add_linking_objects",
+        "migration", "2020-02-02T20:20:20"
     ])
     event_output = get_md_file(
         testpath, input_target="tests/data/simple_csv.csv",
@@ -398,7 +398,8 @@ def test_migration_event(testpath, run_cli):
             "linkingObjectIdentifierType='idtype%s']" % str(index+1),
             namespaces=NAMESPACES)[0]
 
-        assert id_elem.xpath("premis:linkingObjectIdentifierValue",
+        assert id_elem.xpath(
+            "premis:linkingObjectIdentifierValue",
             namespaces=NAMESPACES)[0].text == "idvalue%s" % str(index+1)
 
         if index < 2:
