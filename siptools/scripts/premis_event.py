@@ -33,16 +33,18 @@ click.disable_unicode_literals_warning = True
               metavar='<BASE PATH>',
               help=("Source base path of event_target. If used, give "
                     "event_target in relation to this base path."))
-@click.option('--event_source',
-              type=str, multiple=True,
-              metavar='<EVENT SOURCE PATH>',
-              help=('Source for the event. Default is the root of '
-                    'digital objects. May be used multiple times.'))
+@click.option('--event_path',
+              nargs=2, type=str, multiple=True,
+              metavar='<EVENT PATH ROLE> <EVENT PATH>',
+              help=('Role and path for the event.'
+                    'For example: source path/to/source_file'
+                    'May be used multiple times.'))
 @click.option('--event_target',
               type=str, multiple=True,
               metavar='<EVENT TARGET PATH>',
               help=('Target for the event. Default is the root of '
-                    'digital objects. May be used multiple times.'))
+                    'digital objects. May be used multiple times. '
+                    'Same as: --event_path target path/to/target_file'))
 @click.option('--event_detail',
               type=str, required=True,
               metavar='<EVENT DETAIL>',
@@ -110,7 +112,7 @@ def _attribute_values(given_params):
         "event_datetime": given_params["event_datetime"],
         "workspace": "./workspace/",
         "base_path": ".",
-        "event_source": (),
+        "event_path": (),
         "event_target": (),
         "event_detail": given_params["event_detail"],
         "event_outcome": given_params["event_outcome"],
@@ -144,7 +146,7 @@ def premis_event(**kwargs):
              event_datetime: Timestamp of the event
              workspace: Workspace path
              base_path: Base path of digital objects
-             event_source: Source paths of the event
+             event_path: Roles and paths of the event
              event_target: Target paths of the event
              event_detail: Short information about the event
              event_outcome: Event outcome
@@ -197,21 +199,21 @@ def premis_event(**kwargs):
 def iterate_event_paths(attributes):
     """
     """
-    for event_path in attributes["event_source"]:
+    for event_path in attributes["event_path"]:
         yield normalized_event_path(
-            attributes["base_path"], event_path) + ("source",)
+            attributes["base_path"], event_path[1]) + (event_path[0],)
     for event_path in attributes["event_target"]:
         yield normalized_event_path(
             attributes["base_path"], event_path) + ("target",)
-    if not attributes["event_target"]:
+    if not attributes["event_path"] and not attributes["event_target"]:
         yield (".", None) + ("target",)
 
 
 def normalized_event_path(base_path, event_path=None):
     """
-    Return the path to the event_source or event_target based on the base_path
-    and event_path. If event_path is None, the event concerns the whole
-    package.
+    Return the path to the event target (or other role) based on the
+    base_path and event_path. If event_path is None, the event concerns
+    the whole package.
 
     :base_path: Base path
     :event_path: Source or target directory or file of the event

@@ -377,10 +377,10 @@ def test_migration_event(testpath, run_cli):
 
     run_cli(premis_event.main, [
        "--workspace", testpath,
-       "--event_source", "tests/data/simple_csv.csv",
-       "--event_source", "tests/data/simple_csv_2.csv",
-       "--event_target", "tests/data/valid_utf8.csv",
-       "--event_target", "tests/data/valid_iso8859-15.csv",
+       "--event_path", "source", "tests/data/simple_csv.csv",
+       "--event_path", "source", "tests/data/simple_csv_2.csv",
+       "--event_path", "outcome", "tests/data/valid_utf8.csv",
+       "--event_path", "outcome", "tests/data/valid_iso8859-15.csv",
        "--event_detail", "foo",
        "--event_outcome", "success",
        "--event_outcome_detail", "Migration test ok",
@@ -408,7 +408,7 @@ def test_migration_event(testpath, run_cli):
         else:
             assert id_elem.xpath(
                 "premis:linkingObjectRole",
-                namespaces=NAMESPACES)[0].text == "target"
+                namespaces=NAMESPACES)[0].text == "outcome"
 
 
 @pytest.mark.parametrize("file_, base_path", [
