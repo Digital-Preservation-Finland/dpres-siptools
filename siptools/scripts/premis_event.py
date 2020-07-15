@@ -37,8 +37,9 @@ click.disable_unicode_literals_warning = True
               nargs=2, type=str, multiple=True,
               metavar='<EVENT PATH ROLE> <EVENT PATH>',
               help=('Role and path for the event.'
-                    'For example: source path/to/source_file'
-                    'May be used multiple times.'))
+                    'For example: source path/to/source_file '
+                    'May be used multiple times. Given role is stored only '
+                    'if --add_linking_objects is also used.'))
 @click.option('--event_target',
               type=str, multiple=True,
               metavar='<EVENT TARGET PATH>',

@@ -162,7 +162,7 @@ in the following way::
 
 This will create object link to the event with a given role ``source``.  --event_path
 may be used several times. --event_target is same as using --event_path with a
-role ``target```.
+role ``target``. Role is stored only if ``--add_linking_objects`` is also used.
 
 The helper script called ``create-agent`` can be used to create detailed agent metadata
 and to link several agents to the same event. If used, this helper script must be run
@@ -250,7 +250,7 @@ Here is the basic functionality::
 
     import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file
     import-object ... path/to/migrated_file
-    premis_event normalization ... --event_path source path/to/native_file --event_path outcome path/to/migrated_file
+    premis_event normalization ... --event_path source path/to/native_file --event_path outcome path/to/migrated_file --add_linking_objects
     ...
 
 Sometimes a migration may be a combination of multiple source and/or outcome files.
@@ -261,7 +261,7 @@ one migrated file, do the following::
     import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file
     import-object --file_format my_mimetype my_version --bit_level native ... path/to/another_native_file
     import-object ... path/to/migrated_file
-    premis_event migration ... --event_path source path/to/native_file --event_path source path/to/another_native_file --event_path outcome path/to/migrated_file
+    premis_event migration ... --event_path source path/to/native_file --event_path source path/to/another_native_file --event_path outcome path/to/migrated_file --add_linking_objects
     ...
 
 We omit some of the required parameters above, for example timestamp or ``--event_detail``.
