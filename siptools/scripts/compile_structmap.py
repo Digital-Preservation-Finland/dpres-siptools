@@ -188,10 +188,13 @@ def create_filesec(**attributes):
 
     :attributes: Attribute values as a dict
                  all_amd_refs: XML element tree of administrative metadata
-                               references
-                 object_refs: XML tree of digital objects.
-                 filelist: Sorted list of digital objects (file paths)
-                 workspace: Workspace path
+                               references. Will be created if missing.
+                 object_refs: XML tree of digital objects. Will be created
+                              if missing.
+                 filelist: Sorted list of digital objects (file paths).
+                           Will be created if missing.
+                 workspace: Workspace path, required by add_file_to_filesec().
+                            If missing, default value is "./workspace/".
     :returns: A tuple of METS XML Element tree including file section
               element and a dict of file paths and identifiers
     """
@@ -216,14 +219,20 @@ def create_structmap(filesec, **attributes):
     :filesec: fileSec element
     :attributes: The following keys:
                  all_amd_refs: XML element tree of administrative metadata
-                               references
+                               references. Will be created if missing.
                  all_dmd_refs: XML element tree of descriptive metadata
-                               references
-                 filelist: Sorted list of digital objects (file paths)
+                               references. Will be created if missing.
+                 filelist: Sorted list of digital objects (file paths).
+                           Will be created if missing.
                  structmap_type: TYPE attribute of structMap element
-                 root_type: TYPE attribute of root div element
-                 file_ids: Dict with file paths and identifiers
-                 workspace: Workspace path
+                                 If missing, default value is None.
+                 root_type: TYPE attribute of root div element.
+                            If missing, default value is "directory".
+                 file_ids: Dict with file paths and identifiers.
+                           Required by create_div(). Will be computed
+                           if missing.
+                 workspace: Workspace path, required by create_div().
+                            If missing, default value is "./workspace/".
     :returns: structural map element
     """
     attributes = get_reference_lists(**_attribute_values(attributes))
@@ -272,7 +281,7 @@ def create_ead3_structmap(filegrp, attributes):
                  filelist: Sorted list of digital objects (file paths)
                  dmdsec_loc: EAD3 descriptive metadata file
                  structmap_type: TYPE attribute of structMap element
-                 workspace: Workspace path
+                 workspace: Workspace path, required by ead3_c_div()
     """
     structmap = mets.structmap(type_attr=attributes["structmap_type"])
     container_div = mets.div(type_attr='logical')
@@ -317,7 +326,7 @@ def ead3_c_div(parent, div, filegrp, attributes):
                  all_amd_refs: XML element tree of administrative metadata
                                references
                  filelist: Sorted list of digital objects (file paths)
-                 workspace: Workspace path
+                 workspace: Workspace path, required by add_fptrs_div_ead()
     """
 
     try:
@@ -346,7 +355,7 @@ def add_file_to_filesec(attributes, path, filegrp):
                  all_amd_refs: XML element tree of administrative metadata
                                references
                  object_refs: XML tree of digital objects.
-                 workspace: Workspace path
+                 workspace: Workspace path, required by file_properties()
     :path: url encoded path of the file
     :filegrp: fileGrp element
     :returns: unique identifier of file element
@@ -427,7 +436,7 @@ def create_div(divs, parent, filesec, attributes, path=''):
                  filelist: Sorted list of digital objects (file paths)
                  type_attr: Structmap type
                  file_ids: Dict with file paths and identifiers
-                 workspace: Workspace path
+                 workspace: Workspace path, required by add_file_div()
     :path: Current path in directory structure walkthrough
     :returns: ``None``
     """
@@ -479,7 +488,7 @@ def add_file_div(path, fptr, attributes, type_attr='file'):
     :attributes: The following keys:
                  all_amd_refs: XML element tree of administrative metadata
                                references
-                 workspace: Workspace path
+                 workspace: Workspace path, required by file_properties()
     :type_attr: The TYPE attribute value for the div
 
     :returns: Div element with properties or None
@@ -505,7 +514,6 @@ def file_properties(path, attributes):
                  workspace: Workspace path
     :returns: A dict with properties or None
     """
-
     json_name = None
     for amdref in get_md_references(attributes["all_amd_refs"], path=path):
         json_name = os.path.join(
@@ -538,7 +546,7 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
                  all_amd_refs: XML element tree of administrative metadata
                                references
                  filelist: Sorted list of digital objects (file paths)
-                 workspace: Workspace path
+                 workspace: Workspace path, required by file_properties()
     :returns: The modified c_div element
     """
     for href in hrefs:

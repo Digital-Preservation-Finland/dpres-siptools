@@ -152,7 +152,8 @@ def _attribute_values(given_params):
     for key in given_params:
         if given_params[key]:
             attributes[key] = given_params[key]
-    if attributes["bit_level"] == "native" and not attributes["file_format"]:
+    if attributes["bit_level"] in BIT_LEVELS and not \
+            attributes["file_format"]:
         raise ValueError("Argument --file_format is mandatory if --bit_level "
                          "is given.")
 

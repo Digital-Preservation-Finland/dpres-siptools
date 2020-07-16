@@ -267,6 +267,10 @@ one migrated file, do the following::
 We omit some of the required parameters above, for example timestamp or ``--event_detail``.
 However, these parameters are still required.
 
+Please note that importing native files in a submission information package for the Finnish
+National Digital Preservation Services requires acceptance from the service beforehand.
+If you are plannig to use this feature, please contact to the service for more information.
+
 Provenance metadata in the packaging process
 --------------------------------------------
 
@@ -309,7 +313,6 @@ For documenting the source of the descriptive metadata, the script import-descri
 has two arguments:, '--dmd_source' and '--dmd_agent'. These are used for documenting
 the source, e.g. database or system, for the descriptive metadata and the agent used
 to export the metadata from the source, e.g. a database client or API.
-
 
 Additional notes
 ----------------

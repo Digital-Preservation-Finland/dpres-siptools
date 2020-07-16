@@ -182,12 +182,13 @@ def premis_event(**kwargs):
         agent_creator.write(mdtype="PREMIS:AGENT",
                             stdout=attributes["stdout"])
 
-    for (directory, event_file, role) in iterate_event_paths(attributes):
-        if event_file is not None and attributes["add_linking_objects"]:
-            linking_object = read_object_id(
-                event_file, attributes["workspace"])
-            attributes["linking_objects"].add(
-                (linking_object[0], linking_object[1], role))
+    if attributes["add_linking_objects"]:
+        for (directory, event_file, role) in iterate_event_paths(attributes):
+            if event_file is not None:
+                linking_object = read_object_id(
+                    event_file, attributes["workspace"])
+                attributes["linking_objects"].add(
+                    (linking_object[0], linking_object[1], role))
 
     event = create_premis_event(**attributes)
 
@@ -216,7 +217,7 @@ def iterate_event_paths(attributes):
         yield normalized_event_path(
             attributes["base_path"], event_path) + ("target",)
     if not attributes["event_path"] and not attributes["event_target"]:
-        yield (".", None) + ("target",)
+        yield (".", None, "target")
 
 
 def normalized_event_path(base_path, event_path=None):
