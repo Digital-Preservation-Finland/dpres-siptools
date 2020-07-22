@@ -1,11 +1,11 @@
 """Command line tool for creating premis events"""
-from __future__ import unicode_literals, print_function
+from __future__ import print_function, unicode_literals
 
 import glob
+import json
 import os
 import sys
 from uuid import uuid4
-import json
 
 import click
 import lxml.etree
@@ -14,9 +14,9 @@ import six
 import premis
 import xml_helpers.utils
 from siptools.mdcreator import MetsSectionCreator
+from siptools.utils import list2str
 from siptools.xml.mets import NAMESPACES
 from siptools.xml.premis import PREMIS_EVENT_OUTCOME_TYPES
-from siptools.utils import list2str
 
 click.disable_unicode_literals_warning = True
 
@@ -239,18 +239,19 @@ class PremisCreator(MetsSectionCreator):
         )
 
 
-def find_premis_agent_identifier(attributes):
+def get_premis_agent_identifiers(workspace):
     """
-    Search for an existing PREMIS agent in the workspace with the same
-    agent name and type. If found, return the agent identifier.
+    Get a dictionary of PREMIS agent name and type pairs and their
+    corresponding agent identifiers
 
-    :attributes: The follwing keys:
-                 workspace: path to the workspace
-                 agent_name: content of PREMIS agentName element
-                 agent_type: content of PREMIS agentType element
-    :returns: PREMIS agent identifier if found, None otherwise
+    :param workspace: Path to the workspace
+
+    :returns: A dictionary with the following tuple-to-tuple mapping
+              {(agent_type, agent_name): (agent_ident_type, agent_ident_value)}
     """
-    search_path = os.path.join(attributes["workspace"], "*AGENT-amd.xml")
+    result = {}
+
+    search_path = os.path.join(workspace, "*AGENT-amd.xml")
 
     for path in glob.glob(search_path):
         element = lxml.etree.parse(path).getroot()[0]
@@ -258,25 +259,23 @@ def find_premis_agent_identifier(attributes):
             ".//premis:agent", namespaces=NAMESPACES
         )
 
-        found_agent_name = agent.find(
-            "premis:agentName", namespaces=NAMESPACES
-        ).text
-        found_agent_type = agent.find(
+        agent_type = agent.find(
             "premis:agentType", namespaces=NAMESPACES
         ).text
+        agent_name = agent.find(
+            "premis:agentName", namespaces=NAMESPACES
+        ).text
 
-        if found_agent_name == attributes["agent_name"] and \
-                found_agent_type == attributes["agent_type"]:
-            # Agent already exists
-            id_type = agent.find(
-                ".//premis:agentIdentifierType", namespaces=NAMESPACES
-            ).text
-            id_value = agent.find(
-                ".//premis:agentIdentifierValue", namespaces=NAMESPACES
-            ).text
-            return (id_type, id_value)
+        id_type = agent.find(
+            ".//premis:agentIdentifierType", namespaces=NAMESPACES
+        ).text
+        id_value = agent.find(
+            ".//premis:agentIdentifierValue", namespaces=NAMESPACES
+        ).text
 
-    return None
+        result[(agent_type, agent_name)] = (id_type, id_value)
+
+    return result
 
 
 def create_premis_agent(**attributes):
@@ -367,6 +366,11 @@ def _resolve_agents(**attributes):
         attributes["workspace"],
         attributes["create_agent_file"] + '-AGENTS-amd.json')
 
+    # Get existing agent identifiers for reuse
+    premis_agent_identifiers = get_premis_agent_identifiers(
+        attributes["workspace"]
+    )
+
     if attributes["create_agent_file"] and os.path.exists(agents_filepath):
 
         with open(agents_filepath) as in_file:
@@ -377,8 +381,10 @@ def _resolve_agents(**attributes):
             if 'agent_version' in agent:
                 attributes["agent_name"] = agent["agent_name"] + \
                     '-v' + agent["agent_version"]
-            attributes["agent_identifier"] = find_premis_agent_identifier(
-                attributes)
+            attributes["agent_identifier"] = premis_agent_identifiers.get(
+                (attributes["agent_type"], attributes["agent_name"]), None
+            )
+
             if not attributes["agent_identifier"]:
                 attributes["agent_identifier"] = (agent["identifier_type"],
                                                   agent["identifier_value"])
@@ -400,8 +406,9 @@ def _resolve_agents(**attributes):
 
     elif attributes["agent_name"] or attributes["agent_type"]:
         if not attributes["agent_identifier"]:
-            attributes["agent_identifier"] = \
-                find_premis_agent_identifier(attributes)
+            attributes["agent_identifier"] = premis_agent_identifiers.get(
+                (attributes["agent_type"], attributes["agent_name"]), None
+            )
 
         if not attributes["agent_identifier"]:
             attributes["agent_identifier"] = ("UUID", six.text_type(uuid4()))
