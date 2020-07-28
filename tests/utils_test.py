@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 import pytest
-import six
 
 import lxml.etree
 import siptools.utils as utils
@@ -122,7 +121,9 @@ def test_filescraper_error():
         utils.scrape_file("tests/data/invalid_empty_text-file-åäö.txt",
                           skip_well_check=True)
 
-    if six.PY2:
-        assert filename in utils.ensure_str(str(error.value).decode('UTF-8'))
-    else:
-        assert filename in utils.ensure_str(str(error.value))
+    message = None
+    for arg in error.value.args:
+        if "Metadata" in arg[0:8]:
+            message = utils.ensure_str(arg)
+
+    assert filename in message
