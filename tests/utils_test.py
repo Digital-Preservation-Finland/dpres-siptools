@@ -123,6 +123,6 @@ def test_filescraper_error():
                           skip_well_check=True)
 
     if six.PY2:
-        assert filename in utils.ensure_str(error.value.args[0].decode('UTF-8'))
+        assert filename in utils.ensure_str(str(error.value).decode('UTF-8'))
     else:
-        assert filename in utils.ensure_str(error.value.args[0])
+        assert filename in utils.ensure_str(str(error.value))
