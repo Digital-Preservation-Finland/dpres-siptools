@@ -115,8 +115,9 @@ def test_filescraper_error():
     """Test that file scraper error works if
        message contains non-ascii characters"""
 
-    filename = utils.ensure_str("invalid_empty_text-file-åäö.txt")
+    message = utils.ensure_str(
+        "invalid_empty_text-file-åäö.txt could not")
 
-    with pytest.raises(ValueError, match=filename):
+    with pytest.raises(ValueError, match=message):
         utils.scrape_file("tests/data/invalid_empty_text-file-åäö.txt",
                           skip_well_check=True)
