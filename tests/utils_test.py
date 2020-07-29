@@ -111,13 +111,16 @@ def test_different_ids_same_hash():
 
     assert utils.generate_digest(xml1) == utils.generate_digest(xml2)
 
-def test_filescraper_error():
+@pytest.mark.parametrize(
+    ("filepath", "message"), [
+        ("tests/data/invalid_empty_text-file.txt",
+         utils.ensure_str("invalid_empty_text-file.txt could not")),
+        ("tests/data/invalid_empty_text-file-åäö.txt",
+         utils.ensure_str("invalid_empty_text-file-åäö.txt could not")),
+    ])
+def test_filescraper_error(filepath, message):
     """Test that file scraper error works if
        message contains non-ascii characters"""
 
-    message = utils.ensure_str(
-        "invalid_empty_text-file-åäö.txt could not")
-
     with pytest.raises(ValueError, match=message):
-        utils.scrape_file("tests/data/invalid_empty_text-file-åäö.txt",
-                          skip_well_check=True)
+        utils.scrape_file(filepath, skip_well_check=True)

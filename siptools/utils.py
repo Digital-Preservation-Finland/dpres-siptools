@@ -123,13 +123,15 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
         for _, info in six.iteritems(scraper.info):
             errors.append("\n".join(info['errors']))
         error_str = "\n".join(errors)
+        error_str = ensure_str(error_str)
         if skip_well_check:
-            error_head = "Metadata of file %s could not " \
-                         "be collected due to errors.\n" % filepath
+            error_head = ensure_str(
+                "Metadata of file %s could not " \
+                "be collected due to errors.\n") % ensure_str(filepath)
             error_str = error_head + error_str
         # Ensure exception is printed in full on both Python 2 & 3 by coercing
         # to 'str'
-        raise ValueError(ensure_str(error_str))
+        raise ValueError(error_str)
 
     if scraper.info[0]['class'] == 'FileExists' and scraper.info[0]['errors']:
         raise IOError(scraper.info[0]['errors'])
