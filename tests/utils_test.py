@@ -113,9 +113,9 @@ def test_different_ids_same_hash():
 
 @pytest.mark.parametrize(
     ("filepath", "message"), [
-        ("tests/data/invalid_empty_text-file.txt",
+        (utils.ensure_str("tests/data/invalid_empty_text-file.txt"),
          utils.ensure_str("invalid_empty_text-file.txt could not")),
-        ("tests/data/invalid_empty_text-file-åäö.txt",
+        (utils.ensure_str("tests/data/invalid_empty_text-file-åäö.txt"),
          utils.ensure_str("invalid_empty_text-file-åäö.txt could not")),
     ])
 def test_filescraper_error(filepath, message):
