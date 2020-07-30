@@ -6,6 +6,7 @@ import pytest
 
 import lxml.etree
 import siptools.utils as utils
+from file_scraper.scraper import Scraper
 
 
 def test_encode_path():
@@ -111,20 +112,20 @@ def test_different_ids_same_hash():
 
     assert utils.generate_digest(xml1) == utils.generate_digest(xml2)
 
-@pytest.mark.parametrize(
-    ("filepath", "message"), [
-        (utils.ensure_str("tests/data/invalid_empty_text-file.txt"),
-         utils.ensure_str("invalid_empty_text-file.txt could not")),
-        (utils.ensure_str("tests/data/invalid_empty_text-file-åäö.txt"),
-         utils.ensure_str("invalid_empty_text-file-åäö.txt could not")),
-    ])
-def test_filescraper_error(filepath, message):
+def test_filescraper_error(monkeypatch):
     """Test that file scraper error works if
        message contains non-ascii characters"""
+    # pylint: disable = unused-argument, missing-docstring
+    def mock_scrape(self, check_wellformed=True):
+        self.well_formed = False
+        self.info = {0:{'errors':["Testing åäö"]}}
 
-    with pytest.raises(ValueError, match=message) as err:
+    monkeypatch.setattr(Scraper, 'scrape', mock_scrape)
+
+    filepath = utils.ensure_str("tests/data/invalid_empty_text-file.txt")
+    message = utils.ensure_str("Testing åäö")
+    with pytest.raises(ValueError) as error:
         utils.scrape_file(filepath, skip_well_check=True)
 
-    for item in err.traceback:
-        print(item)
-    print(err.value)
+    assert "ValueError" in error.typename
+    assert message in str(error.value)
