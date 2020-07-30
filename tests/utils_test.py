@@ -122,5 +122,9 @@ def test_filescraper_error(filepath, message):
     """Test that file scraper error works if
        message contains non-ascii characters"""
 
-    with pytest.raises(ValueError, match=message):
+    with pytest.raises(ValueError, match=message) as err:
         utils.scrape_file(filepath, skip_well_check=True)
+
+    for item in err.traceback:
+        print(item)
+    print(err.value)
