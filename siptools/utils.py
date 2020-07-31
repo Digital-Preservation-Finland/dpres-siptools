@@ -141,7 +141,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
 
     return (scraper.streams, scraper.info)
 
-# Adaptation of ensure_str function from new versions of six,
+# Adaptation of ensure_str function from version 1.15 of six,
 # included for compatibility with older six versions
 def ensure_str(s, encoding='utf-8', errors='strict'):
     """Coerce *s* to `str`.
@@ -151,6 +151,12 @@ def ensure_str(s, encoding='utf-8', errors='strict'):
     For Python 3:
       - `str` -> `str`
       - `bytes` -> decoded to `str`
+
+    Adapted from release 1.15 of six::
+        https://github.com/benjaminp/six/blob/master/six.py#L900
+
+    :encoding: Used encoding
+    :errors: Error handling level
     """
     if six.PY3:
         text_type = str
