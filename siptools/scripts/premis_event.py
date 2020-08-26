@@ -31,21 +31,22 @@ click.disable_unicode_literals_warning = True
                     "to ./workspace/"))
 @click.option('--base_path', type=click.Path(exists=True), default='.',
               metavar='<BASE PATH>',
-              help=("Source base path of event_target. If used, give "
-                    "event_target in relation to this base path."))
-@click.option('--event_path',
+              help=("Source base path of event_target or linking_object. If "
+                    "used, give event_target/linking_object in relation to "
+                    "this base path."))
+@click.option('--linking_object', 'linking_objects',
               nargs=2, type=str, multiple=True,
               metavar='<EVENT PATH ROLE> <EVENT PATH>',
               help=('Role and path for the event.'
                     'For example: source path/to/source_file '
                     'May be used multiple times. Given role is stored only '
-                    'if --add_linking_objects is also used.'))
+                    'if --add_object_links is also used.'))
 @click.option('--event_target',
               type=str, multiple=True,
               metavar='<EVENT TARGET PATH>',
               help=('Target for the event. Default is the root of '
                     'digital objects. May be used multiple times. '
-                    'Same as: --event_path target path/to/target_file'))
+                    'Same as: --linking_object target path/to/target_file'))
 @click.option('--event_detail',
               type=str, required=True,
               metavar='<EVENT DETAIL>',
@@ -81,7 +82,7 @@ click.disable_unicode_literals_warning = True
               help='The file containing (multiple) created agents '
                    'relating to the current event. Will override the '
                    'other given agent options if used.')
-@click.option('--add_linking_objects',
+@click.option('--add_object_links',
               is_flag=True,
               help='Add PREMIS linking objects to event. Requires that'
                    'import_object has been run already.')
@@ -113,8 +114,6 @@ def _attribute_values(given_params):
         "event_datetime": given_params["event_datetime"],
         "workspace": "./workspace/",
         "base_path": ".",
-        "event_path": (),
-        "event_target": (),
         "event_detail": given_params["event_detail"],
         "event_outcome": given_params["event_outcome"],
         "event_outcome_detail": given_params["event_outcome_detail"],
@@ -123,13 +122,17 @@ def _attribute_values(given_params):
         "agent_identifier": None,
         "create_agent_file": "",
         "stdout": False,
-        "add_linking_objects": False,
+        "add_object_links": False,
         "linking_agents": set(),
-        "linking_objects": set()
+        "linking_objects": set(),
+        "linking_object_ids": set()
     }
     for key in given_params:
         if given_params[key]:
             attributes[key] = given_params[key]
+    if given_params["event_target"]:
+        for target in given_params["event_target"]:
+            attributes[key] = attributes[key].add(("target", target))
 
     if not attributes["agent_name"] and not attributes["agent_type"]:
         attributes["agent_identifier"] = None
@@ -147,7 +150,7 @@ def premis_event(**kwargs):
              event_datetime: Timestamp of the event
              workspace: Workspace path
              base_path: Base path of digital objects
-             event_path: Roled paths of the event
+             linking_objects: Roled paths of the event
              event_target: Target paths of the event
              event_detail: Short information about the event
              event_outcome: Event outcome
@@ -158,9 +161,9 @@ def premis_event(**kwargs):
              create_agent_file: External file containing agents created
                                 by the create-agents script
              stdout: True prints output to stdout
-             add_linking_objects: True for adding linking objects. Requires
-                                  that import-object script has already been
-                                  used.
+             add_object_links: True for adding linking objects. Requires
+                               that import-object script has already been
+                               used.
     """
     attributes = _attribute_values(kwargs)
     creator = PremisCreator(attributes["workspace"])
@@ -177,57 +180,56 @@ def premis_event(**kwargs):
         agent = create_premis_agent(**agent)
 
         agent_creator = PremisCreator(attributes["workspace"])
-        for (directory, event_file, role) in iterate_event_paths(attributes):
+        for (directory, event_file, role) in iterate_linking_objects(
+                attributes):
             agent_creator.add_md(agent, event_file, directory=directory)
         agent_creator.write(mdtype="PREMIS:AGENT",
                             stdout=attributes["stdout"])
 
-    if attributes["add_linking_objects"]:
-        for (directory, event_file, role) in iterate_event_paths(attributes):
+    if attributes["add_object_links"]:
+        for (directory, event_file, role) in iterate_linking_objects(
+                attributes):
             if event_file is not None:
                 linking_object = read_object_id(
                     event_file, attributes["workspace"])
-                attributes["linking_objects"].add(
+                attributes["linking_object_ids"].add(
                     (linking_object[0], linking_object[1], role))
 
     event = create_premis_event(**attributes)
 
-    for (directory, event_file, role) in iterate_event_paths(attributes):
+    for (directory, event_file, role) in iterate_linking_objects(
+            attributes):
         creator.add_md(event, event_file, directory=directory)
 
     creator.write(mdtype="PREMIS:EVENT", stdout=attributes["stdout"])
 
 
-def iterate_event_paths(attributes):
+def iterate_linking_objects(attributes):
     """
     Iterate event paths given by the user.
-    :attirbutes: The following keys:
-                 event_path: Roled paths of the event
-                 event_target: Target paths of the event
+    :attributes: The following keys:
+                 linking_objects: Roled paths of the event
                  base_path: Base path of digital objects
     :returns: Tuple of directory, file and role. Directory is given if
               path to yield is a directory, file is given if path to
               yield is a file. Role is the given role or "target" by
               default.
     """
-    for event_path in attributes["event_path"]:
-        yield normalized_event_path(
-            attributes["base_path"], event_path[1]) + (event_path[0],)
-    for event_path in attributes["event_target"]:
-        yield normalized_event_path(
-            attributes["base_path"], event_path) + ("target",)
-    if not attributes["event_path"] and not attributes["event_target"]:
+    for link in attributes["linking_objects"]:
+        yield normalized_linking_object(
+            attributes["base_path"], link[1]) + (link[0],)
+    if not attributes["linking_objects"]:
         yield (".", None, "target")
 
 
-def normalized_event_path(base_path, event_path=None):
+def normalized_linking_object(base_path, linking_object=None):
     """
     Return the path to the event target (or other role) based on the
-    base_path and event_path. If event_path is None, the event concerns
-    the whole package.
+    base_path and linking_objects. If linking_objects is None, the event
+    concerns the whole package.
 
     :base_path: Base path
-    :event_path: Source or target directory or file of the event
+    :linking_object: Roled directory or file of the event
     :returns: a tuple of directory and event_file.
     """
     event_file = None
@@ -238,17 +240,17 @@ def normalized_event_path(base_path, event_path=None):
     # sequences, if current path is not part of the absolute path. In
     # such case we will use the absolute path for eventpath and omit
     # base_path relation.
-    if event_path:
+    if linking_object:
         if base_path not in ['.']:
             eventpath = os.path.normpath(
-                os.path.join(base_path, event_path))
+                os.path.join(base_path, linking_object))
         else:
-            eventpath = os.path.normpath(event_path)
+            eventpath = os.path.normpath(linking_object)
 
         if os.path.isdir(eventpath):
-            directory = os.path.normpath(event_path)
+            directory = os.path.normpath(linking_object)
         elif os.path.isfile(eventpath):
-            event_file = os.path.normpath(event_path)
+            event_file = os.path.normpath(linking_object)
         else:
             raise IOError
     else:
@@ -352,8 +354,9 @@ def create_premis_event(**attributes):
                   event_outcome_detail: Deteiled information about the event
                   linking_agents: Linking agent identifier type,
                                   identifier value and role (tuple)
-                  linking_objects: linking object identifier type, value and
-                                   role (tuple)
+                  linking_object_ids: Set where each element contains linking
+                                      object identifier type, value and role
+                                      as tuple
     :returns: PREMIS event XML element
     """
     attributes = _attribute_values(attributes)
@@ -379,12 +382,12 @@ def create_premis_event(**attributes):
         child_elements.append(linking_agent_identifier)
 
     # Create linkingObjectIdentifier element if object identifiers are given
-    for linking_object in attributes["linking_objects"]:
+    for link in attributes["linking_object_ids"]:
         linking_object_identifier = premis.identifier(
-            identifier_type=linking_object[0],
-            identifier_value=linking_object[1],
+            identifier_type=link[0],
+            identifier_value=link[1],
             prefix='linkingObject',
-            role=linking_object[2]
+            role=link[2]
         )
         child_elements.append(linking_object_identifier)
 

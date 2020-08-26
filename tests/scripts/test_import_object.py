@@ -219,7 +219,7 @@ def test_import_object_native(testpath, run_cli):
         "//premis:formatVersion", namespaces=NAMESPACES)[0].text == "0.0"
 
 
-def test_native_missig_format(run_cli):
+def test_native_missing_format(run_cli):
     """
     Test that error occurs if native file is given without file format.
     """

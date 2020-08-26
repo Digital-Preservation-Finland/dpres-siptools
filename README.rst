@@ -155,14 +155,14 @@ not created.
 You may call this script several times to create multiple provenance metadata sections.
 
 If several digital objects are linked to the same event and agent, use --event_target
-multiple times. You may also want to consider using --event_path and --add_linking_objects
+multiple times. You may also want to consider using --linking_object and --add_object_links
 in the following way::
 
-    premis-event --event_path source pat/to/source_file --add_linking_objects ...
+    premis-event --linking_object source pat/to/source_file --add_object_links ...
 
-This will create object link to the event with a given role ``source``.  --event_path
-may be used several times. --event_target is same as using --event_path with a
-role ``target``. Role is stored only if ``--add_linking_objects`` is also used.
+This will create object link to the event with a given role ``source``.  --linking_object
+may be used several times. --event_target is same as using --linking_object with a
+role ``target``. Role is stored only if ``--add_object_links`` is also used.
 
 The helper script called ``create-agent`` can be used to create detailed agent metadata
 and to link several agents to the same event. If used, this helper script must be run
@@ -250,18 +250,18 @@ Here is the basic functionality::
 
     import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file
     import-object ... path/to/migrated_file
-    premis_event normalization ... --event_path source path/to/native_file --event_path outcome path/to/migrated_file --add_linking_objects
+    premis_event normalization ... --linking_object source path/to/native_file --linking_object outcome path/to/migrated_file --add_object_links
     ...
 
 Sometimes a migration may be a combination of multiple source and/or outcome files.
 In such case, use ``import-object`` for each of them and create the migration event
-with using ``--event_path`` multiple times. For example combining two native files as
+with using ``--linking_object`` multiple times. For example combining two native files as
 one migrated file, do the following::
 
     import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file
     import-object --file_format my_mimetype my_version --bit_level native ... path/to/another_native_file
     import-object ... path/to/migrated_file
-    premis_event migration ... --event_path source path/to/native_file --event_path source path/to/another_native_file --event_path outcome path/to/migrated_file --add_linking_objects
+    premis_event migration ... --linking_object source path/to/native_file --linking_object source path/to/another_native_file --linking_object outcome path/to/migrated_file --add_object_links
     ...
 
 We omit some of the required parameters above, for example timestamp or ``--event_detail``.
@@ -269,7 +269,7 @@ However, these parameters are still required.
 
 Please note that importing native files in a submission information package for the Finnish
 National Digital Preservation Services requires acceptance from the service beforehand.
-If you are plannig to use this feature, please contact to the service for more information.
+If you are planning to use this feature, please contact the service for more information.
 
 Provenance metadata in the packaging process
 --------------------------------------------
