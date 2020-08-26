@@ -124,7 +124,7 @@ def _attribute_values(given_params):
         "stdout": False,
         "add_object_links": False,
         "linking_agents": set(),
-        "linking_objects": set(),
+        "linking_objects": (),
         "linking_object_ids": set()
     }
     for key in given_params:
@@ -134,7 +134,7 @@ def _attribute_values(given_params):
     if "event_target" in given_params and given_params["event_target"]:
         for target in given_params["event_target"]:
             attributes["linking_objects"] = \
-                attributes["linking_objects"].add(("target", target))
+                attributes["linking_objects"] + (("target", target), )
 
     if not attributes["agent_name"] and not attributes["agent_type"]:
         attributes["agent_identifier"] = None
@@ -183,14 +183,14 @@ def premis_event(**kwargs):
 
         agent_creator = PremisCreator(attributes["workspace"])
         for (directory, event_file, role) in iterate_linking_objects(
-                attributes):
+                attributes["base_path"], attributes["linking_objects"]):
             agent_creator.add_md(agent, event_file, directory=directory)
         agent_creator.write(mdtype="PREMIS:AGENT",
                             stdout=attributes["stdout"])
 
     if attributes["add_object_links"]:
         for (directory, event_file, role) in iterate_linking_objects(
-                attributes):
+                attributes["base_path"], attributes["linking_objects"]):
             if event_file is not None:
                 linking_object = read_object_id(
                     event_file, attributes["workspace"])
@@ -200,27 +200,25 @@ def premis_event(**kwargs):
     event = create_premis_event(**attributes)
 
     for (directory, event_file, role) in iterate_linking_objects(
-            attributes):
+            attributes["base_path"], attributes["linking_objects"]):
         creator.add_md(event, event_file, directory=directory)
 
     creator.write(mdtype="PREMIS:EVENT", stdout=attributes["stdout"])
 
 
-def iterate_linking_objects(attributes):
+def iterate_linking_objects(base_path, linking_objects):
     """
     Iterate event paths given by the user.
-    :attributes: The following keys:
-                 linking_objects: Roled paths of the event
-                 base_path: Base path of digital objects
+    :base_path: Base path of digital objects
+    :linking_objects: Roled paths of the event
     :returns: Tuple of directory, file and role. Directory is given if
               path to yield is a directory, file is given if path to
               yield is a file. Role is the given role or "target" by
               default.
     """
-    for link in attributes["linking_objects"]:
-        yield normalized_linking_object(
-            attributes["base_path"], link[1]) + (link[0],)
-    if not attributes["linking_objects"]:
+    for link in linking_objects:
+        yield normalized_linking_object(base_path, link[1]) + (link[0],)
+    if not linking_objects:
         yield (".", None, "target")
 
 
