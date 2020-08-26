@@ -160,9 +160,9 @@ in the following way::
 
     premis-event --linking_object source pat/to/source_file --add_object_links ...
 
-This will create object link to the event with a given role ``source``.  --linking_object
+This will create an object link to the event with a given role ``source``.  --linking_object
 may be used several times. --event_target is same as using --linking_object with a
-role ``target``. Role is stored only if ``--add_object_links`` is also used.
+role ``target``. The role is stored only if ``--add_object_links`` is also used.
 
 The helper script called ``create-agent`` can be used to create detailed agent metadata
 and to link several agents to the same event. If used, this helper script must be run
@@ -241,12 +241,12 @@ Create a TAR file::
 Adding native files to package with corresponding normalized files
 ------------------------------------------------------------------
 
-Native file is an original file which is applicable only for bit-level preservation.
-This requires a migrated file suitable for preservation, and a normalization event.
-In this case ``import-object`` script must be run before ``premis-event`` script.
-In ``import-object``, argument ``--file_format`` is mandatory for native files.
-Use value ``normalization`` or ``migration`` as event type in ``premis-event``.
-Here is the basic functionality::
+A native file is an original file which is applicable only for bit-level preservation.
+Using the native file functionality requires a migrated file suitable for preservation
+and a normalization event. In this case the ``import-object`` script must be run before
+the ``premis-event`` script. In ``import-object``, the argument ``--file_format`` is
+mandatory for native files. Use the value ``normalization`` or ``migration`` as event
+type in ``premis-event``. Here is the basic functionality::
 
     import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file
     import-object ... path/to/migrated_file
@@ -255,7 +255,7 @@ Here is the basic functionality::
 
 Sometimes a migration may be a combination of multiple source and/or outcome files.
 In such case, use ``import-object`` for each of them and create the migration event
-with using ``--linking_object`` multiple times. For example combining two native files as
+using ``--linking_object`` multiple times. For example combining two native files to
 one migrated file, do the following::
 
     import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file

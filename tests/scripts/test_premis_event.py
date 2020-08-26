@@ -184,21 +184,22 @@ def test_premis_event_fail(testpath, run_cli):
       'structured/Access and use rights files/access_file.txt', None,
       'structured/Access and use rights files/access_file.txt')]
 )
-def test_normalized_event_path(base_path, event_target, directory, event_file):
-    """Tests the normalized_event_path function."""
-    (ev_directory, ev_file) = premis_event.normalized_event_path(
+def test_normalized_linking_object(base_path, event_target, directory,
+                                   event_file):
+    """Tests the normalized_linking_object function."""
+    (ev_directory, ev_file) = premis_event.normalized_linking_object(
         base_path, event_target)
 
     assert ev_directory == directory
     assert ev_file == event_file
 
 
-def test_invalid_normalized_event_path():
-    """Tests that normalized_event_path raises IOError if given
+def test_invalid_normalized_linking_object():
+    """Tests that normalized_linking_object raises IOError if given
     event_target path doesn't exist.
     """
     with pytest.raises(IOError):
-        premis_event.normalized_event_path('.', 'foo/bar')
+        premis_event.normalized_linking_object('.', 'foo/bar')
 
 
 def test_reuse_agent(testpath, run_cli):
@@ -377,14 +378,14 @@ def test_migration_event(testpath, run_cli):
 
     run_cli(premis_event.main, [
         "--workspace", testpath,
-        "--event_path", "source", "tests/data/simple_csv.csv",
-        "--event_path", "source", "tests/data/simple_csv_2.csv",
-        "--event_path", "outcome", "tests/data/valid_utf8.csv",
-        "--event_path", "outcome", "tests/data/valid_iso8859-15.csv",
+        "--linking_object", "source", "tests/data/simple_csv.csv",
+        "--linking_object", "source", "tests/data/simple_csv_2.csv",
+        "--linking_object", "outcome", "tests/data/valid_utf8.csv",
+        "--linking_object", "outcome", "tests/data/valid_iso8859-15.csv",
         "--event_detail", "foo",
         "--event_outcome", "success",
         "--event_outcome_detail", "Migration test ok",
-        "--add_linking_objects",
+        "--add_object_links",
         "migration", "2020-02-02T20:20:20"
     ])
     event_output = get_md_file(
