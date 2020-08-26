@@ -132,7 +132,8 @@ def _attribute_values(given_params):
             attributes[key] = given_params[key]
     if given_params["event_target"]:
         for target in given_params["event_target"]:
-            attributes[key] = attributes[key].add(("target", target))
+            attributes["linking_objects"] = \
+                attributes["linking_objects"].add(("target", target))
 
     if not attributes["agent_name"] and not attributes["agent_type"]:
         attributes["agent_identifier"] = None
