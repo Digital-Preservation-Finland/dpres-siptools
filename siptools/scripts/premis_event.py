@@ -128,7 +128,7 @@ def _attribute_values(given_params):
         "linking_object_ids": set()
     }
     for key in given_params:
-        if given_params[key]:
+        if given_params[key] and key not in ["event_target"]:
             attributes[key] = given_params[key]
     if given_params["event_target"]:
         for target in given_params["event_target"]:
