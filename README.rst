@@ -267,6 +267,9 @@ one migrated file, do the following::
 We omit some of the required parameters above, for example timestamp or ``--event_detail``.
 However, these parameters are still required.
 
+For a native file, file format identification and file well-formedness validation are
+skipped in the ``import-object`` script.
+
 Please note that importing native files in a submission information package for the Finnish
 National Digital Preservation Services requires acceptance from the service beforehand.
 If you are planning to use this feature, please contact the service for more information.
@@ -290,18 +293,18 @@ compile-structmap
     creates a ``creation`` type event, documenting the creation of the structural
     metadata
 
-The script import-object has two arguments relating to provenance metadata, '--event_target'
-and '--event_datetime'. The first argument ('--event_target') allows the provenance
+The script import-object has two arguments relating to provenance metadata, ``--event_target``
+and ``--event_datetime``. The first argument ``--event_target`` allows the provenance
 metadata to be linked to a specific part of the contents, for example the package root,
 regardless of the file path(s) given to the script. The second argument
-('--event_datetime') sets the timestamp of the event, which allows reusing the
+``--event_datetime`` sets the timestamp of the event, which allows reusing the
 same provenance metadata each time import-object is run::
 
     import-object 'tests/data/structured' --workspace ./workspace --event_datetime 2020-06-05 --event_target '.' 
 
 The example above allows import-object to be run multiple times for different file paths
-while still creating the provenance metadata only once with the timestamp '2020-06-05' and
-linking the provenance metadata to the package root '.'.
+while still creating the provenance metadata only once with the timestamp ``2020-06-05`` and
+linking the provenance metadata to the package root ``.``.
 
 **Note that is highly recommended to use both arguments if import-object is run
 separately for each individual digital object in a package!** By supplying the same
@@ -310,9 +313,12 @@ to the same provenance metadata in the METS document. Otherwise, new provenance
 metadata is created each time the script is run.
 
 For documenting the source of the descriptive metadata, the script import-description
-has two arguments:, '--dmd_source' and '--dmd_agent'. These are used for documenting
+has two arguments:, ``--dmd_source`` and ``--dmd_agent``. These are used for documenting
 the source, e.g. database or system, for the descriptive metadata and the agent used
 to export the metadata from the source, e.g. a database client or API.
+
+For a native file, ``validation`` and ``format identification`` type events are not
+created.
 
 Additional notes
 ----------------

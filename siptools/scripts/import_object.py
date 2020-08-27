@@ -152,10 +152,11 @@ def _attribute_values(given_params):
     for key in given_params:
         if given_params[key]:
             attributes[key] = given_params[key]
-    if attributes["bit_level"] in BIT_LEVELS and not \
-            attributes["file_format"]:
-        raise ValueError("Argument --file_format is mandatory if --bit_level "
-                         "is given.")
+    if attributes["bit_level"] in BIT_LEVELS:
+        if not attributes["file_format"]:
+            raise ValueError("Argument --file_format is mandatory if "
+                             "--bit_level is given.")
+        attributes["skip_wellformed_check"] = True
 
     return attributes
 
