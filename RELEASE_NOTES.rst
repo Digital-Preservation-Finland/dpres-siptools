@@ -4,6 +4,12 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+New features added in v0.47:
+
+    * Add support for native files.
+    * Add support for ICC color profile name.
+    * Fix character encoding issues in error messages.
+
 New features added in v0.46:
 
     * Add support for national specifications 1.7.2.
