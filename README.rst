@@ -250,7 +250,7 @@ type in ``premis-event``. Here is the basic functionality::
 
     import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file
     import-object ... path/to/migrated_file
-    premis_event normalization ... --linking_object source path/to/native_file --linking_object outcome path/to/migrated_file --add_object_links
+    premis-event normalization ... --linking_object source path/to/native_file --linking_object outcome path/to/migrated_file --add_object_links
     ...
 
 Sometimes a migration may be a combination of multiple source and/or outcome files.
@@ -261,7 +261,7 @@ one migrated file, do the following::
     import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file
     import-object --file_format my_mimetype my_version --bit_level native ... path/to/another_native_file
     import-object ... path/to/migrated_file
-    premis_event migration ... --linking_object source path/to/native_file --linking_object source path/to/another_native_file --linking_object outcome path/to/migrated_file --add_object_links
+    premis-event migration ... --linking_object source path/to/native_file --linking_object source path/to/another_native_file --linking_object outcome path/to/migrated_file --add_object_links
     ...
 
 We omit some of the required parameters above, for example timestamp or ``--event_detail``.

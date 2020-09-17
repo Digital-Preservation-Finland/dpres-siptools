@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version v0.48:
+
+    * Minor fix in README file.
+
 New features added in v0.47:
 
     * Add support for native files.
