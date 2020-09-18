@@ -346,9 +346,9 @@ def ead3_c_div(parent, div, filegrp, attributes):
         if ET.QName(elem.tag).localname == 'daoset':
             daoset_div = mets.div(type_attr='daoset', label=_parse_label(elem))
 
-            hrefs = collect_dao_hrefs(elem)
+            daoset_hrefs = collect_dao_hrefs(elem)
             daoset_div = add_fptrs_div_ead(c_div=daoset_div,
-                                           hrefs=hrefs,
+                                           hrefs=daoset_hrefs,
                                            filegrp=filegrp,
                                            attributes=attributes,
                                            single_divs=True)
@@ -356,8 +356,8 @@ def ead3_c_div(parent, div, filegrp, attributes):
 
     # Collect dao elements and file references as fptr elements if they
     # exist directly under the ead3 c element
-    hrefs = collect_dao_hrefs(parent)
-    c_div = add_fptrs_div_ead(c_div=c_div, hrefs=hrefs, filegrp=filegrp,
+    c_hrefs = collect_dao_hrefs(parent)
+    c_div = add_fptrs_div_ead(c_div=c_div, hrefs=c_hrefs, filegrp=filegrp,
                               attributes=attributes, single_divs=False)
 
     div.append(c_div)
