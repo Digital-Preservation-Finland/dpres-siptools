@@ -332,8 +332,8 @@ def ead3_c_div(parent, div, filegrp, attributes):
                  workspace: Workspace path, required by add_fptrs_div_ead()
     """
 
-    label = _parse_label(parent)
-    c_div = mets.div(type_attr=(ET.QName(parent.tag).localname), label=label)
+    c_div = mets.div(type_attr=(ET.QName(parent.tag).localname),
+                     label=_parse_label(parent))
 
     # Create child divs based on the child c elements
     for elem in parent.findall("./*"):
@@ -344,8 +344,7 @@ def ead3_c_div(parent, div, filegrp, attributes):
     # references to the daoset elements
     for elem in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
         if ET.QName(elem.tag).localname == 'daoset':
-            label = _parse_label(elem)
-            daoset_div = mets.div(type_attr='daoset', label=label)
+            daoset_div = mets.div(type_attr='daoset', label=_parse_label(elem))
 
             hrefs = collect_dao_hrefs(elem)
             daoset_div = add_fptrs_div_ead(c_div=daoset_div,
@@ -368,6 +367,9 @@ def _parse_label(elem):
     """Helper function to return the label attribute for a tag based
     on existing EAD3 attributes. If none of the exist, return the
     element name instead.
+
+    :elem: lxml.etree element whose attributes (or name) is parsed
+    :returns: The parsed label as a string
     """
     try:
         label = elem.xpath(("./@label | ./@otherlevel | ./@level"),
