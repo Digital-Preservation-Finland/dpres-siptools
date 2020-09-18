@@ -319,6 +319,9 @@ def ead3_c_div(parent, div, filegrp, attributes):
     into @type and the @level or @otherlevel attributes from ead3 will
     be put into @label.
 
+    Daoset elements within the ead3 c element will be looped over and
+    create their own divs if they exist, containing the dao elements.
+
     :parent: Element to follow in EAD3
     :div: Div element in structmap
     :filegrp: fileGrp element
@@ -329,23 +332,50 @@ def ead3_c_div(parent, div, filegrp, attributes):
                  workspace: Workspace path, required by add_fptrs_div_ead()
     """
 
-    try:
-        label = parent.xpath(("./@otherlevel | ./@level"),
-                             namespaces=NAMESPACES)[0]
-    except IndexError:
-        label = ET.QName(parent.tag).localname
-
+    label = _parse_label(parent)
     c_div = mets.div(type_attr=(ET.QName(parent.tag).localname), label=label)
 
+    # Create child divs based on the child c elements
     for elem in parent.findall("./*"):
         if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
             ead3_c_div(elem, c_div, filegrp, attributes)
 
+    # Create divs for daoset elements, appending the dao elements and file
+    # references to the daoset elements
+    for elem in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
+        if ET.QName(elem.tag).localname == 'daoset':
+            label = _parse_label(elem)
+            daoset_div = mets.div(type_attr='daoset', label=label)
+
+            hrefs = collect_dao_hrefs(elem)
+            daoset_div = add_fptrs_div_ead(c_div=daoset_div,
+                                           hrefs=hrefs,
+                                           filegrp=filegrp,
+                                           attributes=attributes,
+                                           single_divs=True)
+            c_div.append(daoset_div)
+
+    # Collect dao elements and file references as fptr elements if they
+    # exist directly under the ead3 c element
     hrefs = collect_dao_hrefs(parent)
     c_div = add_fptrs_div_ead(c_div=c_div, hrefs=hrefs, filegrp=filegrp,
-                              attributes=attributes)
+                              attributes=attributes, single_divs=False)
 
     div.append(c_div)
+
+
+def _parse_label(elem):
+    """Helper function to return the label attribute for a tag based
+    on existing EAD3 attributes. If none of the exist, return the
+    element name instead.
+    """
+    try:
+        label = elem.xpath(("./@label | ./@otherlevel | ./@level"),
+                           namespaces=NAMESPACES)[0]
+    except IndexError:
+        label = ET.QName(elem.tag).localname
+
+    return label
 
 
 def add_file_to_filesec(attributes, path, filegrp):
@@ -531,7 +561,7 @@ def file_properties(path, attributes):
     return file_metadata_dict[0]['properties']
 
 
-def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
+def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes, single_divs=False):
     """Creates fptr elements for hrefs. If the files contain
     file properties, like ordering data, the data is written to the
     parent div element.
@@ -543,10 +573,13 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
     :hrefs: a list of hrefs
     :filegrp: fileGrp element
     :attributes: The following keys:
-                 all_amd_refs: XML element tree of administrative metadata
-                               references
+                 all_amd_refs: XML element tree of administrative
+                               metadata references
                  filelist: Sorted list of digital objects (file paths)
                  workspace: Workspace path, required by file_properties()
+    :single_divs: A boolean flag to indicate whether single hrefs should
+                  have a new div element or append the fptr to the
+                  current element
     :returns: The modified c_div element
     """
     for href in hrefs:
@@ -563,9 +596,9 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
         if properties and 'order' in properties:
 
             # Create new div elements for each fptr if there is more than
-            # one file, otherwise add the ORDER attribute to the current
-            # div element
-            if len(hrefs) > 1:
+            # one file or if single_divs is true, otherwise add the ORDER
+            # attribute to the current div element
+            if len(hrefs) > 1 or single_divs:
                 file_div = add_file_div(amd_file, fptr, attributes,
                                         type_attr='dao')
                 c_div.append(file_div)
@@ -578,22 +611,24 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
     return c_div
 
 
-def collect_dao_hrefs(ead3_c):
+def collect_dao_hrefs(parent):
     """Returns the href attribute values from ead3 dao elements.
 
-    :ead3_c: EAD3 c level element XML as lxml.etree structure
+    :parent: EAD3 element XML as lxml.etree structure containing dao
+             children (can be either a c level or daoset element)
     :returns: A list of hrefs
     """
     hrefs = []
-    for elem in ead3_c.xpath("./ead3:did/*", namespaces=NAMESPACES):
-        if ET.QName(elem.tag).localname in ['dao', 'daoset']:
-            if ET.QName(elem.tag).localname == 'daoset':
-                for dao_href in elem.xpath(
-                        "./ead3:dao/@href",
-                        namespaces=NAMESPACES):
-                    hrefs.append(dao_href.lstrip('/'))
-            else:
-                hrefs.append(elem.xpath("./@href")[0].lstrip('/'))
+
+    # The daos exist either directly under the parent element or within
+    # the did element, depending on the parent tag
+    xpath = './ead3:did/*'
+    if ET.QName(parent.tag).localname == 'daoset':
+        xpath = './*'
+
+    for elem in parent.xpath("%s" % xpath, namespaces=NAMESPACES):
+        if ET.QName(elem.tag).localname == 'dao':
+            hrefs.append(elem.xpath("./@href")[0].lstrip('/'))
 
     return hrefs
 

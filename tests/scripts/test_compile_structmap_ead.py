@@ -21,18 +21,28 @@ def create_test_data(workspace, run_cli, order=True):
     param2 = [
         '--workspace', workspace, '--skip_wellformed_check',
         'tests/data/structured/Publication files/publication.txt']
+    param3 = [
+        '--workspace', workspace, '--skip_wellformed_check',
+        'tests/data/structured/Documentation files/readme.txt']
 
     if order:
         param1.append('--order')
         param1.append('0001')
         param2.append('--order')
         param2.append('0002')
+        param3.append('--order')
+        param3.append('0001')
 
     run_cli(import_object.main, param1)
     run_cli(import_object.main, param2)
+    run_cli(import_object.main, param3)
 
 
-def test_compile_structmap_ok(testpath, run_cli):
+@pytest.mark.parametrize(('path', 'daosets'), [
+    ('tests/data/import_description/metadata/ead3_test.xml', False),
+    ('tests/data/import_description/metadata/ead3_daoset_test.xml', True)
+])
+def test_compile_structmap_ok(testpath, run_cli, path, daosets):
     """Tests the successful compilation of mets:structmap
     by using ead3 metadata as basis. Test that a leading slash
     in the ead3 metadata is removed since only relative paths
@@ -41,7 +51,7 @@ def test_compile_structmap_ok(testpath, run_cli):
     create_test_data(testpath, run_cli)
     arguments = [
         '--structmap_type', 'EAD3-logical', '--dmdsec_loc',
-        'tests/data/import_description/metadata/ead3_test.xml', '--workspace',
+        path, '--workspace',
         testpath]
     run_cli(compile_structmap.main, arguments)
 
@@ -53,9 +63,20 @@ def test_compile_structmap_ok(testpath, run_cli):
     fs_tree = ET.parse(output_filesec)
     fs_root = fs_tree.getroot()
 
+    expected_filesec_length = 2
+    expected_archival_files = 2
+    fptr_parent = '//mets:div[@LABEL="file"]'
+    if daosets:
+        expected_filesec_length = 3
+        expected_archival_files = 1
+        fptr_parent = '//mets:div[@TYPE="daoset"]/mets:div[@TYPE="dao"]'
+
+    # Check amount of files created n filesec
     assert len(fs_root.xpath(
         ('/mets:mets/mets:fileSec/mets:fileGrp/*'),
-        namespaces=NAMESPACES)) == 2
+        namespaces=NAMESPACES)) == expected_filesec_length
+
+    # Assert that individual file paths are created in filesec
     assert len(fs_root.xpath(
         ('/mets:mets/mets:fileSec/mets:fileGrp/mets:file/mets:FLocat'
          '[@xlink:href="file://tests/data/structured/Software+'
@@ -64,6 +85,8 @@ def test_compile_structmap_ok(testpath, run_cli):
         ('/mets:mets/mets:fileSec/mets:fileGrp/mets:file/mets:FLocat'
          '[@xlink:href="file://tests/data/structured/Publication+'
          'files/publication.txt"]'), namespaces=NAMESPACES)) == 1
+
+    # Check that the main EAD3 structure is translated to the structmap
     assert len(sm_root.xpath(
         '//mets:div/mets:div[@LABEL="fonds"]', namespaces=NAMESPACES)) == 1
     assert len(sm_root.xpath(
@@ -74,18 +97,19 @@ def test_compile_structmap_ok(testpath, run_cli):
         namespaces=NAMESPACES)) == 1
     assert len(sm_root.xpath(
         '//mets:div/mets:div/mets:div/mets:div/mets:div[@LABEL="file"]',
-        namespaces=NAMESPACES)) == 2
+        namespaces=NAMESPACES)) == expected_archival_files
+
+    # Check that fptr elements and file related attributues are created in
+    # the desired locations
     assert sm_root.xpath(
-        '//mets:div[@LABEL="file"]/*',
+        '%s/*' % fptr_parent,
         namespaces=NAMESPACES)[0].tag == '{http://www.loc.gov/METS/}fptr'
     assert 'FILEID' in sm_root.xpath(
-        '//mets:div[@LABEL="file"]/*', namespaces=NAMESPACES)[0].attrib
+        '%s/*' % fptr_parent, namespaces=NAMESPACES)[0].attrib
     assert sm_root.xpath(
-        '//mets:div[@LABEL="file"]',
-        namespaces=NAMESPACES)[0].get('ORDER') == '1'
+        '%s' % fptr_parent, namespaces=NAMESPACES)[0].get('ORDER') == '1'
     assert sm_root.xpath(
-        '//mets:div[@LABEL="file"]',
-        namespaces=NAMESPACES)[1].get('ORDER') == '2'
+        '%s' % fptr_parent, namespaces=NAMESPACES)[1].get('ORDER') == '2'
 
     # Assert that an event has been created
     references = read_md_references(testpath,
@@ -116,13 +140,13 @@ def test_collect_dao_hrefs():
     """Tests that the function collect_dao_hrefs returns a list with
     hrefs without leading slashes from ead3 test data.
     """
-    ead3 = ('<ead3:c xmlns:ead3="http://ead3.archivists.org/schema/" '
+    ead3 = ('<ead3:daoset xmlns:ead3="http://ead3.archivists.org/schema/" '
             'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
             'xsi:schemaLocation="http://ead3.archivists.org/schema '
-            'http://www.loc.gov/ead/ead3.xsd"><ead3:did><ead3:daoset>'
+            'http://www.loc.gov/ead/ead3.xsd">'
             '<ead3:dao daotype="derived" href="file1.txt"/>'
             '<ead3:dao daotype="derived" href="/file2.txt"/>'
-            '</ead3:daoset></ead3:did></ead3:c>')
+            '</ead3:daoset>')
     xml = ET.fromstring(ead3)
     hrefs = compile_structmap.collect_dao_hrefs(xml)
     assert hrefs == ['file1.txt', 'file2.txt']

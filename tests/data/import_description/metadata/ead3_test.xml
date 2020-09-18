@@ -1,20 +1,21 @@
+<?xml version="1.0"?>
 <ead3:ead xmlns:ead3="http://ead3.archivists.org/schema/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://ead3.archivists.org/schema http://www.loc.gov/ead/ead3.xsd">
   <ead3:archdesc level="fonds">
-    <ead3:did></ead3:did>
+    <ead3:did/>
     <ead3:dsc dsctype="combined">
       <ead3:c01 level="series">
         <ead3:c02 level="subseries">
-          <ead3:did></ead3:did>
+          <ead3:did/>
           <ead3:c03 level="item">
-            <ead3:did></ead3:did>
+            <ead3:did/>
             <ead3:c04 level="file">
               <ead3:did>
-                <ead3:dao daotype="derived" href="koodi.java"></ead3:dao>
+                <ead3:dao daotype="derived" href="koodi.java"/>
               </ead3:did>
             </ead3:c04>
             <ead3:c04 level="file">
               <ead3:did>
-			    <ead3:dao daotype="derived" href="/publication.txt"></ead3:dao>
+                <ead3:dao daotype="derived" href="/publication.txt"/>
               </ead3:did>
             </ead3:c04>
           </ead3:c03>
