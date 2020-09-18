@@ -27,11 +27,11 @@ def create_test_data(workspace, run_cli, order=True):
 
     if order:
         param1.append('--order')
-        param1.append('0001')
+        param1.append('1')
         param2.append('--order')
-        param2.append('0002')
+        param2.append('2')
         param3.append('--order')
-        param3.append('0001')
+        param3.append('1')
 
     run_cli(import_object.main, param1)
     run_cli(import_object.main, param2)
