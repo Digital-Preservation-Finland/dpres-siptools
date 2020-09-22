@@ -14,9 +14,7 @@
                   <ead3:dao daotype="derived" href="koodi.java"/>
                   <ead3:dao daotype="derived" href="publication.txt"/>
                 </ead3:daoset>
-                <ead3:daoset label="documentation">
-                  <ead3:dao daotype="derived" href="readme.txt"/>
-                </ead3:daoset>
+                <ead3:dao daotype="derived" href="readme.txt" label="documentation" />
               </ead3:did>
             </ead3:c04>
           </ead3:c03>

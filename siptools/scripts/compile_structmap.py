@@ -593,16 +593,10 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
 
         if properties and 'order' in properties:
 
-            # Create new div elements for each fptr if there is more than
-            # one file, otherwise add the ORDER attribute to the current
-            # div element
-            if len(hrefs) > 1:
-                file_div = add_file_div(amd_file, fptr, attributes,
-                                        type_attr='dao')
-                c_div.append(file_div)
-            else:
-                c_div.attrib['ORDER'] = properties['order']
-                c_div.append(fptr)
+            # Create new div elements for each fptr
+            file_div = add_file_div(amd_file, fptr, attributes,
+                                    type_attr='dao')
+            c_div.append(file_div)
         else:
             c_div.append(fptr)
 

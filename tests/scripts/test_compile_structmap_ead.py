@@ -65,7 +65,7 @@ def test_compile_structmap_ok(testpath, run_cli, path, daosets):
 
     expected_filesec_length = 2
     expected_archival_files = 2
-    fptr_parent = '//mets:div[@LABEL="file"]'
+    fptr_parent = '//mets:div[@LABEL="file"]/mets:div'
     if daosets:
         expected_filesec_length = 3
         expected_archival_files = 1
@@ -154,7 +154,7 @@ def test_collect_dao_hrefs():
 
 @pytest.mark.parametrize(
     ('hrefs', 'length', 'child_elem', 'order'),
-    [(['koodi.java'], 1, 'fptr', True),
+    [(['koodi.java'], 1, 'div', True),
      (['koodi.java', 'publication.txt'], 2, 'div', True),
      (['koodi.java', 'publication.txt', 'fooo'], 2, 'div', True),
      (['koodi.java', 'publication.txt'], 2, 'fptr', False)],
@@ -199,9 +199,7 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
     assert len(c_div.findall('.//{http://www.loc.gov/METS/}fptr')) == length
 
     # If file properties exist, it is written to the divs
-    if order and length == 1:
-        assert 'ORDER' in c_div.attrib
-    elif order:
+    if order:
         assert 'ORDER' in c_div.xpath('./*')[0].attrib
         assert c_div.xpath('./*')[0].get('TYPE') == 'dao'
     else:
