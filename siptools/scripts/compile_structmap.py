@@ -350,15 +350,14 @@ def ead3_c_div(parent, div, filegrp, attributes):
             daoset_div = add_fptrs_div_ead(c_div=daoset_div,
                                            hrefs=daoset_hrefs,
                                            filegrp=filegrp,
-                                           attributes=attributes,
-                                           single_divs=True)
+                                           attributes=attributes)
             c_div.append(daoset_div)
 
     # Collect dao elements and file references as fptr elements if they
     # exist directly under the ead3 c element
     c_hrefs = collect_dao_hrefs(parent)
     c_div = add_fptrs_div_ead(c_div=c_div, hrefs=c_hrefs, filegrp=filegrp,
-                              attributes=attributes, single_divs=False)
+                              attributes=attributes)
 
     div.append(c_div)
 
@@ -563,7 +562,7 @@ def file_properties(path, attributes):
     return file_metadata_dict[0]['properties']
 
 
-def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes, single_divs=False):
+def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
     """Creates fptr elements for hrefs. If the files contain
     file properties, like ordering data, the data is written to the
     parent div element.
@@ -579,9 +578,6 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes, single_divs=False):
                                metadata references
                  filelist: Sorted list of digital objects (file paths)
                  workspace: Workspace path, required by file_properties()
-    :single_divs: A boolean flag to indicate whether single hrefs should
-                  have a new div element or append the fptr to the
-                  current element
     :returns: The modified c_div element
     """
     for href in hrefs:
@@ -598,9 +594,9 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes, single_divs=False):
         if properties and 'order' in properties:
 
             # Create new div elements for each fptr if there is more than
-            # one file or if single_divs is true, otherwise add the ORDER
-            # attribute to the current div element
-            if len(hrefs) > 1 or single_divs:
+            # one file, otherwise add the ORDER attribute to the current
+            # div element
+            if len(hrefs) > 1:
                 file_div = add_file_div(amd_file, fptr, attributes,
                                         type_attr='dao')
                 c_div.append(file_div)
