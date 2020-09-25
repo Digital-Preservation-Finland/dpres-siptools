@@ -526,7 +526,7 @@ def add_file_div(path, fptr, attributes, type_attr='file', label=None):
     """
 
     properties = file_properties(path, attributes)
-    if properties and any(('order' in properties, label)):
+    if any((properties and 'order' in properties, label)):
         div_el = mets.div(type_attr=type_attr,
                           order=properties.get('order', None),
                           label=label)
@@ -592,7 +592,7 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
         fileid = add_file_to_filesec(attributes, amd_file, filegrp)
         fptr = mets.fptr(fileid=fileid)
 
-        if properties and any(('order' in properties, label)):
+        if any((properties and 'order' in properties, label)):
 
             # Create new div elements for each fptr
             file_div = add_file_div(amd_file,
