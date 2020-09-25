@@ -30,8 +30,6 @@ def create_test_data(workspace, run_cli, order=True):
         param1.append('1')
         param2.append('--order')
         param2.append('2')
-        param3.append('--order')
-        param3.append('1')
 
     run_cli(import_object.main, param1)
     run_cli(import_object.main, param2)
@@ -149,15 +147,16 @@ def test_collect_dao_hrefs():
             '</ead3:daoset>')
     xml = ET.fromstring(ead3)
     hrefs = compile_structmap.collect_dao_hrefs(xml)
-    assert hrefs == ['file1.txt', 'file2.txt']
+    assert hrefs == [('file1.txt', None), ('file2.txt', None)]
 
 
 @pytest.mark.parametrize(
     ('hrefs', 'length', 'child_elem', 'order'),
-    [(['koodi.java'], 1, 'div', True),
-     (['koodi.java', 'publication.txt'], 2, 'div', True),
-     (['koodi.java', 'publication.txt', 'fooo'], 2, 'div', True),
-     (['koodi.java', 'publication.txt'], 2, 'fptr', False)],
+    [([('koodi.java', None)], 1, 'div', True),
+     ([('koodi.java', None), ('publication.txt', None)], 2, 'div', True),
+     ([('koodi.java', None), ('publication.txt', None), ('fooo', None)], 2,
+      'div', True),
+     ([('koodi.java', None), ('publication.txt', None)], 2, 'fptr', False)],
     ids=('One href: add ORDER to existing div',
          'Two hrefs: add new divs for each href',
          'One non-existing href: add just the existing hrefs',
@@ -184,7 +183,7 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
     attrs["filelist"] = [
         'tests/data/structured/Publication files/publication.txt',
         'tests/data/structured/Software files/koodi.java']
-    filegrp = filegrp = mets.filegrp()
+    filegrp = mets.filegrp()
     c_div = compile_structmap.add_fptrs_div_ead(
         xml, hrefs, filegrp, attrs)
 

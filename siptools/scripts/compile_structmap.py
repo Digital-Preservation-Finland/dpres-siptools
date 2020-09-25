@@ -511,7 +511,7 @@ def create_div(divs, parent, filesec, attributes, path=''):
         parent.append(div_elem)
 
 
-def add_file_div(path, fptr, attributes, type_attr='file'):
+def add_file_div(path, fptr, attributes, type_attr='file', label=None):
     """Create a div element with file properties
 
     :path: File path
@@ -521,14 +521,16 @@ def add_file_div(path, fptr, attributes, type_attr='file'):
                                references
                  workspace: Workspace path, required by file_properties()
     :type_attr: The TYPE attribute value for the div
-
+    :label: The LABEL attribute value for the div.
     :returns: Div element with properties or None
     """
 
     properties = file_properties(path, attributes)
-    if properties and 'order' in properties:
+    if properties and any(('order' in properties,
+                           label)):
         div_el = mets.div(type_attr=type_attr,
-                          order=properties['order'])
+                          order=properties.get('order', None),
+                          label=label)
         div_el.append(fptr)
         return div_el
 
@@ -571,7 +573,7 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
     attribute is at the div level.
 
     :c_div: The div element as lxml.etree
-    :hrefs: a list of hrefs
+    :hrefs: a list of tuples (href, label)
     :filegrp: fileGrp element
     :attributes: The following keys:
                  all_amd_refs: XML element tree of administrative
@@ -580,7 +582,7 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
                  workspace: Workspace path, required by file_properties()
     :returns: The modified c_div element
     """
-    for href in hrefs:
+    for href, label in hrefs:
         amd_file = [x for x in attributes["filelist"] if href in x]
 
         # href strings that do not match any file don't add anything new
@@ -594,8 +596,11 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
         if properties and 'order' in properties:
 
             # Create new div elements for each fptr
-            file_div = add_file_div(amd_file, fptr, attributes,
-                                    type_attr='dao')
+            file_div = add_file_div(amd_file,
+                                    fptr,
+                                    attributes,
+                                    type_attr='dao',
+                                    label=label)
             c_div.append(file_div)
         else:
             c_div.append(fptr)
@@ -604,11 +609,11 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
 
 
 def collect_dao_hrefs(parent):
-    """Returns the href attribute values from ead3 dao elements.
+    """Returns the href and label attribute values from ead3 dao elements.
 
     :parent: EAD3 element XML as lxml.etree structure containing dao
              children (can be either a c level or daoset element)
-    :returns: A list of hrefs
+    :returns: A list of hrefs in tuple (href, label)
     """
     hrefs = []
 
@@ -620,7 +625,8 @@ def collect_dao_hrefs(parent):
 
     for elem in parent.xpath("%s" % xpath, namespaces=NAMESPACES):
         if ET.QName(elem.tag).localname == 'dao':
-            hrefs.append(elem.xpath("./@href")[0].lstrip('/'))
+            hrefs.append((elem.xpath("./@href")[0].lstrip('/'),
+                          elem.get('label', None)))
 
     return hrefs
 
