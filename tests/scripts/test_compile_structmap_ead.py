@@ -156,11 +156,13 @@ def test_collect_dao_hrefs():
      ([('koodi.java', None), ('publication.txt', None)], 2, 'div', True),
      ([('koodi.java', None), ('publication.txt', None), ('fooo', None)], 2,
       'div', True),
-     ([('koodi.java', None), ('publication.txt', None)], 2, 'fptr', False)],
+     ([('koodi.java', None), ('publication.txt', None)], 2, 'fptr', False),
+     ([('readme.txt', 'documentation')], 1, 'div', False)],
     ids=('One href: add ORDER to existing div',
          'Two hrefs: add new divs for each href',
          'One non-existing href: add just the existing hrefs',
-         'No file properties: just fptr elements added')
+         'No file properties: just fptr elements added',
+         'No file order, only label: one href div must still be added')
 )
 # pylint: disable=too-many-arguments
 def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
@@ -182,7 +184,8 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
     attrs["workspace"] = testpath
     attrs["filelist"] = [
         'tests/data/structured/Publication files/publication.txt',
-        'tests/data/structured/Software files/koodi.java']
+        'tests/data/structured/Software files/koodi.java',
+        'tests/data/structured/Documentation files/readme.txt']
     filegrp = mets.filegrp()
     c_div = compile_structmap.add_fptrs_div_ead(
         xml, hrefs, filegrp, attrs)
