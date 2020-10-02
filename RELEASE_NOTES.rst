@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.49
+
+    * Fixes to EAD3 based logical structmap creation
+
 Version v0.48:
 
     * Minor fix in README file.
