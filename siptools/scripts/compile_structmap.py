@@ -97,6 +97,8 @@ def get_reference_lists(**attributes):
                  object_refs: XML tree of digital objects.
                               Will be created if missing.
                  filelist: ID list of objects. Will be created if missing.
+                 supplementary_filelist: ID list of supplementary objects.
+                                         Will be created if missing.
                  all_amd_refs: All administrative metadata references.
                                Will be created if missing.
                  all_dmd_refs: All descriptive metadata references.
@@ -109,12 +111,16 @@ def get_reference_lists(**attributes):
         ))
     attributes["filelist"] = attributes.get(
         "filelist", get_objectlist(attributes["object_refs"]))
+    attributes["supplementary_filelist"] = attributes.get(
+        "supplementary_filelist", get_objectlist(attributes["object_refs"]))
     attributes["all_amd_refs"] = attributes.get(
         "all_amd_refs", read_all_amd_references(attributes["workspace"]))
     attributes["all_dmd_refs"] = attributes.get(
         "all_dmd_refs", read_md_references(
             attributes["workspace"], "import-description-md-references.jsonl"
         ))
+    attributes['supplementary_files'] = attributes.get(
+        'supplementary_files', set())
 
     return attributes
 
@@ -198,15 +204,29 @@ def create_filesec(**attributes):
     :returns: A tuple of METS XML Element tree including file section
               element and a dict of file paths and identifiers
     """
+    def _create_filegrp(filelist, supplementary=False):
+        filegrp = mets.filegrp()
+        file_ids = {}
+        for path in filelist:
+            fileid = add_file_to_filesec(attributes,
+                                         path,
+                                         filegrp,
+                                         supplementary=supplementary)
+            if fileid:
+                file_ids[path] = fileid
+        return filegrp, file_ids
+
     attributes = get_reference_lists(**_attribute_values(attributes))
-    filegrp = mets.filegrp()
-    filesec = mets.filesec(child_elements=[filegrp])
+    child_elements = []
+    filegrp, file_ids = _create_filegrp(attributes["filelist"])
+    child_elements.append(filegrp)
 
-    file_ids = {}
-    for path in attributes["filelist"]:
-        fileid = add_file_to_filesec(attributes, path, filegrp)
-        file_ids[path] = fileid
+    if attributes['supplementary_files']:
+        filegrp, file_ids = _create_filegrp(attributes["supplementary_files"],
+                                            supplementary=True)
+        child_elements.append(filegrp)
 
+    filesec = mets.filesec(child_elements=child_elements)
     mets_element = mets.mets(child_elements=[filesec])
     ET.cleanup_namespaces(mets_element)
     return (ET.ElementTree(mets_element), file_ids)
@@ -379,7 +399,7 @@ def _parse_label(elem):
     return label
 
 
-def add_file_to_filesec(attributes, path, filegrp):
+def add_file_to_filesec(attributes, path, filegrp, supplementary=False):
     """Add file element to fileGrp element given as parameter.
 
     :attributes: Attribute values as a dict
@@ -398,8 +418,12 @@ def add_file_to_filesec(attributes, path, filegrp):
 
     use = None
     properties = file_properties(path, attributes)
-    if properties and properties["bit_level"] == "native":
-        use = "no-file-format-validation"
+    if properties:
+        if 'bit_level' in properties and properties["bit_level"] == "native":
+            use = "no-file-format-validation"
+        if 'supplementary' in properties and not supplementary:
+            attributes['supplementary_files'].add(path)
+            return None
 
     # Create XML element and add it to fileGrp
     file_el = mets.file_elem(
@@ -590,7 +614,8 @@ def add_fptrs_div_ead(c_div, hrefs, filegrp, attributes):
         amd_file = amd_file[0]
         properties = file_properties(amd_file, attributes)
         fileid = add_file_to_filesec(attributes, amd_file, filegrp)
-        fptr = mets.fptr(fileid=fileid)
+        if fileid:
+            fptr = mets.fptr(fileid=fileid)
 
         if any((properties and 'order' in properties, label)):
 
