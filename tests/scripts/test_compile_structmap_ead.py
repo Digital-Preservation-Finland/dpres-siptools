@@ -216,10 +216,9 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
 
 
 def test_compile_structmap_supplementary(testpath, run_cli):
-    """Tests the successful compilation of mets:structmap
-    by using ead3 metadata as basis. Test that a leading slash
-    in the ead3 metadata is removed since only relative paths
-    are allowed.
+    """Tests the successful compilation of EAD based mets structmap
+    with supplementary files. The test assert that a supplementary
+    file is written to a separate structMap and fileGrp.
     """
     path = 'tests/data/import_description/metadata/ead3_test.xml'
     create_test_data(testpath, run_cli, supplementary=True)
