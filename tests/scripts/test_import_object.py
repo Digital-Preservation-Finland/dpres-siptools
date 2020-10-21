@@ -223,14 +223,14 @@ def test_import_object_supplementary(testpath, run_cli):
     """Test importing supplementary file"""
     input_file = "tests/data/structured/Documentation files/readme.txt"
     arguments = ["--workspace", testpath,
-                 "--supplementary", "xml-schema", input_file]
+                 "--supplementary", "xml_schema", input_file]
     run_cli(import_object.main, arguments)
     output = get_amd_file(testpath, input_file)
     path = output[0].replace("-PREMIS%3AOBJECT-amd.xml", "-scraper.json")
     assert os.path.isfile(path)
 
     streams = load_scraper_json(path)
-    assert "xml-schema" in streams[0]["properties"]["supplementary"]
+    assert "xml_schema" in streams[0]["properties"]["supplementary"]
 
 
 def test_native_missing_format(run_cli):

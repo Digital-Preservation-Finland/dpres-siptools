@@ -13,7 +13,7 @@ from siptools.scripts import compile_structmap, import_object
 from siptools.xml.mets import NAMESPACES
 
 
-def create_test_data(workspace, run_cli, order=True):
+def create_test_data(workspace, run_cli, order=True, supplementary=False):
     """Create technical metadata test data."""
     param1 = [
         '--workspace', workspace, '--skip_wellformed_check',
@@ -34,6 +34,13 @@ def create_test_data(workspace, run_cli, order=True):
     run_cli(import_object.main, param1)
     run_cli(import_object.main, param2)
     run_cli(import_object.main, param3)
+
+    if supplementary:
+        param4 = [
+            '--workspace', workspace, '--skip_wellformed_check',
+            'tests/data/mets_valid_minimal.xml',
+            '--supplementary', 'xml_schema']
+        run_cli(import_object.main, param4)
 
 
 @pytest.mark.parametrize(('path', 'daosets'), [
@@ -206,3 +213,39 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
         assert c_div.xpath('./*')[0].get('TYPE') == 'dao'
     else:
         assert 'ORDER' not in c_div.attrib
+
+
+def test_compile_structmap_supplementary(testpath, run_cli):
+    """Tests the successful compilation of mets:structmap
+    by using ead3 metadata as basis. Test that a leading slash
+    in the ead3 metadata is removed since only relative paths
+    are allowed.
+    """
+    path = 'tests/data/import_description/metadata/ead3_test.xml'
+    create_test_data(testpath, run_cli, supplementary=True)
+    arguments = [
+        '--structmap_type', 'EAD3-logical', '--dmdsec_loc',
+        path, '--workspace',
+        testpath]
+    run_cli(compile_structmap.main, arguments)
+
+    output_structmap = os.path.join(testpath, 'structmap.xml')
+    sm_root = ET.parse(output_structmap).getroot()
+    assert len(sm_root.xpath('//mets:fptr', namespaces=NAMESPACES)) == 2
+
+    output_suppl_structmap = os.path.join(testpath,
+                                          'supplementary_structmap.xml')
+    suppl_sm_root = ET.parse(output_suppl_structmap).getroot()
+    assert len(suppl_sm_root.xpath('//mets:fptr', namespaces=NAMESPACES)) == 1
+    fileid = suppl_sm_root.xpath(
+        '//mets:fptr', namespaces=NAMESPACES)[0].get('FILEID')
+
+    output_filesec = os.path.join(testpath, 'filesec.xml')
+    fs_root = ET.parse(output_filesec).getroot()
+    assert len(fs_root.xpath("/mets:mets/mets:fileSec/*",
+                             namespaces=NAMESPACES)) == 2
+    assert fs_root.xpath(
+        "//mets:fileSec/mets:fileGrp[@USE='fi-preservation-xml-schemas']/"
+        "mets:file[mets:FLocat/"
+        "@xlink:href='file://tests/data/mets_valid_minimal.xml']",
+        namespaces=NAMESPACES)[0].get('ID') == fileid

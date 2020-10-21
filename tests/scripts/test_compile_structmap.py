@@ -259,9 +259,10 @@ def test_supplementary_file(testpath, run_cli):
         "tests/data/text-file.txt"])
     run_cli(import_object.main, [
         "--workspace", testpath,
-        "--supplementary", "xml-schema",
+        "--supplementary", "xml_schema",
         "tests/data/mets_valid_minimal.xml"])
-    run_cli(compile_structmap.main, ["--workspace", testpath])
+    compile_structmap.compile_structmap(workspace=testpath)
+    #run_cli(compile_structmap.main, ["--workspace", testpath])
     output_filesec = os.path.join(testpath, "filesec.xml")
     fs_root = lxml.etree.parse(output_filesec).getroot()
 

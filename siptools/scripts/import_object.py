@@ -49,7 +49,7 @@ UNKNOWN_VERSION = '(:unav)'
 
 # Supported bit-level preservation types
 BIT_LEVELS = ["native"]
-SUPPLEMENTARY_TYPES = ["xml-schema"]
+SUPPLEMENTARY_TYPES = ["xml_schema"]
 
 
 @click.command()
@@ -115,7 +115,7 @@ SUPPLEMENTARY_TYPES = ["xml-schema"]
     multiple=True, metavar='<SUPPLEMENTARY TYPE>',
     help='Used to mark supplementary files, files that are not part of the '
          'contents per se, but are to be included in the SIP. May be used '
-         'multiple times, but currently only "xml-schema" type is supported.')
+         'multiple times, but currently only "xml_schema" type is supported.')
 # pylint: disable=too-many-arguments
 def main(**kwargs):
     """Import files to generate digital objects. If attributes --charset,

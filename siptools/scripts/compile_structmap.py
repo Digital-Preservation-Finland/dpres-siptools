@@ -28,7 +28,7 @@ ALLOWED_C_SUBS = ['c', 'c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07',
 
 SUPPLEMENTARY_TYPES = {
     'main': 'fi-preservation-supplementary',
-    'schemas': 'fi-preservation-xml-schemas',
+    'xml_schema': 'fi-preservation-xml-schemas',
     'native': 'fi-preservation-no-file-format-validation'
 }
 
@@ -119,7 +119,7 @@ def get_reference_lists(**attributes):
     attributes["filelist"] = attributes.get(
         "filelist", get_objectlist(attributes["object_refs"]))
     attributes["supplementary_files"] = attributes.get(
-        "supplementary_files", set())
+        "supplementary_files", {})
     attributes["all_amd_refs"] = attributes.get(
         "all_amd_refs", read_all_amd_references(attributes["workspace"]))
     attributes["all_dmd_refs"] = attributes.get(
@@ -162,10 +162,28 @@ def compile_structmap(**kwargs):
         # the fileSec element (apparently?) is different. The
         # create_ead3_structmap function populates the fileGrp element.
         filegrp = mets.filegrp()
-        filesec_element = mets.filesec(child_elements=[filegrp])
-        filesec = mets.mets(child_elements=[filesec_element])
+        filesec_child_elems = [filegrp]
 
         structmap = create_ead3_structmap(filegrp, attributes)
+
+        (supplementary_files, supplementary_type) = _iter_supplementary(
+            **attributes)
+        attributes['supplementary_files'] = supplementary_files
+
+        if supplementary_type:
+            file_ids = {}
+            (s_filegrp, file_ids) = _create_filegrp(file_ids,
+                                                    attributes,
+                                                    is_supplementary=True)
+            filesec_child_elems.append(s_filegrp)
+
+        filesec_element = mets.filesec(child_elements=filesec_child_elems)
+        filesec = mets.mets(child_elements=[filesec_element])
+
+        if supplementary_type:
+            attributes['structmap_type'] = 'logical'
+            attributes['root_type'] = SUPPLEMENTARY_TYPES['main']
+            suppl_structmap = create_structmap(filesec, **attributes)
     else:
         (filesec, file_ids, supplementary) = create_filesec(**attributes)
 
@@ -236,41 +254,17 @@ def create_filesec(**attributes):
     :returns: A tuple of METS XML Element tree including file section
               element and a dict of file paths and identifiers
     """
-    def _create_filegrp(file_ids, filelist, is_supplementary=False):
-        """Creates a mets fileGrp.
-
-        :file_ids: A dict of file paths and identifiers
-        :filelist: A list of file paths
-        is_supplementary: A boolean of whether the created file group
-                          consists of supplementary files or not
-
-        :returns: A tuple of METS XML Element tree including file group
-                  element and a dict of file paths and identifiers
-        """
-        use = None
-        if is_supplementary:
-            use = SUPPLEMENTARY_TYPES['schemas']
-        filegrp = mets.filegrp(use=use)
-        for path in filelist:
-            fileid = add_file_to_filesec(attributes,
-                                         path,
-                                         filegrp,
-                                         is_supplementary=is_supplementary)
-            if fileid:
-                file_ids[path] = fileid
-        return filegrp, file_ids
-
     attributes = get_reference_lists(**_attribute_values(attributes))
     child_elements = []
     file_ids = {}
-    (filegrp, file_ids) = _create_filegrp(file_ids, attributes["filelist"])
+    (filegrp, file_ids) = _create_filegrp(file_ids, attributes)
     child_elements.append(filegrp)
 
     # Create file group for supplementary files if they exist
     if attributes['supplementary_files']:
         (s_filegrp, file_ids) = _create_filegrp(
             file_ids,
-            attributes["supplementary_files"],
+            attributes,
             is_supplementary=True)
         child_elements.append(s_filegrp)
 
@@ -358,8 +352,8 @@ def div_structure(filelist, supplementary_files, is_supplementary=False):
     if is_supplementary:
         # Supplementary structure is flat, but with one div surrounding the
         # files
-        root_div = divs[SUPPLEMENTARY_TYPES['schemas']]
-        for amd_file in supplementary_files:
+        root_div = divs[SUPPLEMENTARY_TYPES['xml_schema']]
+        for amd_file in supplementary_files.keys():
             add(root_div, [amd_file])
     else:
         # Directory based structure is like a directory tree
@@ -522,7 +516,8 @@ def add_file_to_filesec(attributes, path, filegrp, is_supplementary=False):
         if all(('supplementary' in properties,
                 properties['supplementary'],
                 not is_supplementary)):
-            attributes['supplementary_files'].add(path)
+            attributes['supplementary_files'][path] = properties[
+                'supplementary'][0]
             return None
 
     # Create XML element and add it to fileGrp
@@ -614,7 +609,7 @@ def create_div(divs,
         if is_supplementary:
             filelist = attributes["supplementary_files"]
             # Remove supplementary root div from current div path
-            div_path = div_path[len(SUPPLEMENTARY_TYPES['schemas']):]
+            div_path = div_path[len(SUPPLEMENTARY_TYPES['xml_schema']):]
         # It's a file, lets create file+fptr elements
         if div_path in filelist:
             fptr = mets.fptr(
@@ -809,6 +804,50 @@ def _create_event(
                                        % structmap_type),
                  workspace=workspace,
                  create_agent_file='compile-structmap-agents')
+
+
+def _iter_supplementary(**attributes):
+    """Checks whether supplementary files exist in package and return
+    the supplementary type if it exists.
+    Also populates the supplementary_files attribute while looping
+    through th files.
+    """
+    attributes = get_reference_lists(**_attribute_values(attributes))
+    supplementary_type = None
+    for path in attributes['filelist']:
+        properties = file_properties(path, attributes)
+        if properties and 'supplementary' in properties:
+            if properties['supplementary']:
+                supplementary_type = properties['supplementary'][0]
+                attributes['supplementary_files'][path] = supplementary_type
+    return (attributes['supplementary_files'], supplementary_type)
+
+
+def _create_filegrp(file_ids, attributes, is_supplementary=False):
+    """Creates a mets fileGrp.
+
+    :file_ids: A dict of file paths and identifiers
+    :filelist: A list of file paths
+    is_supplementary: A boolean of whether the created file group
+                      consists of supplementary files or not
+
+    :returns: A tuple of METS XML Element tree including file group
+              element and a dict of file paths and identifiers
+    """
+    use = None
+    filelist = attributes['filelist']
+    if is_supplementary:
+        use = SUPPLEMENTARY_TYPES['xml_schema']
+        filelist = attributes['supplementary_files']
+    filegrp = mets.filegrp(use=use)
+    for path in filelist:
+        fileid = add_file_to_filesec(attributes,
+                                     path,
+                                     filegrp,
+                                     is_supplementary=is_supplementary)
+        if fileid:
+            file_ids[path] = fileid
+    return filegrp, file_ids
 
 
 if __name__ == '__main__':
