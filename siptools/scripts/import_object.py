@@ -49,6 +49,7 @@ UNKNOWN_VERSION = '(:unav)'
 
 # Supported bit-level preservation types
 BIT_LEVELS = ["native"]
+SUPPLEMENTARY_TYPES = ["xml-schema"]
 
 
 @click.command()
@@ -109,6 +110,12 @@ BIT_LEVELS = ["native"]
     metavar='<BIT-LEVEL STATUS>',
     help='Mark only for bit-level preservation. Currently only "native" '
          'status is supported. If used, then --file_format is mandatory.')
+@click.option(
+    '--supplementary', type=click.Choice(SUPPLEMENTARY_TYPES),
+    multiple=True, metavar='<SUPPLEMENTARY TYPE>',
+    help='Used to mark supplementary files, files that are not part of the '
+         'contents per se, but are to be included in the SIP. May be used '
+         'multiple times, but currently only "xml-schema" type is supported.')
 # pylint: disable=too-many-arguments
 def main(**kwargs):
     """Import files to generate digital objects. If attributes --charset,
@@ -147,7 +154,8 @@ def _attribute_values(given_params):
         "event_datetime": datetime.datetime.now().isoformat(),
         "event_target": None,
         "stdout": False,
-        "bit_level": None
+        "bit_level": None,
+        "supplementary": ()
     }
     for key in given_params:
         if given_params[key]:
@@ -182,6 +190,7 @@ def import_object(**kwargs):
                  event_target: The target of the event
                  stdout: True prints output to stdout
                  bit_level: Object status for only bit-level preservation.
+                 supplementary: Object type for supplementary files
     """
     attributes = _attribute_values(kwargs)
     # Loop files and create premis objects
@@ -204,6 +213,7 @@ def import_object(**kwargs):
         if attributes["order"] is not None:
             properties['order'] = six.text_type(attributes["order"])
         properties["bit_level"] = attributes["bit_level"]
+        properties["supplementary"] = attributes["supplementary"]
 
         (_, scraper_info) = creator.add_premis_md(
             filepath, attributes, filerel=filerel, properties=properties)
