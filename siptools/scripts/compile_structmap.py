@@ -332,7 +332,11 @@ def create_structmap(filesec, **attributes):
     divs = div_structure(attributes["filelist"],
                          attributes["supplementary_files"],
                          is_supplementary=is_supplementary)
-    create_div(divs, container_div, filesec, attributes)
+    create_div(divs,
+               container_div,
+               filesec,
+               attributes,
+               is_supplementary=is_supplementary)
 
     mets_element = mets.mets(child_elements=[structmap])
     ET.cleanup_namespaces(mets_element)
@@ -572,7 +576,12 @@ def get_fileid(filesec, path, file_ids=None):
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-locals
-def create_div(divs, parent, filesec, attributes, path=''):
+def create_div(divs,
+               parent,
+               filesec,
+               attributes,
+               path='',
+               is_supplementary=False):
     """Recursively create fileSec and structmap divs based on directory
     structure.
 
@@ -585,19 +594,29 @@ def create_div(divs, parent, filesec, attributes, path=''):
                  all_dmd_refs: XML element tree of descriptive metadata
                                references
                  filelist: Sorted list of digital objects (file paths)
+                 supplementary_files: ID list of supplementary objects.
+                                      Will be populated if supplementary
+                                      objects exist.
                  type_attr: Structmap type
                  file_ids: Dict with file paths and identifiers
                  workspace: Workspace path, required by add_file_div()
     :path: Current path in directory structure walkthrough
+    :is_supplementary: A boolean to indicate if a supplementary
+                       structure is expected or not
     :returns: ``None``
     """
     fptr_list = []
     property_list = []
     div_list = []
+    filelist = attributes["filelist"]
     for div in divs.keys():
         div_path = os.path.join(path, div)
+        if is_supplementary:
+            filelist = attributes["supplementary_files"]
+            # Remove supplementary root div from current div path
+            div_path = div_path[len(SUPPLEMENTARY_TYPES['schemas']):]
         # It's a file, lets create file+fptr elements
-        if div_path in attributes["filelist"]:
+        if div_path in filelist:
             fptr = mets.fptr(
                 get_fileid(filesec, div_path, attributes['file_ids']))
             div_elem = add_file_div(div_path, fptr, attributes)

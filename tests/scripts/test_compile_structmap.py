@@ -249,6 +249,76 @@ def test_native_file(testpath, run_cli):
         namespaces=NAMESPACES)[0] == "no-file-format-validation"
 
 
+def test_supplementary_file(testpath, run_cli):
+    """Test that supplementary files create a separate fileGrp
+    within the fileSec, an own structMap, and that the files
+    are linked from the correct sections.
+    """
+    run_cli(import_object.main, [
+        "--workspace", testpath,
+        "tests/data/text-file.txt"])
+    run_cli(import_object.main, [
+        "--workspace", testpath,
+        "--supplementary", "xml-schema",
+        "tests/data/mets_valid_minimal.xml"])
+    run_cli(compile_structmap.main, ["--workspace", testpath])
+    output_filesec = os.path.join(testpath, "filesec.xml")
+    fs_root = lxml.etree.parse(output_filesec).getroot()
+
+    # Two fileGrps should exist
+    assert len(fs_root.xpath("/mets:mets/mets:fileSec/*",
+                             namespaces=NAMESPACES)) == 2
+    suppl_filegrp = fs_root.xpath(
+        "/mets:mets/mets:fileSec/mets:fileGrp[@USE]",
+        namespaces=NAMESPACES)[0]
+
+    # Check the USE attribute value
+    assert suppl_filegrp.get('USE') == "fi-preservation-xml-schemas"
+
+    # Check that the supplementary file only exist in the supplementary
+    # fileGrp and get its ID
+    assert len(suppl_filegrp) == 1
+    assert suppl_filegrp.xpath(
+        "./mets:file[mets:FLocat/"
+        "@xlink:href='file://tests/data/mets_valid_minimal.xml']",
+        namespaces=NAMESPACES)
+    suppl_file_id = suppl_filegrp.xpath(
+        "./mets:file[mets:FLocat/"
+        "@xlink:href='file://tests/data/mets_valid_minimal.xml']",
+        namespaces=NAMESPACES)[0].get('ID')
+
+    output_structmap = os.path.join(testpath, 'structmap.xml')
+    sm_root = lxml.etree.parse(output_structmap).getroot()
+
+    # Assert that only the content file exists in the content structMap
+    assert len(sm_root.xpath("//mets:fptr",
+                             namespaces=NAMESPACES)) == 1
+    assert sm_root.xpath(
+        "//mets:fptr",
+        namespaces=NAMESPACES)[0].get('FILEID') != suppl_file_id
+
+    # Assert that the supplementary structMap contains the expected structure,
+    # and that it contains a link to the supplementary file
+    output_suppl_structmap = os.path.join(testpath,
+                                          'supplementary_structmap.xml')
+    suppl_sm_root = lxml.etree.parse(output_suppl_structmap).getroot()
+    assert suppl_sm_root.xpath(
+        '//mets:structMap', namespaces=NAMESPACES)[0].get('TYPE') == 'logical'
+    assert suppl_sm_root.xpath(
+        '//mets:structMap/mets:div',
+        namespaces=NAMESPACES)[0].get(
+            'TYPE') == 'fi-preservation-supplementary'
+    assert suppl_sm_root.xpath(
+        '//mets:structMap/mets:div/mets:div',
+        namespaces=NAMESPACES)[0].get(
+            'TYPE') == 'fi-preservation-xml-schemas'
+    assert len(suppl_sm_root.xpath("//mets:fptr",
+                                   namespaces=NAMESPACES)) == 1
+    assert suppl_sm_root.xpath(
+        "//mets:structMap/mets:div/mets:div/mets:fptr",
+        namespaces=NAMESPACES)[0].get('FILEID') == suppl_file_id
+
+
 def test_get_fileid():
     """Test get_fileid function. Create a fileGrp element with few files and
     test that the function finds correct file IDs.
