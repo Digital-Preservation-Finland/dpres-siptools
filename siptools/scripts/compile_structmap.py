@@ -262,11 +262,12 @@ def compile_structmap(workspace='./workspace/',
             structmap_type = 'logical'
             root_type = SUPPLEMENTARY_TYPES['main']
             suppl_structmap = create_structmap(
-                filesect=filesec,
+                filesec=filesec,
                 all_amd_refs=all_amd_refs,
                 all_dmd_refs=all_dmd_refs,
                 filelist=filelist,
                 supplementary_files=supplementary_files,
+                supplementary_types=supplementary_types,
                 structmap_type=structmap_type,
                 root_type=root_type,
                 file_ids=file_ids,
@@ -942,10 +943,10 @@ def add_fptrs_div_ead(c_div,
                       filegrp,
                       all_amd_refs,
                       object_refs,
-                      supplementary_files,
-                      supplementary_types,
                       filelist,
-                      workspace):
+                      workspace,
+                      supplementary_files=None,
+                      supplementary_types=None):
     """Creates fptr elements for hrefs. If the files contain
     file properties, like ordering data, the data is written to the
     parent div element.
@@ -959,12 +960,17 @@ def add_fptrs_div_ead(c_div,
     :param all_amd_refs: XML element tree of administrative
         metadata references.
     :param object_refs: Object references.
-    :param supplementary_files: Set of supplementary files.
-    :param supplementary_types: Supplementary types.
     :param filelist: Sorted list of digital objects (file paths)
     :param workspace: Workspace path, required by file_properties()
+    :param supplementary_files: A dictionary of supplementary files.
+    :param supplementary_types: A set if supplementary types.
     :returns: The modified c_div element
     """
+    if supplementary_files is None:
+        supplementary_files = {}
+    if supplementary_types is None:
+        supplementary_types = set()
+
     for href, label in hrefs:
         amd_file = [x for x in filelist if href in x]
 
@@ -1085,7 +1091,7 @@ def _iter_supplementary(filelist, all_amd_refs, workspace):
             supplementary_type = properties['supplementary'][0]
             supplementary_files[path] = supplementary_type
             supplementary_types.add(supplementary_type)
-        except (TypeError, KeyError):
+        except (TypeError, KeyError, IndexError):
             pass
 
     return supplementary_files, supplementary_types
