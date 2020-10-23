@@ -194,8 +194,7 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
         'tests/data/structured/Software files/koodi.java',
         'tests/data/structured/Documentation files/readme.txt']
     filegrp = mets.filegrp()
-    c_div = compile_structmap.add_fptrs_div_ead(
-        xml, hrefs, filegrp, attrs)
+    c_div = compile_structmap.add_fptrs_div_ead(xml, hrefs, filegrp, **attrs)
 
     # Child elements are either new divs or fptrs
     assert c_div.xpath(
