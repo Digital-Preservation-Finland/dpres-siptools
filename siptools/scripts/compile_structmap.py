@@ -196,7 +196,7 @@ def compile_structmap(workspace='./workspace/',
     :param dmdsec_loc: Location of structured descriptive metadata
     :param stdout: True to print output to stdout
     """
-    file_ids_z = {}
+    file_ids = {}
 
     # Create an event documenting the structmap creation
     _create_event(
@@ -233,16 +233,22 @@ def compile_structmap(workspace='./workspace/',
             supplementary_types=supplementary_types)
 
         (supplementary_files, supplementary_types) = _iter_supplementary(
-            **attributes)
-        attributes['supplementary_files'] = supplementary_files
-        attributes['supplementary_types'] = supplementary_types
+            filelist=filelist,
+            all_amd_refs=all_amd_refs,
+            workspace=workspace
+        )
 
         if supplementary_types:
             file_ids = {}
             for supplementary_type in supplementary_types:
                 (s_filegrp, file_ids) = _create_filegrp(
-                    file_ids,
-                    attributes,
+                    file_ids=file_ids,
+                    filelist=filelist,
+                    supplementary_files=supplementary_files,
+                    all_amd_refs=all_amd_refs,
+                    object_refs=object_refs,
+                    workspace=workspace,
+                    supplementary_types=supplementary_types,
                     supplementary_type=supplementary_type)
             filesec_child_elems.append(s_filegrp)
 
@@ -252,29 +258,60 @@ def compile_structmap(workspace='./workspace/',
         if supplementary_types:
             structmap_type = 'logical'
             root_type = SUPPLEMENTARY_TYPES['main']
-            suppl_structmap = create_structmap(filesec, **attributes)
+            suppl_structmap = create_structmap(
+                filesect=filesec,
+                all_amd_refs=all_amd_refs,
+                all_dmd_refs=all_dmd_refs,
+                filelist=filelist,
+                supplementary_files=supplementary_files,
+                structmap_type=structmap_type,
+                root_type=root_type,
+                file_ids=file_ids,
+                workspace=workspace)
     else:
         (filesec,
          file_ids,
          supplementary_files,
-         supplementary_types) = create_filesec(**attributes)
+         supplementary_types) = create_filesec(
+            all_amd_refs=all_amd_refs,
+            object_refs=object_refs,
+            filelist=filelist,
+            supplementary_files=supplementary_files,
+            workspace=workspace,
+            supplementary_types=supplementary_types)
 
         # Add file path and ID dict to attributes
-        file_ids_z = file_ids
-        attributes['supplementary_files'] = supplementary_files
-        attributes['supplementary_types'] = supplementary_types
-        structmap = create_structmap(filesec.getroot(), **attributes)
+        structmap = create_structmap(filesec=filesec.getroot(),
+                                     all_amd_refs=all_amd_refs,
+                                     all_dmd_refs=all_dmd_refs,
+                                     filelist=filelist,
+                                     supplementary_files=supplementary_files,
+                                     supplementary_types=supplementary_types,
+                                     structmap_type=structmap_type,
+                                     root_type=root_type,
+                                     file_ids=file_ids,
+                                     workspace=workspace)
 
         # Create a separate structmap for supplementary files if they exist
-        if attributes['supplementary_files']:
+        if supplementary_files:
             structmap_type = 'logical'
             root_type = SUPPLEMENTARY_TYPES['main']
-            suppl_structmap = create_structmap(filesec.getroot(), **attributes)
+            suppl_structmap = create_structmap(
+                filesec=filesec.getroot(),
+                all_amd_refs=all_amd_refs,
+                all_dmd_refs=all_dmd_refs,
+                filelist=filelist,
+                supplementary_files=supplementary_files,
+                supplementary_types=supplementary_types,
+                structmap_type=structmap_type,
+                root_type=root_type,
+                file_ids=file_ids,
+                workspace=workspace)
 
     if stdout:
         print(xml_utils.serialize(filesec).decode("utf-8"))
         print(xml_utils.serialize(structmap).decode("utf-8"))
-        if attributes['supplementary_files']:
+        if supplementary_files:
             print(xml_utils.serialize(suppl_structmap).decode("utf-8"))
 
     output_sm_file = os.path.join(workspace, 'structmap.xml')
@@ -293,7 +330,7 @@ def compile_structmap(workspace='./workspace/',
     with open(output_fs_file, 'wb+') as outfile:
         outfile.write(xml_utils.serialize(filesec))
 
-    if attributes['supplementary_files']:
+    if supplementary_files:
         output_suppl_sm_file = os.path.join(workspace,
                                             'supplementary_structmap.xml')
         if not os.path.exists(os.path.dirname(output_suppl_sm_file)):
@@ -305,37 +342,54 @@ def compile_structmap(workspace='./workspace/',
     print("compile_structmap created files: " + " ".join(created_files))
 
 
-def create_filesec(**attributes):
+def create_filesec(all_amd_refs,
+                   object_refs,
+                   filelist,
+                   supplementary_files,
+                   workspace,
+                   supplementary_types):
     """
     Creates METS document element tree that contains fileSec element.
 
     Supplementary files are put in a separate fileGrp and will populate
     the supplementary_files attribute when they are discovered.
 
-    :attributes: Attribute values as a dict
-                 all_amd_refs: XML element tree of administrative metadata
-                               references. Will be created if missing.
-                 object_refs: XML tree of digital objects. Will be created
-                              if missing.
-                 filelist: Sorted list of digital objects (file paths).
-                           Will be created if missing.
-                 supplementary_files: ID list of supplementary objects.
-                                      Will be populated if supplementary
-                                      objects exist.
+    :param all_amd_refs: XML element tree of administrative metadata
+        references. Will be created if missing.
+    :param object_refs: XML tree of digital objects. Will be created
+        if missing.
+    :param filelist: Sorted list of digital objects (file paths).
+        Will be created if missing.
+    :param supplementary_files: ID list of supplementary objects.
+        Will be populated if supplementary objects exist.
+    :param workspace: Workspace.
+    :param supplementary_types: Supplementary types.
     :returns: A tuple of METS XML Element tree including file section
               element and a dict of file paths and identifiers
     """
-    attributes = get_reference_lists(**_attribute_values(attributes))
+
     child_elements = []
     file_ids = {}
-    (filegrp, file_ids) = _create_filegrp(file_ids, attributes)
+    (filegrp, file_ids) = _create_filegrp(
+        file_ids=file_ids,
+        filelist=filelist,
+        supplementary_files=supplementary_files,
+        all_amd_refs=all_amd_refs,
+        object_refs=object_refs,
+        workspace=workspace,
+        supplementary_types=supplementary_types)
     child_elements.append(filegrp)
 
     # Create file group for supplementary files if they exist
-    for supplementary_type in attributes['supplementary_types']:
+    for supplementary_type in supplementary_types:
         (s_filegrp, file_ids) = _create_filegrp(
-            file_ids,
-            attributes,
+            file_ids=file_ids,
+            filelist=filelist,
+            supplementary_files=supplementary_files,
+            all_amd_refs=all_amd_refs,
+            object_refs=object_refs,
+            workspace=workspace,
+            supplementary_types=supplementary_types,
             supplementary_type=supplementary_type)
         child_elements.append(s_filegrp)
 
@@ -344,62 +398,79 @@ def create_filesec(**attributes):
     ET.cleanup_namespaces(mets_element)
     return (ET.ElementTree(mets_element),
             file_ids,
-            attributes['supplementary_files'],
-            attributes['supplementary_types'])
+            supplementary_files,
+            supplementary_types)
 
 
-def create_structmap(filesec, **attributes):
+def create_structmap(filesec,
+                     all_amd_refs,
+                     all_dmd_refs,
+                     filelist,
+                     supplementary_files,
+                     supplementary_types,
+                     structmap_type,
+                     root_type,
+                     file_ids,
+                     workspace):
     """
     Creates METS document element tree that contains structural map.
 
-    :filesec: fileSec element
-    :attributes: The following keys:
-                 all_amd_refs: XML element tree of administrative metadata
-                               references. Will be created if missing.
-                 all_dmd_refs: XML element tree of descriptive metadata
-                               references. Will be created if missing.
-                 filelist: Sorted list of digital objects (file paths).
-                           Will be created if missing.
-                 supplementary_files: ID list of supplementary objects.
-                                      Will be populated if supplementary
-                                      objects exist.
-                 structmap_type: TYPE attribute of structMap element
-                                 If missing, default value is None.
-                 root_type: TYPE attribute of root div element.
-                            If missing, default value is "directory".
-                 file_ids: Dict with file paths and identifiers.
-                           Required by create_div(). Will be computed
-                           if missing.
-                 workspace: Workspace path, required by create_div().
-                            If missing, default value is "./workspace/".
+    :param filesec: fileSec element
+    :param all_amd_refs: XML element tree of administrative metadata
+        references. Will be created if missing.
+    :param all_dmd_refs: XML element tree of descriptive metadata
+        references. Will be created if missing.
+    :param filelist: Sorted list of digital objects (file paths).
+        Will be created if missing.
+    :param supplementary_files: ID list of supplementary objects.
+        Will be populated if supplementary objects exist.
+    :param supplementary_types: Supplementary types.
+    :param structmap_type: TYPE attribute of structMap element If missing,
+        default value is None.
+    :param root_type: TYPE attribute of root div element. If missing,
+        default value is "directory".
+    :param file_ids: Dict with file paths and identifiers. Required by
+        create_div(). Will be computed if missing.
+    :param workspace: Workspace path, required by create_div(). If missing,
+        default value is "./workspace/".
     :returns: structural map element
     """
-    attributes = get_reference_lists(**_attribute_values(attributes))
-    amdids = get_md_references(attributes["all_amd_refs"], directory='.')
-    dmdids = get_md_references(attributes["all_dmd_refs"], directory='.')
+    amdids = get_md_references(all_amd_refs, directory='.')
+    dmdids = get_md_references(all_dmd_refs, directory='.')
 
     is_supplementary = False
-    if attributes["structmap_type"] == 'Directory-physical':
-        container_div = mets.div(type_attr='directory', label='.',
-                                 dmdid=dmdids, admid=amdids)
-    elif attributes["root_type"] == SUPPLEMENTARY_TYPES['main']:
+    if structmap_type == 'Directory-physical':
+        container_div = mets.div(type_attr='directory',
+                                 label='.',
+                                 dmdid=dmdids,
+                                 admid=amdids)
+    elif root_type == SUPPLEMENTARY_TYPES['main']:
         is_supplementary = True
-        container_div = mets.div(type_attr=attributes["root_type"],
+        container_div = mets.div(type_attr=root_type,
                                  dmdid=None,
                                  admid=None)
     else:
-        container_div = mets.div(type_attr=attributes["root_type"],
+        container_div = mets.div(type_attr=root_type,
                                  dmdid=dmdids,
                                  admid=amdids)
 
-    structmap = mets.structmap(type_attr=attributes["structmap_type"])
+    structmap = mets.structmap(type_attr=structmap_type)
     structmap.append(container_div)
 
-    divs = div_structure(attributes, is_supplementary)
-    create_div(divs,
-               container_div,
-               filesec,
-               attributes,
+    divs = div_structure(filelist=filelist,
+                         supplementary_files=supplementary_files,
+                         supplementary_types=supplementary_types,
+                         is_supplementary=is_supplementary)
+    create_div(divs=divs,
+               parent=container_div,
+               filesec=filesec,
+               all_amd_refs=all_amd_refs,
+               all_dmd_refs=all_dmd_refs,
+               filelist=filelist,
+               supplementary_files=supplementary_files,
+               file_ids=file_ids,
+               structmap_type=structmap_type,
+               workspace=workspace,
                is_supplementary=is_supplementary)
 
     mets_element = mets.mets(child_elements=[structmap])
@@ -407,32 +478,35 @@ def create_structmap(filesec, **attributes):
     return ET.ElementTree(mets_element)
 
 
-def div_structure(attributes, is_supplementary):
+def div_structure(filelist,
+                  supplementary_files,
+                  supplementary_types,
+                  is_supplementary):
     """Create div structure for either a directory-based structmap
     or for supplementary files.
 
-    :filelist: Sorted list of digital objects (file paths)
-    :supplementary_files: Sorted list of supplementary objects
-                          (file paths)
-    :is_supplementary: Boolean to indicate whether the structure
-                       should be for supplemenjtary files or not
+    ::param filelist: Sorted list of digital objects (file paths).
+    ::param supplementary_files: Sorted list of supplementary objects
+        (file paths).
+    :param supplementary_types: Supplementary types.
+    :param is_supplementary: Boolean to indicate whether the structure
+        should be for supplemenjtary files or not.
     :returns: The div structure as a dict like object
     """
     divs = tree()
     if is_supplementary:
-        for supplementary_type in attributes["supplementary_types"]:
+        for supplementary_type in supplementary_types:
             # Supplementary structure is flat, but with one div surrounding the
             # files
             root_div = divs[SUPPLEMENTARY_TYPES[supplementary_type]]
-            for amd_file in attributes["supplementary_files"]:
-                if attributes[
-                    "supplementary_files"][amd_file] == supplementary_type:
+            for amd_file in supplementary_files:
+                if supplementary_files[amd_file] == supplementary_type:
                     add(root_div, [amd_file])
     else:
         # Directory based structure is like a directory tree
-        for amd_file in attributes["filelist"]:
+        for amd_file in filelist:
             # Do not add supplementary files to the directory based strictmap
-            if amd_file not in attributes["supplementary_files"]:
+            if amd_file not in supplementary_files:
                 add(divs, amd_file.split('/'))
     return divs
 
@@ -624,8 +698,7 @@ def add_file_to_filesec(all_amd_refs,
     :param supplementary_types: Set of supplementary types.
     :param path: url encoded path of the file
     :param filegrp: fileGrp element
-    :param is_supplementary: A boolean True to indicate if a supplementary file
-        is expected, otherwise None.
+    :param supplementary_type: Which supplementary type the files belong to.
     :returns: unique identifier of file element
     """
     fileid = '_{}'.format(uuid4())
@@ -715,48 +788,54 @@ def get_fileid(filesec, path, file_ids=None):
 def create_div(divs,
                parent,
                filesec,
-               attributes,
+               all_amd_refs,
+               all_dmd_refs,
+               filelist,
+               supplementary_files,
+               file_ids,
+               structmap_type,
+               workspace,
                path='',
                is_supplementary=False):
     """Recursively create fileSec and structmap divs based on directory
     structure.
 
-    :divs: Current directory or file in directory structure walkthrough
-    :parent: Parent element in structMap
-    :filesec: filesec element
-    :attributes: The following keys:
-                 all_amd_refs: XML element tree of administrative metadata
-                               references
-                 all_dmd_refs: XML element tree of descriptive metadata
-                               references
-                 filelist: Sorted list of digital objects (file paths)
-                 supplementary_files: ID list of supplementary objects.
-                                      Will be populated if supplementary
-                                      objects exist.
-                 type_attr: Structmap type
-                 file_ids: Dict with file paths and identifiers
-                 workspace: Workspace path, required by add_file_div()
-    :path: Current path in directory structure walkthrough
-    :is_supplementary: A boolean to indicate if a supplementary
+    :param divs: Current directory or file in directory structure walkthrough
+    :param parent: Parent element in structMap
+    :param filesec: filesec element
+    :param all_amd_refs: XML element tree of administrative metadata
+        references.
+    :param all_dmd_refs: XML element tree of descriptive metadata
+        references.
+    :param filelist: Sorted list of digital objects (file paths).
+    :param supplementary_files: ID list of supplementary objects.
+        Will be populated if supplementary objects exist.
+    :param type_attr: Structmap type.
+    :param file_ids: Dict with file paths and identifiers.
+    :param workspace: Workspace path, required by add_file_div().
+    :param path: Current path in directory structure walkthrough
+    :param is_supplementary: A boolean to indicate if a supplementary
                        structure is expected or not
     :returns: ``None``
     """
     fptr_list = []
     property_list = []
     div_list = []
-    filelist = attributes["filelist"]
+    collection = filelist
     for div in divs.keys():
         div_path = os.path.join(path, div)
         if is_supplementary:
-            filelist = attributes["supplementary_files"]
+            collection = supplementary_files
             # Remove supplementary root div from current div path
             supplementary_type = div_path.split('/')[0]
             div_path = div_path[len(supplementary_type) + 1:]
         # It's a file, lets create file+fptr elements
-        if div_path in filelist:
-            fptr = mets.fptr(
-                get_fileid(filesec, div_path, attributes['file_ids']))
-            div_elem = add_file_div(div_path, fptr, attributes)
+        if div_path in collection:
+            fptr = mets.fptr(get_fileid(filesec, div_path, file_ids))
+            div_elem = add_file_div(path=div_path,
+                                    fptr=fptr,
+                                    all_amd_refs=all_amd_refs,
+                                    workspace=workspace)
             if div_elem is not None:
                 property_list.append(div_elem)
             else:
@@ -764,19 +843,30 @@ def create_div(divs,
 
         # It's not a file, lets create a div element
         else:
-            amdids = get_md_references(
-                attributes["all_amd_refs"], directory=div_path)
-            dmdsec_id = get_md_references(
-                attributes["all_dmd_refs"], directory=div_path)
+            amdids = get_md_references(all_amd_refs, directory=div_path)
+            dmdsec_id = get_md_references(all_dmd_refs, directory=div_path)
 
-            if attributes["structmap_type"] == 'Directory-physical':
-                div_elem = mets.div(type_attr='directory', label=div,
-                                    dmdid=dmdsec_id, admid=amdids)
+            if structmap_type == 'Directory-physical':
+                div_elem = mets.div(type_attr='directory',
+                                    label=div,
+                                    dmdid=dmdsec_id,
+                                    admid=amdids)
             else:
-                div_elem = mets.div(type_attr=div, dmdid=dmdsec_id,
+                div_elem = mets.div(type_attr=div,
+                                    dmdid=dmdsec_id,
                                     admid=amdids)
             div_list.append(div_elem)
-            create_div(divs[div], div_elem, filesec, attributes, div_path)
+            create_div(divs=divs[div],
+                       parent=div_elem,
+                       filesec=filesec,
+                       all_amd_refs=all_amd_refs,
+                       all_dmd_refs=all_dmd_refs,
+                       filelist=filelist,
+                       supplementary_files=supplementary_files,
+                       file_ids=file_ids,
+                       structmap_type=structmap_type,
+                       workspace=workspace,
+                       path=div_path)
 
     # Add fptr list first, then div list
     for fptr in fptr_list:
@@ -972,46 +1062,73 @@ def _create_event(
                  create_agent_file='compile-structmap-agents')
 
 
-def _iter_supplementary(**attributes):
+def _iter_supplementary(filelist, all_amd_refs, workspace):
     """Checks whether supplementary files exist in package and return
     the supplementary type if it exists.
-    Also populates the supplementary_files attribute while looping
-    through th files.
+
+    :param filelist: File list.
+    :param all_amd_refs: AMD references.
+    :param workspace: Workspace
+    :returns: A tuple of supplementary files (dict) and supplementary
+        types (set).
     """
-    attributes = get_reference_lists(**_attribute_values(attributes))
-    supplementary_type = None
-    for path in attributes['filelist']:
-        properties = file_properties(path, attributes)
-        if properties and 'supplementary' in properties:
-            if properties['supplementary']:
-                supplementary_type = properties['supplementary'][0]
-                attributes['supplementary_files'][path] = supplementary_type
-                attributes['supplementary_types'].add(supplementary_type)
-    return (attributes['supplementary_files'],
-            attributes['supplementary_types'])
+    supplementary_files = {}
+    supplementary_types = set()
+    for path in filelist:
+        properties = file_properties(path,
+                                     all_amd_refs=all_amd_refs,
+                                     workspace=workspace)
+        try:
+            supplementary_type = properties['supplementary'][0]
+            supplementary_files[path] = supplementary_type
+            supplementary_types.add(supplementary_type)
+        except (TypeError, KeyError):
+            pass
+
+    return supplementary_files, supplementary_types
 
 
-def _create_filegrp(file_ids, attributes, supplementary_type=None):
+def _create_filegrp(file_ids,
+                    filelist,
+                    supplementary_files,
+                    all_amd_refs,
+                    object_refs,
+                    workspace,
+                    supplementary_types,
+                    supplementary_type=None):
     """Creates a mets fileGrp.
 
-    :file_ids: A dict of file paths and identifiers
-    :filelist: A list of file paths
-    is_supplementary: A boolean of whether the created file group
-                      consists of supplementary files or not
+    :param file_ids: A dict of file paths and identifiers.
+    :param filelist: A list of file paths.
+    :param supplementary_files: Supplementary files.
+    :param all_amd_refs: XML element tree of administrative metadata
+        references.
+    :param object_refs: XML tree of digital objects.
+    :param supplementary_files: ID list of supplementary objects. Will be
+        populated if supplementary objects exist.
+    :param workspace: Workspace path, required by file_properties()
+    :param supplementary_types: Set of supplementary types.
+    :param supplementary_type: Which supplementary type the files belong to.
 
     :returns: A tuple of METS XML Element tree including file group
               element and a dict of file paths and identifiers
     """
     use = None
-    filelist = attributes['filelist']
+    collection = filelist
+
     if supplementary_type:
         use = SUPPLEMENTARY_TYPES[supplementary_type]
-        filelist = attributes['supplementary_files']
+        collection = supplementary_files
     filegrp = mets.filegrp(use=use)
-    for path in filelist:
-        fileid = add_file_to_filesec(attributes,
-                                     path,
-                                     filegrp,
+
+    for path in collection:
+        fileid = add_file_to_filesec(all_amd_refs=all_amd_refs,
+                                     object_refs=object_refs,
+                                     supplementary_files=supplementary_files,
+                                     workspace=workspace,
+                                     supplementary_types=supplementary_types,
+                                     path=path,
+                                     filegrp=filegrp,
                                      supplementary_type=supplementary_type)
         if fileid:
             file_ids[path] = fileid
