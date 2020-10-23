@@ -42,7 +42,8 @@ def ead3_ns(tag):
 
 @click.command()
 @click.option('--workspace',
-              type=click.Path(exists=True), default='./workspace/',
+              type=click.Path(exists=True),
+              default='./workspace/',
               metavar='<WORKSPACE PATH>',
               help="Workspace directory. Defaults to ./workspace/")
 @click.option('--structmap_type',
@@ -51,8 +52,10 @@ def ead3_ns(tag):
               help="Type of structmap e.g. 'Fairdata-physical', "
                    "'EAD3-logical', or 'Directory-physical'")
 @click.option('--root_type',
+              type=str,
+              default='directory',
               metavar='<ROOT TYPE>',
-              type=str, help="Type of root div")
+              help="Type of root div")
 @click.option('--dmdsec_loc',
               type=str,
               metavar='<DMD LOCATION>',
