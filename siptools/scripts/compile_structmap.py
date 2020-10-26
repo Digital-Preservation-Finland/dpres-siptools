@@ -102,6 +102,7 @@ def get_reference_lists(workspace):
         - all_dmd_refs: All descriptive metadata references.
         - object_refs: XML tree of digital objects.
         - filelist: ID list of objects.
+        - file_properties: Properties of all the files discvoered in filelist.
     """
     object_refs = read_md_references(workspace,
                                      "import-object-md-references.jsonl")
@@ -110,10 +111,17 @@ def get_reference_lists(workspace):
     all_dmd_refs = read_md_references(workspace,
                                       "import-description-md-references.jsonl")
 
+    # Get file properties for all the files after fetching reference lists.
+    file_properties = {}
+    for path in filelist:
+        file_properties[path] = get_file_properties(path=path,
+                                                    all_amd_refs=all_amd_refs,
+                                                    workspace=workspace)
     return (all_amd_refs,
             all_dmd_refs,
             object_refs,
-            filelist)
+            filelist,
+            file_properties)
 
 
 def compile_structmap(workspace='./workspace/',
@@ -145,17 +153,11 @@ def compile_structmap(workspace='./workspace/',
     (all_amd_refs,
      all_dmd_refs,
      object_refs,
-     filelist) = get_reference_lists(workspace=workspace)
-
-    # Get file properties for all the files after fetching reference lists.
-    file_properties = {}
-    for path in filelist:
-        file_properties[path] = get_file_properties(path=path,
-                                                    all_amd_refs=all_amd_refs,
-                                                    workspace=workspace)
+     filelist,
+     file_properties) = get_reference_lists(workspace=workspace)
 
     # Get all supplementary files.
-    (supplementary_files, supplementary_types) = _iter_supplementary(
+    (supplementary_files, supplementary_types) = iter_supplementary(
         file_properties=file_properties
     )
     file_ids = {}
@@ -334,7 +336,6 @@ def create_structmap(filesec,
     :param filelist: Sorted list of digital objects (file paths).
         Will be created if missing.
     :param supplementary_files: ID list of supplementary objects.
-        Will be populated if supplementary objects exist.
     :param supplementary_types: Supplementary types.
     :param structmap_type: TYPE attribute of structMap element If missing,
         default value is None.
@@ -593,8 +594,7 @@ def add_file_to_filesec(all_amd_refs,
 
     If the file group is for content files, but the file has a
     supplementary property, a file element is not created and the file
-    is not added to the fileSec. Rather, the attribute value
-    supplementary_files is populated with the file's path.
+    is not added to the fileSec.
 
     If the file group is for supplementary files, only supplementary
     files should be added to the fileSec.
@@ -618,9 +618,7 @@ def add_file_to_filesec(all_amd_refs,
         if 'bit_level' in properties and properties["bit_level"] == "native":
             use = "no-file-format-validation"
 
-        # Do not add supplementary files to normal file group and vice versa,
-        # but rather populate the supplementary_files attribute with
-        # supplementary files when encountered
+        # Do not add supplementary files to normal file group and vice versa
         if all(('supplementary' in properties,
                 properties['supplementary'],
                 not supplementary_type)):
@@ -941,7 +939,7 @@ def _create_event(
                  create_agent_file='compile-structmap-agents')
 
 
-def _iter_supplementary(file_properties):
+def iter_supplementary(file_properties):
     """Checks whether supplementary files exist in package and return
     the supplementary type if it exists.
 
