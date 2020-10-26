@@ -133,7 +133,6 @@ def compile_structmap(workspace='./workspace/',
     :param dmdsec_loc: Location of structured descriptive metadata
     :param stdout: True to print output to stdout
     """
-    file_ids = {}
 
     # Create an event documenting the structmap creation
     _create_event(
@@ -159,6 +158,7 @@ def compile_structmap(workspace='./workspace/',
     (supplementary_files, supplementary_types) = _iter_supplementary(
         file_properties=file_properties
     )
+    file_ids = {}
 
     if structmap_type == 'EAD3-logical':
         # If structured descriptive metadata for structMap divs is used, also
@@ -179,35 +179,18 @@ def compile_structmap(workspace='./workspace/',
             supplementary_files=supplementary_files,
             supplementary_types=supplementary_types)
 
-        if supplementary_types:
-            file_ids = {}
-            for supplementary_type in supplementary_types:
-                (s_filegrp, file_ids) = _create_filegrp(
-                    file_ids=file_ids,
-                    supplementary_files=supplementary_files,
-                    all_amd_refs=all_amd_refs,
-                    object_refs=object_refs,
-                    file_properties=file_properties,
-                    supplementary_type=supplementary_type)
-                filesec_child_elems.append(s_filegrp)
+        for supplementary_type in supplementary_types:
+            (s_filegrp, file_ids) = _create_filegrp(
+                file_ids=file_ids,
+                supplementary_files=supplementary_files,
+                all_amd_refs=all_amd_refs,
+                object_refs=object_refs,
+                file_properties=file_properties,
+                supplementary_type=supplementary_type)
+            filesec_child_elems.append(s_filegrp)
 
         filesec_element = mets.filesec(child_elements=filesec_child_elems)
         filesec = mets.mets(child_elements=[filesec_element])
-
-        if supplementary_types:
-            root_type = SUPPLEMENTARY_TYPES['main']
-            suppl_structmap = create_structmap(
-                filesec=filesec,
-                all_amd_refs=all_amd_refs,
-                all_dmd_refs=all_dmd_refs,
-                filelist=filelist,
-                supplementary_files=supplementary_files,
-                supplementary_types=supplementary_types,
-                structmap_type='logical',
-                root_type=root_type,
-                file_ids=file_ids,
-                file_properties=file_properties,
-                workspace=workspace)
     else:
         (filesec, file_ids) = create_filesec(
             all_amd_refs=all_amd_refs,
@@ -217,7 +200,7 @@ def compile_structmap(workspace='./workspace/',
             supplementary_types=supplementary_types)
 
         # Add file path and ID dict to attributes
-        structmap = create_structmap(filesec=filesec.getroot(),
+        structmap = create_structmap(filesec=filesec,
                                      all_amd_refs=all_amd_refs,
                                      all_dmd_refs=all_dmd_refs,
                                      filelist=filelist,
@@ -229,21 +212,21 @@ def compile_structmap(workspace='./workspace/',
                                      file_properties=file_properties,
                                      workspace=workspace)
 
-        # Create a separate structmap for supplementary files if they exist
-        if supplementary_files:
-            root_type = SUPPLEMENTARY_TYPES['main']
-            suppl_structmap = create_structmap(
-                filesec=filesec.getroot(),
-                all_amd_refs=all_amd_refs,
-                all_dmd_refs=all_dmd_refs,
-                filelist=filelist,
-                supplementary_files=supplementary_files,
-                supplementary_types=supplementary_types,
-                structmap_type='logical',
-                root_type=root_type,
-                file_ids=file_ids,
-                file_properties=file_properties,
-                workspace=workspace)
+    # Create a separate structmap for supplementary files if they exist
+    if supplementary_files:
+        root_type = SUPPLEMENTARY_TYPES['main']
+        suppl_structmap = create_structmap(
+            filesec=filesec,
+            all_amd_refs=all_amd_refs,
+            all_dmd_refs=all_dmd_refs,
+            filelist=filelist,
+            supplementary_files=supplementary_files,
+            supplementary_types=supplementary_types,
+            structmap_type='logical',
+            root_type=root_type,
+            file_ids=file_ids,
+            file_properties=file_properties,
+            workspace=workspace)
 
     if stdout:
         print(xml_utils.serialize(filesec).decode("utf-8"))
@@ -298,7 +281,7 @@ def create_filesec(all_amd_refs,
     :param supplementary_files: ID list of supplementary objects.
         Will be populated if supplementary objects exist.
     :param supplementary_types: Supplementary types.
-    :returns: A tuple of METS XML Element tree including file section
+    :returns: A tuple of METS XML Element including file section
               element and a dict of file paths and identifiers
     """
 
@@ -326,7 +309,7 @@ def create_filesec(all_amd_refs,
     filesec = mets.filesec(child_elements=child_elements)
     mets_element = mets.mets(child_elements=[filesec])
     ET.cleanup_namespaces(mets_element)
-    return ET.ElementTree(mets_element), file_ids
+    return mets_element, file_ids
 
 
 def create_structmap(filesec,
@@ -862,7 +845,7 @@ def add_fptrs_div_ead(c_div,
     """
 
     for href, label in hrefs:
-        amd_file = path
+        amd_file = None
         for path in file_properties:
             if href in path:
                 amd_file = path
