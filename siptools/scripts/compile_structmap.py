@@ -321,10 +321,10 @@ def create_structmap(filesec,
                      supplementary_files,
                      supplementary_types,
                      structmap_type,
-                     root_type,
                      file_ids,
                      file_properties,
-                     workspace):
+                     workspace,
+                     root_type='directory'):
     """
     Creates METS document element tree that contains structural map.
 
@@ -339,13 +339,13 @@ def create_structmap(filesec,
     :param supplementary_types: Supplementary types.
     :param structmap_type: TYPE attribute of structMap element If missing,
         default value is None.
-    :param root_type: TYPE attribute of root div element. If missing,
-        default value is "directory".
     :param file_ids: Dict with file paths and identifiers. Required by
         create_div(). Will be computed if missing.
     :param file_properties: Dictionary collection of file properties.
     :param workspace: Workspace path, required by create_div(). If missing,
         default value is "./workspace/".
+    :param root_type: TYPE attribute of root div element. If missing,
+        default value is "directory".
     :returns: structural map element
     """
     amdids = get_md_references(all_amd_refs, directory='.')
