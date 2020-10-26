@@ -74,14 +74,6 @@ def main(workspace, structmap_type, root_type, dmdsec_loc, stdout):
     created/imported administrative metada and descriptive metadata.
     The script will also add order of the file to the structural map
     (via json file), if --order argument was used in import_object script.
-
-    :param workspace: Workspace directory. Defaults to ./workspace/.
-    :param structmap_type: Type of structmap e.g. 'Fairdata-physical',
-        'EAD3-logical', or 'Directory-physical'.
-    :param root_type: Type of root div.
-    :param dmdsec_loc: Location of structured descriptive metadata, if
-        applicable.
-    :param stdout: Whether or not to print output also to stdout.
     """
     compile_structmap(workspace=workspace,
                       structmap_type=structmap_type,
