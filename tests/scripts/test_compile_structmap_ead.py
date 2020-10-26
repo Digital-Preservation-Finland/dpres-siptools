@@ -188,11 +188,16 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
         "import-object-md-references.jsonl"
     )
     attrs["object_refs"] = attrs["all_amd_refs"]
-    attrs["workspace"] = testpath
-    attrs["filelist"] = [
-        'tests/data/structured/Publication files/publication.txt',
-        'tests/data/structured/Software files/koodi.java',
-        'tests/data/structured/Documentation files/readme.txt']
+
+    file_properties = {}
+    for path in ['tests/data/structured/Publication files/publication.txt',
+                 'tests/data/structured/Software files/koodi.java',
+                 'tests/data/structured/Documentation files/readme.txt']:
+        file_properties[path] = compile_structmap.get_file_properties(
+            path=path,
+            all_amd_refs=attrs["all_amd_refs"],
+            workspace=testpath)
+    attrs['file_properties'] = file_properties
     filegrp = mets.filegrp()
     c_div = compile_structmap.add_fptrs_div_ead(xml, hrefs, filegrp, **attrs)
 
