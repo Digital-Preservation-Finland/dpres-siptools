@@ -37,6 +37,10 @@ SUPPLEMENTARY_TYPES = {
     'native': 'fi-preservation-no-file-format-validation'
 }
 
+SUPPLEMENTARY_REFERENCE_FILES = {
+    'fi-preservation-xml-schemas': 'define-xml-schemas-references.jsonl'
+}
+
 
 def ead3_ns(tag):
     """Get tag with EAD3 namespace
@@ -730,6 +734,17 @@ def create_div(divs,
         else:
             amdids = get_md_references(all_amd_refs, directory=div_path)
             dmdsec_id = get_md_references(all_dmd_refs, directory=div_path)
+
+            # Some supplementary divs require links to the amdSec
+            if is_supplementary:
+                try:
+                    amdids = get_md_references(
+                        read_md_references(
+                            workspace,
+                            SUPPLEMENTARY_REFERENCE_FILES[div]),
+                        directory='.')
+                except KeyError:
+                    pass
 
             if structmap_type == 'Directory-physical':
                 div_elem = mets.div(type_attr='directory',

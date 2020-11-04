@@ -8,9 +8,10 @@ import lxml.etree
 import mets
 import premis
 
-from siptools.utils import read_md_references
+from siptools.utils import read_md_references, fsdecode_path
 from siptools.scripts import (compile_structmap, create_audiomd,
-                              import_description, import_object, premis_event)
+                              import_description, import_object, premis_event,
+                              define_xml_schemas)
 from siptools.xml.mets import NAMESPACES
 
 
@@ -261,8 +262,10 @@ def test_supplementary_file(testpath, run_cli):
         "--workspace", testpath,
         "--supplementary", "xml_schema",
         "tests/data/mets_valid_minimal.xml"])
-    compile_structmap.compile_structmap(workspace=testpath)
-    #run_cli(compile_structmap.main, ["--workspace", testpath])
+    run_cli(define_xml_schemas.main, [
+        "--workspace", testpath,
+        "--uri_pairs", "uri1", "tests/data/mets_valid_minimal.xml"])
+    run_cli(compile_structmap.main, ["--workspace", testpath])
     output_filesec = os.path.join(testpath, "filesec.xml")
     fs_root = lxml.etree.parse(output_filesec).getroot()
 
@@ -318,6 +321,17 @@ def test_supplementary_file(testpath, run_cli):
     assert suppl_sm_root.xpath(
         "//mets:structMap/mets:div/mets:div/mets:fptr",
         namespaces=NAMESPACES)[0].get('FILEID') == suppl_file_id
+
+    # Test that the representation object for xml-schemas is linked to the
+    # structMap div with the ADMID
+    refs = read_md_references(testpath, 'define-xml-schemas-references.jsonl')
+    reference = refs[fsdecode_path('.')]
+    amdref = reference['md_ids'][0]
+
+    assert suppl_sm_root.xpath(
+        "//mets:structMap/mets:div/mets:div"
+        "[@TYPE='fi-preservation-xml-schemas']",
+        namespaces=NAMESPACES)[0].get('ADMID') == amdref
 
 
 def test_get_fileid():
