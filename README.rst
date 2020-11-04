@@ -320,6 +320,43 @@ to export the metadata from the source, e.g. a database client or API.
 For a native file, ``validation`` and ``format identification`` type events are not
 created.
 
+Including supplementary files in the package
+--------------------------------------------
+
+The Pre-Ingest Tool supports adding supplementary files as part of the SIP. These
+supplementary files are files that are not part of the actual contents to be preserved,
+but are needed in order to document the contents in some way. These supplementary
+files are put in a separate METS fileGrp with a USE attribute value documenting
+the role of these files. A separate METS structMap is also created for these files.
+
+The supplementary files must be valid files in a file format supported by the
+Digital Preservation Services. They are imported as normal digital objects by
+the import-object script. However, the option ``--supplementary`` is to be used
+when import these files to mark them as supplementary::
+
+    import-object 'tests/data/text-file.txt' --workspace ./workspace --supplementary xml_schema
+
+Currently, the only supplementary type supported is "xml_schema".
+
+Mapping XML schema files in the package
+---------------------------------------
+
+XML schema files that are added to the SIP as supplementary files must be mapped
+to the schemaLocation or noNamespaceSchemaLocation values in the XML contents. This
+is done by running the script ``define-xml-schemas``. This script will create a
+PREMIS representation type object containing all the mapped values to the schema
+files. The script is given a pair of URI reference, corresponding to the schemaLocation
+or noNamespaceSchemaLocation value, and path to the schema file, as a relative path, by
+using the required ``--uri_pairs`` option::
+
+    define-xml-schemas --uri_pairs http://localhost/my_schema.xsd schemas/my_schema.xsd --workspace ./workspace
+
+The ``--uri_pairs`` option is repeatable for all schemas to be included in the SIP.
+
+Note that these schema files have also to be imported as digital objects with the
+``import-object`` script and with using the ``--supplementary`` option to mark
+them as supplementary.
+
 Additional notes
 ----------------
 This software is able to collect metadata and check well-formedness of a limited set of file
