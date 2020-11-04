@@ -8,7 +8,8 @@ import pytest
 import lxml.etree as ET
 import premis
 
-from siptools.utils import read_md_references
+from siptools.utils import read_md_references, get_file_properties
+from siptools.ead_utils import add_fptrs_div_ead, collect_dao_hrefs
 from siptools.scripts import compile_structmap, import_object
 from siptools.xml.mets import NAMESPACES
 
@@ -153,7 +154,7 @@ def test_collect_dao_hrefs():
             '<ead3:dao daotype="derived" href="/file2.txt"/>'
             '</ead3:daoset>')
     xml = ET.fromstring(ead3)
-    hrefs = compile_structmap.collect_dao_hrefs(xml)
+    hrefs = collect_dao_hrefs(xml)
     assert hrefs == [('file1.txt', None), ('file2.txt', None)]
 
 
@@ -193,13 +194,13 @@ def test_add_fptrs_div_ead(testpath, run_cli, hrefs, length, child_elem,
     for path in ['tests/data/structured/Publication files/publication.txt',
                  'tests/data/structured/Software files/koodi.java',
                  'tests/data/structured/Documentation files/readme.txt']:
-        file_properties[path] = compile_structmap.get_file_properties(
+        file_properties[path] = get_file_properties(
             path=path,
             all_amd_refs=attrs["all_amd_refs"],
             workspace=testpath)
     attrs['file_properties'] = file_properties
     filegrp = mets.filegrp()
-    c_div = compile_structmap.add_fptrs_div_ead(xml, hrefs, filegrp, **attrs)
+    c_div = add_fptrs_div_ead(xml, hrefs, filegrp, **attrs)
 
     # Child elements are either new divs or fptrs
     assert c_div.xpath(

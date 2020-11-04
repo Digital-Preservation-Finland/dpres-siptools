@@ -2,17 +2,12 @@
 """Unit tests for ``siptools.scripts.define_xml_schemas`` module"""
 from __future__ import unicode_literals
 
-import datetime
-import io
-import os.path
-
-import pytest
-import six
+import os
 
 import lxml.etree as ET
 
 from siptools.scripts import define_xml_schemas
-from siptools.utils import fsdecode_path, load_scraper_json, read_md_references
+from siptools.utils import read_md_references
 from siptools.xml.mets import NAMESPACES
 
 

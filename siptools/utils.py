@@ -8,11 +8,13 @@ import hashlib
 import os
 import json
 import sys
+from uuid import uuid4
 from collections import defaultdict
 
 import six
 
 import lxml.etree
+import mets
 import premis
 import xml_helpers
 from file_scraper.scraper import Scraper
@@ -21,6 +23,13 @@ try:
     from urllib.parse import quote_plus, unquote_plus
 except ImportError:  # Python 2
     from urllib import quote_plus, unquote_plus
+
+
+SUPPLEMENTARY_TYPES = {
+    'main': 'fi-preservation-supplementary',
+    'xml_schema': 'fi-preservation-xml-schemas',
+    'native': 'fi-preservation-no-file-format-validation'
+}
 
 
 def calc_checksum(filepath, algorithm="md5"):
@@ -535,3 +544,217 @@ def read_object_id(path, workspace):
     root = lxml.etree.parse(os.path.join(workspace, premis_file))
     return premis.parse_identifier_type_value(
         premis.parse_identifier(root))
+
+
+def get_file_properties(path, all_amd_refs, workspace):
+    """Return file properties from the json data file
+
+    :param path: File path
+    :param all_amd_refs: XML element tree of administrative metadata
+        references.
+    :param workspace: Workspace path
+    :returns: A dict with properties or None
+    """
+    json_name = None
+    for amdref in get_md_references(all_amd_refs, path=path):
+        json_name = os.path.join(workspace,
+                                 '{}-scraper.json'.format(amdref[1:]))
+        if os.path.isfile(json_name):
+            break
+
+    if json_name is None or not os.path.isfile(json_name):
+        return None
+    file_metadata_dict = load_scraper_json(json_name)
+
+    if 'properties' not in file_metadata_dict[0]:
+        return None
+
+    return file_metadata_dict[0]['properties']
+
+
+def get_reference_lists(workspace):
+    """
+    Get reference lists.
+
+    :param workspace: Workspace path
+    :returns: Tuple of following things:
+        - all_amd_refs: All administrative metadata references.
+        - all_dmd_refs: All descriptive metadata references.
+        - object_refs: XML tree of digital objects.
+        - filelist: ID list of objects.
+        - file_properties: Properties of all the files discvoered in filelist.
+    """
+    object_refs = read_md_references(workspace,
+                                     "import-object-md-references.jsonl")
+    filelist = get_objectlist(object_refs)
+    all_amd_refs = read_all_amd_references(workspace)
+    all_dmd_refs = read_md_references(workspace,
+                                      "import-description-md-references.jsonl")
+
+    # Get file properties for all the files after fetching reference lists.
+    file_properties = {}
+    for path in filelist:
+        file_properties[path] = get_file_properties(path=path,
+                                                    all_amd_refs=all_amd_refs,
+                                                    workspace=workspace)
+    return (all_amd_refs,
+            all_dmd_refs,
+            object_refs,
+            filelist,
+            file_properties)
+
+
+def iter_supplementary(file_properties):
+    """Checks whether supplementary files exist in package and return
+    the supplementary type if it exists.
+
+    :param file_properties: Dictionary of file properties.
+    :returns: A tuple of supplementary files (dict) and supplementary
+        types (set).
+    """
+    supplementary_files = {}
+    supplementary_types = set()
+    for path in file_properties:
+        properties = file_properties[path]
+        try:
+            supplementary_type = properties['supplementary'][0]
+            supplementary_files[path] = supplementary_type
+            supplementary_types.add(supplementary_type)
+        except (TypeError, KeyError, IndexError):
+            pass
+
+    return supplementary_files, supplementary_types
+
+
+def add_file_to_filesec(all_amd_refs,
+                        object_refs,
+                        path,
+                        filegrp,
+                        properties=None,
+                        supplementary_type=None):
+    """Add file element to fileGrp element given as parameter.
+
+    If the file group is for content files, but the file has a
+    supplementary property, a file element is not created and the file
+    is not added to the fileSec.
+
+    If the file group is for supplementary files, only supplementary
+    files should be added to the fileSec.
+
+    :param all_amd_refs: XML element tree of administrative metadata
+        references.
+    :param object_refs: XML tree of digital objects.
+    :param path: url encoded path of the file
+    :param filegrp: fileGrp element
+    :param properties: Properties for single file.
+    :param supplementary_type: Which supplementary type the files belong to.
+    :returns: unique identifier of file element
+    """
+    fileid = '_{}'.format(uuid4())
+
+    # Create list of IDs of amdID elements
+    amdids = get_md_references(refs_dict=all_amd_refs, path=path)
+
+    use = None
+    if properties:
+        if 'bit_level' in properties and properties["bit_level"] == "native":
+            use = "no-file-format-validation"
+
+        # Do not add supplementary files to normal file group and vice versa
+        if all(('supplementary' in properties,
+                properties['supplementary'],
+                not supplementary_type)):
+            return None
+        elif all(('supplementary' in properties,
+                  properties['supplementary'],
+                  supplementary_type)):
+            if not supplementary_type in properties['supplementary']:
+                return None
+
+    # Create XML element and add it to fileGrp
+    file_el = mets.file_elem(
+        fileid,
+        admid_elements=set(amdids),
+        loctype='URL',
+        xlink_href='file://%s' % encode_path(path, safe='/'),
+        xlink_type='simple',
+        groupid=None,
+        use=use
+    )
+
+    streams = get_objectlist(object_refs, path)
+    if streams:
+        for stream in streams:
+            stream_ids = get_md_references(refs_dict=all_amd_refs,
+                                           path=path,
+                                           stream=stream)
+            stream_el = mets.stream(admid_elements=stream_ids)
+            file_el.append(stream_el)
+
+    filegrp.append(file_el)
+
+    return fileid
+
+
+def add_file_div(fptr,
+                 properties=None,
+                 type_attr='file',
+                 label=None):
+    """Create a div element with file properties
+
+    :param fptr: Element fptr for file
+    :param properties: Properties of the given file.
+    :param type_attr: The TYPE attribute value for the div
+    :param label: The LABEL attribute value for the div.
+    :returns: Div element with properties or None
+    """
+
+    if any((properties and 'order' in properties, label)):
+        div_el = mets.div(type_attr=type_attr,
+                          order=properties.get('order', None),
+                          label=label)
+        div_el.append(fptr)
+        return div_el
+
+    return None
+
+
+def create_filegrp(file_ids,
+                   supplementary_files,
+                   all_amd_refs,
+                   object_refs,
+                   file_properties,
+                   supplementary_type=None):
+    """Creates a mets fileGrp.
+
+    :param file_ids: A dict of file paths and identifiers.
+    :param supplementary_files: Supplementary files.
+    :param all_amd_refs: XML element tree of administrative metadata
+        references.
+    :param object_refs: XML tree of digital objects.
+    :param supplementary_files: ID list of supplementary objects. Will be
+        populated if supplementary objects exist.
+    :param file_properties: Dictionary collection of file properties.
+    :param supplementary_type: Which supplementary type the files belong to.
+
+    :returns: A tuple of METS XML Element tree including file group
+              element and a dict of file paths and identifiers
+    """
+    use = None
+    collection = file_properties
+
+    if supplementary_type:
+        use = SUPPLEMENTARY_TYPES[supplementary_type]
+        collection = supplementary_files
+    filegrp = mets.filegrp(use=use)
+
+    for path in collection:
+        fileid = add_file_to_filesec(all_amd_refs=all_amd_refs,
+                                     object_refs=object_refs,
+                                     path=path,
+                                     filegrp=filegrp,
+                                     supplementary_type=supplementary_type,
+                                     properties=file_properties[path])
+        if fileid:
+            file_ids[path] = fileid
+    return filegrp, file_ids

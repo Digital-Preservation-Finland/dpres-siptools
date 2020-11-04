@@ -4,7 +4,6 @@ from __future__ import unicode_literals, print_function
 
 import os
 import sys
-from uuid import uuid4
 import datetime
 
 import click
@@ -14,13 +13,16 @@ import mets
 import xml_helpers.utils as xml_utils
 from siptools.scripts.create_agent import create_agent
 from siptools.scripts.premis_event import premis_event
+from siptools.ead_utils import compile_ead3_structmap
 from siptools.utils import (add,
+                            add_file_div,
+                            create_filegrp,
                             encode_path,
                             get_md_references,
-                            get_objectlist,
-                            load_scraper_json,
-                            read_all_amd_references,
+                            get_reference_lists,
+                            iter_supplementary,
                             read_md_references,
+                            SUPPLEMENTARY_TYPES,
                             tree)
 from siptools.xml.mets import NAMESPACES
 
@@ -28,25 +30,9 @@ import siptools
 
 click.disable_unicode_literals_warning = True
 
-ALLOWED_C_SUBS = ['c', 'c01', 'c02', 'c03', 'c04', 'c05', 'c06', 'c07',
-                  'c08', 'c09', 'c10', 'c11', 'c12']
-
-SUPPLEMENTARY_TYPES = {
-    'main': 'fi-preservation-supplementary',
-    'xml_schema': 'fi-preservation-xml-schemas',
-    'native': 'fi-preservation-no-file-format-validation'
-}
-
 SUPPLEMENTARY_REFERENCE_FILES = {
     'fi-preservation-xml-schemas': 'define-xml-schemas-references.jsonl'
 }
-
-
-def ead3_ns(tag):
-    """Get tag with EAD3 namespace
-    """
-    path = '{%s}%s' % ('http://ead3.archivists.org/schema/', tag)
-    return path
 
 
 @click.command()
@@ -88,38 +74,7 @@ def main(workspace, structmap_type, root_type, dmdsec_loc, stdout):
     return 0
 
 
-def get_reference_lists(workspace):
-    """
-    Get reference lists.
-
-    :param workspace: Workspace path
-    :returns: Tuple of following things:
-        - all_amd_refs: All administrative metadata references.
-        - all_dmd_refs: All descriptive metadata references.
-        - object_refs: XML tree of digital objects.
-        - filelist: ID list of objects.
-        - file_properties: Properties of all the files discvoered in filelist.
-    """
-    object_refs = read_md_references(workspace,
-                                     "import-object-md-references.jsonl")
-    filelist = get_objectlist(object_refs)
-    all_amd_refs = read_all_amd_references(workspace)
-    all_dmd_refs = read_md_references(workspace,
-                                      "import-description-md-references.jsonl")
-
-    # Get file properties for all the files after fetching reference lists.
-    file_properties = {}
-    for path in filelist:
-        file_properties[path] = get_file_properties(path=path,
-                                                    all_amd_refs=all_amd_refs,
-                                                    workspace=workspace)
-    return (all_amd_refs,
-            all_dmd_refs,
-            object_refs,
-            filelist,
-            file_properties)
-
-
+# pylint: disable=too-many-locals
 def compile_structmap(workspace='./workspace/',
                       structmap_type=None,
                       root_type='directory',
@@ -156,39 +111,19 @@ def compile_structmap(workspace='./workspace/',
     (supplementary_files, supplementary_types) = iter_supplementary(
         file_properties=file_properties
     )
-    file_ids = {}
 
+    # Create EAD3 based structMap and fileSec for EAD3-logical types
     if structmap_type == 'EAD3-logical':
-        # If structured descriptive metadata for structMap divs is used, also
-        # the fileSec element (apparently?) is different. The
-        # create_ead3_structmap function populates the fileGrp element.
-        filegrp = mets.filegrp()
-        filesec_child_elems = [filegrp]
-
-        structmap = create_ead3_structmap(
-            filegrp=filegrp,
+        (structmap, filesec, file_ids) = compile_ead3_structmap(
+            dmdsec_loc=dmdsec_loc,
+            workspace=workspace,
             all_amd_refs=all_amd_refs,
             all_dmd_refs=all_dmd_refs,
-            dmdsec_loc=dmdsec_loc,
-            structmap_type=structmap_type,
-            workspace=workspace,
             object_refs=object_refs,
             file_properties=file_properties,
             supplementary_files=supplementary_files,
             supplementary_types=supplementary_types)
 
-        for supplementary_type in supplementary_types:
-            (s_filegrp, file_ids) = _create_filegrp(
-                file_ids=file_ids,
-                supplementary_files=supplementary_files,
-                all_amd_refs=all_amd_refs,
-                object_refs=object_refs,
-                file_properties=file_properties,
-                supplementary_type=supplementary_type)
-            filesec_child_elems.append(s_filegrp)
-
-        filesec_element = mets.filesec(child_elements=filesec_child_elems)
-        filesec = mets.mets(child_elements=[filesec_element])
     else:
         (filesec, file_ids) = create_filesec(
             all_amd_refs=all_amd_refs,
@@ -285,7 +220,7 @@ def create_filesec(all_amd_refs,
 
     child_elements = []
     file_ids = {}
-    (filegrp, file_ids) = _create_filegrp(
+    (filegrp, file_ids) = create_filegrp(
         file_ids=file_ids,
         supplementary_files=supplementary_files,
         all_amd_refs=all_amd_refs,
@@ -295,7 +230,7 @@ def create_filesec(all_amd_refs,
 
     # Create file group for supplementary files if they exist
     for supplementary_type in supplementary_types:
-        (s_filegrp, file_ids) = _create_filegrp(
+        (s_filegrp, file_ids) = create_filegrp(
             file_ids=file_ids,
             supplementary_files=supplementary_files,
             all_amd_refs=all_amd_refs,
@@ -310,6 +245,8 @@ def create_filesec(all_amd_refs,
     return mets_element, file_ids
 
 
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-locals
 def create_structmap(filesec,
                      all_amd_refs,
                      all_dmd_refs,
@@ -420,236 +357,6 @@ def div_structure(filelist,
     return divs
 
 
-def create_ead3_structmap(filegrp,
-                          all_amd_refs,
-                          all_dmd_refs,
-                          dmdsec_loc,
-                          structmap_type,
-                          workspace,
-                          object_refs,
-                          file_properties,
-                          supplementary_files=None,
-                          supplementary_types=None):
-    """Create structmap based on ead3 descriptive metadata structure.
-
-    :param filegrp: fileGrp element
-    :param all_amd_refs: XML element tree of administrative metadata
-        references
-    :param all_dmd_refs: XML element tree of descriptive metadata
-        references
-    :param dmdsec_loc: EAD3 descriptive metadata file
-    :param structmap_type: TYPE attribute of structMap element
-    :param workspace: Workspace path, required by ead3_c_div()
-    :param object_refs: Object references.
-    :param file_properties: Dictionary collection of file properties.
-    :param supplementary_files: Supplementary files.
-    :param supplementary_types: Supplementary types.
-    :returns: Struct map XML element tree.
-    """
-    if supplementary_files is None:
-        supplementary_files = {}
-    if supplementary_types is None:
-        supplementary_types = set()
-
-    structmap = mets.structmap(type_attr=structmap_type)
-    container_div = mets.div(type_attr='logical')
-
-    root = ET.parse(dmdsec_loc).getroot()
-
-    try:
-        label = root.xpath(("//ead3:archdesc/@otherlevel | "
-                            "//ead3:archdesc/@level"),
-                           namespaces=NAMESPACES)[0]
-    except IndexError:
-        label = 'archdesc'
-
-    amdids = get_md_references(all_amd_refs, directory='.')
-    dmdids = get_md_references(all_dmd_refs, directory='.')
-
-    div_ead = mets.div(type_attr='archdesc', label=label, dmdid=dmdids,
-                       admid=amdids)
-
-    if root.xpath("//ead3:archdesc/ead3:dsc", namespaces=NAMESPACES):
-        for elem in root.xpath("//ead3:dsc/*", namespaces=NAMESPACES):
-            if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
-                ead3_c_div(parent=elem,
-                           div=div_ead,
-                           filegrp=filegrp,
-                           all_amd_refs=all_amd_refs,
-                           object_refs=object_refs,
-                           supplementary_files=supplementary_files,
-                           supplementary_types=supplementary_types,
-                           file_properties=file_properties,
-                           workspace=workspace)
-
-    container_div.append(div_ead)
-    structmap.append(container_div)
-    mets_element = mets.mets(child_elements=[structmap])
-    ET.cleanup_namespaces(mets_element)
-    return ET.ElementTree(mets_element)
-
-
-def ead3_c_div(parent,
-               div,
-               filegrp,
-               all_amd_refs,
-               object_refs,
-               supplementary_files,
-               supplementary_types,
-               file_properties,
-               workspace):
-    """Create div elements based on ead3 c elements. Fptr elements are
-    created based on ead dao elements. The Ead3 elements tags are put
-    into @type and the @level or @otherlevel attributes from ead3 will
-    be put into @label.
-
-    Daoset elements within the ead3 c element will be looped over and
-    create their own divs if they exist, containing the dao elements.
-
-    :param parent: Element to follow in EAD3
-    :param div: Div element in structmap
-    :param filegrp: fileGrp element
-    :param all_amd_refs: XML element tree of administrative metadata
-        references.
-    :param object_refs: Object references.
-    :param supplementary_files: Supplementary files.
-    :param supplementary_types: Supplementary types.
-    :param file_properties: Dictionary collection of file properties.
-    :param workspace: Workspace path, required by add_fptrs_div_ead()
-    """
-
-    c_div = mets.div(type_attr=(ET.QName(parent.tag).localname),
-                     label=_parse_label(parent))
-
-    # Create child divs based on the child c elements
-    for elem in parent.findall("./*"):
-        if ET.QName(elem.tag).localname in ALLOWED_C_SUBS:
-            ead3_c_div(parent=elem,
-                       div=c_div,
-                       filegrp=filegrp,
-                       all_amd_refs=all_amd_refs,
-                       object_refs=object_refs,
-                       supplementary_files=supplementary_files,
-                       supplementary_types=supplementary_types,
-                       file_properties=file_properties,
-                       workspace=workspace)
-
-    # Create divs for daoset elements, appending the dao elements and file
-    # references to the daoset elements
-    for elem in parent.xpath("./ead3:did/*", namespaces=NAMESPACES):
-        if ET.QName(elem.tag).localname == 'daoset':
-            daoset_div = mets.div(type_attr='daoset', label=_parse_label(elem))
-
-            daoset_hrefs = collect_dao_hrefs(elem)
-            daoset_div = add_fptrs_div_ead(
-                c_div=daoset_div,
-                hrefs=daoset_hrefs,
-                filegrp=filegrp,
-                all_amd_refs=all_amd_refs,
-                object_refs=object_refs,
-                file_properties=file_properties)
-            c_div.append(daoset_div)
-
-    # Collect dao elements and file references as fptr elements if they
-    # exist directly under the ead3 c element
-    c_hrefs = collect_dao_hrefs(parent)
-    c_div = add_fptrs_div_ead(c_div=c_div,
-                              hrefs=c_hrefs,
-                              filegrp=filegrp,
-                              all_amd_refs=all_amd_refs,
-                              object_refs=object_refs,
-                              file_properties=file_properties)
-
-    div.append(c_div)
-
-
-def _parse_label(elem):
-    """Helper function to return the label attribute for a tag based
-    on existing EAD3 attributes. If none of the exist, return the
-    element name instead.
-
-    :elem: lxml.etree element whose attributes (or name) is parsed
-    :returns: The parsed label as a string
-    """
-    try:
-        label = elem.xpath(("./@label | ./@otherlevel | ./@level"),
-                           namespaces=NAMESPACES)[0]
-    except IndexError:
-        label = ET.QName(elem.tag).localname
-
-    return label
-
-
-def add_file_to_filesec(all_amd_refs,
-                        object_refs,
-                        path,
-                        filegrp,
-                        properties=None,
-                        supplementary_type=None):
-    """Add file element to fileGrp element given as parameter.
-
-    If the file group is for content files, but the file has a
-    supplementary property, a file element is not created and the file
-    is not added to the fileSec.
-
-    If the file group is for supplementary files, only supplementary
-    files should be added to the fileSec.
-
-    :param all_amd_refs: XML element tree of administrative metadata
-        references.
-    :param object_refs: XML tree of digital objects.
-    :param path: url encoded path of the file
-    :param filegrp: fileGrp element
-    :param properties: Properties for single file.
-    :param supplementary_type: Which supplementary type the files belong to.
-    :returns: unique identifier of file element
-    """
-    fileid = '_{}'.format(uuid4())
-
-    # Create list of IDs of amdID elements
-    amdids = get_md_references(refs_dict=all_amd_refs, path=path)
-
-    use = None
-    if properties:
-        if 'bit_level' in properties and properties["bit_level"] == "native":
-            use = "no-file-format-validation"
-
-        # Do not add supplementary files to normal file group and vice versa
-        if all(('supplementary' in properties,
-                properties['supplementary'],
-                not supplementary_type)):
-            return None
-        elif all(('supplementary' in properties,
-                  properties['supplementary'],
-                  supplementary_type)):
-            if not supplementary_type in properties['supplementary']:
-                return None
-
-    # Create XML element and add it to fileGrp
-    file_el = mets.file_elem(
-        fileid,
-        admid_elements=set(amdids),
-        loctype='URL',
-        xlink_href='file://%s' % encode_path(path, safe='/'),
-        xlink_type='simple',
-        groupid=None,
-        use=use
-    )
-
-    streams = get_objectlist(object_refs, path)
-    if streams:
-        for stream in streams:
-            stream_ids = get_md_references(refs_dict=all_amd_refs,
-                                           path=path,
-                                           stream=stream)
-            stream_el = mets.stream(admid_elements=stream_ids)
-            file_el.append(stream_el)
-
-    filegrp.append(file_el)
-
-    return fileid
-
-
 def get_fileid(filesec, path, file_ids=None):
     """Returns the ID for a file. Either finds a file with `path` from
     fileSec or reads the ID from a dict of `path` and `ID`. Returns the
@@ -677,6 +384,7 @@ def get_fileid(filesec, path, file_ids=None):
 
 # pylint: disable=too-many-arguments
 # pylint: disable=too-many-locals
+# pylint: disable=too-many-branches
 def create_div(divs,
                parent,
                filesec,
@@ -777,134 +485,6 @@ def create_div(divs,
         parent.append(div_elem)
 
 
-def add_file_div(fptr,
-                 properties=None,
-                 type_attr='file',
-                 label=None):
-    """Create a div element with file properties
-
-    :param fptr: Element fptr for file
-    :param properties: Properties of the given file.
-    :param type_attr: The TYPE attribute value for the div
-    :param label: The LABEL attribute value for the div.
-    :returns: Div element with properties or None
-    """
-
-    if any((properties and 'order' in properties, label)):
-        div_el = mets.div(type_attr=type_attr,
-                          order=properties.get('order', None),
-                          label=label)
-        div_el.append(fptr)
-        return div_el
-
-    return None
-
-
-def get_file_properties(path, all_amd_refs, workspace):
-    """Return file properties from the json data file
-
-    :param path: File path
-    :param all_amd_refs: XML element tree of administrative metadata
-        references.
-    :param workspace: Workspace path
-    :returns: A dict with properties or None
-    """
-    json_name = None
-    for amdref in get_md_references(all_amd_refs, path=path):
-        json_name = os.path.join(workspace,
-                                 '{}-scraper.json'.format(amdref[1:]))
-        if os.path.isfile(json_name):
-            break
-
-    if json_name is None or not os.path.isfile(json_name):
-        return None
-    file_metadata_dict = load_scraper_json(json_name)
-
-    if 'properties' not in file_metadata_dict[0]:
-        return None
-
-    return file_metadata_dict[0]['properties']
-
-
-def add_fptrs_div_ead(c_div,
-                      hrefs,
-                      filegrp,
-                      all_amd_refs,
-                      object_refs,
-                      file_properties):
-    """Creates fptr elements for hrefs. If the files contain
-    file properties, like ordering data, the data is written to the
-    parent div element.
-    If file properties exist and the number of hrefs is more than one,
-    the hrefs need to be split into own div elements since the ORDER
-    attribute is at the div level.
-
-    :param c_div: The div element as lxml.etree
-    :param hrefs: a list of tuples (href, label)
-    :param filegrp: fileGrp element
-    :param all_amd_refs: XML element tree of administrative
-        metadata references.
-    :param object_refs: Object references.
-    :param file_properties: Dictionary collection of file properties.
-    :returns: The modified c_div element
-    """
-
-    for href, label in hrefs:
-        amd_file = None
-        for path in file_properties:
-            if href in path:
-                amd_file = path
-                break
-        # href strings that do not match any file don't add anything new
-        if not amd_file:
-            break
-
-        properties = file_properties[amd_file]
-        fileid = add_file_to_filesec(all_amd_refs=all_amd_refs,
-                                     object_refs=object_refs,
-                                     path=amd_file,
-                                     filegrp=filegrp,
-                                     properties=properties)
-        if fileid:
-            fptr = mets.fptr(fileid=fileid)
-
-        if any((properties and 'order' in properties, label)):
-
-            # Create new div elements for each fptr
-            file_div = add_file_div(fptr=fptr,
-                                    properties=properties,
-                                    type_attr='dao',
-                                    label=label)
-            c_div.append(file_div)
-        else:
-            c_div.append(fptr)
-
-    return c_div
-
-
-def collect_dao_hrefs(parent):
-    """Returns the href and label attribute values from ead3 dao elements.
-
-    :parent: EAD3 element XML as lxml.etree structure containing dao
-             children (can be either a c level or daoset element)
-    :returns: A list of hrefs in tuple (href, label)
-    """
-    hrefs = []
-
-    # The daos exist either directly under the parent element or within
-    # the did element, depending on the parent tag
-    xpath = './ead3:did/*'
-    if ET.QName(parent.tag).localname == 'daoset':
-        xpath = './*'
-
-    for elem in parent.xpath("%s" % xpath, namespaces=NAMESPACES):
-        if ET.QName(elem.tag).localname == 'dao':
-            hrefs.append((elem.xpath("./@href")[0].lstrip('/'),
-                          elem.get('label', None)))
-
-    return hrefs
-
-
 def _create_event(
         workspace='./workspace/',
         structmap_type=None,
@@ -944,69 +524,6 @@ def _create_event(
                                        % structmap_type),
                  workspace=workspace,
                  create_agent_file='compile-structmap-agents')
-
-
-def iter_supplementary(file_properties):
-    """Checks whether supplementary files exist in package and return
-    the supplementary type if it exists.
-
-    :param file_properties: Dictionary of file properties.
-    :returns: A tuple of supplementary files (dict) and supplementary
-        types (set).
-    """
-    supplementary_files = {}
-    supplementary_types = set()
-    for path in file_properties:
-        properties = file_properties[path]
-        try:
-            supplementary_type = properties['supplementary'][0]
-            supplementary_files[path] = supplementary_type
-            supplementary_types.add(supplementary_type)
-        except (TypeError, KeyError, IndexError):
-            pass
-
-    return supplementary_files, supplementary_types
-
-
-def _create_filegrp(file_ids,
-                    supplementary_files,
-                    all_amd_refs,
-                    object_refs,
-                    file_properties,
-                    supplementary_type=None):
-    """Creates a mets fileGrp.
-
-    :param file_ids: A dict of file paths and identifiers.
-    :param supplementary_files: Supplementary files.
-    :param all_amd_refs: XML element tree of administrative metadata
-        references.
-    :param object_refs: XML tree of digital objects.
-    :param supplementary_files: ID list of supplementary objects. Will be
-        populated if supplementary objects exist.
-    :param file_properties: Dictionary collection of file properties.
-    :param supplementary_type: Which supplementary type the files belong to.
-
-    :returns: A tuple of METS XML Element tree including file group
-              element and a dict of file paths and identifiers
-    """
-    use = None
-    collection = file_properties
-
-    if supplementary_type:
-        use = SUPPLEMENTARY_TYPES[supplementary_type]
-        collection = supplementary_files
-    filegrp = mets.filegrp(use=use)
-
-    for path in collection:
-        fileid = add_file_to_filesec(all_amd_refs=all_amd_refs,
-                                     object_refs=object_refs,
-                                     path=path,
-                                     filegrp=filegrp,
-                                     supplementary_type=supplementary_type,
-                                     properties=file_properties[path])
-        if fileid:
-            file_ids[path] = fileid
-    return filegrp, file_ids
 
 
 if __name__ == '__main__':

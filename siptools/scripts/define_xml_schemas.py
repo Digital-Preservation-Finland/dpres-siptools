@@ -128,8 +128,7 @@ def create_premis_representation(schemas):
         )
         dependencies.append(premis.dependency(
             names=[schemas[schema_ref]],
-            identifiers=[dependency_identifier])
-        )
+            identifiers=[dependency_identifier]))
 
     premis_environment = premis.environment(child_elements=dependencies)
 
