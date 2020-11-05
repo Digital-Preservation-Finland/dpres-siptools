@@ -8,8 +8,11 @@ from uuid import uuid4
 import click
 import six
 
+import lxml.etree as ET
+
 import premis
 from siptools.mdcreator import MetsSectionCreator
+from siptools.xml.mets import NAMESPACES
 
 
 click.disable_unicode_literals_warning = True
@@ -119,18 +122,25 @@ def create_premis_representation(schemas):
         identifier_type='UUID',
         identifier_value=six.text_type(uuid4())
     )
-    dependencies = []
+    child_elements = []
+
+    purpose = ET.Element(
+        '{%s}environmentPurpose' % NAMESPACES['premis'],
+        nsmap=NAMESPACES)
+    purpose.text = 'xml-schemas'
+    child_elements.append(purpose)
+
     for schema_ref in schemas:
         dependency_identifier = premis.identifier(
             identifier_type='URI',
             identifier_value=schema_ref,
             prefix='dependency'
         )
-        dependencies.append(premis.dependency(
+        child_elements.append(premis.dependency(
             names=[schemas[schema_ref]],
             identifiers=[dependency_identifier]))
 
-    premis_environment = premis.environment(child_elements=dependencies)
+    premis_environment = premis.environment(child_elements=child_elements)
 
     # Create object element
     el_premis_object = premis.object(

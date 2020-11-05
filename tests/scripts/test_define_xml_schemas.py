@@ -52,6 +52,8 @@ def test_define_xml_schemas_ok(testpath, run_cli):
                 'premis:representation')
     assert len(root.xpath('//premis:environment/premis:dependency',
                           namespaces=NAMESPACES)) == 2
+    assert root.xpath('//premis:environment/premis:environmentPurpose',
+                      namespaces=NAMESPACES)[0].text == 'xml-schemas'
     for dependency in root.xpath('//premis:environment/premis:dependency',
                                  namespaces=NAMESPACES):
         assert dependency.xpath('./premis:dependencyName',
