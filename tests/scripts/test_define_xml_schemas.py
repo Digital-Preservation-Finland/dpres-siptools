@@ -36,8 +36,8 @@ def test_define_xml_schemas_ok(testpath, run_cli):
     """
     input_file = 'tests/data/mets_valid_minimal.xml'
     arguments = ['--workspace', testpath,
-                 '--uri_pairs', 'myuri', input_file,
-                 '--uri_pairs', 'myuri2', input_file]
+                 '--uri_pairs', 'http://localhost/my-uri', input_file,
+                 '--uri_pairs', 'my-path', input_file]
     run_cli(define_xml_schemas.main, arguments)
 
     output = get_amd_file(testpath)
@@ -56,14 +56,19 @@ def test_define_xml_schemas_ok(testpath, run_cli):
                       namespaces=NAMESPACES)[0].text == 'xml-schemas'
     for dependency in root.xpath('//premis:environment/premis:dependency',
                                  namespaces=NAMESPACES):
-        assert dependency.xpath('./premis:dependencyName',
-                                namespaces=NAMESPACES)[0].text == input_file
+        assert dependency.xpath(
+            './premis:dependencyName',
+            namespaces=NAMESPACES)[0].text == 'file://%s' % input_file
+        id_value = dependency.xpath(
+            './premis:dependencyIdentifier/premis:dependencyIdentifierValue',
+            namespaces=NAMESPACES)[0].text
+        assert id_value in ['http://localhost/my-uri', 'my-path']
+        id_type = 'URI'
+        if id_value == 'my-path':
+            id_type = 'local'
         assert dependency.xpath(
             './premis:dependencyIdentifier/premis:dependencyIdentifierType',
-            namespaces=NAMESPACES)[0].text == 'URI'
-        assert dependency.xpath(
-            './premis:dependencyIdentifier/premis:dependencyIdentifierValue',
-            namespaces=NAMESPACES)[0].text in ['myuri', 'myuri2']
+            namespaces=NAMESPACES)[0].text == id_type
 
 
 def test_define_xml_schemas_base_path_ok(testpath, run_cli):

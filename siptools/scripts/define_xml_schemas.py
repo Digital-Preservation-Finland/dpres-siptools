@@ -10,6 +10,7 @@ import six
 
 import premis
 from siptools.mdcreator import MetsSectionCreator
+from siptools.utils import encode_path
 
 
 click.disable_unicode_literals_warning = True
@@ -122,13 +123,16 @@ def create_premis_representation(schemas):
     child_elements = []
 
     for schema_ref in schemas:
+        id_type = 'URI'
+        if six.moves.urllib.parse.urlparse(schema_ref).scheme == "":
+            id_type = 'local'
         dependency_identifier = premis.identifier(
-            identifier_type='URI',
+            identifier_type=id_type,
             identifier_value=schema_ref,
             prefix='dependency'
         )
         child_elements.append(premis.dependency(
-            names=[schemas[schema_ref]],
+            names=['file://%s' % encode_path(schemas[schema_ref], safe='/')],
             identifiers=[dependency_identifier]))
 
     premis_environment = premis.environment(purposes=['xml-schemas'],
