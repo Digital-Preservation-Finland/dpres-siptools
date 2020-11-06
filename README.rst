@@ -349,7 +349,7 @@ files. The script is given a pair of URI reference, corresponding to the schemaL
 or noNamespaceSchemaLocation value, and path to the schema file, as a relative path, by
 using the required ``--uri_pairs`` option::
 
-    define-xml-schemas --uri_pairs http://localhost/my_schema.xsd schemas/my_schema.xsd --workspace ./workspace
+    define-xml-schemas --uri_pairs http://localhost/my_schema.xsd file://schemas/my_schema.xsd --workspace ./workspace
 
 The ``--uri_pairs`` option is repeatable for all schemas to be included in the SIP.
 
