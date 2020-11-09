@@ -58,7 +58,7 @@ def test_define_xml_schemas_ok(testpath, run_cli):
                                  namespaces=NAMESPACES):
         assert dependency.xpath(
             './premis:dependencyName',
-            namespaces=NAMESPACES)[0].text == 'file://%s' % input_file
+            namespaces=NAMESPACES)[0].text == 'file:///%s' % input_file
         id_value = dependency.xpath(
             './premis:dependencyIdentifier/premis:dependencyIdentifierValue',
             namespaces=NAMESPACES)[0].text

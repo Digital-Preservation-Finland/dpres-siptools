@@ -132,7 +132,7 @@ def create_premis_representation(schemas):
             prefix='dependency'
         )
         child_elements.append(premis.dependency(
-            names=['file://%s' % encode_path(schemas[schema_ref], safe='/')],
+            names=['file:///%s' % encode_path(schemas[schema_ref], safe='/')],
             identifiers=[dependency_identifier]))
 
     premis_environment = premis.environment(purposes=['xml-schemas'],
