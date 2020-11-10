@@ -10,12 +10,18 @@ stages:
   - rpm-package
   - local-test
   - rpm-stable
-  - documentation
 
-rpm-package:
+rpm-package-rhel7:
   stage: rpm-package
   script:
     - 'rpm-package.sh'
+  except:
+    - master
+
+rpm-package-rhel8:
+  stage: rpm-package
+  script:
+    - 'rpm-package.sh rhel8'
   except:
     - master
 
@@ -81,16 +87,16 @@ e2e-localhost-siptools-research:
   except:
     - master
 
-rpm-stable:
+rpm-stable-rhel7:
   stage: rpm-stable
   script:
     - 'rpm-stable.sh'
   only:
     - tags
 
-documentation:
-  stage: documentation
+rpm-stable-rhel8:
+  stage: rpm-stable
   script:
-    - 'documentation.sh'
+    - 'rpm-stable.sh rhel8'
   only:
-    - develop
+    - tags
