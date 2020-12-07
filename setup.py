@@ -33,7 +33,7 @@ def main():
         version=get_version(),
         install_requires=[
             "lxml",
-            "scandir",
+            "scandir ; python_version == '2.7'",
             "file-magic",
             "pymediainfo",
             "wand>=0.5.1",

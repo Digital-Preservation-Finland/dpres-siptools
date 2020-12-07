@@ -1,7 +1,7 @@
 """Command line tool for creating METS document and copying files to workspace
 directory.
 """
-from __future__ import unicode_literals, print_function
+from __future__ import print_function, unicode_literals
 
 import datetime
 import os
@@ -9,16 +9,21 @@ import sys
 import uuid
 from shutil import copyfile
 
-import click
 import six
 
+import click
 import lxml.etree
 import mets
 import xml_helpers.utils as xml_utils
-from scandir import scandir
-from siptools.utils import read_md_references, get_objectlist
+from siptools.utils import get_objectlist, read_md_references
 from siptools.xml.mets import (METS_CATALOG, METS_PROFILE, METS_SPECIFICATION,
                                NAMESPACES, RECORD_STATUS_TYPES, mets_extend)
+
+try:
+    from scandir import scandir  # Python 2
+except ImportError:
+    from os import scandir  # Python 3+
+
 
 click.disable_unicode_literals_warning = True
 

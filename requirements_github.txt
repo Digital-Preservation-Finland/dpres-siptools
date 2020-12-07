@@ -2,7 +2,7 @@ pytest
 coverage
 pytest-cov
 lxml
-scandir
+scandir ; python_version == '2.7'
 file-magic
 wand>=0.5.1
 Pillow
