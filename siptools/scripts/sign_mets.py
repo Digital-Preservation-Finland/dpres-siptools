@@ -39,11 +39,11 @@ def sign_mets(sign_key, workspace="./workspace"):
     :sign_key: Signature key for signing
     :workspace: Workspace path
     """
-    signature_path = os.path.join(workspace, 'signature.sig')
     signature = dpres_signature.signature.create_signature(
-        signature_path, sign_key, ['mets.xml']
+        workspace, sign_key, ['mets.xml']
     )
 
+    signature_path = os.path.join(workspace, 'signature.sig')
     with open(signature_path, 'wb') as outfile:
         outfile.write(signature)
 
