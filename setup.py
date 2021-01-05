@@ -1,6 +1,4 @@
-"""
-Install siptools
-"""
+"""Install siptools."""
 
 import os
 from setuptools import setup, find_packages
@@ -8,7 +6,7 @@ from version import get_version
 
 
 def scripts_list():
-    """Return list of command line tools from package pas.scripts"""
+    """Return list of command line tools from package pas.scripts."""
     scripts = []
     for modulename in os.listdir('siptools/scripts'):
         if modulename == '__init__.py':
@@ -25,7 +23,7 @@ def scripts_list():
 
 
 def main():
-    """Install siptools"""
+    """Install siptools."""
     setup(
         name='siptools',
         packages=find_packages(exclude=['tests', 'tests.*']),
@@ -45,15 +43,18 @@ def main():
             "ffmpeg-python",
             "M2Crypto",
             "python-mimeparse",
-            'xml_helpers@git+https://gitlab.csc.fi/dpres/xml-helpers.git@develop',
-            'mets@git+https://gitlab.csc.fi/dpres/mets.git@develop',
-            'premis@git+https://gitlab.csc.fi/dpres/premis.git@develop',
-            'dpres_signature@git+https://gitlab.csc.fi/dpres/dpres-signature.git@develop',
-            'nisomix@git+https://gitlab.csc.fi/dpres/nisomix.git@develop',
-            'addml@git+https://gitlab.csc.fi/dpres/addml.git@develop',
-            'audiomd@git+https://gitlab.csc.fi/dpres/audiomd.git@develop',
-            'videomd@git+https://gitlab.csc.fi/dpres/videomd.git@develop',
-            'file_scraper@git+https://gitlab.csc.fi/dpres/file-scraper.git@develop'
+            'xml_helpers@git+https://gitlab.ci.csc.fi/dpres/'
+            'xml-helpers.git@develop',
+            'mets@git+https://gitlab.ci.csc.fi/dpres/mets.git@develop',
+            'premis@git+https://gitlab.ci.csc.fi/dpres/premis.git@develop',
+            'dpres_signature@git+https://gitlab.ci.csc.fi/dpres/'
+            'dpres-signature.git@develop',
+            'nisomix@git+https://gitlab.ci.csc.fi/dpres/nisomix.git@develop',
+            'addml@git+https://gitlab.ci.csc.fi/dpres/addml.git@develop',
+            'audiomd@git+https://gitlab.ci.csc.fi/dpres/audiomd.git@develop',
+            'videomd@git+https://gitlab.ci.csc.fi/dpres/videomd.git@develop',
+            'file_scraper@git+https://gitlab.ci.csc.fi/dpres/'
+            'file-scraper.git@develop'
         ],
         entry_points={'console_scripts': scripts_list()}
 

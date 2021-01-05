@@ -16,14 +16,14 @@ click
 M2Crypto
 python-mimeparse
 
-git+https://gitlab.csc.fi/dpres/xml-helpers.git@develop#egg=xml_helpers
-git+https://gitlab.csc.fi/dpres/mets.git@develop#egg=mets
-git+https://gitlab.csc.fi/dpres/premis.git@develop#egg=premis
-git+https://gitlab.csc.fi/dpres/dpres-signature.git@develop#egg=dpres_signature
-git+https://gitlab.csc.fi/dpres/nisomix.git@develop#egg=nisomix
-git+https://gitlab.csc.fi/dpres/addml.git@develop#egg=addml
-git+https://gitlab.csc.fi/dpres/audiomd.git@develop#egg=audiomd
-git+https://gitlab.csc.fi/dpres/videomd.git@develop#egg=videomd
-git+https://gitlab.csc.fi/dpres/file-scraper.git@develop#egg=file_scraper
-git+https://gitlab.csc.fi/dpres/ffmpeg-python.git#egg=ffmpeg_python
-git+https://gitlab.csc.fi/dpres/fido.git@develop#egg=opf_fido
+git+https://gitlab.ci.csc.fi/dpres/xml-helpers.git@develop#egg=xml_helpers
+git+https://gitlab.ci.csc.fi/dpres/mets.git@develop#egg=mets
+git+https://gitlab.ci.csc.fi/dpres/premis.git@develop#egg=premis
+git+https://gitlab.ci.csc.fi/dpres/dpres-signature.git@develop#egg=dpres_signature
+git+https://gitlab.ci.csc.fi/dpres/nisomix.git@develop#egg=nisomix
+git+https://gitlab.ci.csc.fi/dpres/addml.git@develop#egg=addml
+git+https://gitlab.ci.csc.fi/dpres/audiomd.git@develop#egg=audiomd
+git+https://gitlab.ci.csc.fi/dpres/videomd.git@develop#egg=videomd
+git+https://gitlab.ci.csc.fi/dpres/file-scraper.git@develop#egg=file_scraper
+git+https://gitlab.ci.csc.fi/dpres/ffmpeg-python.git#egg=ffmpeg_python
+git+https://gitlab.ci.csc.fi/dpres/fido.git@develop#egg=opf_fido
