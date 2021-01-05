@@ -80,7 +80,7 @@ e2e-localhost-archives:
 e2e-localhost-siptools-research:
   stage: local-test
   script:
-    - 'e2e-fairdata-localhost.sh dpres-research-rest-api'
+    - 'e2e-fairdata.sh dpres-research-rest-api e2e-localhost'
   except:
     - master
 
