@@ -4,6 +4,12 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.50:
+
+    * Build el8 rpms
+    * Remove unnecessary I/O in premis-event
+    * Adapt to changes in dpres_signature package
+
 Version 0.49:
 
     * Fixes to EAD3 based logical structmap creation
@@ -54,7 +60,7 @@ New features added in v0.45:
 
     The temporary pickle files created when importing digital objects have been
     replaced with json files.
-    
+
     The tool has been optimized for improved running time for large packages with
     several files.
 
