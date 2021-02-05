@@ -262,17 +262,15 @@ def add_fptrs_div_ead(c_div,
                                      properties=properties)
         if fileid:
             fptr = mets.fptr(fileid=fileid)
-
-        if any((properties and 'order' in properties, label)):
-
-            # Create new div elements for each fptr
-            file_div = add_file_div(fptr=fptr,
-                                    properties=properties,
-                                    type_attr='dao',
-                                    label=label)
-            c_div.append(file_div)
-        else:
-            c_div.append(fptr)
+            if any((properties and 'order' in properties, label)):
+                # Create new div elements for each fptr
+                file_div = add_file_div(fptr=fptr,
+                                        properties=properties,
+                                        type_attr='dao',
+                                        label=label)
+                c_div.append(file_div)
+            else:
+                c_div.append(fptr)
 
     return c_div
 
