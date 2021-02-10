@@ -13,7 +13,7 @@ from siptools.xml.mets import NAMESPACES
 
 def get_amd_file(path):
     """Get id"""
-    refs = read_md_references(path, 'define-xml-schemas-references.jsonl')
+    refs = read_md_references(path, 'define-xml-schemas-md-references.jsonl')
     reference = refs['.']
 
     amdrefs = reference['md_ids']

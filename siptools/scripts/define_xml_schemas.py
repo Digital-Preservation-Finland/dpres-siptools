@@ -96,7 +96,7 @@ class PremisCreator(MetsSectionCreator):
     def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3",
               othermdtype=None, section=None, stdout=False,
               file_metadata_dict=None,
-              ref_file="define-xml-schemas-references.jsonl"):
+              ref_file="define-xml-schemas-md-references.jsonl"):
         """
         Write PREMIS metadata.
         """

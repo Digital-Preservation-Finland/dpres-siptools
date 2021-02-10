@@ -324,7 +324,8 @@ def test_supplementary_file(testpath, run_cli):
 
     # Test that the representation object for xml-schemas is linked to the
     # structMap div with the ADMID
-    refs = read_md_references(testpath, 'define-xml-schemas-references.jsonl')
+    refs = read_md_references(
+        testpath, 'define-xml-schemas-md-references.jsonl')
     reference = refs[fsdecode_path('.')]
     amdref = reference['md_ids'][0]
 
