@@ -248,7 +248,7 @@ def test_native_file(testpath, run_cli):
         "[mets:FLocat/@xlink:href='file://tests/data/text-file.txt']/"
         "@USE",
         namespaces=NAMESPACES)[0] == \
-            "fi-prservation-no-file-format-validation"
+            "fi-preservation-no-file-format-validation"
 
 
 def test_supplementary_file(testpath, run_cli):
