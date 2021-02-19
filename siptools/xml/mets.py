@@ -46,13 +46,16 @@ METS_MDTYPES = {
         'mdtype': 'EAD', 'version': '2002'
     },
     'http://ead3.archivists.org/schema/': {
-        'mdtype': 'OTHER', 'othermdtype': 'EAD3', 'version': '1.1.0'
+        'mdtype': 'OTHER', 'othermdtype': 'EAD3', 'version': '1.1.1'
     },
     'urn:isbn:1-931666-33-4': {
         'mdtype': 'EAC', 'version': '2010_revised'
     },
     'http://www.lido-schema.org': {
         'mdtype': 'LIDO', 'version': '1.0'
+    },
+    'ddi:instance:3_3': {
+        'mdtype': 'DDI', 'version': '3.3'
     },
     'ddi:instance:3_2': {
         'mdtype': 'DDI', 'version': '3.2'
@@ -80,21 +83,22 @@ METS_MDTYPES = {
     },
     'http://www.loc.gov/videoMD/': {
         'mdtype': 'OTHER', 'othermdtype': 'VideoMD', 'version': '2.0'
+    },
+    'urn:ebu:metadata-schema:ebucore': {
+        'mdtype': 'OTHER', 'othermdtype': 'EBUCORE', 'version': '1.10'
     }
 }
 
 METS_PROFILE = {
     'ch': 'http://digitalpreservation.fi/mets-profiles/cultural-heritage',
     'tpas': 'http://digitalpreservation.fi/mets-profiles/research-data',
-    'tpas-medium-term': 'http://digitalpreservation.fi/mets-profiles/'
-                        'mediumterm-research-data'
 }
 
 METS_SCHEMA = 'http://digitalpreservation.fi/schemas/mets/mets.xsd'
 
-METS_CATALOG = "1.7.2"
+METS_CATALOG = "1.7.3"
 
-METS_SPECIFICATION = "1.7.2"
+METS_SPECIFICATION = "1.7.3"
 
 RECORD_STATUS_TYPES = [
     'submission',
