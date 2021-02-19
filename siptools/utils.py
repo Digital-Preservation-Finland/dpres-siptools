@@ -658,7 +658,7 @@ def add_file_to_filesec(all_amd_refs,
     use = None
     if properties:
         if 'bit_level' in properties and properties["bit_level"] == "native":
-            use = "no-file-format-validation"
+            use = "fi-preservation-no-file-format-validation"
 
         # Do not add supplementary files to normal file group and vice versa
         if all(('supplementary' in properties,
