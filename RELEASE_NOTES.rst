@@ -4,23 +4,26 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
-New features added in version 0.51:
+Version 0.51:
 
-    Support for local XML schemas used by XML files added:
+    * Change terms, metadata types and version numbers to meet specifications
+      1.7.3.
 
-    * define-xml-schemas
+    * Support for local XML schemas used by XML files added:
 
-        * This is a new script is added to support adding local XML schema files
-          to the SIP. It creates a premis representation type object containing
-          the mappings between schema URI references and the relative paths to
-          the local schema files.
+        * define-xml-schemas
 
-    * import-object
+            * This is a new script is added to support adding local XML schema
+              files to the SIP. It creates a premis representation type object
+              containing the mappings between schema URI references and the
+              relative paths to the local schema files.
 
-        * ``--supplementary`` option added, it is used to mark that an
-          object is a supplementary type, which will create a separate
-          mets fileGrp and structMap for the file(s). Currently, the only
-          supported value is "xml_schema".
+        * import-object
+
+            * ``--supplementary`` option added, it is used to mark that an
+              object is a supplementary type, which will create a separate
+              mets fileGrp and structMap for the file(s). Currently, the only
+              supported value is "xml_schema".
 
 Version 0.50:
 
