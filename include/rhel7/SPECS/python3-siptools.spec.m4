@@ -60,6 +60,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root,-)
+/usr/bin/*-3
 
 # TODO: For now changelog must be last, because it is generated automatically
 # from git log command. Appending should be fixed to happen only after %changelog macro
