@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.52:
+
+    * Build python3 rpms in el7.
+
 Version 0.51:
 
     * Change terms, metadata types and version numbers to meet specifications
