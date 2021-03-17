@@ -30,15 +30,6 @@ DEFAULT_VERSIONS = {
     'application/vnd.oasis.opendocument.presentation': '1.0',
     'application/vnd.oasis.opendocument.graphics': '1.0',
     'application/vnd.oasis.opendocument.formula': '1.0',
-    'application/vnd.openxmlformats-officedocument'
-    '.wordprocessingml.document': '15.0',
-    'application/vnd.openxmlformats-officedocument'
-    '.spreadsheetml.sheet': '15.0',
-    'application/vnd.openxmlformats-officedocument'
-    '.presentationml.presentation': '15.0',
-    'application/msword': '11.0',
-    'application/vnd.ms-excel': '11.0',
-    'application/vnd.ms-powerpoint': '11.0',
 }
 
 # For mimetypes that has no version applicable for them.
