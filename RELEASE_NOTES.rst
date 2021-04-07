@@ -4,6 +4,11 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.53:
+
+    * Use the MS Office version numbers returned by file-scraper instead of
+      hardcoded values
+
 Version 0.52:
 
     * Build python3 rpms in el7.
