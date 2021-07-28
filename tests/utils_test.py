@@ -3,15 +3,14 @@
 from __future__ import unicode_literals
 
 import pytest
-
 import lxml.etree
-import siptools.utils as utils
 from file_scraper.scraper import Scraper
+
+import siptools.utils as utils
 
 
 def test_encode_path():
     """Tests for the encode_path function."""
-
     encoded_path = utils.encode_path('tests/testpath')
     assert encoded_path == 'tests%2Ftestpath'
 
@@ -26,7 +25,6 @@ def test_encode_path():
 
 def test_decode_path():
     """Tests for the decode_path function."""
-
     decoded_path = utils.decode_path('tests%2Ftestpath')
     assert decoded_path == 'tests/testpath'
 
@@ -79,8 +77,7 @@ def test_hashing_attribute_order():
 
 
 def test_same_metadata_same_hash():
-    """Tests that same metadata produces the same digest.
-    """
+    """Tests that same metadata produces the same digest."""
     root = lxml.etree.parse(
         "tests/data/sample_md-references.xml").getroot()
     digest = utils.generate_digest(root)
@@ -112,13 +109,15 @@ def test_different_ids_same_hash():
 
     assert utils.generate_digest(xml1) == utils.generate_digest(xml2)
 
+
 def test_filescraper_error(monkeypatch):
-    """Test that file scraper error works if
-       message contains non-ascii characters"""
+    """Test that file scraper error works if message contains non-ascii
+    characters.
+    """
     # pylint: disable = unused-argument, missing-docstring
     def mock_scrape(self, check_wellformed=True):
         self.well_formed = False
-        self.info = {0:{'errors':["Testing åäö"]}}
+        self.info = {0: {'errors': ["Testing åäö"]}}
 
     monkeypatch.setattr(Scraper, 'scrape', mock_scrape)
 

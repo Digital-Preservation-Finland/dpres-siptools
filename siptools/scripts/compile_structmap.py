@@ -1,5 +1,6 @@
-""""Command line tool for creating the structural map and file section
-metadata for a METS document."""
+"""Command line tool for creating the structural map and file section
+metadata for a METS document.
+"""
 from __future__ import unicode_literals, print_function
 
 import os
@@ -63,7 +64,8 @@ def main(workspace, structmap_type, root_type, dmdsec_loc, stdout):
     """Tool for generating METS file section and structural map based on
     created/imported administrative metada and descriptive metadata.
     The script will also add order of the file to the structural map
-    (via json file), if --order argument was used in import_object script.
+    (via json file), if --order argument was used in import_object
+    script.
     """
     compile_structmap(workspace=workspace,
                       structmap_type=structmap_type,
@@ -92,7 +94,6 @@ def compile_structmap(workspace='./workspace/',
     :param dmdsec_loc: Location of structured descriptive metadata
     :param stdout: True to print output to stdout
     """
-
     # Create an event documenting the structmap creation
     _create_event(
         workspace=workspace,
@@ -201,7 +202,7 @@ def create_filesec(all_amd_refs,
                    supplementary_files,
                    supplementary_types):
     """
-    Creates METS document element tree that contains fileSec element.
+    Create METS document element tree that contains fileSec element.
 
     Supplementary files are put in a separate fileGrp and will populate
     the supplementary_files attribute when they are discovered.
@@ -217,7 +218,6 @@ def create_filesec(all_amd_refs,
     :returns: A tuple of METS XML Element including file section
               element and a dict of file paths and identifiers
     """
-
     child_elements = []
     file_ids = {}
     (filegrp, file_ids) = create_filegrp(
@@ -259,7 +259,7 @@ def create_structmap(filesec,
                      workspace,
                      root_type='directory'):
     """
-    Creates METS document element tree that contains structural map.
+    Create METS document element tree that contains structural map.
 
     :param filesec: fileSec element
     :param all_amd_refs: XML element tree of administrative metadata
@@ -270,13 +270,13 @@ def create_structmap(filesec,
         Will be created if missing.
     :param supplementary_files: ID list of supplementary objects.
     :param supplementary_types: Supplementary types.
-    :param structmap_type: TYPE attribute of structMap element If missing,
-        default value is None.
+    :param structmap_type: TYPE attribute of structMap element If
+                           missing, default value is None.
     :param file_ids: Dict with file paths and identifiers. Required by
         create_div(). Will be computed if missing.
     :param file_properties: Dictionary collection of file properties.
-    :param workspace: Workspace path, required by create_div(). If missing,
-        default value is "./workspace/".
+    :param workspace: Workspace path, required by create_div(). If
+                      missing, default value is "./workspace/".
     :param root_type: TYPE attribute of root div element. If missing,
         default value is "directory".
     :returns: structural map element
@@ -342,8 +342,8 @@ def div_structure(filelist,
     divs = tree()
     if is_supplementary:
         for supplementary_type in supplementary_types:
-            # Supplementary structure is flat, but with one div surrounding the
-            # files
+            # Supplementary structure is flat, but with one div
+            # surrounding the files
             root_div = divs[SUPPLEMENTARY_TYPES[supplementary_type]]
             for amd_file in supplementary_files:
                 if supplementary_files[amd_file] == supplementary_type:
@@ -351,14 +351,17 @@ def div_structure(filelist,
     else:
         # Directory based structure is like a directory tree
         for amd_file in filelist:
-            # Do not add supplementary files to the directory based strictmap
+            # Do not add supplementary files to the directory based
+            # structmap
             if amd_file not in supplementary_files:
                 add(divs, amd_file.split('/'))
     return divs
 
 
 def get_fileid(filesec, path, file_ids=None):
-    """Returns the ID for a file. Either finds a file with `path` from
+    """Return the ID for a file.
+
+    Either finds a file with `path` from
     fileSec or reads the ID from a dict of `path` and `ID`. Returns the
     ID attribute of the matching file element.
 
@@ -400,7 +403,8 @@ def create_div(divs,
     """Recursively create fileSec and structmap divs based on directory
     structure.
 
-    :param divs: Current directory or file in directory structure walkthrough
+    :param divs: Current directory or file in directory structure
+                 walkthrough
     :param parent: Parent element in structMap
     :param filesec: filesec element
     :param all_amd_refs: XML element tree of administrative metadata

@@ -1,5 +1,5 @@
 # encoding: utf-8
-"""Unit tests for ``siptools.scripts.import_object`` module"""
+"""Unit tests for ``siptools.scripts.import_object`` module."""
 from __future__ import unicode_literals
 
 import datetime
@@ -21,7 +21,7 @@ def get_amd_file(path,
                  stream=None,
                  ref_file='import-object-md-references.jsonl',
                  suffix='-PREMIS%3AOBJECT-amd.xml'):
-    """Get id"""
+    """Get id."""
     refs = read_md_references(path, ref_file)
     reference = refs[fsdecode_path(input_file)]
 
@@ -157,7 +157,9 @@ def test_import_object_structured_ok(testpath, run_cli):
 
 # pylint: disable=invalid-name
 def test_import_object_multiple(testpath, run_cli):
-    """Tests that mport object works for multiple files when filepaths
+    """Test importing directory.
+
+    Tests that import object works for multiple files when filepath
     is a directory. The test asserts that an equal amount of premis
     object metadata files have been created to the amount of imported
     files. The test also checks that the numer of links in the reference
@@ -180,7 +182,7 @@ def test_import_object_multiple(testpath, run_cli):
 
 
 def test_import_object_order(testpath, run_cli):
-    """Test file order"""
+    """Test file order."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  '--order', '5', input_file]
@@ -196,7 +198,7 @@ def test_import_object_order(testpath, run_cli):
 
 
 def test_import_object_native(testpath, run_cli):
-    """Test importing native file"""
+    """Test importing native file."""
     input_file = "tests/data/structured/Documentation files/readme.txt"
     arguments = ["--workspace", testpath,
                  "--file_format", "foo_format", "0.0",
@@ -220,7 +222,7 @@ def test_import_object_native(testpath, run_cli):
 
 
 def test_import_object_supplementary(testpath, run_cli):
-    """Test importing supplementary file"""
+    """Test importing supplementary file."""
     input_file = "tests/data/structured/Documentation files/readme.txt"
     arguments = ["--workspace", testpath,
                  "--supplementary", "xml_schema", input_file]
@@ -243,7 +245,7 @@ def test_native_missing_format(run_cli):
 
 
 def test_import_object_identifier(testpath, run_cli):
-    """Test digital object identifier argument"""
+    """Test digital object identifier argument."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  '--identifier', 'local', 'test-id', input_file]
@@ -261,7 +263,7 @@ def test_import_object_identifier(testpath, run_cli):
 
 # pylint: disable=invalid-name
 def test_import_object_format_registry(testpath, run_cli):
-    """Test digital object format registry argument"""
+    """Test digital object format registry argument."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'
     arguments = ['--workspace', testpath, '--skip_wellformed_check',
                  '--format_registry', 'local', 'test-key', input_file]
@@ -278,15 +280,17 @@ def test_import_object_format_registry(testpath, run_cli):
 
 
 def test_import_object_utf8(testpath, run_cli):
-    """Test importing works for file that:
+    """Test that import_object supports utf-8.
+
+    Test that importing works for file that:
 
     * is a utf-8 encoded text file
     * has utf-8 encoded filename
     * is in utf-8 encoded directory
 
-    import_object.main should create TechMD-file with utf8-encoded filename.
+    import_object.main should create TechMD-file with utf8-encoded
+    filename.
     """
-
     # Create directory that contains one file
     utf8_directory = os.path.join(testpath, 'directory Ä')
     os.mkdir(utf8_directory)
@@ -342,12 +346,14 @@ def test_import_object_utf8(testpath, run_cli):
 def test_import_object_cases(testpath, input_file, expected_mimetype,
                              expected_version, case_name, run_cli):
     """Test the import_object tool function when run as terminal client.
+
     In addition to getting the metadata, we're also validating.
 
     :param expected_version: Depending on the type of value provided,
         comparison logic differs for version comparison:
             - string: exact match is expected.
-            - tuple: premis version must match any of the value provided.
+            - tuple: premis version must match any of the value
+              provided.
             - None: premis version must be a falsy value.
     """
     _ = case_name
@@ -413,7 +419,8 @@ def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
     :param expected_version: Depending on the type of value provided,
         comparison logic differs for version comparison:
             - string: exact match is expected.
-            - tuple: premis version must match any of the value provided.
+            - tuple: premis version must match any of the value
+              provided.
             - None: premis version must be a falsy value.
     """
     _ = case_name
@@ -443,8 +450,10 @@ def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
 
 
 def test_import_object_fail(run_cli):
-    """Test that import_object.main raises error if target file does not
-    exist
+    """Test importing missing file.
+
+    Test that import_object.main raises error if target file does not
+    exist.
     """
     result = run_cli(
         import_object.main, ['tests/data/missing-file'],
@@ -461,8 +470,9 @@ def iterate_files(path):
 
 
 def test_streams(testpath, run_cli):
-    """Test with streams, the test file contains one video and one audio
-       stream.
+    """Test importing file with streams.
+
+    The test file contains one video and one audio stream.
     """
     input_file = 'tests/data/video/valid__h264_aac.mp4'
     arguments = ['--workspace', testpath, '--skip_wellformed_check',
@@ -529,7 +539,7 @@ def test_import_object_event_agent(
         checksum,
         skip_wellformed_check,
         count_events):
-    """ Test that the script import_object creates events and
+    """Test that the script import_object creates events and
     agents with the proper metadata.
     """
     input_file = 'tests/data/structured/Documentation files/readme.txt'
@@ -553,8 +563,8 @@ def test_import_object_event_agent(
         ref_file='premis-event-md-references.jsonl',
         suffix='-PREMIS%3AEVENT-amd.xml')
 
-    # Allow only part of values in the lists based on the number of different
-    # events created
+    # Allow only part of values in the lists based on the number of
+    # different events created
     allowed_types = ['metadata extraction',
                      'format identification',
                      'message digest calculation',

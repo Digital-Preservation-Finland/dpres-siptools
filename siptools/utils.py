@@ -1,6 +1,4 @@
-"""
-Utilities for siptools
-"""
+"""Utilities for siptools."""
 from __future__ import unicode_literals, print_function
 
 import copy
@@ -62,7 +60,8 @@ def load_scraper_json(json_name):
 
 
 def read_json_streams(filerel, workspace):
-    """
+    """Read metadata of digital object.
+
     Find out JSON file name from references and read it as
     metadata dict of streams.
 
@@ -100,7 +99,8 @@ def read_json_streams(filerel, workspace):
 def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
                 version=None, charset=None, skip_well_check=False,
                 skip_json=False):
-    """
+    """Generate technical metadata for file.
+
     Return already existing scraping result or create a new one, if
     missing.
 
@@ -135,11 +135,11 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
         error_str = ensure_str(error_str)
         if skip_well_check:
             error_head = ensure_str(
-                "Metadata of file %s could not " \
+                "Metadata of file %s could not "
                 "be collected due to errors.\n") % ensure_str(filepath)
             error_str = error_head + error_str
-        # Ensure exception is printed in full on both Python 2 & 3 by coercing
-        # to 'str'
+        # Ensure exception is printed in full on both Python 2 & 3 by
+        # coercing to 'str'
         raise ValueError(error_str)
 
     if scraper.info[0]['class'] == 'FileExists' and scraper.info[0]['errors']:
@@ -150,10 +150,12 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
 
     return (scraper.streams, scraper.info)
 
+
 # Adaptation of ensure_str function from version 1.15 of six,
 # included for compatibility with older six versions
-def ensure_str(s, encoding='utf-8', errors='strict'):
-    """Coerce *s* to `str`.
+def ensure_str(string, encoding='utf-8', errors='strict'):
+    """Coerce *string* to `str`.
+
     For Python 2:
       - `unicode` -> encoded to `str`
       - `str` -> `str`
@@ -164,6 +166,7 @@ def ensure_str(s, encoding='utf-8', errors='strict'):
     Adapted from release 1.15 of six::
         https://github.com/benjaminp/six/blob/master/six.py#L900
 
+    :string: string
     :encoding: Used encoding
     :errors: Error handling level
     """
@@ -174,18 +177,20 @@ def ensure_str(s, encoding='utf-8', errors='strict'):
         text_type = unicode
         binary_type = str
 
-    if type(s) is str:
-        return s
-    if six.PY2 and isinstance(s, text_type):
-        return s.encode(encoding, errors)
-    elif six.PY3 and isinstance(s, binary_type):
-        return s.decode(encoding, errors)
-    elif not isinstance(s, (text_type, binary_type)):
-        raise TypeError("not expecting type '%s'" % type(s))
-    return s
+    if isinstance(string, str):
+        return string
+    if six.PY2 and isinstance(string, text_type):
+        return string.encode(encoding, errors)
+    if six.PY3 and isinstance(string, binary_type):
+        return string.decode(encoding, errors)
+    if not isinstance(string, (text_type, binary_type)):
+        raise TypeError("not expecting type '%s'" % type(string))
+    return string
+
 
 def fix_missing_metadata(streams, filename, allow_unav, allow_zero):
-    """
+    """Complement missing file stream metadata.
+
     If an element is none, use value (:unav) if allowed in the
     specifications. Otherwise raise exception.
 
@@ -257,7 +262,7 @@ def fsencode_path(filename):
     """
     if isinstance(filename, six.text_type):
         return filename.encode(encoding=sys.getfilesystemencoding())
-    elif isinstance(filename, six.binary_type):
+    if isinstance(filename, six.binary_type):
         return filename
 
     raise TypeError("Value is not a (byte) string")
@@ -273,7 +278,7 @@ def fsdecode_path(filename):
     """
     if isinstance(filename, six.binary_type):
         return filename.decode(encoding=sys.getfilesystemencoding())
-    elif isinstance(filename, six.text_type):
+    if isinstance(filename, six.text_type):
         return filename
 
     raise TypeError("Value is not a (byte) string")
@@ -290,9 +295,10 @@ def encode_id(text):
 
 
 def tree():
-    """
-    Tree dictionary data structure from
-    https://gist.github.com/hrldcpr/2012250
+    """Create tree dictionary data structure.
+
+    Tree is a dict whose default values are trees. See
+    https://gist.github.com/hrldcpr/2012250 for more information.
 
     :returns: Tree dictionary data structure
     """
@@ -316,8 +322,7 @@ def add(treedict, path):
 
 
 def copy_etree(etree):
-    """
-    Copies etree recursively.
+    """Copy etree recursively.
 
     :etree: Tree to copy.
     :returns: New identical etree.
@@ -341,7 +346,7 @@ def _pop_attributes(attributes, attrib_list, path):
 
 def _remove_elements(metadata, element_name):
     """
-    Removes the unique elements like identifiers and the linking
+    Remove the unique elements like identifiers and the linking
     agents for the PREMIS XML metadata.
 
     :metadata: Metadata where identifiers and linking elements are
@@ -357,30 +362,32 @@ def _remove_elements(metadata, element_name):
 
 
 def generate_digest(etree):
-    """Generating MD5 digest from etree. Identical metadata must generate
-    same digest even if attributes of any given element are ordered
-    differently. Also some metadata sections contain unique identifiers
-    that have to be removed if digest comparison is to work.
+    """Generate MD5 digest from etree.
 
-    This function creates a copy of the etree. All the attributes of the copy
-    are removed and collected to a separete list with path information to the
-    XML element the attributes belong to. This list is sorted and appended
-    to the end of the serialized XML string without the attributes. Thus
-    creating a string with all the original information except the information
-    about attribute ordering inside any given XML element. This string is
-    hashed and the digest returned. For some PREMIS metadata identifiers are
-    also removed.
+    Identical metadata must
+    generate same digest even if attributes of any given element are
+    ordered differently. Also some metadata sections contain unique
+    identifiers that have to be removed if digest comparison is to work.
+
+    This function creates a copy of the etree. All the attributes of the
+    copy are removed and collected to a separete list with path
+    information to the XML element the attributes belong to. This list
+    is sorted and appended to the end of the serialized XML string
+    without the attributes. Thus creating a string with all the original
+    information except the information about attribute ordering inside
+    any given XML element. This string is hashed and the digest
+    returned. For some PREMIS metadata identifiers are also removed.
 
     :etree: XML element for which the MD5 hash is generated
     :returns: MD5 hash
     """
-
     # Creating copy of the original etree to avoid editing it
     root = copy_etree(etree)
     elem_tree = lxml.etree.ElementTree(root)
     attrib_list = []
 
-    # Remove premis identifiers and linking elements before metadata comparison
+    # Remove premis identifiers and linking elements before metadata
+    # comparison
     elem_tree = _remove_elements(elem_tree, 'eventIdentifierValue')
     elem_tree = _remove_elements(elem_tree, 'agentIdentifierValue')
     elem_tree = _remove_elements(elem_tree, 'linkingAgentIdentifier')
@@ -412,12 +419,12 @@ def list2str(lst):
 
 
 def read_md_references(workspace, ref_file):
-    """If MD reference file exists in workspace, read
-    all the MD IDs as a dictionary.
+    """Read all the MD IDs as a dictionary.
 
     :workspace: path to workspace directory
     :ref_file: Metadata reference file
-    :returns: A dict of references or None if reference file doesn't exist
+    :returns: A dict of references or None if reference file doesn't
+              exist
     """
     reference_file = os.path.join(workspace, ref_file)
 
@@ -431,8 +438,9 @@ def read_md_references(workspace, ref_file):
 
 
 def get_objectlist(refs_dict, file_path=None):
-    """Get unique and sorted list of files or streams from
-    md-references.jsonl
+    """Get unique and sorted list of files or streams.
+
+    Files or streasm are read from md-references.jsonl
 
     :refs_dict: Dictionary of objects
     :file_path: If given, finds streams of the given file.
@@ -452,8 +460,7 @@ def get_objectlist(refs_dict, file_path=None):
 
 
 def remove_dmdsec_references(workspace):
-    """
-    Removes the reference to the dmdSecs in the md-references.jsonl file.
+    """Remove the  md-references.jsonl file.
 
     :workspace: Workspace path
     """
@@ -498,8 +505,8 @@ def read_all_amd_references(workspace):
 
 
 def get_md_references(refs_dict, path=None, stream=None, directory=None):
-    """
-    Return filtered references from a set of given references.
+    """Return filtered references from a set of given references.
+
     :refs_dict: Dictionary of references to be filtered
     :path: Filter by given file path
     :stream: Filter by given strean index
@@ -531,8 +538,8 @@ def get_md_references(refs_dict, path=None, stream=None, directory=None):
 
 
 def read_object_id(path, workspace):
-    """
-    Find PREMIS Object ID of a given file.
+    """Find PREMIS Object ID of a given file.
+
     :path: Path of file related to current path or base path.
     :workspace: Workspace path
     :returns: Tuple of ID type and value
@@ -547,7 +554,7 @@ def read_object_id(path, workspace):
 
 
 def get_file_properties(path, all_amd_refs, workspace):
-    """Return file properties from the json data file
+    """Return file properties from the json data file.
 
     :param path: File path
     :param all_amd_refs: XML element tree of administrative metadata
@@ -582,7 +589,8 @@ def get_reference_lists(workspace):
         - all_dmd_refs: All descriptive metadata references.
         - object_refs: XML tree of digital objects.
         - filelist: ID list of objects.
-        - file_properties: Properties of all the files discvoered in filelist.
+        - file_properties: Properties of all the files discvoered in
+                           filelist.
     """
     object_refs = read_md_references(workspace,
                                      "import-object-md-references.jsonl")
@@ -591,7 +599,8 @@ def get_reference_lists(workspace):
     all_dmd_refs = read_md_references(workspace,
                                       "import-description-md-references.jsonl")
 
-    # Get file properties for all the files after fetching reference lists.
+    # Get file properties for all the files after fetching reference
+    # lists.
     file_properties = {}
     for path in filelist:
         file_properties[path] = get_file_properties(path=path,
@@ -605,7 +614,7 @@ def get_reference_lists(workspace):
 
 
 def iter_supplementary(file_properties):
-    """Checks whether supplementary files exist in package and return
+    """Check whether supplementary files exist in package and return
     the supplementary type if it exists.
 
     :param file_properties: Dictionary of file properties.
@@ -647,7 +656,8 @@ def add_file_to_filesec(all_amd_refs,
     :param path: url encoded path of the file
     :param filegrp: fileGrp element
     :param properties: Properties for single file.
-    :param supplementary_type: Which supplementary type the files belong to.
+    :param supplementary_type: Which supplementary type the files belong
+                               to.
     :returns: unique identifier of file element
     """
     fileid = '_{}'.format(uuid4())
@@ -660,15 +670,16 @@ def add_file_to_filesec(all_amd_refs,
         if 'bit_level' in properties and properties["bit_level"] == "native":
             use = "fi-preservation-no-file-format-validation"
 
-        # Do not add supplementary files to normal file group and vice versa
+        # Do not add supplementary files to normal file group and vice
+        # versa
         if all(('supplementary' in properties,
                 properties['supplementary'],
                 not supplementary_type)):
             return None
-        elif all(('supplementary' in properties,
-                  properties['supplementary'],
-                  supplementary_type)):
-            if not supplementary_type in properties['supplementary']:
+        if all(('supplementary' in properties,
+                properties['supplementary'],
+                supplementary_type)):
+            if supplementary_type not in properties['supplementary']:
                 return None
 
     # Create XML element and add it to fileGrp
@@ -700,7 +711,7 @@ def add_file_div(fptr,
                  properties=None,
                  type_attr='file',
                  label=None):
-    """Create a div element with file properties
+    """Create a div element with file properties.
 
     :param fptr: Element fptr for file
     :param properties: Properties of the given file.
@@ -708,7 +719,6 @@ def add_file_div(fptr,
     :param label: The LABEL attribute value for the div.
     :returns: Div element with properties or None
     """
-
     if any((properties and 'order' in properties, label)):
         div_el = mets.div(type_attr=type_attr,
                           order=properties.get('order', None),
@@ -725,18 +735,19 @@ def create_filegrp(file_ids,
                    object_refs,
                    file_properties,
                    supplementary_type=None):
-    """Creates a mets fileGrp.
+    """Create a mets fileGrp.
 
     :param file_ids: A dict of file paths and identifiers.
     :param supplementary_files: Supplementary files.
     :param all_amd_refs: XML element tree of administrative metadata
-        references.
+                         references.
     :param object_refs: XML tree of digital objects.
-    :param supplementary_files: ID list of supplementary objects. Will be
-        populated if supplementary objects exist.
+    :param supplementary_files: ID list of supplementary objects. Will
+                                be populated if supplementary objects
+                                exist.
     :param file_properties: Dictionary collection of file properties.
-    :param supplementary_type: Which supplementary type the files belong to.
-
+    :param supplementary_type: Which supplementary type the files belong
+                               to.
     :returns: A tuple of METS XML Element tree including file group
               element and a dict of file paths and identifiers
     """

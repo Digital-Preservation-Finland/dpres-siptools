@@ -1,4 +1,4 @@
-"""Command line tool for importing digital objects"""
+"""Command line tool for importing digital objects."""
 from __future__ import unicode_literals
 
 import datetime
@@ -109,15 +109,16 @@ SUPPLEMENTARY_TYPES = ["xml_schema"]
          'multiple times, but currently only "xml_schema" type is supported.')
 # pylint: disable=too-many-arguments
 def main(**kwargs):
-    """Import files to generate digital objects. If attributes --charset,
-    --file_format, --identifier, --checksum or --date_created are not given,
-    then these are created automatically.
+    """Import files to generate digital objects.
 
-    FILEPATHS: Files or a directory to import, relative path in relation to
-    current directory or to --base_path. It depends on your attributes whether
-    you may give several files or a single file. For example --checksum and
-    --identifier are file dependent metadata, and if these are used, then use
-    the script only for one file.
+    If attributes --charset, --file_format, --identifier, --checksum or
+    --date_created are not given, then these are created automatically.
+
+    FILEPATHS: Files or a directory to import, relative path in relation
+    to current directory or to --base_path. It depends on your
+    attributes whether you may give several files or a single file. For
+    example --checksum and --identifier are file dependent metadata, and
+    if these are used, then use the script only for one file.
     """
     import_object(**kwargs)
     return 0
@@ -161,26 +162,29 @@ def _attribute_values(given_params):
 
 
 def import_object(**kwargs):
-    """Import files to generate digital objects. If attributes charset,
-    file_format, identifier, checksum or date_created are not given,
-    then these are created automatically.
+    """Import files to generate digital objects.
+
+    If attributes charset, file_format, identifier, checksum or
+    date_created are not given, then these are created automatically.
 
     :attributes: Given arguments
                  filepaths: Files or a directory to import
                  workspace: Workspace path
                  base_path: Base path of digital objects
-                 skip_wellformed_check: True skips well-formedness checking
-                 charset: Character encoding of a file,
-                 file_format: File format and version (tuple) of a file,
-                 format_registry: Format registry name and value (tuple),
-                 identifier: File identifier type and value (tuple),
-                 checksum: Checksum algorithm and value (tuple),
-                 date_created: Creation date of a file,
-                 order: Order number of a file,
+                 skip_wellformed_check: True skips well-formedness
+                                        checking
+                 charset: Character encoding of a file
+                 file_format: File format and version (tuple) of a file
+                 format_registry: Format registry name and value (tuple)
+                 identifier: File identifier type and value (tuple)
+                 checksum: Checksum algorithm and value (tuple)
+                 date_created: Creation date of a file
+                 order: Order number of a file
                  event_datetime: Timestamp of the event
                  event_target: The target of the event
                  stdout: True prints output to stdout
-                 bit_level: Object status for only bit-level preservation.
+                 bit_level: Object status for only bit-level
+                            preservation
                  supplementary: Object type for supplementary files
     """
     attributes = _attribute_values(kwargs)
@@ -192,9 +196,10 @@ def import_object(**kwargs):
     for filepath in files:
 
         # If the given path is an absolute path and base_path is current
-        # path (i.e. not given), relpath will return ../../.. sequences, if
-        # current path is not part of the absolute path. In such case we will
-        # use the absolute path for filerel and omit base_path relation.
+        # path (i.e. not given), relpath will return ../../.. sequences,
+        # if current path is not part of the absolute path. In such case
+        # we will use the absolute path for filerel and omit base_path
+        # relation.
         if attributes["base_path"] not in ['.']:
             filerel = os.path.relpath(filepath, attributes["base_path"])
         else:
@@ -228,27 +233,31 @@ def import_object(**kwargs):
 
 
 class PremisCreator(MetsSectionCreator):
-    """Subclass of MetsSectionCreator, which generates PREMIS metadata
-    for files and streams.
-    """
+    """PREMIS metadata generator for files and streams."""
 
     def add_premis_md(
             self, filepath, attributes, filerel=None, properties=None):
         """
-        Create metadata for PREMIS metadata. This method:
+        Create metadata for PREMIS metadata.
+
+        This method:
         - Scrapes a file
         - Creates PREMIS metadata with amd references for a file
-        - Creates PREMIS metadata with amd references for streams in a file
+        - Creates PREMIS metadata with amd references for streams in a
+          file
         - Returns stream dict from scraper
 
         :filepath: Full path to file (including base_path)
         :attributes: The following keys
-                     skip_wellformed_check: True skips well-formedness checking
-                     charset: Character encoding of a file,
-                     file_format: File format and version (tuple) of a file,
-                     format_registry: Format registry name and value (tuple),
-                     identifier: File identifier type and value (tuple),
-                     checksum: Checksum algorithm and value (tuple),
+                     skip_wellformed_check: True skips well-formedness
+                                            checking
+                     charset: Character encoding of a file
+                     file_format: File format and version (tuple) of a
+                                  file
+                     format_registry: Format registry name and value
+                                      (tuple)
+                     identifier: File identifier type and value (tuple)
+                     checksum: Checksum algorithm and value (tuple)
                      date_created: Creation date of a file
         :filerel: Relative path from base_path to file
         :returns: Stream dict and info dict from file-scraper as a tuple
@@ -276,7 +285,8 @@ class PremisCreator(MetsSectionCreator):
                            "version": version}}
             info = {}
 
-        # Add new properties of a file for other script files, e.g. structMap
+        # Add new properties of a file for other script files, e.g.
+        # structMap
         if properties:
             streams[0]['properties'] = properties
 
@@ -296,9 +306,7 @@ class PremisCreator(MetsSectionCreator):
               othermdtype=None, section=None, stdout=False,
               file_metadata_dict=None,
               ref_file="import-object-md-references.jsonl"):
-        """
-        Write PREMIS metadata.
-        """
+        """Write PREMIS metadata."""
         super(PremisCreator, self).write(
             mdtype=mdtype, mdtypeversion=mdtypeversion,
             file_metadata_dict=file_metadata_dict, ref_file=ref_file
@@ -306,7 +314,7 @@ class PremisCreator(MetsSectionCreator):
 
 
 def create_streams(streams, premis_file):
-    """Create PREMIS objects for streams
+    """Create PREMIS objects for streams.
 
     :streams: Stream dict
     :premis_file: Created PREMIS XML file for the digital object file
@@ -341,7 +349,8 @@ def create_streams(streams, premis_file):
 
 
 def check_metadata(mimetype, version, streams, fname):
-    """
+    """Validate metadata.
+
     Check that we will not get None nor (:unav) values to mimetype and
     version. Check that multiple streams are found and found only in
     video containers.
@@ -362,8 +371,7 @@ def check_metadata(mimetype, version, streams, fname):
             len(streams) > 1:
         raise ValueError('The file contains multiple streams which '
                          'is supported only for video containers.')
-    elif streams[0]['stream_type'] in ['videocontainer'] and \
-            len(streams) < 2:
+    if streams[0]['stream_type'] in ['videocontainer'] and len(streams) < 2:
         raise ValueError('Video container format without contained streams '
                          'found.')
 
@@ -376,11 +384,11 @@ def create_premis_object(fname, streams, **attributes):
     :fname: File name of the digital object
     :streams: Streams from the Scraper
     :attributes: The following keys:
-                 charset: Character encoding of a file,
-                 file_format: File format and version (tuple) of a file,
-                 format_registry: Format registry name and value (tuple),
-                 identifier: File identifier type and value (tuple),
-                 checksum: Checksum algorithm and value (tuple),
+                 charset: Character encoding of a file
+                 file_format: File format and version (tuple) of a file
+                 format_registry: Format registry name and value (tuple)
+                 identifier: File identifier type and value (tuple)
+                 checksum: Checksum algorithm and value (tuple)
                  date_created: Creation date of a file
     :returns: PREMIS object as etree
     :raises: ValueError if character set is invalid for text files.
@@ -480,7 +488,8 @@ def collect_filepaths(dirs=None, pattern='*', base='.'):
 
 
 def creation_date(path_to_file):
-    """
+    """Return creation date for file.
+
     Try to get the date that a file was created, falling back to when it
     was last modified if that isn't possible.  See
     http://stackoverflow.com/a/39501288/1709587 for explanation.
@@ -491,15 +500,15 @@ def creation_date(path_to_file):
     if platform.system() == 'Windows':
         return datetime.datetime.fromtimestamp(
             os.path.getctime(path_to_file)).isoformat()
-    else:
-        stat = os.stat(path_to_file)
-        try:
-            return datetime.datetime.fromtimestamp(
-                stat.st_birthtime).isoformat()
-        except AttributeError:
-            # We're probably on Linux. No easy way to get creation dates here,
-            # so we'll settle for when its content was last modified.
-            return datetime.datetime.fromtimestamp(stat.st_mtime).isoformat()
+
+    stat = os.stat(path_to_file)
+    try:
+        return datetime.datetime.fromtimestamp(
+            stat.st_birthtime).isoformat()
+    except AttributeError:
+        # We're probably on Linux. No easy way to get creation dates
+        # here, so we'll settle for when its content was last modified.
+        return datetime.datetime.fromtimestamp(stat.st_mtime).isoformat()
 
 
 def _parse_scraper_tools(scraper_info):
@@ -599,7 +608,8 @@ def _create_events(
                                      'for digital object(s).')},
     }
 
-    # Do not create events for steps that haven't been performed by the script
+    # Do not create events for steps that haven't been performed by the
+    # script
     if not identification_event:
         del events['identification']
     if not validation_event:

@@ -317,7 +317,7 @@ class MetsSectionCreator(object):
         :othermdtype (string): Value of mdWrap OTHERMDTYPE attribute
         :section (string): lxml.etree section type
         :stdout (boolean): Print also to stdout
-        :file_metadat_dict (dict): File metadata dict
+        :file_metadata_dict (dict): File metadata dict
         :ref_file (string): Reference file name
         """
         # Write lxml.etree XML and append self.references

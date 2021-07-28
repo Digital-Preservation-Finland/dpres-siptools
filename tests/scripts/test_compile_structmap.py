@@ -137,7 +137,6 @@ def test_othermd_references(testpath, run_cli):
     files, and aMD reference file for three image files. Two of the images
     are similar and therefore have same MIX metadata.
     """
-
     # Copy workspace to temporary directory
     workspace = os.path.join(testpath, 'workspace')
     shutil.copytree('tests/data/compile_structmap_workspace', workspace)
@@ -156,8 +155,8 @@ def test_othermd_references(testpath, run_cli):
     )
     assert len(files) == 3
 
-    # This dictonary maps filepath to MIX techMD IDs excpected to be referenced
-    # in fileSec
+    # This dictonary maps filepath to MIX techMD IDs excpected to be
+    # referenced in fileSec
     amd_ids = {
         "sample_images/sample_tiff1_compressed.tif":
             "_c08061e439bd40407c9e5332fec6084e",
@@ -171,17 +170,18 @@ def test_othermd_references(testpath, run_cli):
                 % filepath
         file_element = mets_document.xpath(xpath, namespaces=namespaces)
 
-        # The file element should have reference to techMD element defined in
-        # ``amd_ids`` dictionary
+        # The file element should have reference to techMD element
+        # defined in ``amd_ids`` dictionary
         assert amd_ids[filepath] in file_element[0].get('ADMID')
 
 
 # pylint: disable=invalid-name
 def test_compile_structmap_directory(testpath, run_cli):
-    """Test the compile_structmap script. Assert that directory
-    structure is transferred to the structmap and that the premis
-    event ID created in the test data is linked to the correct div
-    element.
+    """Test the compile_structmap script.
+
+    Assert that directory structure is transferred to the structmap and
+    that the premis event ID created in the test data is linked to the
+    correct div element.
     """
     create_test_data(testpath, run_cli)
     run_cli(compile_structmap.main, [
@@ -247,8 +247,8 @@ def test_native_file(testpath, run_cli):
         "/mets:mets/mets:fileSec/mets:fileGrp/mets:file"
         "[mets:FLocat/@xlink:href='file://tests/data/text-file.txt']/"
         "@USE",
-        namespaces=NAMESPACES)[0] == \
-            "fi-preservation-no-file-format-validation"
+        namespaces=NAMESPACES
+    )[0] == "fi-preservation-no-file-format-validation"
 
 
 def test_supplementary_file(testpath, run_cli):
@@ -302,8 +302,8 @@ def test_supplementary_file(testpath, run_cli):
         "//mets:fptr",
         namespaces=NAMESPACES)[0].get('FILEID') != suppl_file_id
 
-    # Assert that the supplementary structMap contains the expected structure,
-    # and that it contains a link to the supplementary file
+    # Assert that the supplementary structMap contains the expected
+    # structure, and that it contains a link to the supplementary file
     output_suppl_structmap = os.path.join(testpath,
                                           'supplementary_structmap.xml')
     suppl_sm_root = lxml.etree.parse(output_suppl_structmap).getroot()
@@ -323,8 +323,8 @@ def test_supplementary_file(testpath, run_cli):
         "//mets:structMap/mets:div/mets:div/mets:fptr",
         namespaces=NAMESPACES)[0].get('FILEID') == suppl_file_id
 
-    # Test that the representation object for xml-schemas is linked to the
-    # structMap div with the ADMID
+    # Test that the representation object for xml-schemas is linked to
+    # the structMap div with the ADMID
     refs = read_md_references(
         testpath, 'define-xml-schemas-md-references.jsonl')
     reference = refs[fsdecode_path('.')]
@@ -337,12 +337,13 @@ def test_supplementary_file(testpath, run_cli):
 
 
 def test_get_fileid():
-    """Test get_fileid function. Create a fileGrp element with few files and
-    test that the function finds correct file IDs.
-    """
+    """Test get_fileid function.
 
-    # Create fileGrp element that contains three file elements with different
-    # identifiers and paths
+    Create a fileGrp element with few files and test that the function
+    finds correct file IDs.
+    """
+    # Create fileGrp element that contains three file elements with
+    # different identifiers and paths
     files = [mets.file_elem(file_id='identifier%s' % num,
                             admid_elements=['foo', 'bar'],
                             loctype='foo',
