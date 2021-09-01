@@ -4,9 +4,11 @@ from __future__ import unicode_literals
 import os
 import shutil
 
+import file_scraper.scraper
 import lxml.etree
 import mets
 import premis
+import pytest
 
 from siptools.utils import read_md_references, fsdecode_path
 from siptools.scripts import (compile_structmap, create_audiomd,
@@ -354,3 +356,45 @@ def test_get_fileid():
 
     assert compile_structmap.get_fileid(
         filegrp, 'path/to/file name1', file_ids={}) == 'identifier1'
+
+
+@pytest.mark.parametrize(
+    [
+        'grade',
+        'expected_use_attribute'
+    ],
+    (
+        [
+            "fi-preservation-bit-level-file-format-with-recommended",
+            "fi-preservation-no-file-format-validation"
+        ],
+        [
+            "fi-preservation-bit-level-file-format",
+            "fi-preservation-file-format-identification"
+        ]
+    )
+)
+def test_grading(tmpdir, run_cli, monkeypatch, grade, expected_use_attribute):
+    """Test that "USE" attribute of file set according to DP grade."""
+    input_file = 'tests/data/structured/Software files/koodi.java'
+
+    # Mock the grade function of file-scraper to always return chosen
+    # grade
+    monkeypatch.setattr(file_scraper.scraper.Scraper,
+                        'grade',
+                        lambda _self: grade)
+
+    # Prepare workspace for structure map creation
+    run_cli(import_object.main, ['--workspace', tmpdir, input_file])
+
+    # Create structure map
+    run_cli(compile_structmap.main, ['--workspace', tmpdir])
+
+    # Find all files in FileSec document
+    filesec = lxml.etree.parse(os.path.join(tmpdir, 'filesec.xml'))
+    files = filesec.xpath('//mets:file', namespaces=NAMESPACES)
+
+    # There should be only one file and it should have the expected
+    # "USE" attribute
+    assert len(files) == 1
+    assert files[0].attrib['USE'] == expected_use_attribute

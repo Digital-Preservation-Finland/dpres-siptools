@@ -15,7 +15,8 @@ import lxml.etree
 import mets
 import premis
 import xml_helpers
-from file_scraper.scraper import Scraper
+import file_scraper
+import file_scraper.scraper
 
 try:
     from urllib.parse import quote_plus, unquote_plus
@@ -38,7 +39,7 @@ def calc_checksum(filepath, algorithm="md5"):
     :algorithm: Algorithm name
     :returns: Checksum of the file
     """
-    scraper = Scraper(filepath)
+    scraper = file_scraper.scraper.Scraper(filepath)
     return scraper.checksum(algorithm=algorithm)
 
 
@@ -112,7 +113,8 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
     :charset: Encoding of digital object (if text file)
     :skip_well_check: True skips well-formedness checking
     :skip_json: True does scraping and does not try to find JSON file
-    :returns: Metadata dict of streams and scraper info as a tuple
+    :returns: Stream metadata, scraper info and digital preservation
+              grade of file
     :raises: ValueError If metadata collecting fails.
              IOError If file does not exist.
     """
@@ -121,10 +123,10 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
     if not skip_json:
         streams = read_json_streams(filerel, workspace)
     if streams is not None:
-        return (streams, None)
+        return (streams, None, None)
 
-    scraper = Scraper(filepath, mimetype=mimetype,
-                      version=version, charset=charset)
+    scraper = file_scraper.scraper.Scraper(filepath, mimetype=mimetype,
+                                           version=version, charset=charset)
     scraper.scrape(not skip_well_check)
 
     if scraper.well_formed is False:  # Must not be None
@@ -148,7 +150,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
         if info['class'] == 'ScraperNotFound':
             raise ValueError('File format is not supported.')
 
-    return (scraper.streams, scraper.info)
+    return (scraper.streams, scraper.info, scraper.grade())
 
 
 # Adaptation of ensure_str function from version 1.15 of six,
@@ -667,6 +669,15 @@ def add_file_to_filesec(all_amd_refs,
 
     use = None
     if properties:
+
+        if properties['grade'] \
+                == file_scraper.defaults.BIT_LEVEL_WITH_RECOMMENDED:
+            use = "fi-preservation-no-file-format-validation"
+        elif properties['grade'] == file_scraper.defaults.BIT_LEVEL:
+            use = "fi-preservation-file-format-identification"
+        elif properties["grade"] == file_scraper.defaults.UNACCEPTABLE:
+            raise ValueError("Unacceptable file format")
+
         if 'bit_level' in properties and properties["bit_level"] == "native":
             use = "fi-preservation-no-file-format-validation"
 

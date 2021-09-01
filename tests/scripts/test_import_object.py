@@ -655,3 +655,50 @@ def test_import_object_event_target_date(testpath, run_cli):
         if filename.endswith('-PREMIS%3AAGENT-amd.xml'):
             new_ag_count += 1
     assert new_ag_count == ag_count
+
+
+@pytest.mark.parametrize(
+    [
+        "input_file",
+        "expected_grade"
+    ],
+    (
+        [
+            'tests/data/ODF_Text_Document.odt',
+            'fi-preservation-recommended-file-format'
+        ],
+        [
+            'tests/data/MS_Word_2007-2013_XML.docx',
+            'fi-preservation-acceptable-file-format'
+        ],
+        [
+            'tests/data/video/unaccepted_format_h264_aac.mkv',
+            'fi-preservation-unacceptable-file-format'
+        ],
+    )
+)
+def test_import_object_grading(testpath, run_cli, input_file, expected_grade):
+    """Test that DP grade is included in file properties."""
+    arguments = ['--workspace', testpath, input_file]
+    run_cli(import_object.main, arguments)
+
+    # Read scraper.json
+    output = get_amd_file(testpath, input_file)
+    path = output[0].replace('-PREMIS%3AOBJECT-amd.xml', '-scraper.json')
+    streams = load_scraper_json(path)
+
+    # Digital preservation grade should be included in file properties
+    assert streams[0]['properties']['grade'] == expected_grade
+
+
+def test_import_object_not_recognized(testpath, run_cli):
+    """Test importing file that is not recognized.
+
+    Exception with clear error message should be raised.
+    """
+    arguments \
+        = ['--workspace', testpath, 'tests/data/invalid_empty_text-file.txt']
+    expected_error_message \
+        = 'Proper scraper was not found. The file was not analyzed'
+    with pytest.raises(ValueError, match=expected_error_message):
+        run_cli(import_object.main, arguments)

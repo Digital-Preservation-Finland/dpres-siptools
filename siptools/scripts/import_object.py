@@ -270,7 +270,7 @@ class PremisCreator(MetsSectionCreator):
             version = attributes["file_format"][1]
 
         if attributes["bit_level"] is None:
-            (streams, info) = scrape_file(
+            (streams, info, grade) = scrape_file(
                 filepath=filepath,
                 skip_well_check=attributes["skip_wellformed_check"],
                 mimetype=mimetype,
@@ -284,11 +284,13 @@ class PremisCreator(MetsSectionCreator):
                            "mimetype": mimetype,
                            "version": version}}
             info = {}
+            grade = None
 
         # Add new properties of a file for other script files, e.g.
         # structMap
+        streams[0]['properties'] = {'grade': grade}
         if properties:
-            streams[0]['properties'] = properties
+            streams[0]['properties'].update(properties)
 
         premis_elem = create_premis_object(filepath, streams, **attributes)
         self.add_md(premis_elem, filerel, given_metadata_dict=streams)
