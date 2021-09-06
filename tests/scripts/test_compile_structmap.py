@@ -385,13 +385,13 @@ def test_grading(tmpdir, run_cli, monkeypatch, grade, expected_use_attribute):
                         lambda _self: grade)
 
     # Prepare workspace for structure map creation
-    run_cli(import_object.main, ['--workspace', tmpdir, input_file])
+    run_cli(import_object.main, ['--workspace', str(tmpdir), input_file])
 
     # Create structure map
-    run_cli(compile_structmap.main, ['--workspace', tmpdir])
+    run_cli(compile_structmap.main, ['--workspace', str(tmpdir)])
 
     # Find all files in FileSec document
-    filesec = lxml.etree.parse(os.path.join(tmpdir, 'filesec.xml'))
+    filesec = lxml.etree.parse(os.path.join(str(tmpdir), 'filesec.xml'))
     files = filesec.xpath('//mets:file', namespaces=NAMESPACES)
 
     # There should be only one file and it should have the expected
