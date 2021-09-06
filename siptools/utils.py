@@ -144,6 +144,10 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
         # coercing to 'str'
         raise ValueError(error_str)
 
+    if scraper.grade() == file_scraper.defaults.UNACCEPTABLE:
+        raise ValueError("The format of file {} is unacceptable."
+                         .format(filepath))
+
     if scraper.info[0]['class'] == 'FileExists' and scraper.info[0]['errors']:
         raise IOError(scraper.info[0]['errors'])
     for _, info in six.iteritems(scraper.info):
@@ -675,8 +679,6 @@ def add_file_to_filesec(all_amd_refs,
             use = "fi-preservation-no-file-format-validation"
         elif properties['grade'] == file_scraper.defaults.BIT_LEVEL:
             use = "fi-preservation-file-format-identification"
-        elif properties["grade"] == file_scraper.defaults.UNACCEPTABLE:
-            raise ValueError("Unacceptable file format")
 
         if 'bit_level' in properties and properties["bit_level"] == "native":
             use = "fi-preservation-no-file-format-validation"

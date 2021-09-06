@@ -670,11 +670,7 @@ def test_import_object_event_target_date(testpath, run_cli):
         [
             'tests/data/MS_Word_2007-2013_XML.docx',
             'fi-preservation-acceptable-file-format'
-        ],
-        [
-            'tests/data/video/unaccepted_format_h264_aac.mkv',
-            'fi-preservation-unacceptable-file-format'
-        ],
+        ]
     )
 )
 def test_import_object_grading(testpath, run_cli, input_file, expected_grade):
@@ -689,6 +685,19 @@ def test_import_object_grading(testpath, run_cli, input_file, expected_grade):
 
     # Digital preservation grade should be included in file properties
     assert streams[0]['properties']['grade'] == expected_grade
+
+
+def test_import_object_unacceptable(testpath, run_cli):
+    """Test importing file that has unacceptable format.
+
+    Exception with clear error message should be raised.
+    """
+    unaccepted_file = 'tests/data/video/unaccepted_format_h264_aac.mkv'
+    arguments = ['--workspace', testpath, unaccepted_file]
+    expected_error_message = ('The format of file {} is unacceptable'
+                              .format(unaccepted_file))
+    with pytest.raises(ValueError, match=expected_error_message):
+        run_cli(import_object.main, arguments)
 
 
 def test_import_object_not_recognized(testpath, run_cli):
