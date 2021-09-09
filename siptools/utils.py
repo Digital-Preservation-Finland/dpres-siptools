@@ -15,7 +15,6 @@ import lxml.etree
 import mets
 import premis
 import xml_helpers
-import file_scraper
 import file_scraper.scraper
 
 try:
@@ -595,7 +594,7 @@ def get_reference_lists(workspace):
         - all_dmd_refs: All descriptive metadata references.
         - object_refs: XML tree of digital objects.
         - filelist: ID list of objects.
-        - file_properties: Properties of all the files discvoered in
+        - file_properties: Properties of all the files discovered in
                            filelist.
     """
     object_refs = read_md_references(workspace,
