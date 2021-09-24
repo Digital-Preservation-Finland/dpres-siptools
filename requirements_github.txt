@@ -24,3 +24,4 @@ git+https://github.com/Digital-Preservation-Finland/videomd.git#egg=videomd
 git+https://github.com/Digital-Preservation-Finland/ffmpeg-python.git#egg=ffmpeg_python
 git+https://github.com/Digital-Preservation-Finland/file-scraper.git#egg=file-scraper
 git+https://github.com/Digital-Preservation-Finland/fido.git#egg=opf_fido
+git+https://github.com/Digital-Preservation-Finland/dpres-ipt.git#egg=ipt
