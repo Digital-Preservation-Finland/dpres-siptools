@@ -32,7 +32,7 @@ import siptools
 click.disable_unicode_literals_warning = True
 
 SUPPLEMENTARY_REFERENCE_FILES = {
-    'fi-preservation-xml-schemas': 'define-xml-schemas-md-references.jsonl'
+    'fi-dpres-xml-schemas': 'define-xml-schemas-md-references.jsonl'
 }
 
 

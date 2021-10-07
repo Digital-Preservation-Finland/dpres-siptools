@@ -249,7 +249,7 @@ def test_compile_structmap_supplementary(testpath, run_cli):
     assert len(fs_root.xpath("/mets:mets/mets:fileSec/*",
                              namespaces=NAMESPACES)) == 2
     assert fs_root.xpath(
-        "//mets:fileSec/mets:fileGrp[@USE='fi-preservation-xml-schemas']/"
+        "//mets:fileSec/mets:fileGrp[@USE='fi-dpres-xml-schemas']/"
         "mets:file[mets:FLocat/"
         "@xlink:href='file://tests/data/mets_valid_minimal.xml']",
         namespaces=NAMESPACES)[0].get('ID') == fileid

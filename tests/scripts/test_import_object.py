@@ -665,11 +665,11 @@ def test_import_object_event_target_date(testpath, run_cli):
     (
         [
             'tests/data/ODF_Text_Document.odt',
-            'fi-preservation-recommended-file-format'
+            'fi-dpres-recommended-file-format'
         ],
         [
             'tests/data/MS_Word_2007-2013_XML.docx',
-            'fi-preservation-acceptable-file-format'
+            'fi-dpres-acceptable-file-format'
         ]
     )
 )

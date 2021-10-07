@@ -24,9 +24,9 @@ except ImportError:  # Python 2
 
 
 SUPPLEMENTARY_TYPES = {
-    'main': 'fi-preservation-supplementary',
-    'xml_schema': 'fi-preservation-xml-schemas',
-    'native': 'fi-preservation-no-file-format-validation'
+    'main': 'fi-dpres-supplementary',
+    'xml_schema': 'fi-dpres-xml-schemas',
+    'native': 'fi-dpres-no-file-format-validation'
 }
 
 
@@ -675,12 +675,12 @@ def add_file_to_filesec(all_amd_refs,
 
         if properties['grade'] \
                 == file_scraper.defaults.BIT_LEVEL_WITH_RECOMMENDED:
-            use = "fi-preservation-no-file-format-validation"
+            use = "fi-dpres-no-file-format-validation"
         elif properties['grade'] == file_scraper.defaults.BIT_LEVEL:
-            use = "fi-preservation-file-format-identification"
+            use = "fi-dpres-file-format-identification"
 
         if 'bit_level' in properties and properties["bit_level"] == "native":
-            use = "fi-preservation-no-file-format-validation"
+            use = "fi-dpres-no-file-format-validation"
 
         # Do not add supplementary files to normal file group and vice
         # versa

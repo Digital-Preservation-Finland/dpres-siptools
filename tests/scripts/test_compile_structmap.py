@@ -250,7 +250,7 @@ def test_native_file(testpath, run_cli):
         "[mets:FLocat/@xlink:href='file://tests/data/text-file.txt']/"
         "@USE",
         namespaces=NAMESPACES
-    )[0] == "fi-preservation-no-file-format-validation"
+    )[0] == "fi-dpres-no-file-format-validation"
 
 
 def test_supplementary_file(testpath, run_cli):
@@ -280,7 +280,7 @@ def test_supplementary_file(testpath, run_cli):
         namespaces=NAMESPACES)[0]
 
     # Check the USE attribute value
-    assert suppl_filegrp.get('USE') == "fi-preservation-xml-schemas"
+    assert suppl_filegrp.get('USE') == "fi-dpres-xml-schemas"
 
     # Check that the supplementary file only exist in the supplementary
     # fileGrp and get its ID
@@ -314,11 +314,11 @@ def test_supplementary_file(testpath, run_cli):
     assert suppl_sm_root.xpath(
         '//mets:structMap/mets:div',
         namespaces=NAMESPACES)[0].get(
-            'TYPE') == 'fi-preservation-supplementary'
+            'TYPE') == 'fi-dpres-supplementary'
     assert suppl_sm_root.xpath(
         '//mets:structMap/mets:div/mets:div',
         namespaces=NAMESPACES)[0].get(
-            'TYPE') == 'fi-preservation-xml-schemas'
+            'TYPE') == 'fi-dpres-xml-schemas'
     assert len(suppl_sm_root.xpath("//mets:fptr",
                                    namespaces=NAMESPACES)) == 1
     assert suppl_sm_root.xpath(
@@ -334,7 +334,7 @@ def test_supplementary_file(testpath, run_cli):
 
     assert suppl_sm_root.xpath(
         "//mets:structMap/mets:div/mets:div"
-        "[@TYPE='fi-preservation-xml-schemas']",
+        "[@TYPE='fi-dpres-xml-schemas']",
         namespaces=NAMESPACES)[0].get('ADMID') == amdref
 
 
@@ -365,12 +365,12 @@ def test_get_fileid():
     ],
     (
         [
-            "fi-preservation-bit-level-file-format-with-recommended",
-            "fi-preservation-no-file-format-validation"
+            "fi-dpres-bit-level-file-format-with-recommended",
+            "fi-dpres-no-file-format-validation"
         ],
         [
-            "fi-preservation-bit-level-file-format",
-            "fi-preservation-file-format-identification"
+            "fi-dpres-bit-level-file-format",
+            "fi-dpres-file-format-identification"
         ]
     )
 )
