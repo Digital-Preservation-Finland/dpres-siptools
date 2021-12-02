@@ -39,7 +39,6 @@ NO_VERSION = '(:unap)'
 UNKNOWN_VERSION = '(:unav)'
 
 # Supported bit-level preservation types
-BIT_LEVELS = ["native"]
 SUPPLEMENTARY_TYPES = ["xml_schema"]
 
 
@@ -97,11 +96,6 @@ SUPPLEMENTARY_TYPES = ["xml_schema"]
 @click.option(
     '--stdout', is_flag=True, help='Print result also to stdout.')
 @click.option(
-    '--bit_level', type=click.Choice(BIT_LEVELS),
-    metavar='<BIT-LEVEL STATUS>',
-    help='Mark only for bit-level preservation. Currently only "native" '
-         'status is supported. If used, then --file_format is mandatory.')
-@click.option(
     '--supplementary', type=click.Choice(SUPPLEMENTARY_TYPES),
     multiple=True, metavar='<SUPPLEMENTARY TYPE>',
     help='Used to mark supplementary files, files that are not part of the '
@@ -146,17 +140,11 @@ def _attribute_values(given_params):
         "event_datetime": datetime.datetime.now().isoformat(),
         "event_target": None,
         "stdout": False,
-        "bit_level": None,
         "supplementary": ()
     }
     for key in given_params:
         if given_params[key]:
             attributes[key] = given_params[key]
-    if attributes["bit_level"] in BIT_LEVELS:
-        if not attributes["file_format"]:
-            raise ValueError("Argument --file_format is mandatory if "
-                             "--bit_level is given.")
-        attributes["skip_wellformed_check"] = True
 
     return attributes
 
@@ -183,8 +171,6 @@ def import_object(**kwargs):
                  event_datetime: Timestamp of the event
                  event_target: The target of the event
                  stdout: True prints output to stdout
-                 bit_level: Object status for only bit-level
-                            preservation
                  supplementary: Object type for supplementary files
     """
     attributes = _attribute_values(kwargs)
@@ -208,13 +194,24 @@ def import_object(**kwargs):
         properties = {}
         if attributes["order"] is not None:
             properties['order'] = six.text_type(attributes["order"])
-        properties["bit_level"] = attributes["bit_level"]
         properties["supplementary"] = attributes["supplementary"]
 
-        (_, scraper_info) = creator.add_premis_md(
+        (streams, scraper_info) = creator.add_premis_md(
             filepath, attributes, filerel=filerel, properties=properties)
         for index in scraper_info:
             agents.append(_parse_scraper_tools(scraper_info[index]))
+
+        grade = streams[0]['properties']['grade']
+
+    is_native = grade in (
+        file_scraper.defaults.BIT_LEVEL,
+        file_scraper.defaults.BIT_LEVEL_WITH_RECOMMENDED
+    )
+
+    is_validated = (
+        not bool(attributes["skip_wellformed_check"])
+        and not is_native
+    )
 
     creator.write(stdout=attributes["stdout"])
 
@@ -226,7 +223,7 @@ def import_object(**kwargs):
         event_datetime=attributes["event_datetime"],
         event_target=attributes["event_target"],
         identification_event=not bool(attributes["file_format"]),
-        validation_event=not bool(attributes["skip_wellformed_check"]),
+        validation_event=is_validated,
         checksum_event=not bool(attributes["checksum"]),
         agents=agents
     )
@@ -269,22 +266,14 @@ class PremisCreator(MetsSectionCreator):
             mimetype = attributes["file_format"][0]
             version = attributes["file_format"][1]
 
-        if attributes["bit_level"] is None:
-            (streams, info, grade) = scrape_file(
-                filepath=filepath,
-                skip_well_check=attributes["skip_wellformed_check"],
-                mimetype=mimetype,
-                version=version,
-                charset=attributes["charset"],
-                skip_json=True
-            )
-        else:
-            streams = {0: {"stream_type": "binary",
-                           "index": 0,
-                           "mimetype": mimetype,
-                           "version": version}}
-            info = {}
-            grade = None
+        (streams, info, grade) = scrape_file(
+            filepath=filepath,
+            skip_well_check=attributes["skip_wellformed_check"],
+            mimetype=mimetype,
+            version=version,
+            charset=attributes["charset"],
+            skip_json=True
+        )
 
         # Add new properties of a file for other script files, e.g.
         # structMap

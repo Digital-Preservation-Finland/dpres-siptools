@@ -244,11 +244,10 @@ Adding native files to package with corresponding normalized files
 A native file is an original file which is applicable only for bit-level preservation.
 Using the native file functionality requires a migrated file suitable for preservation
 and a normalization event. In this case the ``import-object`` script must be run before
-the ``premis-event`` script. In ``import-object``, the argument ``--file_format`` is
-mandatory for native files. Use the value ``normalization`` or ``migration`` as event
+the ``premis-event`` script. Use the value ``normalization`` or ``migration`` as event
 type in ``premis-event``. Here is the basic functionality::
 
-    import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file
+    import-object ... path/to/native_file
     import-object ... path/to/migrated_file
     premis-event normalization ... --linking_object source path/to/native_file --linking_object outcome path/to/migrated_file --add_object_links
     ...
@@ -258,8 +257,8 @@ In such case, use ``import-object`` for each of them and create the migration ev
 using ``--linking_object`` multiple times. For example combining two native files to
 one migrated file, do the following::
 
-    import-object --file_format my_mimetype my_version --bit_level native ... path/to/native_file
-    import-object --file_format my_mimetype my_version --bit_level native ... path/to/another_native_file
+    import-object ... path/to/native_file
+    import-object ... path/to/another_native_file
     import-object ... path/to/migrated_file
     premis-event migration ... --linking_object source path/to/native_file --linking_object source path/to/another_native_file --linking_object outcome path/to/migrated_file --add_object_links
     ...
@@ -267,8 +266,8 @@ one migrated file, do the following::
 We omit some of the required parameters above, for example timestamp or ``--event_detail``.
 However, these parameters are still required.
 
-For a native file, file format identification and file well-formedness validation are
-skipped in the ``import-object`` script.
+For a native file, file format well-formedness validation is skipped in the
+``import-object`` script.
 
 Please note that importing native files in a submission information package for the Finnish
 National Digital Preservation Services requires acceptance from the service beforehand.
@@ -317,8 +316,7 @@ has two arguments:, ``--dmd_source`` and ``--dmd_agent``. These are used for doc
 the source, e.g. database or system, for the descriptive metadata and the agent used
 to export the metadata from the source, e.g. a database client or API.
 
-For a native file, ``validation`` and ``format identification`` type events are not
-created.
+For a native file, ``validation`` type events are not created.
 
 Including supplementary files in the package
 --------------------------------------------

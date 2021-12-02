@@ -356,14 +356,12 @@ def test_migration_event(testpath, run_cli):
     different incomes.
     """
     arguments = ["--workspace", testpath,
-                 "--file_format", "foo_format1", "0.1",
                  "--identifier", "idtype1", "idvalue1",
-                 "--bit_level", "native", "tests/data/simple_csv.csv"]
+                 "tests/data/simple_csv.csv"]
     run_cli(import_object.main, arguments)
     arguments = ["--workspace", testpath,
-                 "--file_format", "foo_format2", "0.2",
                  "--identifier", "idtype2", "idvalue2",
-                 "--bit_level", "native", "tests/data/simple_csv_2.csv"]
+                 "tests/data/simple_csv_2.csv"]
     run_cli(import_object.main, arguments)
     arguments = ["--workspace", testpath,
                  "--file_format", "text/csv", "", "--skip_wellformed_check",
