@@ -4,6 +4,11 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.54:
+
+    * Added file-scraper's rading support in METS creation.
+    * Terminology prefix change to fi-dpres.
+
 Version 0.53:
 
     * Use the MS Office version numbers returned by file-scraper instead of
