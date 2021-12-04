@@ -1,2 +1,2 @@
 """Siptools module."""
-__version__ = '0.54'
+__version__ = '0.55'
