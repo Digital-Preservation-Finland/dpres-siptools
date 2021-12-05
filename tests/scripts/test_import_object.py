@@ -277,6 +277,43 @@ def test_import_object_utf8(testpath, run_cli):
                           namespaces=NAMESPACES)) == 1
 
 
+def test_import_object_native(testpath, run_cli):
+    """Test that import_object can import native formats.
+
+    In such cases, no validation event is created even if we are performing
+    the well-formedness check.
+    """
+    input_file = "tests/data/video/invalid__prores_lpcm8.mov"
+    arguments = ["--workspace", testpath, input_file]
+    run_cli(import_object.main, arguments)
+
+    # Check output
+    events_output = get_amd_file(
+        testpath,
+        input_file,
+        ref_file='premis-event-md-references.jsonl',
+        suffix='-PREMIS%3AEVENT-amd.xml'
+    )
+    event_trees = [ET.parse(path).getroot() for path in events_output]
+    allowed_types = [
+        'metadata extraction',
+        'format identification',
+        'message digest calculation'
+    ]
+
+    # All events except for 'validation' are created. Since we are importing
+    # a native file, validation event is not created even if we have the
+    # well-formedness check enabled.
+    assert len([
+        True for tree in event_trees
+        if tree.xpath(
+            "//premis:eventType",
+            namespaces=NAMESPACES
+        )[0].text in allowed_types
+    ]) == 3
+    assert len(event_trees) == 3
+
+
 # TODO: Combine this test with test_import_object_cases_for_lite once we're
 #       using version that pytest supports pytest.param.
 #       This test is identical to it except no additional option is provided
