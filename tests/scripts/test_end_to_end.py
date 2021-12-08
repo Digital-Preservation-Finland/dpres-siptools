@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import os
 import subprocess
+import sys
 import pytest
 
 
@@ -22,7 +23,10 @@ def test_end_to_end(testpath):
     environment['PYTHONPATH'] = '.'
     environment['PYTHONIOENCODING'] = 'UTF-8'
 
-    command = ['python', 'siptools/scripts/import_object.py',
+    # Get the name of the currently running Python executable
+    python = sys.executable
+
+    command = [python, 'siptools/scripts/import_object.py',
                '--workspace', testpath, objects, '--skip_wellformed_check',
                '--file_format', 'text/plain', '',
                '--checksum', 'MD5', '1qw87geiewgwe9',
@@ -32,7 +36,7 @@ def test_end_to_end(testpath):
     child.communicate()
     assert child.returncode == 0
 
-    command = ['python', 'siptools/scripts/premis_event.py', 'creation',
+    command = [python, 'siptools/scripts/premis_event.py', 'creation',
                '2017-01-11T10:14:13', '--event_detail', 'Testing',
                '--event_outcome', 'success', '--event_outcome_detail',
                'Outcome detail', '--workspace', testpath, '--agent_name',
@@ -42,20 +46,20 @@ def test_end_to_end(testpath):
     child.communicate()
     assert child.returncode == 0
 
-    command = ['python', 'siptools/scripts/import_description.py', dmd_file,
+    command = [python, 'siptools/scripts/import_description.py', dmd_file,
                '--workspace', testpath, '--dmdsec_target', dmd_target,
                '--remove_root']
     child = subprocess.Popen(command, env=environment)
     child.communicate()
     assert child.returncode == 0
 
-    command = ['python', 'siptools/scripts/compile_structmap.py',
+    command = [python, 'siptools/scripts/compile_structmap.py',
                '--workspace', testpath]
     child = subprocess.Popen(command, env=environment)
     child.communicate()
     assert child.returncode == 0
 
-    command = ['python', 'siptools/scripts/compile_mets.py',
+    command = [python, 'siptools/scripts/compile_mets.py',
                '--workspace', testpath, 'ch', 'CSC',
                'urn:uuid:89e92a4f-f0e4-4768-b785-4781d3299b20',
                '--create_date', '2017-01-11T10:14:13',
@@ -64,13 +68,13 @@ def test_end_to_end(testpath):
     child.communicate()
     assert child.returncode == 0
 
-    command = ['python', 'siptools/scripts/sign_mets.py',
+    command = [python, 'siptools/scripts/sign_mets.py',
                '--workspace', testpath, private_key]
     child = subprocess.Popen(command, env=environment)
     child.communicate()
     assert child.returncode == 0
 
-    command = ['python', 'siptools/scripts/compress.py',
+    command = [python, 'siptools/scripts/compress.py',
                '--tar_filename', os.path.join(testpath, 'sip.tar'), testpath]
     child = subprocess.Popen(command, env=environment)
     child.communicate()
@@ -102,8 +106,10 @@ def test_end_to_end(testpath):
     ]
     for rule in schematron_rules:
         rule_path = os.path.join(schematron_path, rule)
-        command = ['check-xml-schematron-features', '-s',
-                   rule_path, os.path.join(testpath, file_to_sign)]
+        command = [
+            python, '-m' 'ipt.scripts.check_xml_schematron_features', '-s',
+            rule_path, os.path.join(testpath, file_to_sign)
+        ]
         child = subprocess.Popen(command, env=environment)
         child.communicate()
         assert child.returncode == 0

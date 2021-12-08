@@ -1,6 +1,8 @@
 ROOT=/
 PREFIX=/usr
 
+PYTHON = python
+
 install:
 	# Cleanup temporary files
 	rm -f INSTALLED_FILES
@@ -28,13 +30,7 @@ install3:
 	sed -i '/\.egg-info\/requires.txt$$/d' INSTALLED_FILES
 
 test:
-	py.test -svvvv --validation --e2e --junitprefix=dpres-siptools --junitxml=junit.xml tests
-
-coverage:
-	py.test tests --cov=siptools --cov-report=html
-	coverage report -m
-	coverage html
-	coverage xml
+	${PYTHON} -m pytest -svvvv --validation --e2e --junitprefix=dpres-siptools --junitxml=junit.xml tests
 
 clean: clean-rpm
 	find . -iname '*.pyc' -type f -delete
