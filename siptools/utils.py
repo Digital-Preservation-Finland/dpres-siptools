@@ -175,12 +175,13 @@ def ensure_str(string, encoding='utf-8', errors='strict'):
     :encoding: Used encoding
     :errors: Error handling level
     """
-    if six.PY3:
+    if six.PY2:
+        # pylint: disable=undefined-variable
+        text_type = unicode  # noqa
+        binary_type = str
+    else:
         text_type = str
         binary_type = bytes
-    else:
-        text_type = unicode
-        binary_type = str
 
     if isinstance(string, str):
         return string
