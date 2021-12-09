@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.56:
+
+    * Removed --bit_level argument.
+
 Version 0.54-0.55:
 
     * Added file-scraper's grading support in METS creation.
