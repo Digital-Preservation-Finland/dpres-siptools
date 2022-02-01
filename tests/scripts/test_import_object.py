@@ -277,6 +277,22 @@ def test_import_object_utf8(testpath, run_cli):
                           namespaces=NAMESPACES)) == 1
 
 
+def test_original_name(testpath, run_cli):
+    """Test that given original name is added.
+    """
+    input_file = "tests/data/structured/Documentation files/readme.txt"
+    arguments = ["--original_name", "readme.txt",
+                 "--workspace", testpath, input_file]
+    run_cli(import_object.main, arguments)
+
+    # Check output
+    output = get_amd_file(testpath, input_file)
+    tree = ET.parse(output[0])
+    root = tree.getroot()
+    assert root.xpath(".//premis:originalName",
+                      namespaces=NAMESPACES)[0].text == "readme.txt"
+
+
 def test_import_object_native(testpath, run_cli):
     """Test that import_object can import native formats.
 

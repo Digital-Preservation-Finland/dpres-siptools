@@ -61,6 +61,9 @@ SUPPLEMENTARY_TYPES = ["xml_schema"]
     '--charset', type=str, metavar='<CHARSET>',
     help='Charset encoding of a file.')
 @click.option(
+    '--original_name', type=str, metavar='<NAME>',
+    help='Original name a file.')
+@click.option(
     '--file_format', nargs=2, type=str,
     metavar='<MIMETYPE> <FORMAT VERSION>',
     help='Mimetype and file format version of a file. Use "" for empty '
@@ -131,6 +134,7 @@ def _attribute_values(given_params):
         "base_path": ".",
         "skip_wellformed_check": False,
         "charset": None,
+        "original_name": None,
         "file_format": (),
         "format_registry": (),
         "identifier": (),
@@ -162,6 +166,7 @@ def import_object(**kwargs):
                  skip_wellformed_check: True skips well-formedness
                                         checking
                  charset: Character encoding of a file
+                 original_name: Original filename
                  file_format: File format and version (tuple) of a file
                  format_registry: Format registry name and value (tuple)
                  identifier: File identifier type and value (tuple)
@@ -249,6 +254,7 @@ class PremisCreator(MetsSectionCreator):
                      skip_wellformed_check: True skips well-formedness
                                             checking
                      charset: Character encoding of a file
+                     original_nme: Original filename
                      file_format: File format and version (tuple) of a
                                   file
                      format_registry: Format registry name and value
@@ -376,6 +382,7 @@ def create_premis_object(fname, streams, **attributes):
     :streams: Streams from the Scraper
     :attributes: The following keys:
                  charset: Character encoding of a file
+                 original_name: Original filename
                  file_format: File format and version (tuple) of a file
                  format_registry: Format registry name and value (tuple)
                  identifier: File identifier type and value (tuple)
@@ -445,7 +452,9 @@ def create_premis_object(fname, streams, **attributes):
 
     # Create object element
     el_premis_object = premis.object(
-        object_identifier, child_elements=[premis_objchar])
+        object_identifier,
+        original_name=attributes["original_name"],
+        child_elements=[premis_objchar])
 
     return el_premis_object
 

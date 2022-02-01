@@ -17,22 +17,32 @@ click.disable_unicode_literals_warning = True
     '--tar_filename', type=str, default='sip.tar',
     metavar='<TAR FILE>',
     help="Filename for tar. Default is sip.tar")
-def main(dir_to_tar, tar_filename):
+@click.option(
+    '--exclude', type=str, default=None,
+    metavar='<FILE PATTERN>',
+    help="Pattern for files to be excluded from the package.")
+def main(dir_to_tar, tar_filename, exclude):
     """Create tar file from SIP directory.
 
     DIR_TO_TAR: Directory to be added in the TAR file.
     """
-    return compress(dir_to_tar, tar_filename)
+    return compress(dir_to_tar, tar_filename, exclude)
 
 
-def compress(dir_to_tar, tar_filename):
+def compress(dir_to_tar, tar_filename, exclude=None):
     """
     Create tar file from SIP directory.
 
     :dir_to_tar: Directory to pack in tar package
     :tar_filename: File name of the tar file
+    ::
     """
-    command = ['tar', '-cvvf', fsencode_path(tar_filename), '.']
+    if exclude is None:
+        command = ['tar', '-cvvf', fsencode_path(tar_filename), '.']
+    else:
+        command = ['tar', '--exclude=%s' % exclude, '-cvvf',
+                   fsencode_path(tar_filename), '.']
+
     proc = subprocess.Popen(
         command, cwd=dir_to_tar,
         stdin=subprocess.PIPE, stdout=subprocess.PIPE,
