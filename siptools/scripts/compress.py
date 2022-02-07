@@ -18,9 +18,10 @@ click.disable_unicode_literals_warning = True
     metavar='<TAR FILE>',
     help="Filename for tar. Default is sip.tar")
 @click.option(
-    '--exclude', type=str, default=None,
+    '--exclude', type=str, default=(), multiple=True,
     metavar='<FILE PATTERN>',
-    help="Pattern for files to be excluded from the package.")
+    help="Pattern for files to be excluded from the package."
+         "This option can be repeated.")
 def main(dir_to_tar, tar_filename, exclude):
     """Create tar file from SIP directory.
 
@@ -29,7 +30,7 @@ def main(dir_to_tar, tar_filename, exclude):
     return compress(dir_to_tar, tar_filename, exclude)
 
 
-def compress(dir_to_tar, tar_filename, exclude=None):
+def compress(dir_to_tar, tar_filename, exclude=()):
     """
     Create tar file from SIP directory.
 
@@ -37,11 +38,11 @@ def compress(dir_to_tar, tar_filename, exclude=None):
     :tar_filename: File name of the tar file
     ::
     """
-    if exclude is None:
-        command = ['tar', '-cvvf', fsencode_path(tar_filename), '.']
-    else:
-        command = ['tar', '--exclude=%s' % exclude, '-cvvf',
-                   fsencode_path(tar_filename), '.']
+    exclude_opts = []
+    for excl in exclude:
+        exclude_opts.append("--exclude=%s" % (excl))
+    command = ["tar"] + exclude_opts + [
+        "-cvvf", fsencode_path(tar_filename), "."]
 
     proc = subprocess.Popen(
         command, cwd=dir_to_tar,
@@ -52,7 +53,11 @@ def compress(dir_to_tar, tar_filename, exclude=None):
     proc.communicate()
     returncode = proc.returncode
 
-    print("created tar file: %s" % tar_filename)
+    if returncode != 0:
+        raise IOError("Error in creating a TAR file. "
+                      "Return code: %d" % returncode)
+
+    print("Created tar file: %s" % tar_filename)
 
     return returncode
 

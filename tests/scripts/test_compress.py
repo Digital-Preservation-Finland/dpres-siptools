@@ -43,5 +43,6 @@ def test_exclude(testpath, run_cli):
     command = ['tar', '-xf', output, '-C', testpath]
     child = subprocess.Popen(command)
     child.communicate()
+    assert child.returncode == 0
     assert os.path.isfile(os.path.join(dir_to_tar, "text-file.txt"))
     assert not os.path.isfile(os.path.join(testpath, "text-file.txt"))
