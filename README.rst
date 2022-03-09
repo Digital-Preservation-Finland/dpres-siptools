@@ -11,7 +11,7 @@ The aim is to provide digital preservation services for culture and research to 
 the access and use of materials long in the future. Documentation and specifications
 for the digital preservation services can be found in: http://digitalpreservation.fi
 
-The Pre-Ingest Tool currently supports the specification version 1.7.3.
+The Pre-Ingest Tool currently supports the specification version 1.7.4.
 
 Release notes and backwards compability
 ---------------------------------------
