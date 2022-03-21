@@ -21,7 +21,7 @@ click.disable_unicode_literals_warning = True
     '--exclude', type=str, default=(), multiple=True,
     metavar='<FILE PATTERN>',
     help="Pattern for files to be excluded from the package."
-         "This option can be repeated.")
+         " This option can be repeated.")
 def main(dir_to_tar, tar_filename, exclude):
     """Create tar file from SIP directory.
 
