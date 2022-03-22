@@ -62,7 +62,7 @@ SUPPLEMENTARY_TYPES = ["xml_schema"]
     help='Charset encoding of a file.')
 @click.option(
     '--original_name', type=str, metavar='<NAME>',
-    help='Original name a file.')
+    help='Original name of the file.')
 @click.option(
     '--file_format', nargs=2, type=str,
     metavar='<MIMETYPE> <FORMAT VERSION>',

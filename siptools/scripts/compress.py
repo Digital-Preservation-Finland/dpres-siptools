@@ -19,9 +19,10 @@ click.disable_unicode_literals_warning = True
     help="Filename for tar. Default is sip.tar")
 @click.option(
     '--exclude', type=str, default=(), multiple=True,
-    metavar='<FILE PATTERN>',
+    metavar='\'<FILE PATTERN>\'',
     help="Pattern for files to be excluded from the package."
-         " This option can be repeated.")
+         " This option can be repeated. Use single quotes around the pattern"
+         " to avoid possible shell expansion.")
 def main(dir_to_tar, tar_filename, exclude):
     """Create tar file from SIP directory.
 
@@ -36,7 +37,7 @@ def compress(dir_to_tar, tar_filename, exclude=()):
 
     :dir_to_tar: Directory to pack in tar package
     :tar_filename: File name of the tar file
-    ::
+    :exclude: File patterns to use for excluding files.
     """
     exclude_opts = []
     for excl in exclude:
