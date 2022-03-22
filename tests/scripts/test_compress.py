@@ -43,11 +43,8 @@ def test_exclude(testpath, run_cli, directory, ending):
         os.path.join(os.path.dirname(__file__), '..', 'data', directory))
     output = os.path.join(testpath, 'sip.tar')
 
-    # click.CliRunner interprets a single string argument as Unix command.
-    # This is now needed (instead of an argument list) to test single quotes.
-    arguments = "%s --tar_filename %s --exclude '*%s'" % (
-        dir_to_tar, output, ending)
-
+    arguments = [dir_to_tar, "--tar_filename", output, "--exclude",
+                 "*%s" % ending]
     run_cli(siptools.scripts.compress.main, arguments)
 
     count = 0
@@ -79,9 +76,11 @@ def test_exclude_cwd(testpath):
         files = os.listdir(".")
         assert set(files) == set(["tiff1.tif", "tiff2.tif"])
 
-        runner.invoke(siptools.scripts.compress.main,
-                      "%s --tar_filename %s --exclude '*.tif'" % (
-                          dir_to_tar, output))
+        arguments = [dir_to_tar, "--tar_filename", output, "--exclude",
+                     "*.tif"]
+
+        result = runner.invoke(siptools.scripts.compress.main, arguments)
+        assert result.exit_code == 0
 
     # No excluded files present in TAR
     with tarfile.open(output) as tar:
