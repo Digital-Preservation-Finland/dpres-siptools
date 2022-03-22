@@ -6,7 +6,9 @@ from __future__ import unicode_literals
 import os
 import tarfile
 import subprocess
+import shutil
 import pytest
+from click.testing import CliRunner
 import siptools.scripts.compress
 
 
@@ -59,3 +61,29 @@ def test_exclude(testpath, run_cli, directory, ending):
     with tarfile.open(output) as tar:
         for name in tar.getnames():
             assert not name.endswith(ending)
+
+
+def test_exclude_cwd(testpath):
+    """
+    Test that having files in current working path which match with the
+    exclude pattern does not break tar packing.
+    """
+    dir_to_tar = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), '..', 'data', 'images'))
+    output = os.path.join(testpath, 'sip.tar')
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        shutil.copy(os.path.join(dir_to_tar, "tiff1.tif"), "tiff1.tif")
+        shutil.copy(os.path.join(dir_to_tar, "tiff2.tif"), "tiff2.tif")
+
+        files = os.listdir(".")
+        assert set(files) == set(["tiff1.tif", "tiff2.tif"])
+
+        runner.invoke(siptools.scripts.compress.main,
+                      "%s --tar_filename %s --exclude '*.tif'" % (
+                          dir_to_tar, output))
+
+    # No excluded files present in TAR
+    with tarfile.open(output) as tar:
+        for name in tar.getnames():
+            assert not name.endswith(".tif")
