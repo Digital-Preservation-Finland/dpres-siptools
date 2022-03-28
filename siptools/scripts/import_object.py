@@ -82,6 +82,14 @@ SUPPLEMENTARY_TYPES = ["xml_schema"]
     metavar='<ISO-8601 TIME>',
     help='The actual or approximate date and time the object was created.')
 @click.option(
+    '--creating_application', type=str,
+    metavar='<SOFTWARE NAME>',
+    help='The software that was used to create this object.')
+@click.option(
+    '--creating_application_version', type=str,
+    metavar='<SOFTWARE VERSION>',
+    help='The version of the software that was used to create this object.')
+@click.option(
     '--order', type=int,
     metavar='<ORDER NUMBER>',
     help='Order number of the digital object.')
@@ -136,6 +144,8 @@ def _attribute_values(given_params):
         "identifier": (),
         "checksum": (),
         "date_created": None,
+        "creating_application": None,
+        "creating_application_version": None,
         "order": None,
         "event_datetime": datetime.datetime.now().isoformat(),
         "event_target": None,
@@ -167,6 +177,8 @@ def import_object(**kwargs):
                  identifier: File identifier type and value (tuple)
                  checksum: Checksum algorithm and value (tuple)
                  date_created: Creation date of a file
+                 creating_application: Software that created the file
+                 creating_application_version: Software version of creating application
                  order: Order number of a file
                  event_datetime: Timestamp of the event
                  event_target: The target of the event
@@ -381,6 +393,9 @@ def create_premis_object(fname, streams, **attributes):
                  identifier: File identifier type and value (tuple)
                  checksum: Checksum algorithm and value (tuple)
                  date_created: Creation date of a file
+                 creating_application: Software that created the file
+                 creating_application_version: Software version of creating application
+
     :returns: PREMIS object as etree
     :raises: ValueError if character set is invalid for text files.
     """
@@ -388,6 +403,10 @@ def create_premis_object(fname, streams, **attributes):
     if not attributes["checksum"]:
         attributes["checksum"] = ("MD5", calc_checksum(fname))
     date_created = attributes["date_created"] or creation_date(fname)
+    if attributes["creating_application"]:
+        creating_application = attributes["creating_application"]
+    if attributes["creating_application_version"]:
+        creating_application_version = attributes["creating_application_version"]    
     if streams[0]['stream_type'] == 'text':
         charset = attributes["charset"] or streams[0]['charset']
     else:
@@ -437,9 +456,15 @@ def create_premis_object(fname, streams, **attributes):
             attributes["format_registry"][1])
         premis_format = premis.format(child_elements=[premis_format_des,
                                                       premis_registry])
-    premis_date_created = premis.date_created(date_created)
+    creating_application_elements = []
+    if creating_application:
+        creating_application_elements.append(premis.creating_application_name(creating_application))
+    if creating_application_version:
+        creating_application_elements.append(premis.creating_application_version(creating_application_version))
+    creating_application_elements.append(premis.date_created(date_created))
+
     premis_create = \
-        premis.creating_application(child_elements=[premis_date_created])
+        premis.creating_application(child_elements=creating_application_elements)
     premis_objchar = premis.object_characteristics(
         child_elements=[premis_fixity, premis_format, premis_create])
 
