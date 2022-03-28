@@ -395,7 +395,6 @@ def create_premis_object(fname, streams, **attributes):
                  date_created: Creation date of a file
                  creating_application: Software that created the file
                  creating_application_version: Software version of creating application
-
     :returns: PREMIS object as etree
     :raises: ValueError if character set is invalid for text files.
     """
