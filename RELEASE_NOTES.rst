@@ -4,6 +4,11 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.57:
+
+    * Added support for original filename information to import-object script.
+    * Added file exclusion support to TAR packaging, given as patterns.
+
 Version 0.56:
 
     * Removed --bit_level argument.
