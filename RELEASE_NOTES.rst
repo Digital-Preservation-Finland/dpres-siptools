@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.58:
+
+    * Change version numbers to meet specifications 1.7.4.
+
 Version 0.57:
 
     * Added support for original filename information to import-object script.
