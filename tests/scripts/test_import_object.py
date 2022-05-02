@@ -277,6 +277,24 @@ def test_import_object_utf8(testpath, run_cli):
                           namespaces=NAMESPACES)) == 1
 
 
+def test_unap_version(testpath, run_cli):
+    """Test that given (:unap) version is normalized as empty.
+    """
+    input_file = "tests/data/structured/Documentation files/readme.txt"
+    arguments = ["--file_format", 'text/plain', '(:unap)',
+                 "--workspace", testpath, input_file]
+    run_cli(import_object.main, arguments)
+
+    # Check output
+    output = get_amd_file(testpath, input_file)
+    tree = ET.parse(output[0])
+    root = tree.getroot()
+    assert len(root.xpath(".//premis:formatName",
+                          namespaces=NAMESPACES)) == 1
+    assert len(root.xpath(".//premis:formatVersion",
+                          namespaces=NAMESPACES)) == 0
+
+
 def test_original_name(testpath, run_cli):
     """Test that given original name is added.
     """
@@ -515,6 +533,8 @@ def test_streams(testpath, run_cli):
                               namespaces=NAMESPACES)) == 1
         assert root.xpath('//premis:formatName',
                           namespaces=NAMESPACES)[0].text == mime
+        assert len(root.xpath('//premis:formatVersion',
+                              namespaces=NAMESPACES)) == 0
         assert not root.xpath('//premis:messageDigest',
                               namespaces=NAMESPACES)
         assert not root.xpath('//premis:relationship',

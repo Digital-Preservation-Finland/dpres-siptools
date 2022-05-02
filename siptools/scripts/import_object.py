@@ -329,8 +329,9 @@ def create_streams(streams, premis_file):
         identifier = premis.identifier(
             identifier_type='UUID',
             identifier_value=id_value)
+        version = "" if stream['version'] == NO_VERSION else stream['version']
         premis_format_des = premis.format_designation(
-            stream['mimetype'], stream['version'])
+            stream['mimetype'], version)
         premis_format = premis.format(child_elements=[premis_format_des])
         premis_objchar = premis.object_characteristics(
             child_elements=[premis_format])
@@ -409,8 +410,9 @@ def create_premis_object(fname, streams, **attributes):
 
         file_format = (streams[0]["mimetype"], format_version)
     else:
-        file_format = (attributes["file_format"][0],
-                       attributes["file_format"][1])
+        version = "" if attributes["file_format"][1] == NO_VERSION else \
+            attributes["file_format"][1]
+        file_format = (attributes["file_format"][0], version)
 
     check_metadata(file_format[0], file_format[1], streams, fname)
 
