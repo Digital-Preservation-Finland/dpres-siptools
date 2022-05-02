@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.59:
+
+    * Bugfix: Normalize (:unap) file format version to be empty value.
+
 Version 0.58:
 
     * Change version numbers to meet specifications 1.7.4.
