@@ -44,6 +44,9 @@ def main(filename, workspace, base_path):
     FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
+    if not os.path.exists(os.path.join(base_path, filename)):
+        raise click.UsageError("File does not exist")
+
     create_audiomd(filename, workspace, base_path)
 
     return 0
@@ -57,11 +60,8 @@ def create_audiomd(filename, workspace="./workspace/", base_path="."):
     :workspace: Workspace path
     :base_path: Base path
     """
-
     filerel = os.path.normpath(filename)
     filepath = os.path.normpath(os.path.join(base_path, filename))
-    if not os.path.exists(filepath):
-        raise click.UsageError("File does not exist")
 
     creator = AudiomdCreator(workspace)
     creator.add_audiomd_md(filepath, filerel)
