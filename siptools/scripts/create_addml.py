@@ -56,6 +56,8 @@ def main(**kwargs):
     FILENAME: Relative path to the file from current directory or from
               --base_path.
     """
+    base_path = kwargs["base_path"]
+    filename = kwargs["filename"]
     if not os.path.exists(os.path.join(base_path, filename)):
         raise click.UsageError("File does not exist")
 
