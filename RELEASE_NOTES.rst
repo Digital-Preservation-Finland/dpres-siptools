@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.60:
+
+    * Check for filename existence when script assumes it (fixes issue #8).
+
 Version 0.59:
 
     * Bugfix: Normalize (:unap) file format version to be empty value.
