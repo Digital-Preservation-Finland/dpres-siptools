@@ -216,7 +216,7 @@ def fix_missing_metadata(stream, filename, allow_unav, allow_zero):
             else:
                 raise ValueError(
                     'Missing metadata value for key %s in '
-                    'index %s for file %s' % (key, index, filename))
+                    'index %s for file %s' % (key, stream('index'), filename))
     return stream
 
 
