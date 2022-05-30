@@ -7,6 +7,7 @@ import os
 import platform
 import sys
 from uuid import uuid4
+import json
 import file_scraper
 
 import click
@@ -141,7 +142,7 @@ def _attribute_values(given_params):
         "checksum": (),
         "date_created": None,
         "order": None,
-        "event_datetime": datetime.datetime.now().isoformat(),
+        "event_datetime": None,
         "event_target": None,
         "stdout": False,
         "supplementary": ()
@@ -179,6 +180,8 @@ def import_object(**kwargs):
                  supplementary: Object type for supplementary files
     """
     attributes = _attribute_values(kwargs)
+    utcnow = datetime.datetime.now().isoformat()
+
     # Loop files and create premis objects
     files = collect_filepaths(dirs=attributes["filepaths"],
                               base=attributes["base_path"])
@@ -220,13 +223,35 @@ def import_object(**kwargs):
 
     creator.write(stdout=attributes["stdout"])
 
+    # Resolve event target
+    event_targets = []
+    if attributes["event_target"] is not None:
+        event_targets = [attributes["event_target"]]
+    else:
+        event_targets = attributes["filepaths"]
+
+    # Resolve event datetime
+    event_datetime = None
+    if attributes["event_datetime"] is None:
+        datetime_file = os.path.join(
+            attributes["workspace"], "import-object-datetime-amd.json")
+        if os.path.isfile(datetime_file):
+            with open(datetime_file, "r") as fin:
+                stored_time = json.load(fin)
+            event_datetime = stored_time["utcnow"]
+        else:
+            with open(datetime_file, "w") as fout:
+                json.dump({"utcnow": utcnow}, fout)
+            event_datetime = utcnow
+    else:
+        event_datetime = attributes["event_datetime"]
+
     # Create events documenting the technical metadata creation
     _create_events(
         workspace=attributes["workspace"],
         base_path=attributes["base_path"],
-        filepaths=attributes["filepaths"],
-        event_datetime=attributes["event_datetime"],
-        event_target=attributes["event_target"],
+        event_datetime=event_datetime,
+        event_targets=event_targets,
         identification_event=not bool(attributes["file_format"]),
         validation_event=is_validated,
         checksum_event=not bool(attributes["checksum"]),
@@ -547,9 +572,8 @@ def _parse_scraper_tools(scraper_info):
 def _create_events(
         workspace,
         base_path,
-        filepaths,
         event_datetime,
-        event_target=None,
+        event_targets,
         identification_event=False,
         validation_event=False,
         checksum_event=False,
@@ -560,9 +584,8 @@ def _create_events(
 
     :workspace: The path to the workspace
     :base_path: Base path (see --base_path)
-    :event_targets: The targets of the metadata creation,
-                    i.e. "filepaths"
     :event_datetime: The timestamp for the event
+    :event_targets: The targets of the metadata creation
     :identification_event: Boolean to indicate whether the file formats
                            were identified during the extraction
                            of technical metadata. If True, creates an
@@ -619,12 +642,6 @@ def _create_events(
     if not checksum_event:
         del events['checksum']
 
-    event_targets = []
-    if event_target:
-        event_targets.append(event_target)
-    else:
-        event_targets = filepaths
-
     for event_name, event in six.iteritems(events):
         found_event = _find_event(workspace,
                                   event['event_type'],
@@ -655,7 +672,7 @@ def _create_events(
                     agent_type='software',
                     agent_role='executing program',
                     create_agent_file='import-object-%s' % event_name)
-        if not found_event or not event_target:
+        if not found_event:
             for target in event_targets:
                 premis_event(event_type=event['event_type'],
                              event_datetime=event['event_datetime'],
@@ -667,6 +684,10 @@ def _create_events(
                              base_path=base_path,
                              event_target=(target,),
                              create_agent_file='import-object-%s' % event_name)
+        agent_file = os.path.join(
+            workspace, "import-object-%s-AGENTS-amd.json" % event_name)
+        if os.path.isfile(agent_file):
+            os.remove(agent_file)
 
 
 def _find_event(workspace,
