@@ -7,6 +7,7 @@ Changes
 Version 0.61:
 
     * Fix incorrect stream handling when finalizing audio or video metadata.
+    * Add installation guide for Python 3.6 in README.rst.
 
 Version 0.60:
 
