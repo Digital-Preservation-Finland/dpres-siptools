@@ -194,30 +194,30 @@ def ensure_str(string, encoding='utf-8', errors='strict'):
     return string
 
 
-def fix_missing_metadata(streams, filename, allow_unav, allow_zero):
+def fix_missing_metadata(stream, filename, allow_unav, allow_zero):
     """Complement missing file stream metadata.
 
     If an element is none, use value (:unav) if allowed in the
     specifications. Otherwise raise exception.
 
-    :streams: Metadata dict of streams
+    :stream: Metadata dict of one stream
     :filename: File name of digital object
     :allow_unav: List of keys where (:unav) is allowed
     :allow_zero: List of keys where 0 is allowed
     """
-    for index, stream in streams.items():
-        for key, element in stream.items():
-            if key in ['mimetype', 'stream_type', 'index', 'version']:
-                continue
-            if element in [None, '(:unav)']:
-                if key in allow_unav:
-                    stream[key] = '(:unav)'
-                elif key in allow_zero:
-                    stream[key] = '0'
-                else:
-                    raise ValueError(
-                        'Missing metadata value for key %s in '
-                        'index %s for file %s' % (key, index, filename))
+    for key, element in stream.items():
+        if key in ['mimetype', 'stream_type', 'index', 'version']:
+            continue
+        if element in [None, '(:unav)']:
+            if key in allow_unav:
+                stream[key] = '(:unav)'
+            elif key in allow_zero:
+                stream[key] = '0'
+            else:
+                raise ValueError(
+                    'Missing metadata value for key %s in '
+                    'index %s for file %s' % (key, index, filename))
+    return stream
 
 
 def encode_path(path, suffix='', prefix='', safe=""):

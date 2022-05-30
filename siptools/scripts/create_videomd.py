@@ -123,13 +123,14 @@ def create_videomd_metadata(filename, filerel=None, workspace=None,
                                       filerel=filerel,
                                       workspace=workspace,
                                       skip_well_check=True)
-    fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     videomd_dict = {}
     for index, stream_md in six.iteritems(streams):
         if stream_md['stream_type'] != 'video':
             continue
 
+        stream_md = fix_missing_metadata(stream_md, filename, ALLOW_UNAV,
+                                         ALLOW_ZERO)
         file_data_elem = _get_file_data(stream_md)
 
         videomd_elem = videomd.create_videomd(

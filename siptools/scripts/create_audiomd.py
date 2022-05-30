@@ -129,12 +129,13 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None,
                                       filerel=filerel,
                                       workspace=workspace,
                                       skip_well_check=True)
-    fix_missing_metadata(streams, filename, ALLOW_UNAV, ALLOW_ZERO)
 
     audiomd_dict = {}
     for index, stream_md in six.iteritems(streams):
         if stream_md['stream_type'] != 'audio':
             continue
+        stream_md = fix_missing_metadata(stream_md, filename, ALLOW_UNAV,
+                                         ALLOW_ZERO)
         stream_md = _fix_data_rate(stream_md)
         file_data_elem = _get_file_data(stream_md)
         audio_info_elem = _get_audio_info(stream_md)
