@@ -94,9 +94,10 @@ SUPPLEMENTARY_TYPES = ["xml_schema"]
     metavar='<EVENT DATETIME>',
     help='Timestamp of the event documenting the script actions.')
 @click.option(
-    '--event_target', type=str,
+    '--event_target', type=str, multiple=True,
     metavar='<EVENT TARGET>',
-    help='Target for events, if it is not given the FILEPATHS are used.')
+    help='Target for events, if it is not given the package root is used. '
+         'May be used multiple times.')
 @click.option(
     '--stdout', is_flag=True, help='Print result also to stdout.')
 @click.option(
@@ -143,7 +144,7 @@ def _attribute_values(given_params):
         "date_created": None,
         "order": None,
         "event_datetime": None,
-        "event_target": None,
+        "event_target": (),
         "stdout": False,
         "supplementary": ()
     }
@@ -174,8 +175,8 @@ def import_object(**kwargs):
                  checksum: Checksum algorithm and value (tuple)
                  date_created: Creation date of a file
                  order: Order number of a file
-                 event_datetime: Timestamp of the event
-                 event_target: The target of the event
+                 event_datetime: Timestamp of the events
+                 event_target: The targets of the events
                  stdout: True prints output to stdout
                  supplementary: Object type for supplementary files
     """
@@ -224,11 +225,9 @@ def import_object(**kwargs):
     creator.write(stdout=attributes["stdout"])
 
     # Resolve event target
-    event_targets = []
-    if attributes["event_target"] is not None:
-        event_targets = [attributes["event_target"]]
-    else:
-        event_targets = attributes["filepaths"]
+    event_target = attributes["event_target"]
+    if not event_target:
+        event_target = (".", )
 
     # Resolve event datetime
     event_datetime = None
@@ -251,7 +250,7 @@ def import_object(**kwargs):
         workspace=attributes["workspace"],
         base_path=attributes["base_path"],
         event_datetime=event_datetime,
-        event_targets=event_targets,
+        event_target=event_target,
         identification_event=not bool(attributes["file_format"]),
         validation_event=is_validated,
         checksum_event=not bool(attributes["checksum"]),
@@ -573,7 +572,7 @@ def _create_events(
         workspace,
         base_path,
         event_datetime,
-        event_targets,
+        event_target,
         identification_event=False,
         validation_event=False,
         checksum_event=False,
@@ -585,7 +584,7 @@ def _create_events(
     :workspace: The path to the workspace
     :base_path: Base path (see --base_path)
     :event_datetime: The timestamp for the event
-    :event_targets: The targets of the metadata creation
+    :event_target: The targets of the metadata creation
     :identification_event: Boolean to indicate whether the file formats
                            were identified during the extraction
                            of technical metadata. If True, creates an
@@ -673,17 +672,16 @@ def _create_events(
                     agent_role='executing program',
                     create_agent_file='import-object-%s' % event_name)
         if not found_event:
-            for target in event_targets:
-                premis_event(event_type=event['event_type'],
-                             event_datetime=event['event_datetime'],
-                             event_detail=event['event_detail'],
-                             event_outcome=event['event_outcome'],
-                             event_outcome_detail=event[
-                                 'event_outcome_detail'],
-                             workspace=workspace,
-                             base_path=base_path,
-                             event_target=(target,),
-                             create_agent_file='import-object-%s' % event_name)
+            premis_event(event_type=event['event_type'],
+                         event_datetime=event['event_datetime'],
+                         event_detail=event['event_detail'],
+                         event_outcome=event['event_outcome'],
+                         event_outcome_detail=event[
+                             'event_outcome_detail'],
+                         workspace=workspace,
+                         base_path=base_path,
+                         event_target=event_target,
+                         create_agent_file='import-object-%s' % event_name)
         agent_file = os.path.join(
             workspace, "import-object-%s-AGENTS-amd.json" % event_name)
         if os.path.isfile(agent_file):

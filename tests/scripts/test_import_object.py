@@ -56,7 +56,7 @@ def test_import_object_ok(testpath, run_cli):
     # Assert that an event has been created
     event_output = get_amd_file(
         testpath,
-        input_file,
+        ".",
         ref_file='premis-event-md-references.jsonl',
         suffix='-PREMIS%3AEVENT-amd.xml')
     event_output_path = os.path.join(testpath, event_output[0])
@@ -324,7 +324,7 @@ def test_import_object_native(testpath, run_cli):
     # Check output
     events_output = get_amd_file(
         testpath,
-        input_file,
+        ".",
         ref_file='premis-event-md-references.jsonl',
         suffix='-PREMIS%3AEVENT-amd.xml'
     )
@@ -599,7 +599,7 @@ def test_import_object_event_agent(
 
     events_output = get_amd_file(
         testpath,
-        input_file,
+        ".",
         ref_file='premis-event-md-references.jsonl',
         suffix='-PREMIS%3AEVENT-amd.xml')
 
@@ -638,7 +638,7 @@ def test_import_object_event_agent(
 
     agent_output = get_amd_file(
         testpath,
-        input_file,
+        ".",
         ref_file='premis-event-md-references.jsonl',
         suffix='-PREMIS%3AAGENT-amd.xml')
     agent_output_path = os.path.join(testpath, agent_output[0])
@@ -648,6 +648,22 @@ def test_import_object_event_agent(
     assert agent_root.xpath(
         './/premis:agentType',
         namespaces=NAMESPACES)[0].text == 'software'
+
+
+def test_import_object_event_target(testpath, run_cli):
+    """Test given event target."""
+    input_file = 'tests/data/structured/Documentation files/readme.txt'
+    arguments = ['--workspace', testpath, '--skip_wellformed_check',
+                 input_file, '--event_target', input_file]
+    run_cli(import_object.main, arguments)
+
+    # Assert that an event with given target has been created
+    event_output = get_amd_file(
+        testpath,
+        input_file,  # Find events targeted to input_file
+        ref_file='premis-event-md-references.jsonl',
+        suffix='-PREMIS%3AEVENT-amd.xml')
+    assert len(event_output) == 3
 
 
 def test_import_object_event_target_date(testpath, run_cli):
