@@ -181,7 +181,7 @@ def import_object(**kwargs):
                  supplementary: Object type for supplementary files
     """
     attributes = _attribute_values(kwargs)
-    utcnow = datetime.datetime.now().isoformat()
+    localtime_now = datetime.datetime.now().isoformat()
 
     # Loop files and create premis objects
     files = collect_filepaths(dirs=attributes["filepaths"],
@@ -237,11 +237,11 @@ def import_object(**kwargs):
         if os.path.isfile(datetime_file):
             with open(datetime_file, "r") as fin:
                 stored_time = json.load(fin)
-            event_datetime = stored_time["utcnow"]
+            event_datetime = stored_time["localtime_now"]
         else:
             with open(datetime_file, "w") as fout:
-                json.dump({"utcnow": utcnow}, fout)
-            event_datetime = utcnow
+                json.dump({"localtime_now": localtime_now}, fout)
+            event_datetime = localtime_now
     else:
         event_datetime = attributes["event_datetime"]
 
