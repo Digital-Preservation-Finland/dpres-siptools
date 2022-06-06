@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.61:
+
+    * Fix incorrect stream handling when finalizing audio or video metadata.
+
 Version 0.60:
 
     * Check for filename existence when script assumes it (fixes issue #8).
