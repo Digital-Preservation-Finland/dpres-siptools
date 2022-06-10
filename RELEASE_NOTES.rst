@@ -7,6 +7,7 @@ Changes
 Version 0.62:
 
     * Add installation guide for Python 3.6 in README.rst.
+    * Update requirements in setup files.
 
 Version 0.61:
 
