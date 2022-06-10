@@ -6,15 +6,8 @@ pytest-cov
 # Install requirements
 lxml
 scandir ; python_version == '2.7'
-file-magic
-pymediainfo
-wand>=0.5.1
-Pillow
 six
-olefile
 click
-M2Crypto
-python-mimeparse
 
 git+https://gitlab.ci.csc.fi/dpres/xml-helpers.git@develop#egg=xml_helpers
 git+https://gitlab.ci.csc.fi/dpres/mets.git@develop#egg=mets
@@ -24,7 +17,6 @@ git+https://gitlab.ci.csc.fi/dpres/nisomix.git@develop#egg=nisomix
 git+https://gitlab.ci.csc.fi/dpres/addml.git@develop#egg=addml
 git+https://gitlab.ci.csc.fi/dpres/audiomd.git@develop#egg=audiomd
 git+https://gitlab.ci.csc.fi/dpres/videomd.git@develop#egg=videomd
-git+https://gitlab.ci.csc.fi/dpres/file-scraper.git@develop#egg=file_scraper
 git+https://gitlab.ci.csc.fi/dpres/ffmpeg-python.git#egg=ffmpeg_python
 git+https://gitlab.ci.csc.fi/dpres/fido.git@develop#egg=opf_fido
-git+https://gitlab.ci.csc.fi/dpres/dpres-ipt.git@develop#egg=ipt
+git+https://gitlab.ci.csc.fi/dpres/file-scraper.git@develop#egg=file_scraper
