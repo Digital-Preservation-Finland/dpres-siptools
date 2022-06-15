@@ -7,7 +7,6 @@ import os
 import platform
 import sys
 from uuid import uuid4
-import json
 import file_scraper
 
 import click
@@ -181,7 +180,7 @@ def import_object(**kwargs):
                  supplementary: Object type for supplementary files
     """
     attributes = _attribute_values(kwargs)
-    localtime_now = datetime.datetime.now().isoformat()
+    utc_hour_now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H+00:00")
 
     # Loop files and create premis objects
     files = collect_filepaths(dirs=attributes["filepaths"],
@@ -232,16 +231,7 @@ def import_object(**kwargs):
     # Resolve event datetime
     event_datetime = None
     if attributes["event_datetime"] is None:
-        datetime_file = os.path.join(
-            attributes["workspace"], "import-object-datetime-amd.json")
-        if os.path.isfile(datetime_file):
-            with open(datetime_file, "r") as fin:
-                stored_time = json.load(fin)
-            event_datetime = stored_time["localtime_now"]
-        else:
-            with open(datetime_file, "w") as fout:
-                json.dump({"localtime_now": localtime_now}, fout)
-            event_datetime = localtime_now
+        event_datetime = utc_hour_now
     else:
         event_datetime = attributes["event_datetime"]
 

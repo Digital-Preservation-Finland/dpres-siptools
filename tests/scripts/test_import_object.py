@@ -650,6 +650,34 @@ def test_import_object_event_agent(
         namespaces=NAMESPACES)[0].text == 'software'
 
 
+def test_import_object_event(testpath, run_cli):
+    """
+    Test that we create only decent number of events when repeating
+    importing. If the calendar hour changes during the test, we may have two
+    events instead of one. This is OK as we create events based on accuracy
+    of a calendar hour.
+    """
+    hour_start = datetime.datetime.utcnow().strftime("%H")
+    images = ["tiff1.tif", "tiff2.tif", "tiff_icc_profile_sRGB.tif"]
+    for img in images:
+        input_file = os.path.join("tests/data/images", img)
+        arguments = ["--workspace", testpath, "--skip_wellformed_check",
+                     "--file_format", "image/tiff", "6.0", "--checksum",
+                     "MD5", "aabbccdd", input_file]
+        run_cli(import_object.main, arguments)
+    hour_end = datetime.datetime.utcnow().strftime("%H")
+
+    # Only one or two events should have been created
+    new_ev_count = 0
+    for filename in os.listdir(testpath):
+        if filename.endswith('-PREMIS%3AEVENT-amd.xml'):
+            new_ev_count += 1
+    if hour_start != hour_end:
+        assert new_ev_count in [1, 2]
+    else:
+        assert new_ev_count == 1
+
+
 def test_import_object_event_target(testpath, run_cli):
     """Test given event target."""
     input_file = 'tests/data/structured/Documentation files/readme.txt'

@@ -518,7 +518,8 @@ def _create_event(
         agent_role='executing program',
         create_agent_file='compile-structmap-agents')
 
-    event_datetime = datetime.datetime.now().isoformat()
+    event_datetime = "{}+00:00".format(
+        datetime.datetime.utcnow().replace(microsecond=0).isoformat())
     premis_event(event_type="creation",
                  event_datetime=event_datetime,
                  event_detail=("Creation of structural metadata with the "
