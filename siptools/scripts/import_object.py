@@ -174,13 +174,14 @@ def import_object(**kwargs):
                  checksum: Checksum algorithm and value (tuple)
                  date_created: Creation date of a file
                  order: Order number of a file
-                 event_datetime: Timestamp of the events
+                 event_datetime: Timestamp of the events. Defaults to
+                                 current date YYYY-MM-DD.
                  event_target: The targets of the events
                  stdout: True prints output to stdout
                  supplementary: Object type for supplementary files
     """
     attributes = _attribute_values(kwargs)
-    utc_hour_now = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H+00:00")
+    utc_date_now = datetime.datetime.utcnow().strftime("%Y-%m-%d+00:00")
 
     # Loop files and create premis objects
     files = collect_filepaths(dirs=attributes["filepaths"],
@@ -231,7 +232,7 @@ def import_object(**kwargs):
     # Resolve event datetime
     event_datetime = None
     if attributes["event_datetime"] is None:
-        event_datetime = utc_hour_now
+        event_datetime = utc_date_now
     else:
         event_datetime = attributes["event_datetime"]
 

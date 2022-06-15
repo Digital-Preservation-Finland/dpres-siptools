@@ -653,11 +653,11 @@ def test_import_object_event_agent(
 def test_import_object_event(testpath, run_cli):
     """
     Test that we create only decent number of events when repeating
-    importing. If the calendar hour changes during the test, we may have two
+    importing. If the calendar day changes during the test, we may have two
     events instead of one. This is OK as we create events based on accuracy
-    of a calendar hour.
+    of a calendar day.
     """
-    hour_start = datetime.datetime.utcnow().strftime("%H")
+    day_start = datetime.datetime.utcnow().strftime("%d")
     images = ["tiff1.tif", "tiff2.tif", "tiff_icc_profile_sRGB.tif"]
     for img in images:
         input_file = os.path.join("tests/data/images", img)
@@ -665,14 +665,14 @@ def test_import_object_event(testpath, run_cli):
                      "--file_format", "image/tiff", "6.0", "--checksum",
                      "MD5", "aabbccdd", input_file]
         run_cli(import_object.main, arguments)
-    hour_end = datetime.datetime.utcnow().strftime("%H")
+    day_end = datetime.datetime.utcnow().strftime("%d")
 
     # Only one or two events should have been created
     new_ev_count = 0
     for filename in os.listdir(testpath):
         if filename.endswith('-PREMIS%3AEVENT-amd.xml'):
             new_ev_count += 1
-    if hour_start != hour_end:
+    if day_start != day_end:
         assert new_ev_count in [1, 2]
     else:
         assert new_ev_count == 1
