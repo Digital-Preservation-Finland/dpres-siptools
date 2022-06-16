@@ -181,7 +181,7 @@ def import_object(**kwargs):
                  supplementary: Object type for supplementary files
     """
     attributes = _attribute_values(kwargs)
-    utc_date_now = datetime.datetime.utcnow().strftime("%Y-%m-%d+00:00")
+    date_now = datetime.datetime.utcnow().date().isoformat()
 
     # Loop files and create premis objects
     files = collect_filepaths(dirs=attributes["filepaths"],
@@ -232,7 +232,7 @@ def import_object(**kwargs):
     # Resolve event datetime
     event_datetime = None
     if attributes["event_datetime"] is None:
-        event_datetime = utc_date_now
+        event_datetime = date_now
     else:
         event_datetime = attributes["event_datetime"]
 
