@@ -56,8 +56,9 @@ click.disable_unicode_literals_warning = True
               help='Identifier for content. Defaults to <OBJID>.')
 @click.option('--create_date',
               type=str,
-              default='{}+00:00'.format(datetime.datetime.utcnow().replace(
-                  microsecond=0).isoformat()),
+              default=lambda: '{}+00:00'.format(
+                  datetime.datetime.utcnow().replace(
+                      microsecond=0).isoformat()),
               metavar='<CREATION DATE>',
               help='SIP create datetime formatted as '
                    'yyyy-mm-ddThh:mm:ss. Defaults to current time.')
