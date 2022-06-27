@@ -94,10 +94,9 @@ SUPPLEMENTARY_TYPES = ["xml_schema"]
     metavar='<EVENT DATETIME>',
     help='Timestamp of the event documenting the script actions.')
 @click.option(
-    '--event_target', type=str, multiple=True,
+    '--event_target', type=str,
     metavar='<EVENT TARGET>',
-    help='Target for events, if it is not given the package root is used. '
-         'May be used multiple times.')
+    help='Target for events, if it is not given the package root is used.')
 @click.option(
     '--stdout', is_flag=True, help='Print result also to stdout.')
 @click.option(
@@ -144,7 +143,7 @@ def _attribute_values(given_params):
         "date_created": None,
         "order": None,
         "event_datetime": None,
-        "event_target": (),
+        "event_target": None,
         "stdout": False,
         "supplementary": ()
     }
@@ -177,7 +176,7 @@ def import_object(**kwargs):
                  order: Order number of a file
                  event_datetime: Timestamp of the events. Defaults to
                                  current date YYYY-MM-DD.
-                 event_target: The targets of the events
+                 event_target: The target of the events
                  stdout: True prints output to stdout
                  supplementary: Object type for supplementary files
     """
@@ -228,7 +227,7 @@ def import_object(**kwargs):
     # Resolve event target
     event_target = attributes["event_target"]
     if not event_target:
-        event_target = (".", )
+        event_target = "."
 
     # Resolve event datetime
     event_datetime = None
@@ -576,7 +575,7 @@ def _create_events(
     :workspace: The path to the workspace
     :base_path: Base path (see --base_path)
     :event_datetime: The timestamp for the event
-    :event_target: The targets of the metadata creation
+    :event_target: The target of the metadata creation
     :identification_event: Boolean to indicate whether the file formats
                            were identified during the extraction
                            of technical metadata. If True, creates an
@@ -642,6 +641,7 @@ def _create_events(
                                   event['event_outcome_detail'])
 
         if not found_event:
+
             if event_name == 'checksum':
                 create_agent(
                     workspace=workspace,
@@ -650,6 +650,7 @@ def _create_events(
                     agent_type='software',
                     agent_role='executing program',
                     create_agent_file='import-object-%s' % event_name)
+
             for agent in agents:
                 if event_name == 'identification' and not agent['detector']:
                     continue
@@ -663,7 +664,7 @@ def _create_events(
                     agent_type='software',
                     agent_role='executing program',
                     create_agent_file='import-object-%s' % event_name)
-        if not found_event:
+
             premis_event(event_type=event['event_type'],
                          event_datetime=event['event_datetime'],
                          event_detail=event['event_detail'],
@@ -672,15 +673,16 @@ def _create_events(
                              'event_outcome_detail'],
                          workspace=workspace,
                          base_path=base_path,
-                         event_target=event_target,
+                         event_target=(event_target, ),
                          create_agent_file='import-object-%s' % event_name)
-        agent_file = os.path.join(
-            workspace, "import-object-%s-AGENTS-amd.json" % event_name)
-        try:
-            os.remove(agent_file)
-        except OSError as exc:  # FileNotFoundError on Python 3
-            if exc.errno != errno.ENOENT:
-                raise
+
+            agent_file = os.path.join(
+                workspace, "import-object-%s-AGENTS-amd.json" % event_name)
+            try:
+                os.remove(agent_file)
+            except OSError as exc:  # FileNotFoundError on Python 3
+                if exc.errno != errno.ENOENT:
+                    raise
 
 
 def _find_event(workspace,
