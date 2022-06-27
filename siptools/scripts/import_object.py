@@ -7,11 +7,12 @@ import os
 import platform
 import sys
 from uuid import uuid4
-import file_scraper
+import errno
 
 import click
 import six
 
+import file_scraper
 import premis
 from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import scrape_file, calc_checksum
