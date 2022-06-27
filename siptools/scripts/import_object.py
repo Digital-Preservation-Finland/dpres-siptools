@@ -675,8 +675,11 @@ def _create_events(
                          create_agent_file='import-object-%s' % event_name)
         agent_file = os.path.join(
             workspace, "import-object-%s-AGENTS-amd.json" % event_name)
-        if os.path.isfile(agent_file):
+        try:
             os.remove(agent_file)
+        except OSError as exc:  # FileNotFoundError on Python 3
+            if exc.errno != errno.ENOENT:
+                raise
 
 
 def _find_event(workspace,
