@@ -4,6 +4,13 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.63:
+
+    * Change all timestamps to UTC, and by default.
+    * Store only date without time for the provenance information created in
+      import-object, and set the package as default target. This avoids
+      unreasonable number of events to be created.
+
 Version 0.62:
 
     * Add installation guide for Python 3.6 in README.rst.

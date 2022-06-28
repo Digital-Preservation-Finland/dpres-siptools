@@ -308,13 +308,14 @@ same provenance metadata each time import-object is run::
 
 The example above allows import-object to be run multiple times for different file paths
 while still creating the provenance metadata only once with the timestamp ``2020-06-05`` and
-linking the provenance metadata to the package root ``.``.
+linking the provenance metadata to the package root ``.``. This is also the default
+behaviour of the import-object script (timestamp of a current day without time and target
+link to package root).
 
 **Note that is highly recommended to use both arguments if import-object is run
 separately for each individual digital object in a package!** By supplying the same
 values for these arguments each time the script is run all digital objects will link
-to the same provenance metadata in the METS document. Otherwise, new provenance
-metadata is created each time the script is run.
+to the same provenance metadata in the METS document.
 
 For documenting the source of the descriptive metadata, the script import-description
 has two arguments:, ``--dmd_source`` and ``--dmd_agent``. These are used for documenting
