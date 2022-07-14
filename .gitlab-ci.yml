@@ -1,7 +1,8 @@
 ---
 
 variables:
-  CI_PYTHON_UNIVERSAL: "yes"
+  CI_PYTHON_3: "yes"
+  CI_PYTHON_2_VENV: "yes"
 
 include:
   - project: 'dpres/gitlab-ci-pipeline'
