@@ -1,7 +1,6 @@
 ---
 
 variables:
-  CI_PYTHON_3: "yes"
   CI_PYTHON_2_VENV: "yes"
 
 include:
