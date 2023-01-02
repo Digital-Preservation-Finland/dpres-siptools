@@ -86,13 +86,10 @@ SUPPLEMENTARY_TYPES = ["xml_schema"]
     metavar='<ISO-8601 TIME>',
     help='The actual or approximate date and time the object was created.')
 @click.option(
-    '--creating_application', type=str,
-    metavar='<SOFTWARE NAME>',
-    help='The software that was used to create this object.')
-@click.option(
-    '--creating_application_version', type=str,
-    metavar='<SOFTWARE VERSION>',
-    help='The version of the software that was used to create this object.')
+    '--creating_application', nargs=2, type=str,
+    metavar='<SOFTWARE NAME> <SOFTWARE VERSION>',
+    help='The software and software version that was used to create the '
+         'object. Use "" for empty version string.')
 @click.option(
     '--order', type=int,
     metavar='<ORDER NUMBER>',
@@ -149,8 +146,7 @@ def _attribute_values(given_params):
         "identifier": (),
         "checksum": (),
         "date_created": None,
-        "creating_application": None,
-        "creating_application_version": None,
+        "creating_application": (),
         "order": None,
         "event_datetime": None,
         "event_target": None,
@@ -183,9 +179,8 @@ def import_object(**kwargs):
                  identifier: File identifier type and value (tuple)
                  checksum: Checksum algorithm and value (tuple)
                  date_created: Creation date of a file
-                 creating_application: Software that created the file
-                 creating_application_version: Software version of creating
-                                               application
+                 creating_application: Software and it's version that created
+                                       the file
                  order: Order number of a file
                  event_datetime: Timestamp of the events. Defaults to
                                  current date YYYY-MM-DD.
@@ -417,9 +412,8 @@ def create_premis_object(fname, streams, **attributes):
                  identifier: File identifier type and value (tuple)
                  checksum: Checksum algorithm and value (tuple)
                  date_created: Creation date of a file
-                 creating_application: Software that created the file
-                 creating_application_version: Software version of creating
-                                               application
+                 creating_application: Software and it's version that created
+                                       the file
     :returns: PREMIS object as etree
     :raises: ValueError if character set is invalid for text files.
     """
@@ -428,8 +422,10 @@ def create_premis_object(fname, streams, **attributes):
     if not attributes["checksum"]:
         attributes["checksum"] = ("MD5", calc_checksum(fname))
 
-    application = attributes.get("creating_application", None)
-    application_version = attributes.get("creating_application_version", None)
+    application = None
+    application_version = None
+    if attributes["creating_application"]:
+        (application, application_version) = attributes["creating_application"]
 
     if streams[0]['stream_type'] == 'text':
         charset = attributes["charset"] or streams[0]['charset']

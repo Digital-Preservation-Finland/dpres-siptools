@@ -246,6 +246,23 @@ def test_import_object_format_registry(testpath, run_cli):
                       namespaces=NAMESPACES)[0].text == 'test-key'
 
 
+def test_import_object_creating_application(testpath, run_cli):
+    """Test adding creating application metadata."""
+    input_file = 'tests/data/structured/Documentation files/readme.txt'
+    arguments = ['--workspace', testpath, '--skip_wellformed_check',
+                 '--creating_application', 'My app', '1.0', input_file]
+    run_cli(import_object.main, arguments)
+
+    output = get_amd_file(testpath, input_file)
+    tree = ET.parse(output[0])
+    root = tree.getroot()
+
+    assert root.xpath('//premis:creatingApplicationName',
+                      namespaces=NAMESPACES)[0].text == 'My app'
+    assert root.xpath('//premis:creatingApplicationVersion',
+                      namespaces=NAMESPACES)[0].text == '1.0'
+
+
 def test_import_object_utf8(testpath, run_cli):
     """Test that import_object supports utf-8.
 
