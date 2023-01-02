@@ -184,7 +184,8 @@ def import_object(**kwargs):
                  checksum: Checksum algorithm and value (tuple)
                  date_created: Creation date of a file
                  creating_application: Software that created the file
-                 creating_application_version: Software version of creating application
+                 creating_application_version: Software version of creating
+                                               application
                  order: Order number of a file
                  event_datetime: Timestamp of the events. Defaults to
                                  current date YYYY-MM-DD.
@@ -417,18 +418,20 @@ def create_premis_object(fname, streams, **attributes):
                  checksum: Checksum algorithm and value (tuple)
                  date_created: Creation date of a file
                  creating_application: Software that created the file
-                 creating_application_version: Software version of creating application
+                 creating_application_version: Software version of creating
+                                               application
     :returns: PREMIS object as etree
     :raises: ValueError if character set is invalid for text files.
     """
     attributes = _attribute_values(attributes)
+    date_created = attributes["date_created"] or creation_date(fname)
     if not attributes["checksum"]:
         attributes["checksum"] = ("MD5", calc_checksum(fname))
-    date_created = attributes["date_created"] or creation_date(fname)
+
     if attributes["creating_application"]:
-        creating_application = attributes["creating_application"]
+        application = attributes["creating_application"]
     if attributes["creating_application_version"]:
-        creating_application_version = attributes["creating_application_version"]    
+        application_version = attributes["creating_application_version"]
     if streams[0]['stream_type'] == 'text':
         charset = attributes["charset"] or streams[0]['charset']
     else:
@@ -479,15 +482,20 @@ def create_premis_object(fname, streams, **attributes):
             attributes["format_registry"][1])
         premis_format = premis.format(child_elements=[premis_format_des,
                                                       premis_registry])
-    creating_application_elements = []
-    if creating_application:
-        creating_application_elements.append(premis.creating_application_name(creating_application))
-    if creating_application_version:
-        creating_application_elements.append(premis.creating_application_version(creating_application_version))
-    creating_application_elements.append(premis.date_created(date_created))
+    application_elements = []
+    if application:
+        application_elements.append(
+            premis.creating_application_name(application)
+        )
+    if application_version:
+        application_elements.append(
+            premis.creating_application_version(application_version)
+        )
+    application_elements.append(premis.date_created(date_created))
 
-    premis_create = \
-        premis.creating_application(child_elements=creating_application_elements)
+    premis_create = premis.creating_application(
+        child_elements=application_elements
+    )
     premis_objchar = premis.object_characteristics(
         child_elements=[premis_fixity, premis_format, premis_create])
 
