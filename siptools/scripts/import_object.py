@@ -428,10 +428,9 @@ def create_premis_object(fname, streams, **attributes):
     if not attributes["checksum"]:
         attributes["checksum"] = ("MD5", calc_checksum(fname))
 
-    if attributes["creating_application"]:
-        application = attributes["creating_application"]
-    if attributes["creating_application_version"]:
-        application_version = attributes["creating_application_version"]
+    application = attributes.get("creating_application", None)
+    application_version = attributes.get("creating_application_version", None)
+
     if streams[0]['stream_type'] == 'text':
         charset = attributes["charset"] or streams[0]['charset']
     else:
