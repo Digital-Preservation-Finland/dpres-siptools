@@ -179,7 +179,7 @@ def import_object(**kwargs):
                  identifier: File identifier type and value (tuple)
                  checksum: Checksum algorithm and value (tuple)
                  date_created: Creation date of a file
-                 creating_application: Software and it's version that created
+                 creating_application: Software and its version that created
                                        the file
                  order: Order number of a file
                  event_datetime: Timestamp of the events. Defaults to
@@ -412,7 +412,7 @@ def create_premis_object(fname, streams, **attributes):
                  identifier: File identifier type and value (tuple)
                  checksum: Checksum algorithm and value (tuple)
                  date_created: Creation date of a file
-                 creating_application: Software and it's version that created
+                 creating_application: Software and its version that created
                                        the file
     :returns: PREMIS object as etree
     :raises: ValueError if character set is invalid for text files.
