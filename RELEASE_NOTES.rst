@@ -4,6 +4,11 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.64:
+
+    * Add support for information about the application that created the
+      object.
+
 Version 0.63:
 
     * Change all timestamps to UTC, and by default.
