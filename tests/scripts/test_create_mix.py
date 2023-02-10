@@ -78,7 +78,7 @@ def test_create_mix():
     """
 
     xml = create_mix.create_mix_metadata(
-        'tests/data/images/tiff_icc_profile_sRGB.tif')
+        'tests/data/images/tiff_icc_profile_sRGB.tif')['0']
     namespaces = {'mix': "http://www.loc.gov/mix/v20"}
 
     # compression
@@ -165,17 +165,17 @@ def test_existing_scraper_result(testpath):
             as outfile:
         json.dump(stream_dict, outfile)
 
-    mix = create_mix.create_mix_metadata(file_, workspace=testpath)
+    mix = create_mix.create_mix_metadata(file_, workspace=testpath)['0']
     path = "//mix:imageWidth"
     assert mix.xpath(path, namespaces=namespaces)[0].text == '1234'
 
 
 def test_mix_multiple_images():
-    """Test ``create_mix`` functions raises error if there are multiple
-    images present.
+    """Test multiple images in a TIFF file.
     """
-    with pytest.raises(ValueError):
-        create_mix.create_mix_metadata("tests/data/images/multiple_images.tif")
+    xml_dict = create_mix.create_mix_metadata(
+        'tests/data/images/multiple_images.tif')
+    assert len(xml_dict) == 7
 
 
 @pytest.mark.parametrize("file_, base_path", [

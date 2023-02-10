@@ -93,10 +93,16 @@ class MixCreator(MetsSectionCreator):
         """
 
         # Create MIX metadata
-        mix = create_mix_metadata(filepath, filerel, self.workspace)
-        if mix is not None:
-            self.add_md(metadata=mix,
+        mix_dict = create_mix_metadata(filepath, filerel, self.workspace)
+
+        if '0' in mix_dict and len(mix_dict) == 1:
+            self.add_md(metadata=mix_dict['0'],
                         filename=(filerel if filerel else filepath))
+        else:
+            for index, mix in six.iteritems(mix_dict):
+                self.add_md(metadata=mix,
+                            filename=(filerel if filerel else filepath),
+                            stream=index)
 
     # Change the default write parameters
     # pylint: disable=too-many-arguments
@@ -136,30 +142,41 @@ def check_missing_metadata(stream, filename):
 
 
 def create_mix_metadata(filename, filerel=None, workspace=None, streams=None):
-    """Create MIX metadata XML element for an image file.
+    """Create MIX metadata for an image file.
 
     :filename: Image file name
     :filerel: Image file name relative to base path
     :workspace: Workspace path
     :streams: Metadata dict of streams. Will be created if None.
-    :returns: MIX XML element
+    :returns: Dict of MIX XML elements
     """
     if streams is None:
         (streams, _, _) = scrape_file(filepath=filename,
                                       filerel=filerel,
                                       workspace=workspace,
                                       skip_well_check=True)
-    stream_md = streams[0]
-    check_missing_metadata(stream_md, filename)
 
-    if stream_md['stream_type'] != 'image':
-        print("This is not an image file. No MIX metadata created.")
-        return None
-    if len(streams) > 1:
-        raise MixGenerationError(
-            'File containing multiple images not supported. File: ', filename
-        )
+    mix_dict = {}
+    for index, stream_md in six.iteritems(streams):
 
+        check_missing_metadata(stream_md, filename)
+
+        if stream_md['stream_type'] != 'image':
+            print("This is not an image file. No MIX metadata created.")
+            return None
+
+        mix_dict[six.text_type(index)] = _create_mix_item(stream_md, filename)
+
+    return mix_dict
+
+
+def _create_mix_item(stream_md, filename):
+    """
+    Create a single MIX metadata item.
+    :stream_md: Item from metadata stream dict
+    :filename: Image file name
+    :returns: MIX XML metadata of a single image
+    """
     mix_compression = nisomix.compression(
         compression_scheme=stream_md["compression"])
     if 'byte_order' not in stream_md:

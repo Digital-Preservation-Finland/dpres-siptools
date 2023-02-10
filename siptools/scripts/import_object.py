@@ -373,8 +373,8 @@ def check_metadata(mimetype, version, streams, fname):
     """Validate metadata.
 
     Check that we will not get None nor (:unav) values to mimetype and
-    version. Check that multiple streams are found and found only in
-    video containers.
+    version. Check that multiple streams are found in
+    video containers, and exist only for images or video containers.
 
     :mimetype: MIME type
     :version: File format version
@@ -388,10 +388,10 @@ def check_metadata(mimetype, version, streams, fname):
     if version in [None, "(:unav)"]:
         raise ValueError('File format version could not be identified for '
                          'file %s' % fname)
-    if streams[0]['stream_type'] not in ['videocontainer'] and \
+    if streams[0]['stream_type'] not in ['videocontainer', 'image'] and \
             len(streams) > 1:
         raise ValueError('The file contains multiple streams which '
-                         'is supported only for video containers.')
+                         'is supported only for images and video containers.')
     if streams[0]['stream_type'] in ['videocontainer'] and len(streams) < 2:
         raise ValueError('Video container format without contained streams '
                          'found.')

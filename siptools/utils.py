@@ -704,7 +704,7 @@ def add_file_to_filesec(all_amd_refs,
         use=use
     )
 
-    streams = get_objectlist(object_refs, path)
+    streams = all_amd_refs[path]["streams"]
     if streams:
         for stream in streams:
             stream_ids = get_md_references(refs_dict=all_amd_refs,
