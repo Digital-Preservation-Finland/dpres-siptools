@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.65:
+
+    * Change version numbers and metadata formats to meet specifications 1.7.5.
+
 Version 0.64:
 
     * Add support for information about the application that created the

@@ -49,7 +49,10 @@ METS_MDTYPES = {
         'mdtype': 'OTHER', 'othermdtype': 'EAD3', 'version': '1.1.1'
     },
     'urn:isbn:1-931666-33-4': {
-        'mdtype': 'EAC', 'version': '2010_revised'
+        'mdtype': 'EAC-CPF', 'version': '2010_revised'
+    },
+    'https://archivists.org/ns/eac/v2': {
+        'mdtype': 'EAC-CPF', 'version': '2.0'
     },
     'http://www.lido-schema.org': {
         'mdtype': 'LIDO', 'version': '1.0'
@@ -96,9 +99,9 @@ METS_PROFILE = {
 
 METS_SCHEMA = 'http://digitalpreservation.fi/schemas/mets/mets.xsd'
 
-METS_CATALOG = "1.7.4"
+METS_CATALOG = "1.7.5"
 
-METS_SPECIFICATION = "1.7.4"
+METS_SPECIFICATION = "1.7.5"
 
 RECORD_STATUS_TYPES = [
     'submission',
