@@ -364,7 +364,7 @@ def create_streams(streams, premis_file):
         premis_list[index] = el_premis_object
 
         premis_file.append(
-            premis.relationship('structural', 'includes', el_premis_object))
+            premis.relationship('structural', 'includes', [el_premis_object]))
 
     return premis_list
 
