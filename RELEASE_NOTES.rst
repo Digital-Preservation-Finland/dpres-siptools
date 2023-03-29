@@ -4,6 +4,11 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.66:
+
+    * Python 2.7 support officially removed.
+    * Adapt to API change of PREMIS library.
+
 Version 0.65:
 
     * Change version numbers and metadata formats to meet specifications 1.7.5.

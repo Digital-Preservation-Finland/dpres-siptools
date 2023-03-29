@@ -16,25 +16,20 @@ The Pre-Ingest Tool currently supports the specification version 1.7.5.
 Release notes and backwards compability
 ---------------------------------------
 
-See RELEASE-NOTES.rst
+See RELEASE_NOTES.rst
 
 Installation
 ------------
 
-Installation and usage requires Python 2.7, or 3.6 or newer.
-The software is tested with Python 3.6 on Centos 7.x release. Python 2.7 support will be removed in the future.
+Installation and usage requires Python 3.6 or newer.
+The software is tested with Python 3.6 on Centos 7.x release.
 
 Packages openssl-devel, swig and gcc are required in your system to install M2Crypto,
 which is used for signing the packages with digital signature.
 
-For Python 3.6 or newer, create a virtual environment::
+Create a virtual environment::
     
     python3 -m venv venv
-
-For Python 2.7, get python-virtualenv software and create a virtual environment::
-
-    sudo yum install python-virtualenv
-    virtualenv venv
 
 Run the following to activate the virtual environment::
 
@@ -42,8 +37,7 @@ Run the following to activate the virtual environment::
 
 Install the required software with commands::
 
-    pip install --upgrade pip==20.2.4 setuptools  # Only for Python 3.6 or newer
-    pip install --upgrade pip setuptools          # Only for Python 2.7
+    pip install --upgrade pip==20.2.4 setuptools
     pip install -r requirements_github.txt
     pip install .
 
