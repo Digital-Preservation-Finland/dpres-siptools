@@ -2,6 +2,7 @@
 
 variables:
   CI_UPLOAD_DOCUMENTATION: "yes"
+  CI_EL9: "yes"
 
 include:
   - project: 'dpres/gitlab-ci-pipeline'
