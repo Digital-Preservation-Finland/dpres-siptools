@@ -34,27 +34,10 @@ def main():
             "scandir ; python_version == '2.7'",
             "six",
             "click",
-            "xml_helpers@git+https://gitlab.ci.csc.fi/dpres/"
-            "xml-helpers.git@develop#egg=xml_helpers",
-            "mets@git+https://gitlab.ci.csc.fi/dpres/mets.git"
-            "@develop#egg=mets",
-            "premis@git+https://gitlab.ci.csc.fi/dpres/premis.git"
-            "@develop#egg=premis",
-            "dpres_signature@git+https://gitlab.ci.csc.fi/dpres/"
-            "dpres-signature.git@develop#egg=dpres_signature",
-            "nisomix@git+https://gitlab.ci.csc.fi/dpres/nisomix.git"
-            "@develop#egg=nisomix",
-            "addml@git+https://gitlab.ci.csc.fi/dpres/addml.git"
-            "@develop#egg=addml",
-            "audiomd@git+https://gitlab.ci.csc.fi/dpres/audiomd.git"
-            "@develop#egg=audiomd",
-            "videomd@git+https://gitlab.ci.csc.fi/dpres/videomd.git"
-            "@develop#egg=videomd",
-            "file_scraper@git+https://gitlab.ci.csc.fi/dpres/"
-            "file-scraper.git@develop#egg=file_scraper"
         ],
         entry_points={'console_scripts': scripts_list()}
     )
+
 
 if __name__ == '__main__':
     main()
