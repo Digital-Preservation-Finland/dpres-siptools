@@ -19,16 +19,6 @@ URL:            http://www.csc.fi
 Source0:        %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build_number}-g%{file_commit_ref}.%{file_ext}
 BuildArch:      noarch
 
-Requires: %{py3_dist addml}
-Requires: %{py3_dist audiomd}
-Requires: %{py3_dist dpres-signature}
-Requires: %{py3_dist file-scraper}
-Requires: %{py3_dist mets}
-Requires: %{py3_dist nisomix}
-Requires: %{py3_dist premis}
-Requires: %{py3_dist videomd}
-Requires: %{py3_dist xml-helpers}
-
 BuildRequires: python3-devel
 BuildRequires: python3-dpres-ipt
 BuildRequires: python3-file-scraper-full
@@ -46,6 +36,15 @@ Command line tools for creating Submission information packages (SIP) for preser
 
 %package -n python3-dpres-siptools
 Summary: %{summary}
+Requires: %{py3_dist addml}
+Requires: %{py3_dist audiomd}
+Requires: %{py3_dist dpres-signature}
+Requires: %{py3_dist file-scraper}
+Requires: %{py3_dist mets}
+Requires: %{py3_dist nisomix}
+Requires: %{py3_dist premis}
+Requires: %{py3_dist videomd}
+Requires: %{py3_dist xml-helpers}
 
 %description -n python3-dpres-siptools %_description
 
