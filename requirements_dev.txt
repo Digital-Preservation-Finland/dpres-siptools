@@ -5,7 +5,6 @@ pytest-cov
 
 # Install requirements
 lxml
-scandir ; python_version == '2.7'
 six
 click
 
