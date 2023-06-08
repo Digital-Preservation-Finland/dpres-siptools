@@ -94,15 +94,10 @@ class MixCreator(MetsSectionCreator):
 
         # Create MIX metadata
         mix_dict = create_mix_metadata(filepath, filerel, self.workspace)
-
-        if '0' in mix_dict and len(mix_dict) == 1:
-            self.add_md(metadata=mix_dict['0'],
-                        filename=(filerel if filerel else filepath))
-        else:
-            for index, mix in six.iteritems(mix_dict):
-                self.add_md(metadata=mix,
-                            filename=(filerel if filerel else filepath),
-                            stream=index)
+        for index, mix in mix_dict.items():
+            self.add_md(metadata=mix,
+                        filename=(filerel if filerel else filepath),
+                        stream=(index if len(mix_dict) > 1 else None))
 
     # Change the default write parameters
     # pylint: disable=too-many-arguments
@@ -157,15 +152,15 @@ def create_mix_metadata(filename, filerel=None, workspace=None, streams=None):
                                       skip_well_check=True)
 
     mix_dict = {}
-    for index, stream_md in six.iteritems(streams):
 
+    for index, stream_md in streams.items():
         check_missing_metadata(stream_md, filename)
 
         if stream_md['stream_type'] != 'image':
             print("This is not an image file. No MIX metadata created.")
             return None
 
-        mix_dict[six.text_type(index)] = _create_mix_item(stream_md, filename)
+        mix_dict[str(index)] = _create_mix_item(stream_md, filename)
 
     return mix_dict
 
