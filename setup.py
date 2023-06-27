@@ -31,7 +31,6 @@ def main():
         version=get_version(),
         install_requires=[
             "lxml",
-            "scandir ; python_version == '2.7'",
             "six",
             "click",
         ],
