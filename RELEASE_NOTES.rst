@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.67:
+
+    * Add support for multi-image files.
+
 Version 0.66:
 
     * Python 2.7 support officially removed.
