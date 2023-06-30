@@ -1,11 +1,17 @@
 """End to end test for the siptools package."""
-from __future__ import unicode_literals
+from __future__ import print_function, unicode_literals
 
 import os
 import subprocess
 import sys
 import pytest
+import optparse
 
+from file_scraper.schematron.schematron_scraper import SchematronScraper
+
+from ipt.utils import concat
+from ipt.six_utils import ensure_text
+from multiprocessing import Process
 
 @pytest.mark.e2e
 def test_end_to_end(testpath):
@@ -106,10 +112,20 @@ def test_end_to_end(testpath):
     ]
     for rule in schematron_rules:
         rule_path = os.path.join(schematron_path, rule)
-        command = [
-            python, '-m' 'ipt.scripts.check_xml_schematron_features', '-s',
-            rule_path, os.path.join(testpath, file_to_sign)
-        ]
-        child = subprocess.Popen(command, env=environment)
-        child.communicate()
-        assert child.returncode == 0
+        _check_xml_schematron_features(rule_path, os.path.join(testpath, file_to_sign))
+
+def _check_xml_schematron_features(schemapath, filename):
+
+    if os.path.isdir(filename):
+        filename = os.path.join(filename, 'mets.xml')
+
+    scraper = SchematronScraper(
+        filename, mimetype="text/xml",
+        params={"schematron": schemapath})
+    scraper.scrape_file()
+
+    error_string = ensure_text(concat(scraper.errors()).strip())
+    assert not error_string
+
+    assert not scraper.well_formed
+
