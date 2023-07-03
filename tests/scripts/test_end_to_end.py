@@ -9,7 +9,6 @@ import optparse
 
 from file_scraper.schematron.schematron_scraper import SchematronScraper
 
-from ipt.six_utils import ensure_text
 from multiprocessing import Process
 
 @pytest.mark.e2e
@@ -126,3 +125,33 @@ def test_end_to_end(testpath):
 
         assert not scraper.well_formed
         
+def concat(lines, prefix=''):
+    """Join given list of strings to single string separated with newlines.
+
+    :lines: List of string to join
+    :prefix: Prefix to prepend each line with
+    :returns: Joined lines as string
+
+    """
+    return '\n'.join(['%s%s' % (prefix, line) for line in lines])
+
+def ensure_text(s, encoding='utf-8', errors='strict'):
+    """Coerce *s* to six.text_type.
+
+    For Python 2:
+      - `unicode` -> `unicode`
+      - `str` -> `unicode`
+
+    For Python 3:
+      - `str` -> `str`
+      - `bytes` -> decoded to `str`
+
+    Direct copy from release 1.12::
+
+        https://github.com/benjaminp/six/blob/master/six.py#892
+    """
+    if isinstance(s, six.binary_type):
+        return s.decode(encoding, errors)
+    if isinstance(s, six.text_type):
+        return s
+    raise TypeError("not expecting type '%s'" % type(s))
