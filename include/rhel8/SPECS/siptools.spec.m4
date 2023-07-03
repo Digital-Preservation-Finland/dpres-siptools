@@ -23,6 +23,7 @@ BuildArch:      noarch
 Requires:       python3 dpres-signature xml-helpers mets premis nisomix addml
 Requires:       audiomd videomd file-scraper-core python3-click
 Requires:       python3-magic python3-six
+Requires:       python3-warc-tools >= 4.8.3
 BuildRequires:  python3-setuptools file-scraper-full openssl-devel
 
 %description

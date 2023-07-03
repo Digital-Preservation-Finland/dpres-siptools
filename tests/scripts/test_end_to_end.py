@@ -111,21 +111,19 @@ def test_end_to_end(testpath):
         'mets_videomd.sch'
     ]
     for rule in schematron_rules:
-        rule_path = os.path.join(schematron_path, rule)
-        _check_xml_schematron_features(rule_path, os.path.join(testpath, file_to_sign))
+        schemapath = os.path.join(schematron_path, rule)
+        filename = os.path.join(testpath, file_to_sign)
 
-def _check_xml_schematron_features(schemapath, filename):
+        if os.path.isdir(filename):
+            filename = os.path.join(filename, 'mets.xml')
 
-    if os.path.isdir(filename):
-        filename = os.path.join(filename, 'mets.xml')
+        scraper = SchematronScraper(
+            filename, mimetype="text/xml",
+            params={"schematron": schemapath})
+        scraper.scrape_file()
 
-    scraper = SchematronScraper(
-        filename, mimetype="text/xml",
-        params={"schematron": schemapath})
-    scraper.scrape_file()
+        error_string = ensure_text(concat(scraper.errors()).strip())
+        assert not error_string
 
-    error_string = ensure_text(concat(scraper.errors()).strip())
-    assert not error_string
-
-    assert not scraper.well_formed
-
+        assert not scraper.well_formed
+        
