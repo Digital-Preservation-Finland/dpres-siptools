@@ -20,11 +20,13 @@ Source0:        %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 
+%define __requires_exclude python3-warc-tools
+
 Requires:       python3 python3-dpres-signature python3-xml-helpers
 Requires:       python3-mets python3-premis python3-nisomix python3-addml
 Requires:       python3-audiomd python3-videomd python3-file-scraper-core
 Requires:       python3-magic python36-six python36-click
-BuildRequires:  python3-file-scraper-full python3-dpres-ipt
+BuildRequires:  python3-file-scraper-full
 BuildRequires:  python3-setuptools openssl-devel
 
 %description
