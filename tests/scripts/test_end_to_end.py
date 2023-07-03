@@ -7,7 +7,7 @@ import sys
 import pytest
 import optparse
 
-from dpres_siptools.six_utils import ensure_text
+from siptools.six_utils import ensure_text
 from file_scraper.schematron.schematron_scraper import SchematronScraper
 
 @pytest.mark.e2e
