@@ -6,6 +6,7 @@ import subprocess
 import sys
 import pytest
 import optparse
+import six
 
 from file_scraper.schematron.schematron_scraper import SchematronScraper
 
