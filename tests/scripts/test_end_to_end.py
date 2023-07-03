@@ -6,11 +6,9 @@ import subprocess
 import sys
 import pytest
 import optparse
-import six
 
+from dpres_siptools.six_utils import ensure_text
 from file_scraper.schematron.schematron_scraper import SchematronScraper
-
-from multiprocessing import Process
 
 @pytest.mark.e2e
 def test_end_to_end(testpath):
@@ -124,9 +122,9 @@ def test_end_to_end(testpath):
         error_string = ensure_text(concat(scraper.errors()).strip())
         assert not error_string
 
-        assert not scraper.well_formed
+        assert scraper.well_formed
         
-def concat(lines, prefix=''):
+def _concat(lines, prefix=''):
     """Join given list of strings to single string separated with newlines.
 
     :lines: List of string to join
@@ -135,24 +133,3 @@ def concat(lines, prefix=''):
 
     """
     return '\n'.join(['%s%s' % (prefix, line) for line in lines])
-
-def ensure_text(s, encoding='utf-8', errors='strict'):
-    """Coerce *s* to six.text_type.
-
-    For Python 2:
-      - `unicode` -> `unicode`
-      - `str` -> `unicode`
-
-    For Python 3:
-      - `str` -> `str`
-      - `bytes` -> decoded to `str`
-
-    Direct copy from release 1.12::
-
-        https://github.com/benjaminp/six/blob/master/six.py#892
-    """
-    if isinstance(s, six.binary_type):
-        return s.decode(encoding, errors)
-    if isinstance(s, six.text_type):
-        return s
-    raise TypeError("not expecting type '%s'" % type(s))
