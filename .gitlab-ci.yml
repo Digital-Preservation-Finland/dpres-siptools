@@ -1,7 +1,6 @@
 ---
 
 variables:
-  CI_PYTHON_2_VENV: "yes"
   CI_UPLOAD_DOCUMENTATION: "yes"
 
 include:
