@@ -9,7 +9,6 @@ import optparse
 
 from file_scraper.schematron.schematron_scraper import SchematronScraper
 
-from ipt.utils import concat
 from ipt.six_utils import ensure_text
 from multiprocessing import Process
 
