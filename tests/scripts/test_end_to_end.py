@@ -119,7 +119,7 @@ def test_end_to_end(testpath):
             params={"schematron": schemapath})
         scraper.scrape_file()
 
-        error_string = ensure_text(concat(scraper.errors()).strip())
+        error_string = ensure_text(_concat(scraper.errors()).strip())
         assert not error_string
 
         assert scraper.well_formed
