@@ -1,11 +1,10 @@
 """End to end test for the siptools package."""
-from __future__ import print_function, unicode_literals
+from __future__ import unicode_literals
 
 import os
 import subprocess
 import sys
 import pytest
-import optparse
 
 from siptools.six_utils import ensure_text
 from file_scraper.schematron.schematron_scraper import SchematronScraper
@@ -111,25 +110,10 @@ def test_end_to_end(testpath):
         schemapath = os.path.join(schematron_path, rule)
         filename = os.path.join(testpath, file_to_sign)
 
-        if os.path.isdir(filename):
-            filename = os.path.join(filename, 'mets.xml')
-
         scraper = SchematronScraper(
             filename, mimetype="text/xml",
             params={"schematron": schemapath})
         scraper.scrape_file()
-
-        error_string = ensure_text(_concat(scraper.errors()).strip())
-        assert not error_string
+        assert not scraper.errors()
 
         assert scraper.well_formed
-        
-def _concat(lines, prefix=''):
-    """Join given list of strings to single string separated with newlines.
-
-    :lines: List of string to join
-    :prefix: Prefix to prepend each line with
-    :returns: Joined lines as string
-
-    """
-    return '\n'.join(['%s%s' % (prefix, line) for line in lines])
