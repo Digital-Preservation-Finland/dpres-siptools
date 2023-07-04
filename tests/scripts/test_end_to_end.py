@@ -6,7 +6,6 @@ import subprocess
 import sys
 import pytest
 
-from siptools.six_utils import ensure_text
 from file_scraper.schematron.schematron_scraper import SchematronScraper
 
 @pytest.mark.e2e
