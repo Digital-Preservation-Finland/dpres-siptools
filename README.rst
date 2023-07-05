@@ -24,8 +24,8 @@ Installation
 Installation and usage requires Python 3.6 or newer.
 The software is tested with Python 3.6 on Centos 7.x release.
 
-Packages openssl-devel, swig and gcc are required in your system to install M2Crypto,
-which is used for signing the packages with digital signature.
+Packages python3-devel, openssl-devel, swig and gcc are required in your system
+to install M2Crypto, which is used for signing the packages with digital signature.
 
 Create a virtual environment::
     
