@@ -105,6 +105,10 @@ SUPPLEMENTARY_TYPES = ["xml_schema"]
 @click.option(
     '--stdout', is_flag=True, help='Print result also to stdout.')
 @click.option(
+    '--bit_level', is_flag=True,
+    help='Mark only for bit-level preservation. If used, then --file_format '
+         'is mandatory.')
+@click.option(
     '--supplementary', type=click.Choice(SUPPLEMENTARY_TYPES),
     multiple=True, metavar='<SUPPLEMENTARY TYPE>',
     help='Used to mark supplementary files, files that are not part of the '
@@ -151,11 +155,18 @@ def _attribute_values(given_params):
         "event_datetime": None,
         "event_target": None,
         "stdout": False,
+        "bit_level": None,
         "supplementary": ()
     }
     for key in given_params:
         if given_params[key]:
             attributes[key] = given_params[key]
+
+    if attributes["bit_level"]:
+        if not attributes["file_format"]:
+            raise ValueError(
+                "Argument --file_format is mandatory if --bit_level is given.")
+        attributes["skip_wellformed_check"] = True
 
     return attributes
 
@@ -186,6 +197,7 @@ def import_object(**kwargs):
                                  current date YYYY-MM-DD.
                  event_target: The target of the events
                  stdout: True prints output to stdout
+                 bit_level: True marks files for bit-level preservation only
                  supplementary: Object type for supplementary files
     """
     attributes = _attribute_values(kwargs)
@@ -211,6 +223,7 @@ def import_object(**kwargs):
         properties = {}
         if attributes["order"] is not None:
             properties['order'] = six.text_type(attributes["order"])
+        properties["bit_level"] = attributes["bit_level"]
         properties["supplementary"] = attributes["supplementary"]
 
         (streams, scraper_info) = creator.add_premis_md(
