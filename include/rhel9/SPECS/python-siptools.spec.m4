@@ -14,7 +14,7 @@ Version:        %{file_version}
 Release:        %{file_release_number}%{file_release_tag}.%{file_build_number}.git%{file_commit_ref}%{?dist}
 Summary:        Command line tools for creating Submission Information Packages (SIP) for preservation workflow
 License:        LGPLv3+
-URL:            http://www.csc.fi
+URL:            https://www.digitalpreservation.fi
 Source0:        %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build_number}-g%{file_commit_ref}.%{file_ext}
 BuildArch:      noarch
 
@@ -77,7 +77,7 @@ cp %{buildroot}%{_bindir}/sign-mets %{buildroot}%{_bindir}/sign-mets-3
 %license LICENSE
 %doc README.rst
 %{_bindir}/compile-mets*
-%{_bindir}/compile-struct-map*
+%{_bindir}/compile-structmap*
 %{_bindir}/compress*
 %{_bindir}/create-addml*
 %{_bindir}/create-agent*
@@ -88,7 +88,7 @@ cp %{buildroot}%{_bindir}/sign-mets %{buildroot}%{_bindir}/sign-mets-3
 %{_bindir}/import-description*
 %{_bindir}/import-object*
 %{_bindir}/premis-event*
-%{_bindir}/sign-mets-3*
+%{_bindir}/sign-mets*
 
 # TODO: For now changelog must be last, because it is generated automatically
 # from git log command. Appending should be fixed to happen only after %changelog macro
