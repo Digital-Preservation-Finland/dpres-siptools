@@ -675,14 +675,12 @@ def add_file_to_filesec(all_amd_refs,
     use = None
     if properties:
 
-        if properties['grade'] \
-                == file_scraper.defaults.BIT_LEVEL_WITH_RECOMMENDED:
+        if (properties["bit_level"] or
+                properties['grade']
+                == file_scraper.defaults.BIT_LEVEL_WITH_RECOMMENDED):
             use = "fi-dpres-no-file-format-validation"
         elif properties['grade'] == file_scraper.defaults.BIT_LEVEL:
             use = "fi-dpres-file-format-identification"
-
-        if properties["bit_level"]:
-            use = "fi-dpres-no-file-format-validation"
 
         # Do not add supplementary files to normal file group and vice
         # versa
