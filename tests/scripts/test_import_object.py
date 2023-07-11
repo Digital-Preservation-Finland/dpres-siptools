@@ -365,6 +365,39 @@ def test_import_object_native(testpath, run_cli):
     assert len(event_trees) == 3
 
 
+def test_bit_level(testpath, run_cli):
+    """Test import_object with '--bit_level' argument."""
+    input_file = "tests/data/text-file.txt"
+    arguments = ["--workspace", testpath,
+                 "--bit_level",
+                 "--file_format", "text/plain", "",
+                 input_file]
+    run_cli(import_object.main, arguments)
+    output = get_amd_file(testpath, input_file)
+    path = output[0].replace("-PREMIS%3AOBJECT-amd.xml", "-scraper.json")
+    assert os.path.isfile(path)
+
+    streams = load_scraper_json(path)
+    assert streams[0]["properties"]["bit_level"]
+
+    tree = ET.parse(output[0])
+    root = tree.getroot()
+    assert (root.xpath("//premis:formatName", namespaces=NAMESPACES)[0].text ==
+            "text/plain; charset=UTF-8")
+
+
+def test_bit_level_missing_format(testpath, run_cli):
+    """Test that import_object raises an error if '--bit_level' argument is
+    given without a '--file_format' value.
+    """
+    input_file = "tests/data/text-file.txt"
+    arguments = ["--workspace", testpath,
+                 "--bit_level",
+                 input_file]
+    result = run_cli(import_object.main, arguments, success=False)
+    assert result.exception
+
+
 # TODO: Combine this test with test_import_object_cases_for_lite once we're
 #       using version that pytest supports pytest.param.
 #       This test is identical to it except no additional option is provided
