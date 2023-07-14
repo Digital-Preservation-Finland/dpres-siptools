@@ -21,7 +21,7 @@ def pytest_addoption(parser):
         "--e2e",
         action="store_true",
         default=False,
-        help="Also run end-to-end tests (requires ipt package)"
+        help="Also run end-to-end tests"
     )
     parser.addoption(
         "--validation",
@@ -35,7 +35,7 @@ def pytest_configure(config):
     """Add additional configuration to pytest."""
     config.addinivalue_line(
         "markers",
-        "e2e: End-to-end tests intended to be run with ipt package"
+        "e2e: End-to-end tests"
     )
     config.addinivalue_line(
         "markers",
