@@ -19,7 +19,6 @@ Source0:        %{file_prefix}-v%{file_version}%{?file_release_tag}-%{file_build
 BuildArch:      noarch
 
 BuildRequires: python3-devel
-BuildRequires: python3-dpres-ipt
 BuildRequires: python3-file-scraper-full
 BuildRequires: pyproject-rpm-macros
 BuildRequires: %{py3_dist pip}
