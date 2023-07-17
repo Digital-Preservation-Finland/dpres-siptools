@@ -241,12 +241,14 @@ Adding native files to package with corresponding normalized files
 ------------------------------------------------------------------
 
 A native file is an original file which is applicable only for bit-level preservation.
+Use the ``--bit_level`` flag to mark a file for bit-level preservation. The flag is
+not required if file-scraper is able to grade the file as a native file.
 Using the native file functionality requires a migrated file suitable for preservation
 and a normalization event. In this case the ``import-object`` script must be run before
 the ``premis-event`` script. Use the value ``normalization`` or ``migration`` as event
 type in ``premis-event``. Here is the basic functionality::
 
-    import-object ... path/to/native_file
+    import-object --bit_level ... path/to/native_file
     import-object ... path/to/migrated_file
     premis-event normalization ... --linking_object source path/to/native_file --linking_object outcome path/to/migrated_file --add_object_links
     ...
