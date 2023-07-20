@@ -4,6 +4,11 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.68:
+
+    * Add RHEL9 RPM spec file.
+    * Add --bit_level argument.
+
 Version 0.67:
 
     * Add support for multi-image files.
