@@ -9,8 +9,6 @@ import sys
 import uuid
 from shutil import copyfile
 
-import six
-
 import click
 import lxml.etree
 import mets
@@ -43,7 +41,7 @@ click.disable_unicode_literals_warning = True
               default='.',
               help='Base path of the digital objects.')
 @click.option('--objid', type=str,
-              default=six.text_type(uuid.uuid4()),
+              default=str(uuid.uuid4()),
               metavar='<OBJID>',
               help='Unique identifier for the package')
 @click.option('--label',
@@ -114,7 +112,7 @@ def _attribute_values(given_params, fill_contentid=False):
         "contractid": given_params["contractid"],
         "workspace": "./workspace/",
         "base_path": ".",
-        "objid": six.text_type(uuid.uuid4()),
+        "objid": str(uuid.uuid4()),
         "contentid": None,
         "create_date": "{}+00:00".format(datetime.datetime.utcnow().replace(
             microsecond=0).isoformat()),

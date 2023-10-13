@@ -6,7 +6,6 @@ import os
 import sys
 
 import csv
-import six
 import click
 
 import addml
@@ -237,8 +236,6 @@ def _open_csv_file(file_path, charset):
     :returns: handle to the newly-opened file
     :raises: IOError if the file cannot be read
     """
-    if six.PY2:
-        return io.open(file_path, "rb")
     return io.open(file_path, "rt", encoding=charset)
 
 
@@ -265,10 +262,7 @@ def csv_header(attributes):
     )
 
     first_row = next(csv.reader(csv_file, dialect="new_dialect"))
-    if six.PY2:
-        header = [item.decode(attributes["charset"]) for item in first_row]
-    else:
-        header = first_row
+    header = first_row
     csv_file.close()
 
     if not attributes["isheader"]:

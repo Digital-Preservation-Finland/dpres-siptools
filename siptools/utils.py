@@ -9,8 +9,6 @@ import sys
 from uuid import uuid4
 from collections import defaultdict
 
-import six
-
 import lxml.etree
 import mets
 import premis
@@ -130,7 +128,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
 
     if scraper.well_formed is False:  # Must not be None
         errors = []
-        for _, info in six.iteritems(scraper.info):
+        for _, info in dict.items(scraper.info):
             errors.append("\n".join(info['errors']))
         error_str = "\n".join(errors)
         error_str = ensure_str(error_str)
@@ -149,7 +147,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
 
     if scraper.info[0]['class'] == 'FileExists' and scraper.info[0]['errors']:
         raise IOError(scraper.info[0]['errors'])
-    for _, info in six.iteritems(scraper.info):
+    for _, info in dict.items(scraper.info):
         if info['class'] == 'ScraperNotFound':
             raise ValueError('File format is not supported.')
 
@@ -175,19 +173,15 @@ def ensure_str(string, encoding='utf-8', errors='strict'):
     :encoding: Used encoding
     :errors: Error handling level
     """
-    if six.PY2:
-        # pylint: disable=undefined-variable
-        text_type = unicode  # noqa
-        binary_type = str
-    else:
-        text_type = str
-        binary_type = bytes
+
+    text_type = str
+    binary_type = bytes
 
     if isinstance(string, str):
         return string
-    if six.PY2 and isinstance(string, text_type):
+    if isinstance(string, text_type):
         return string.encode(encoding, errors)
-    if six.PY3 and isinstance(string, binary_type):
+    if isinstance(string, binary_type):
         return string.decode(encoding, errors)
     if not isinstance(string, (text_type, binary_type)):
         raise TypeError("not expecting type '%s'" % type(string))
@@ -231,10 +225,10 @@ def encode_path(path, suffix='', prefix='', safe=""):
     :safe: Characters safe from URL quoting
     :returns: Encoded string with given prefix and suffix
     """
-    if isinstance(path, six.text_type):
+    if isinstance(path, str):
         path = path.encode("utf-8")
 
-    if isinstance(safe, six.text_type):
+    if isinstance(safe, str):
         safe = safe.encode("utf-8")
 
     quoted = quote_plus(path, safe=safe)
@@ -249,10 +243,7 @@ def decode_path(path, suffix=''):
     :suffix: Suffix to remove
     :returns: Decoded string without given suffix
     """
-    if six.PY2:
-        path = unquote_plus(path.encode("utf-8")).decode("utf-8")
-    else:
-        path = unquote_plus(path)
+    path = unquote_plus(path)
 
     if path.endswith(suffix):
         path = path.replace(suffix, '', 1)
@@ -267,9 +258,9 @@ def fsencode_path(filename):
     :returns: Encoded path
     :raises: TypeError if wrong type given
     """
-    if isinstance(filename, six.text_type):
+    if isinstance(filename, str):
         return filename.encode(encoding=sys.getfilesystemencoding())
-    if isinstance(filename, six.binary_type):
+    if isinstance(filename, bytes):
         return filename
 
     raise TypeError("Value is not a (byte) string")
@@ -283,9 +274,9 @@ def fsdecode_path(filename):
     :returns: Decoded path
     :raises: TypeError if wrong type given
     """
-    if isinstance(filename, six.binary_type):
+    if isinstance(filename, bytes):
         return filename.decode(encoding=sys.getfilesystemencoding())
-    if isinstance(filename, six.text_type):
+    if isinstance(filename, str):
         return filename
 
     raise TypeError("Value is not a (byte) string")
@@ -459,7 +450,7 @@ def get_objectlist(refs_dict, file_path=None):
         for stream in refs_dict[file_path]['streams']:
             objectset.add(stream)
     elif refs_dict:
-        for key, value in six.iteritems(refs_dict):
+        for key, value in dict.items(refs_dict):
             if value['path_type'] == 'file':
                 objectset.add(key)
 

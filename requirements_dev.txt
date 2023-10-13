@@ -5,7 +5,6 @@ pytest-cov
 
 # Install requirements
 lxml
-six
 click
 
 git+https://gitlab.ci.csc.fi/dpres/xml-helpers.git@develop#egg=xml_helpers

@@ -5,7 +5,6 @@ import os
 import sys
 
 import click
-import six
 
 import videomd
 from siptools.mdcreator import MetsSectionCreator
@@ -92,7 +91,7 @@ class VideomdCreator(MetsSectionCreator):
             self.add_md(metadata=videomd_dict['0'],
                         filename=(filerel if filerel else filepath))
         else:
-            for index, video in six.iteritems(videomd_dict):
+            for index, video in dict.items(videomd_dict):
                 self.add_md(metadata=video,
                             filename=(filerel if filerel else filepath),
                             stream=index)
@@ -125,7 +124,7 @@ def create_videomd_metadata(filename, filerel=None, workspace=None,
                                       skip_well_check=True)
 
     videomd_dict = {}
-    for index, stream_md in six.iteritems(streams):
+    for index, stream_md in dict.items(streams):
         if stream_md['stream_type'] != 'video':
             continue
 
@@ -135,7 +134,7 @@ def create_videomd_metadata(filename, filerel=None, workspace=None,
 
         videomd_elem = videomd.create_videomd(
             file_data=file_data_elem)
-        videomd_dict[six.text_type(index)] = videomd_elem
+        videomd_dict[str(index)] = videomd_elem
 
     if not videomd_dict:
         print('The file has no video streams. No VideoMD metadata created.')
@@ -164,8 +163,8 @@ def _get_file_data(stream_dict):
     params['compression'] = videomd.vmd_compression(*compression)
 
     frame = videomd.vmd_frame(
-        pixels_horizontal=six.text_type(stream_dict['width']),
-        pixels_vertical=six.text_type(stream_dict['height']),
+        pixels_horizontal=str(stream_dict['width']),
+        pixels_vertical=str(stream_dict['height']),
         par=stream_dict['par'],
         dar=stream_dict['dar']
     )

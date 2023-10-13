@@ -9,7 +9,6 @@ from uuid import uuid4
 
 import click
 import lxml.etree
-import six
 
 import premis
 from siptools.mdcreator import MetsSectionCreator
@@ -364,7 +363,7 @@ def create_premis_event(**attributes):
     attributes = _attribute_values(attributes)
     event_identifier = premis.identifier(
         identifier_type='UUID',
-        identifier_value=six.text_type(uuid4()),
+        identifier_value=str(uuid4()),
         prefix='event'
     )
 
@@ -466,7 +465,7 @@ def _resolve_agents(**attributes):
             )
 
         if not attributes["agent_identifier"]:
-            attributes["agent_identifier"] = ("UUID", six.text_type(uuid4()))
+            attributes["agent_identifier"] = ("UUID", str(uuid4()))
 
         agent_dict = {
             "agent_identifier": attributes["agent_identifier"],

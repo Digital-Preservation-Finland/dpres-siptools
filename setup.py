@@ -31,7 +31,6 @@ def main():
         version=get_version(),
         install_requires=[
             "lxml",
-            "six",
             "click",
         ],
         entry_points={'console_scripts': scripts_list()}

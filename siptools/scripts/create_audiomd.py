@@ -5,7 +5,6 @@ import os
 import sys
 
 import click
-import six
 
 import audiomd
 from siptools.mdcreator import MetsSectionCreator
@@ -95,7 +94,7 @@ class AudiomdCreator(MetsSectionCreator):
             self.add_md(metadata=audiomd_dict['0'],
                         filename=(filerel if filerel else filepath))
         else:
-            for index, audio in six.iteritems(audiomd_dict):
+            for index, audio in dict.items(audiomd_dict):
                 self.add_md(metadata=audio,
                             filename=(filerel if filerel else filepath),
                             stream=index)
@@ -131,7 +130,7 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None,
                                       skip_well_check=True)
 
     audiomd_dict = {}
-    for index, stream_md in six.iteritems(streams):
+    for index, stream_md in dict.items(streams):
         if stream_md['stream_type'] != 'audio':
             continue
         stream_md = fix_missing_metadata(stream_md, filename, ALLOW_UNAV,
@@ -144,7 +143,7 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None,
             file_data=file_data_elem,
             audio_info=audio_info_elem
         )
-        audiomd_dict[six.text_type(index)] = audiomd_elem
+        audiomd_dict[str(index)] = audiomd_elem
 
     if not audiomd_dict:
         print('The file has no audio streams. No AudioMD metadata created.')
@@ -168,7 +167,7 @@ def _fix_data_rate(stream_dict):
     if data_rate:
         try:
             data_rate = float(data_rate)
-            stream_dict['data_rate'] = six.text_type(int(round(data_rate)))
+            stream_dict['data_rate'] = str(int(round(data_rate)))
         except ValueError:
             pass
 

@@ -6,8 +6,8 @@ import sys
 from uuid import uuid4
 
 import click
-import six
 
+from urllib.parse import urlparse
 import premis
 from siptools.mdcreator import MetsSectionCreator
 from siptools.utils import encode_path
@@ -118,13 +118,13 @@ def create_premis_representation(schemas):
     """
     object_identifier = premis.identifier(
         identifier_type='UUID',
-        identifier_value=six.text_type(uuid4())
+        identifier_value=str(uuid4())
     )
     child_elements = []
 
     for schema_ref in schemas:
         id_type = 'URI'
-        if six.moves.urllib.parse.urlparse(schema_ref).scheme == "":
+        if urlparse(schema_ref).scheme == "":
             id_type = 'local'
         dependency_identifier = premis.identifier(
             identifier_type=id_type,

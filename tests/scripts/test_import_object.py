@@ -7,7 +7,6 @@ import io
 import os.path
 
 import pytest
-import six
 
 import lxml.etree as ET
 
@@ -452,7 +451,7 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
     root = tree.getroot()
 
     comparison = {
-        six.text_type: lambda element, expected: element[0] == expected,
+        str: lambda element, expected: element[0] == expected,
         tuple: lambda element, expected: element[0] in expected,
         None.__class__: lambda element, expected: not element
     }
@@ -520,7 +519,7 @@ def test_import_object_cases_for_lite(testpath, input_file, expected_mimetype,
     root = tree.getroot()
 
     comparison = {
-        six.text_type: lambda element, expected: element[0] == expected,
+        str: lambda element, expected: element[0] == expected,
         tuple: lambda element, expected: element[0] in expected,
         None.__class__: lambda element, expected: not element
     }
@@ -570,7 +569,7 @@ def test_streams(testpath, run_cli):
     # Streams
     stream_id = []
     for i in [1, 2]:
-        output = get_amd_file(testpath, input_file, six.text_type(i))
+        output = get_amd_file(testpath, input_file, str(i))
         tree = ET.parse(output[0])
         root = tree.getroot()
         if i == 2:

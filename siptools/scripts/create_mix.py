@@ -6,7 +6,6 @@ import os
 import sys
 
 import click
-import six
 
 import nisomix
 from file_scraper.defaults import UNAV
@@ -20,7 +19,6 @@ SAMPLES_PER_PIXEL = {'1': '1', 'L': '1', 'P': '1', 'RGB': '3', 'YCbCr': '3',
                      'I': '1', 'F': '1'}
 
 
-@six.python_2_unicode_compatible
 class MixGenerationError(ValueError):
     """Exception raised when mix metadata generation fails."""
 
@@ -126,7 +124,7 @@ def check_missing_metadata(stream, filename):
                     'mimetype',
                     'stream_type',
                     'version')
-    for key, element in six.iteritems(stream):
+    for key, element in dict.items(stream):
         if key in allowed_keys:
             continue
         if element in [None, UNAV]:

@@ -7,8 +7,6 @@ import os
 import sys
 import json
 
-import six
-
 import mets
 import xml_helpers
 from siptools.utils import generate_digest, encode_path
@@ -19,12 +17,12 @@ def _parse_refs(ref):
     to the type.
     """
     reference = ''
-    if isinstance(ref, six.binary_type):
+    if isinstance(ref, bytes):
         reference = ref.decode(sys.getfilesystemencoding())
-    elif isinstance(ref, six.text_type):
+    elif isinstance(ref, str):
         reference = ref
     elif ref:
-        reference = six.text_type(ref)
+        reference = str(ref)
 
     return reference
 

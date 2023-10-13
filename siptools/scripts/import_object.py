@@ -10,7 +10,6 @@ from uuid import uuid4
 import errno
 
 import click
-import six
 
 import file_scraper
 import premis
@@ -222,7 +221,7 @@ def import_object(**kwargs):
 
         properties = {}
         if attributes["order"] is not None:
-            properties['order'] = six.text_type(attributes["order"])
+            properties['order'] = str(attributes["order"])
         properties["bit_level"] = attributes["bit_level"]
         properties["supplementary"] = attributes["supplementary"]
 
@@ -328,7 +327,7 @@ class PremisCreator(MetsSectionCreator):
         premis_list = create_streams(streams, premis_elem)
 
         if premis_list is not None:
-            for index, premis_stream in six.iteritems(premis_list):
+            for index, premis_stream in dict.items(premis_list):
                 self.add_md(
                     premis_stream, filerel, index, given_metadata_dict=streams)
 
@@ -357,11 +356,11 @@ def create_streams(streams, premis_file):
         return None
 
     premis_list = {}
-    for index, stream in six.iteritems(streams):
+    for index, stream in dict.items(streams):
         if stream['stream_type'] not in ['video', 'audio']:
             continue
 
-        id_value = six.text_type(uuid4())
+        id_value = str(uuid4())
         identifier = premis.identifier(
             identifier_type='UUID',
             identifier_value=id_value)
@@ -471,7 +470,7 @@ def create_premis_object(fname, streams, **attributes):
         identifier_value = attributes["identifier"][1]
     else:
         identifier_type = 'UUID'
-        identifier_value = six.text_type(uuid4())
+        identifier_value = str(uuid4())
 
     object_identifier = premis.identifier(
         identifier_type=identifier_type,
@@ -672,7 +671,7 @@ def _create_events(
     if not checksum_event:
         del events['checksum']
 
-    for event_name, event in six.iteritems(events):
+    for event_name, event in dict.items(events):
         found_event = _find_event(workspace,
                                   event['event_type'],
                                   event['event_datetime'],
