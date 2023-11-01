@@ -124,7 +124,7 @@ def check_missing_metadata(stream, filename):
                     'mimetype',
                     'stream_type',
                     'version')
-    for key, element in dict.items(stream):
+    for key, element in iter(dict.items(stream)):
         if key in allowed_keys:
             continue
         if element in [None, UNAV]:

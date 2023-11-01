@@ -128,7 +128,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
 
     if scraper.well_formed is False:  # Must not be None
         errors = []
-        for _, info in dict.items(scraper.info):
+        for _, info in iter(dict.items(scraper.info)):
             errors.append("\n".join(info['errors']))
         error_str = "\n".join(errors)
         error_str = ensure_str(error_str)
@@ -147,7 +147,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
 
     if scraper.info[0]['class'] == 'FileExists' and scraper.info[0]['errors']:
         raise IOError(scraper.info[0]['errors'])
-    for _, info in dict.items(scraper.info):
+    for _, info in iter(dict.items(scraper.info)):
         if info['class'] == 'ScraperNotFound':
             raise ValueError('File format is not supported.')
 
@@ -158,33 +158,22 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
 # included for compatibility with older six versions
 def ensure_str(string, encoding='utf-8', errors='strict'):
     """Coerce *string* to `str`.
-
-    For Python 2:
-      - `unicode` -> encoded to `str`
-      - `str` -> `str`
+    
     For Python 3:
       - `str` -> `str`
       - `bytes` -> decoded to `str`
-
-    Adapted from release 1.15 of six::
-        https://github.com/benjaminp/six/blob/master/six.py#L900
 
     :string: string
     :encoding: Used encoding
     :errors: Error handling level
     """
 
-    text_type = str
-    binary_type = bytes
-
-    if isinstance(string, str):
-        return string
-    if isinstance(string, text_type):
-        return string.encode(encoding, errors)
-    if isinstance(string, binary_type):
-        return string.decode(encoding, errors)
-    if not isinstance(string, (text_type, binary_type)):
+    if not isinstance(string, (str, bytes)):
         raise TypeError("not expecting type '%s'" % type(string))
+
+    if isinstance(string, bytes):
+        return string.decode(encoding, errors)
+
     return string
 
 
@@ -450,7 +439,7 @@ def get_objectlist(refs_dict, file_path=None):
         for stream in refs_dict[file_path]['streams']:
             objectset.add(stream)
     elif refs_dict:
-        for key, value in dict.items(refs_dict):
+        for key, value in iter(dict.items(refs_dict)):
             if value['path_type'] == 'file':
                 objectset.add(key)
 
