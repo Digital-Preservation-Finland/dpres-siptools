@@ -154,8 +154,6 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
     return (scraper.streams, scraper.info, scraper.grade())
 
 
-# Adaptation of ensure_str function from version 1.15 of six,
-# included for compatibility with older six versions
 def ensure_str(string, encoding='utf-8', errors='strict'):
     """Coerce *string* to `str`.
     For Python 3:
