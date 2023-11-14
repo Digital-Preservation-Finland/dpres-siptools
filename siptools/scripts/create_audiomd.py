@@ -94,7 +94,7 @@ class AudiomdCreator(MetsSectionCreator):
             self.add_md(metadata=audiomd_dict['0'],
                         filename=(filerel if filerel else filepath))
         else:
-            for index, audio in iter(dict.items(audiomd_dict)):
+            for index, audio in audiomd_dict.items():
                 self.add_md(metadata=audio,
                             filename=(filerel if filerel else filepath),
                             stream=index)
@@ -130,7 +130,7 @@ def create_audiomd_metadata(filename, filerel=None, workspace=None,
                                       skip_well_check=True)
 
     audiomd_dict = {}
-    for index, stream_md in iter(dict.items(streams)):
+    for index, stream_md in streams.items():
         if stream_md['stream_type'] != 'audio':
             continue
         stream_md = fix_missing_metadata(stream_md, filename, ALLOW_UNAV,

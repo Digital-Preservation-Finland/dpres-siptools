@@ -91,7 +91,7 @@ class VideomdCreator(MetsSectionCreator):
             self.add_md(metadata=videomd_dict['0'],
                         filename=(filerel if filerel else filepath))
         else:
-            for index, video in iter(dict.items(videomd_dict)):
+            for index, video in videomd_dict.items():
                 self.add_md(metadata=video,
                             filename=(filerel if filerel else filepath),
                             stream=index)
@@ -124,7 +124,7 @@ def create_videomd_metadata(filename, filerel=None, workspace=None,
                                       skip_well_check=True)
 
     videomd_dict = {}
-    for index, stream_md in iter(dict.items(streams)):
+    for index, stream_md in streams.items():
         if stream_md['stream_type'] != 'video':
             continue
 

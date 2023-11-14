@@ -128,7 +128,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
 
     if scraper.well_formed is False:  # Must not be None
         errors = []
-        for _, info in iter(dict.items(scraper.info)):
+        for _, info in scraper.info.items():
             errors.append("\n".join(info['errors']))
         error_str = "\n".join(errors)
         error_str = ensure_str(error_str)
@@ -147,7 +147,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
 
     if scraper.info[0]['class'] == 'FileExists' and scraper.info[0]['errors']:
         raise IOError(scraper.info[0]['errors'])
-    for _, info in iter(dict.items(scraper.info)):
+    for _, info in scraper.info.items():
         if info['class'] == 'ScraperNotFound':
             raise ValueError('File format is not supported.')
 
@@ -436,7 +436,7 @@ def get_objectlist(refs_dict, file_path=None):
         for stream in refs_dict[file_path]['streams']:
             objectset.add(stream)
     elif refs_dict:
-        for key, value in iter(dict.items(refs_dict)):
+        for key, value in refs_dict.items():
             if value['path_type'] == 'file':
                 objectset.add(key)
 

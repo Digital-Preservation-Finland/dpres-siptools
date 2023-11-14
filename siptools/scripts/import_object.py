@@ -327,7 +327,7 @@ class PremisCreator(MetsSectionCreator):
         premis_list = create_streams(streams, premis_elem)
 
         if premis_list is not None:
-            for index, premis_stream in iter(dict.items(premis_list)):
+            for index, premis_stream in premis_list.items():
                 self.add_md(
                     premis_stream, filerel, index, given_metadata_dict=streams)
 
@@ -356,7 +356,7 @@ def create_streams(streams, premis_file):
         return None
 
     premis_list = {}
-    for index, stream in iter(dict.items(streams)):
+    for index, stream in streams.items():
         if stream['stream_type'] not in ['video', 'audio']:
             continue
 
@@ -671,7 +671,7 @@ def _create_events(
     if not checksum_event:
         del events['checksum']
 
-    for event_name, event in iter(dict.items(events)):
+    for event_name, event in events.items():
         found_event = _find_event(workspace,
                                   event['event_type'],
                                   event['event_datetime'],
