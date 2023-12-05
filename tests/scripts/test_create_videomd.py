@@ -1,6 +1,4 @@
-# encoding: utf-8
 """Tests for ``siptools.scripts.create_videomd`` module"""
-from __future__ import unicode_literals
 
 import os.path
 import json
@@ -219,7 +217,7 @@ def test_existing_scraper_result(testpath):
         }
     }
     with open(os.path.join(testpath,
-                           'import-object-md-references.jsonl'), 'wt') as out:
+                           'import-object-md-references.jsonl'), 'w') as out:
         json.dump(ref, out)
 
     stream_dict = {0: {
@@ -232,7 +230,7 @@ def test_existing_scraper_result(testpath):
         'codec_creator_app_version': '(:unav)',
         'duration': 'PT50S', 'sampling': '4:2:0', 'stream_type': 'video',
         'width': '320', 'codec_creator_app': '(:unav)'}}
-    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wt') \
+    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'w') \
             as outfile:
         json.dump(stream_dict, outfile)
 

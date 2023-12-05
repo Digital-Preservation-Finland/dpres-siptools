@@ -1,5 +1,4 @@
 """Command line tool for creating premis events"""
-from __future__ import print_function, unicode_literals
 
 import glob
 import json
@@ -251,7 +250,7 @@ def normalized_linking_object(base_path, linking_object=None):
         elif os.path.isfile(eventpath):
             event_file = os.path.normpath(linking_object)
         else:
-            raise IOError
+            raise OSError
     else:
         directory = '.'
 
@@ -267,7 +266,7 @@ class PremisCreator(MetsSectionCreator):
     def write(self, mdtype="PREMIS", mdtypeversion="2.3", othermdtype=None,
               section="digiprovmd", stdout=False, file_metadata_dict=None,
               ref_file="premis-event-md-references.jsonl"):
-        super(PremisCreator, self).write(
+        super().write(
             mdtype=mdtype,
             mdtypeversion=mdtypeversion,
             othermdtype=othermdtype,

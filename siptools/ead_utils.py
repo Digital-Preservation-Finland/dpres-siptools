@@ -1,5 +1,4 @@
 """"Utility functions for EAD3 structmap creation."""
-from __future__ import unicode_literals, print_function
 
 import lxml.etree as ET
 import mets

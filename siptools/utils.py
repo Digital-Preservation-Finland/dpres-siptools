@@ -1,5 +1,4 @@
 """Utilities for siptools."""
-from __future__ import unicode_literals, print_function
 
 import copy
 import hashlib
@@ -47,7 +46,7 @@ def load_scraper_json(json_name):
     :json_name: JSON file name
     :returns: Stream metadata from JSON file.
     """
-    with open(json_name, 'rt') as json_file:
+    with open(json_name) as json_file:
         streams = json.load(json_file)
     new_streams = {}
     for index in streams:
@@ -85,7 +84,7 @@ def read_json_streams(filerel, workspace):
         json_name = None
         for amdref in amdrefs:
             json_name = os.path.join(
-                workspace, '{}-scraper.json'.format(amdref[1:]))
+                workspace, f'{amdref[1:]}-scraper.json')
             if json_name and os.path.isfile(json_name):
                 break
         if json_name:
@@ -146,7 +145,7 @@ def scrape_file(filepath, filerel=None, workspace=None, mimetype=None,
                          .format(filepath))
 
     if scraper.info[0]['class'] == 'FileExists' and scraper.info[0]['errors']:
-        raise IOError(scraper.info[0]['errors'])
+        raise OSError(scraper.info[0]['errors'])
     for _, info in scraper.info.items():
         if info['class'] == 'ScraperNotFound':
             raise ValueError('File format is not supported.')
@@ -218,7 +217,7 @@ def encode_path(path, suffix='', prefix='', safe=""):
         safe = safe.encode("utf-8")
 
     quoted = quote_plus(path, safe=safe)
-    return "{}{}{}".format(prefix, quoted, suffix)
+    return f"{prefix}{quoted}{suffix}"
 
 
 def decode_path(path, suffix=''):
@@ -325,7 +324,7 @@ def _pop_attributes(attributes, attrib_list, path):
     """
     for key in attributes:
         attribute = attributes.pop(key)
-        attrib_list.append('%s="%s" @ %s\n' % (key, attribute, path))
+        attrib_list.append('{}="{}" @ {}\n'.format(key, attribute, path))
 
 
 def _remove_elements(metadata, element_name):
@@ -397,8 +396,8 @@ def list2str(lst):
     :param lst: list of strings
     :returns: list formatted as single string
     """
-    first_words = ['"{}"'.format(string) for string in lst[:-1]]
-    last_word = '"{}"'.format(lst[-1])
+    first_words = [f'"{string}"' for string in lst[:-1]]
+    last_word = f'"{lst[-1]}"'
     return ', '.join(first_words) + ', and ' + last_word
 
 
@@ -549,7 +548,7 @@ def get_file_properties(path, all_amd_refs, workspace):
     json_name = None
     for amdref in get_md_references(all_amd_refs, path=path):
         json_name = os.path.join(workspace,
-                                 '{}-scraper.json'.format(amdref[1:]))
+                                 f'{amdref[1:]}-scraper.json')
         if os.path.isfile(json_name):
             break
 
@@ -644,7 +643,7 @@ def add_file_to_filesec(all_amd_refs,
                                to.
     :returns: unique identifier of file element
     """
-    fileid = '_{}'.format(uuid4())
+    fileid = f'_{uuid4()}'
 
     # Create list of IDs of amdID elements
     amdids = get_md_references(refs_dict=all_amd_refs, path=path)

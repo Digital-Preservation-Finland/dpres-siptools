@@ -1,5 +1,4 @@
 """Command line tool for collecting agent metadata"""
-from __future__ import unicode_literals, print_function
 
 import os
 import sys
@@ -160,7 +159,7 @@ def create_agent(**kwargs):
 
     agents_list.append(agent_dict)
 
-    with open(output_path, 'wt') as outfile:
+    with open(output_path, 'w') as outfile:
         json.dump(agents_list, outfile, indent=4)
 
     print(

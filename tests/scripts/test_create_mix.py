@@ -1,6 +1,4 @@
-# encoding: utf-8
 """Tests for ``siptools.scripts.create_mix`` module"""
-from __future__ import unicode_literals
 
 import os
 import json
@@ -144,7 +142,7 @@ def test_existing_scraper_result(testpath):
         }
     }
     with open(os.path.join(testpath, 'import-object-md-references.jsonl'),
-              'wt') as out:
+              'w') as out:
         json.dump(ref, out)
 
     stream_dict = {0: {
@@ -161,7 +159,7 @@ def test_existing_scraper_result(testpath):
         'width': '1234',
         'byte_order': 'little endian',
         'index': 0}}
-    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wt') \
+    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'w') \
             as outfile:
         json.dump(stream_dict, outfile)
 

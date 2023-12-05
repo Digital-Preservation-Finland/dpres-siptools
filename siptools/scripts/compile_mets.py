@@ -1,7 +1,6 @@
 """Command line tool for creating METS document and copying files to workspace
 directory.
 """
-from __future__ import print_function, unicode_literals
 
 import datetime
 import os

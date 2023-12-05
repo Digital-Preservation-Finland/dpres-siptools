@@ -1,5 +1,4 @@
 """Command line tool for importing digital objects."""
-from __future__ import unicode_literals
 
 import datetime
 import fnmatch
@@ -339,7 +338,7 @@ class PremisCreator(MetsSectionCreator):
               file_metadata_dict=None,
               ref_file="import-object-md-references.jsonl"):
         """Write PREMIS metadata."""
-        super(PremisCreator, self).write(
+        super().write(
             mdtype=mdtype, mdtypeversion=mdtypeversion,
             file_metadata_dict=file_metadata_dict, ref_file=ref_file
         )
@@ -463,7 +462,7 @@ def create_premis_object(fname, streams, **attributes):
     if charset:
         if charset not in ALLOWED_CHARSETS:
             raise ValueError('Invalid charset.')
-        charset_mime = '; charset={}'.format(charset)
+        charset_mime = f'; charset={charset}'
 
     if attributes["identifier"]:
         identifier_type = attributes["identifier"][0]
@@ -538,7 +537,7 @@ def collect_filepaths(dirs=None, pattern='*', base='.'):
         elif os.path.isfile(directory):
             files += [directory]
         else:
-            raise IOError
+            raise OSError
 
     return files
 

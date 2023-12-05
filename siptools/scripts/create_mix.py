@@ -1,6 +1,4 @@
-# coding=utf-8
 """Command line tool for creating MIX metadata."""
-from __future__ import unicode_literals, print_function
 
 import os
 import sys
@@ -23,7 +21,7 @@ class MixGenerationError(ValueError):
     """Exception raised when mix metadata generation fails."""
 
     def __init__(self, message, filename=""):
-        super(MixGenerationError, self).__init__(message)
+        super().__init__(message)
         self.filename = filename
 
     def __str__(self):
@@ -105,7 +103,7 @@ class MixCreator(MetsSectionCreator):
         """
         Write MIX metadata.
         """
-        super(MixCreator, self).write(
+        super().write(
             mdtype=mdtype, mdtypeversion=mdtypeversion,
             othermdtype=othermdtype, ref_file=ref_file
         )
@@ -129,7 +127,7 @@ def check_missing_metadata(stream, filename):
             continue
         if element in [None, UNAV]:
             raise MixGenerationError(
-                'Missing metadata value for key %s for file %s' % (key,
+                'Missing metadata value for key {} for file {}'.format(key,
                                                                    filename)
             )
 

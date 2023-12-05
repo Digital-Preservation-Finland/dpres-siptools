@@ -1,5 +1,4 @@
 """Command line tool for creating audioMD metadata."""
-from __future__ import unicode_literals, print_function
 
 import os
 import sys
@@ -107,7 +106,7 @@ class AudiomdCreator(MetsSectionCreator):
         """
         Write AudioMD metadata.
         """
-        super(AudiomdCreator, self).write(
+        super().write(
             mdtype=mdtype, mdtypeversion=mdtypeversion,
             othermdtype=othermdtype, ref_file=ref_file
         )

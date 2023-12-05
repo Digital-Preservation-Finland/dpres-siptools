@@ -1,7 +1,6 @@
 """
 Create METS document that contains descriptive metadata imported from XML file
 """
-from __future__ import unicode_literals, print_function
 
 import sys
 import os
@@ -128,7 +127,7 @@ def import_description(**kwargs):
 
     output_file = os.path.join(attributes["workspace"], filename)
     if os.path.isfile(output_file):
-        raise OSError('File {} already exists.'.format(output_file))
+        raise OSError(f'File {output_file} already exists.')
 
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file))
@@ -167,7 +166,7 @@ def dmd_target_path(base_path, dmdsec_target):
             dmd_target = os.path.normpath(dmdsec_target)
 
         if not os.path.isdir(dmd_target):
-            raise IOError
+            raise OSError
 
     else:
         dmdsec_target = '.'

@@ -1,5 +1,4 @@
 """Tests for ``siptools.scripts.compile_mets`` module"""
-from __future__ import unicode_literals
 
 import os
 

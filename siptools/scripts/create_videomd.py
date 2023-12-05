@@ -1,5 +1,4 @@
 """Command line tool for creating videoMD metadata."""
-from __future__ import unicode_literals, print_function
 
 import os
 import sys
@@ -101,7 +100,7 @@ class VideomdCreator(MetsSectionCreator):
               othermdtype="VideoMD", section=None, stdout=False,
               file_metadata_dict=None,
               ref_file="create-videomd-md-references.jsonl"):
-        super(VideomdCreator, self).write(
+        super().write(
             mdtype=mdtype, mdtypeversion=mdtypeversion,
             othermdtype=othermdtype, ref_file=ref_file
         )

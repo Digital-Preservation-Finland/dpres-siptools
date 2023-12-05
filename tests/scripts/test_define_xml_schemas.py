@@ -1,6 +1,4 @@
-# encoding: utf-8
 """Unit tests for ``siptools.scripts.define_xml_schemas`` module"""
-from __future__ import unicode_literals
 
 import os
 

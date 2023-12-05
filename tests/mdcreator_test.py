@@ -1,6 +1,4 @@
-# coding=utf-8
 """Tests for the utility functions."""
-from __future__ import unicode_literals
 
 import os
 import json
@@ -157,7 +155,7 @@ def test_get_md_references():
 
     # The sample file contains two references for file2
     ids = get_md_references(references, 'path/to/file2')
-    assert set(ids) == set(['abcd1234', 'efgh5678'])
+    assert set(ids) == {'abcd1234', 'efgh5678'}
 
 
 def test_remove_dmdsec_references(testpath):

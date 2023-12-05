@@ -1,5 +1,4 @@
 """Command line tool for defining XML schemas"""
-from __future__ import unicode_literals
 
 import os
 import sys
@@ -100,7 +99,7 @@ class PremisCreator(MetsSectionCreator):
         """
         Write PREMIS metadata.
         """
-        super(PremisCreator, self).write(
+        super().write(
             mdtype=mdtype, mdtypeversion=mdtypeversion,
             ref_file=ref_file, stdout=stdout
         )
@@ -160,7 +159,7 @@ def _check_filepaths(schemas=None, base='.'):
     for given_path in schemas:
         schema_path = os.path.normpath(os.path.join(base, schemas[given_path]))
         if not os.path.isfile(schema_path):
-            raise IOError
+            raise OSError
 
 
 if __name__ == "__main__":

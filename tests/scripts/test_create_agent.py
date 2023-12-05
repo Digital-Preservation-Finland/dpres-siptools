@@ -1,5 +1,4 @@
 """Tests for :mod:`siptools.scripts.create_agent` module"""
-from __future__ import unicode_literals
 
 import os
 import io
@@ -57,7 +56,7 @@ def test_create_agent_ok(
     create_agent_file = os.path.join(testpath, 'test-file-AGENTS-amd.json')
     assert os.path.exists(create_agent_file)
 
-    with io.open(create_agent_file, 'rt') as in_file:
+    with open(create_agent_file) as in_file:
         agent_data = json.load(in_file)
 
     assert len(agent_data) == ag_count

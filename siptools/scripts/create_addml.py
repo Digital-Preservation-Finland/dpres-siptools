@@ -1,5 +1,4 @@
 """Command line tool for creating ADDML metadata."""
-from __future__ import unicode_literals
 
 import io
 import os
@@ -129,7 +128,7 @@ class AddmlCreator(MetsSectionCreator):
 
         :workspace: Output path
         """
-        super(AddmlCreator, self).__init__(workspace)
+        super().__init__(workspace)
         self.etrees = {}
         self.filenames = {}
         self.filerel = filerel
@@ -220,7 +219,7 @@ def flat_file_str(fname, def_ref):
     :returns: flatFile element string
     """
 
-    flat_file = '<addml:flatFile name="%s" definitionReference="%s"/>\n' % (
+    flat_file = '<addml:flatFile name="{}" definitionReference="{}"/>\n'.format(
         fname, def_ref
     )
 
@@ -236,7 +235,7 @@ def _open_csv_file(file_path, charset):
     :returns: handle to the newly-opened file
     :raises: IOError if the file cannot be read
     """
-    return io.open(file_path, "rt", encoding=charset)
+    return open(file_path, encoding=charset)
 
 
 def csv_header(attributes):
@@ -285,11 +284,11 @@ def append_lines(fname, xml_elem, append):
     """
 
     # Read all the lines into memory
-    with io.open(fname, 'rt') as f_in:
+    with open(fname) as f_in:
         lines = f_in.readlines()
 
     # Overwrite the file appending line_content
-    with io.open(fname, 'wt') as f_out:
+    with open(fname, 'w') as f_out:
 
         for line in lines:
             f_out.write(line)

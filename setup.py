@@ -16,7 +16,7 @@ def scripts_list():
         modulename = modulename.replace('.py', '')
         scriptname = modulename.replace('_', '-')
         scripts.append(
-            '%s = siptools.scripts.%s:main' % (scriptname, modulename)
+            '{} = siptools.scripts.{}:main'.format(scriptname, modulename)
         )
     print(scripts)
     return scripts

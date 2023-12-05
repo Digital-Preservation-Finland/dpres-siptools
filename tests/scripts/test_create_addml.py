@@ -1,5 +1,4 @@
 """Tests for ``siptools.scripts.create_addml`` module"""
-from __future__ import unicode_literals
 
 import os
 

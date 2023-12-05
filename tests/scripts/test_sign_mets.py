@@ -1,5 +1,4 @@
 """Tests for ``siptools.scripts.sign_mets`` module"""
-from __future__ import unicode_literals
 
 import io
 import os
@@ -22,5 +21,5 @@ def test_valid_sign_mets(testpath, run_cli):
 
     run_cli(siptools.scripts.sign_mets.main, arguments)
 
-    with io.open(output, "rt") as open_file:
+    with open(output) as open_file:
         assert "4ddd69b778405b4072d77762a85f9cf5e8e5ca83" in open_file.read()

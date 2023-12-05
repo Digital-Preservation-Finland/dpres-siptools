@@ -1,6 +1,4 @@
-# encoding: utf-8
 """Unit tests for ``siptools.scripts.import_object`` module."""
-from __future__ import unicode_literals
 
 import datetime
 import io
@@ -278,7 +276,7 @@ def test_import_object_utf8(testpath, run_cli):
     utf8_directory = os.path.join(testpath, 'directory Ä')
     os.mkdir(utf8_directory)
     utf8_file = os.path.join(utf8_directory, 'testfile Ö')
-    with io.open(utf8_file, 'wt') as file_:
+    with open(utf8_file, 'w') as file_:
         file_.write('Voi änkeröinen.')
 
     # Run function

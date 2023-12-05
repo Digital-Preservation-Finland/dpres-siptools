@@ -1,6 +1,4 @@
-# coding=utf-8
 """Tests for the utility functions."""
-from __future__ import unicode_literals
 
 import pytest
 import lxml.etree

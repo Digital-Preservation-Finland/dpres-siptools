@@ -1,7 +1,6 @@
 """
 Test TAR packaging.
 """
-from __future__ import unicode_literals
 
 import os
 import tarfile
@@ -74,7 +73,7 @@ def test_exclude_cwd(testpath):
         shutil.copy(os.path.join(dir_to_tar, "tiff2.tif"), "tiff2.tif")
 
         files = os.listdir(".")
-        assert set(files) == set(["tiff1.tif", "tiff2.tif"])
+        assert set(files) == {"tiff1.tif", "tiff2.tif"}
 
         arguments = [dir_to_tar, "--tar_filename", output, "--exclude",
                      "*.tif"]

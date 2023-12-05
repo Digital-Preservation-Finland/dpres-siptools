@@ -1,7 +1,6 @@
 """
 Utilities for siptools
 """
-from __future__ import unicode_literals, print_function
 
 import os
 import sys
@@ -42,7 +41,7 @@ def _get_path_from_reference_file(reference_file, ref_path):
     :ref_path: The ref_path key to look for.
     :return: Dictionary on finding, None when none is found.
     """
-    with open(reference_file, 'r') as out_file:
+    with open(reference_file) as out_file:
         for line in out_file:
             try:
                 return json.loads(line)[ref_path]
@@ -65,7 +64,7 @@ def _setup_new_path(path_type):
     )
 
 
-class MetsSectionCreator(object):
+class MetsSectionCreator:
     """
     Class for generating lxml.etree XML for different METS metadata sections
     and corresponding md-references files efficiently.
@@ -196,9 +195,8 @@ class MetsSectionCreator(object):
         if paths_updated:
             # Existing entries in reference file must be updated.
             # We'll proceed to write to a separate temporary file.
-            with open(reference_file,
-                      'rt') as in_file, open('%s.tmp' % reference_file,
-                                             'at') as out_file:
+            with open(reference_file) as in_file, open('%s.tmp' % reference_file,
+                                             'a') as out_file:
                 for line in in_file:
                     existing_json_data = json.loads(line)
                     for key in existing_json_data:
@@ -206,14 +204,14 @@ class MetsSectionCreator(object):
                             out_file.write(line)
 
             for path in paths:
-                with open('%s.tmp' % reference_file, 'at') as out_file:
+                with open('%s.tmp' % reference_file, 'a') as out_file:
                     json.dump(path, out_file)
                     out_file.write('\n')
         else:
             # If no existing entries required update, we'll append directly
             # to reference file.
             for path in paths:
-                with open(reference_file, 'at') as out_file:
+                with open(reference_file, 'a') as out_file:
                     json.dump(path, out_file)
                     out_file.write('\n')
 
@@ -249,8 +247,8 @@ class MetsSectionCreator(object):
         """
         digest = generate_digest(metadata)
         suffix = othermdtype if othermdtype else mdtype
-        filename = encode_path("%s-%s-amd.xml" % (digest, suffix))
-        md_id = '_{}'.format(digest)
+        filename = encode_path("{}-{}-amd.xml".format(digest, suffix))
+        md_id = f'_{digest}'
         filename = os.path.join(self.workspace, filename)
 
         if not os.path.exists(filename):
@@ -292,7 +290,7 @@ class MetsSectionCreator(object):
         filename = os.path.join(self.workspace, filename)
 
         if not os.path.exists(filename):
-            with open(filename, 'wt') as outfile:
+            with open(filename, 'w') as outfile:
                 json.dump(file_metadata_dict, outfile)
             print("Wrote technical data to: %s" % (outfile.name))
 

@@ -1,6 +1,4 @@
-# encoding: utf-8
 """Tests for ``siptools.scripts.create_audiomd`` module"""
-from __future__ import unicode_literals
 
 import io
 import os.path
@@ -167,7 +165,7 @@ def test_existing_scraper_result(testpath):
         }
     }
     with open(os.path.join(testpath,
-                           'import-object-md-references.jsonl'), 'wt') as out:
+                           'import-object-md-references.jsonl'), 'w') as out:
         json.dump(ref, out)
 
     stream_dict = {0: {
@@ -178,7 +176,7 @@ def test_existing_scraper_result(testpath):
         'data_rate': '705.6', 'data_rate_mode': 'Fixed', 'duration': 'PT50S',
         'index': 0, 'mimetype': 'audio/x-wav', 'num_channels': '2',
         'sampling_frequency': '44.1', 'stream_type': 'audio', 'version': ''}}
-    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'wt') \
+    with open(os.path.join(testpath, ('%s-scraper.json' % amdid)), 'w') \
             as outfile:
         json.dump(stream_dict, outfile)
 
@@ -215,9 +213,8 @@ def test_paths(testpath, file_, base_path, run_cli):
     else:
         run_cli(create_audiomd.main, ['--workspace', testpath, file_])
 
-    with io.open(os.path.join(testpath,
-                              'create-audiomd-md-references.jsonl'),
-                 "rt") as in_file:
+    with open(os.path.join(testpath,
+                              'create-audiomd-md-references.jsonl')) as in_file:
         references = json.load(in_file)
     assert os.path.normpath(file_) in references
 

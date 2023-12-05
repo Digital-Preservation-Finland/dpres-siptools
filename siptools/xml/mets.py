@@ -1,7 +1,6 @@
 """
 METS specific values related to national specifications
 """
-from __future__ import unicode_literals
 
 from xml_helpers.utils import XSI_NS
 

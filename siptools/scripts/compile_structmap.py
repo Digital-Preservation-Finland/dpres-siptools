@@ -1,7 +1,6 @@
 """Command line tool for creating the structural map and file section
 metadata for a METS document.
 """
-from __future__ import unicode_literals, print_function
 
 import os
 import sys

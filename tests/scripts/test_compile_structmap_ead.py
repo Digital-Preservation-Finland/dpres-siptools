@@ -1,5 +1,4 @@
 """Tests the compile_structmap module with ead3 metadata."""
-from __future__ import unicode_literals
 
 import os
 import mets

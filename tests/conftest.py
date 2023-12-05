@@ -1,5 +1,4 @@
 """Configure py.test default values and functionality"""
-from __future__ import unicode_literals
 
 import os
 import sys

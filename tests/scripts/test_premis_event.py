@@ -1,5 +1,4 @@
 """Tests for :mod:`siptools.scripts.premis_event` module"""
-from __future__ import unicode_literals
 
 import os
 import lxml.etree as ET

@@ -1,5 +1,4 @@
 """Command line tool for creating digital signatures for SIP"""
-from __future__ import unicode_literals, print_function
 
 import os
 import sys

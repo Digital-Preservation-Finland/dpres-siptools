@@ -1,5 +1,4 @@
 """Command line tool for creating tar file from SIP directory"""
-from __future__ import unicode_literals, print_function
 
 import sys
 import subprocess
@@ -55,7 +54,7 @@ def compress(dir_to_tar, tar_filename, exclude=()):
     returncode = proc.returncode
 
     if returncode != 0:
-        raise IOError("Error in creating a TAR file. "
+        raise OSError("Error in creating a TAR file. "
                       "Return code: %d" % returncode)
 
     print("Created tar file: %s" % tar_filename)

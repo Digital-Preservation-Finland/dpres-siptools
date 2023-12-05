@@ -72,18 +72,18 @@ def get_version():
 
         # PEP 386 compatibility
         if version_git:
-            version = "%s-%s" % (
+            version = "{}-{}".format(
                 '.post'.join(version_git.split('-')[:2]),
                 '-'.join(version_git.split('-')[2:])
             )
 
-        print("Version number from GIT repository: {}".format(version))
+        print(f"Version number from GIT repository: {version}")
     else:
         write_pkg_info()
         # Extract the version from the PKG-INFO file.
         with open(os.path.join(d, 'PKG-INFO')) as f:
             version = version_re.search(f.read()).group(1)
-        print("Version number from PKG-INFO: {}".format(version))
+        print(f"Version number from PKG-INFO: {version}")
 
     return version
 

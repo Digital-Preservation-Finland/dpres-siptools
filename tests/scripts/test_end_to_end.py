@@ -1,5 +1,4 @@
 """End to end test for the siptools package."""
-from __future__ import unicode_literals
 
 import os
 import subprocess
