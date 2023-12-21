@@ -127,9 +127,7 @@ def check_missing_metadata(stream, filename):
             continue
         if element in [None, UNAV]:
             raise MixGenerationError(
-                'Missing metadata value for key {} for file {}'.format(key,
-                                                                   filename)
-            )
+                f'Missing metadata value for key {key} for file {filename}')
 
 
 def create_mix_metadata(filename, filerel=None, workspace=None, streams=None):

@@ -195,8 +195,9 @@ class MetsSectionCreator:
         if paths_updated:
             # Existing entries in reference file must be updated.
             # We'll proceed to write to a separate temporary file.
-            with open(reference_file) as in_file, open('%s.tmp' % reference_file,
-                                             'a') as out_file:
+            with open(reference_file) as in_file, open(
+                    f'{reference_file}.tmp', 'a'
+                    ) as out_file:
                 for line in in_file:
                     existing_json_data = json.loads(line)
                     for key in existing_json_data:

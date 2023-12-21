@@ -218,9 +218,8 @@ def flat_file_str(fname, def_ref):
     :returns: flatFile element string
     """
 
-    flat_file = '<addml:flatFile name="{}" definitionReference="{}"/>\n'.format(
-        fname, def_ref
-    )
+    flat_file = '<addml:flatFile name="{}" definitionReference="{}"/>\n'.\
+        format(fname, def_ref)
 
     return flat_file
 
