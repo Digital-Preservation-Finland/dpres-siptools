@@ -16,10 +16,7 @@ from siptools.utils import get_objectlist, read_md_references
 from siptools.xml.mets import (METS_CATALOG, METS_PROFILE, METS_SPECIFICATION,
                                NAMESPACES, RECORD_STATUS_TYPES, mets_extend)
 
-try:
-    from scandir import scandir  # Python 2
-except ImportError:
-    from os import scandir  # Python 3+
+from os import scandir
 
 
 click.disable_unicode_literals_warning = True

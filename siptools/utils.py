@@ -14,10 +14,7 @@ import premis
 import xml_helpers
 import file_scraper.scraper
 
-try:
-    from urllib.parse import quote_plus, unquote_plus
-except ImportError:  # Python 2
-    from urllib import quote_plus, unquote_plus
+from urllib.parse import quote_plus, unquote_plus
 
 
 SUPPLEMENTARY_TYPES = {

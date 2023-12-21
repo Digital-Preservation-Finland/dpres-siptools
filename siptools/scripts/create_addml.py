@@ -1,6 +1,5 @@
 """Command line tool for creating ADDML metadata."""
 
-import io
 import os
 import sys
 
