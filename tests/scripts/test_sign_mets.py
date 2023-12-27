@@ -1,6 +1,5 @@
 """Tests for ``siptools.scripts.sign_mets`` module"""
 
-import io
 import os
 import shutil
 import siptools.scripts.sign_mets

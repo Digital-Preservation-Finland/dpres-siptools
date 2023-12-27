@@ -1,7 +1,6 @@
 """Tests for :mod:`siptools.scripts.create_agent` module"""
 
 import os
-import io
 import json
 
 import pytest

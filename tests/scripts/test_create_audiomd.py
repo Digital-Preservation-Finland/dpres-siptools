@@ -1,6 +1,5 @@
 """Tests for ``siptools.scripts.create_audiomd`` module"""
 
-import io
 import os.path
 import json
 import shutil
@@ -214,7 +213,7 @@ def test_paths(testpath, file_, base_path, run_cli):
         run_cli(create_audiomd.main, ['--workspace', testpath, file_])
 
     with open(os.path.join(testpath,
-                              'create-audiomd-md-references.jsonl')) as in_file:
+                           'create-audiomd-md-references.jsonl')) as in_file:
         references = json.load(in_file)
     assert os.path.normpath(file_) in references
 

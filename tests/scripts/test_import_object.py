@@ -1,7 +1,6 @@
 """Unit tests for ``siptools.scripts.import_object`` module."""
 
 import datetime
-import io
 import os.path
 
 import pytest
