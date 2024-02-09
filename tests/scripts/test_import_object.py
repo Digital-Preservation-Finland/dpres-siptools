@@ -507,6 +507,16 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
          'application/vnd.oasis.opendocument.spreadsheet', '1.1', 'ods'),
         ('tests/data/valid_1.1.odt',
          'application/vnd.oasis.opendocument.text', '1.1', 'odt'),
+        # TODO: File-scraper does not detect the version of .odf, and
+        # therefore scraping fails with error:
+        #
+        # "ValueError: The format of file tests/data/valid_1.0.odf is
+        # unacceptable."
+        #
+        # Enable this this test case when issue TPASPKT-1278 is
+        # resolved.
+        # ('tests/data/valid_1.0.odf',
+        #  'application/vnd.oasis.opendocument.formula', '1.0', 'odf'),
     ]
 )
 # pylint: disable=invalid-name
@@ -857,37 +867,3 @@ def test_import_object_not_recognized(testpath, run_cli):
         = 'Proper scraper was not found. The file was not analyzed'
     with pytest.raises(ValueError, match=expected_error_message):
         run_cli(import_object.main, arguments)
-
-
-@pytest.mark.parametrize(
-    "input_file,expected_version",
-    [
-        # TODO: File-scraper does not detect the version of .odf, and
-        # therefore scraping fails with error:
-        #
-        # "ValueError: The format of file tests/data/valid_1.0.odf is
-        # unacceptable."
-        #
-        ('tests/data/valid_1.0.odf', '1.0')
-    ]
-)
-def test_import_object_default_versions(testpath, run_cli, input_file,
-                                        expected_version):
-    """Test importing file that has default format version.
-
-    A default format version has been defined for some file formats in
-    DEFAULT_VERSIONS dictionary. When such file is imported, the default
-    format version should be used.
-    """
-    arguments \
-        = ['--workspace', testpath, input_file, "--skip_wellformed_check"]
-    run_cli(import_object.main, arguments)
-
-    # Parse the version from produced XML file
-    output = get_amd_file(testpath, input_file)
-    tree = ET.parse(output[0])
-    root = tree.getroot()
-    version = root.xpath('//premis:formatVersion/text()',
-                         namespaces=NAMESPACES)[0]
-
-    assert version == expected_version

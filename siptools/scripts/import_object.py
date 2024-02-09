@@ -23,10 +23,6 @@ click.disable_unicode_literals_warning = True
 
 ALLOWED_CHARSETS = ['ISO-8859-15', 'UTF-8', 'UTF-16', 'UTF-32']
 
-DEFAULT_VERSIONS = {
-    'application/vnd.oasis.opendocument.formula': '1.0',
-}
-
 # For mimetypes that has no version applicable for them.
 NO_VERSION = '(:unap)'
 
@@ -440,11 +436,15 @@ def create_premis_object(fname, streams, **attributes):
         charset = None
 
     if not attributes["file_format"]:
-        if streams[0]["version"] and streams[0]["version"] != UNKNOWN_VERSION:
-            format_version = '' if streams[0]["version"] == NO_VERSION else \
-                streams[0]["version"]
+        if streams[0]["version"] == UNKNOWN_VERSION:
+            # Unknown version should cause exception already in
+            # scrape_file function, where the file is also graded. So
+            # this part is probably unnecessary.
+            raise ValueError('Unknown file format version')
+        if streams[0]["version"] == NO_VERSION:
+            format_version = ''
         else:
-            format_version = DEFAULT_VERSIONS.get(streams[0]["mimetype"], None)
+            format_version = streams[0]["version"]
 
         file_format = (streams[0]["mimetype"], format_version)
     else:
