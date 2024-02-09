@@ -24,10 +24,6 @@ click.disable_unicode_literals_warning = True
 ALLOWED_CHARSETS = ['ISO-8859-15', 'UTF-8', 'UTF-16', 'UTF-32']
 
 DEFAULT_VERSIONS = {
-    'application/vnd.oasis.opendocument.text': '1.0',
-    'application/vnd.oasis.opendocument.spreadsheet': '1.0',
-    'application/vnd.oasis.opendocument.presentation': '1.0',
-    'application/vnd.oasis.opendocument.graphics': '1.0',
     'application/vnd.oasis.opendocument.formula': '1.0',
 }
 

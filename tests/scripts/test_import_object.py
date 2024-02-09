@@ -424,6 +424,14 @@ def test_bit_level_missing_format(testpath, run_cli):
          'audio wav no version'),
         ('tests/data/audio/valid_2_bwf.wav', 'audio/x-wav', '2',
          'audio wav v2'),
+        ('tests/data/valid_1.1.odg',
+         'application/vnd.oasis.opendocument.graphics', '1.1', 'odg'),
+        ('tests/data/valid_1.1.odp',
+         'application/vnd.oasis.opendocument.presentation', '1.1', 'odp'),
+        ('tests/data/valid_1.1.ods',
+         'application/vnd.oasis.opendocument.spreadsheet', '1.1', 'ods'),
+        ('tests/data/valid_1.1.odt',
+         'application/vnd.oasis.opendocument.text', '1.1', 'odt'),
     ]
 )
 # pylint: disable=too-many-arguments
@@ -491,6 +499,14 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
          'audio wav no version'),
         ('tests/data/audio/valid_2_bwf.wav', 'audio/x-wav', '2',
          'audio wav v2'),
+        ('tests/data/valid_1.1.odg',
+         'application/vnd.oasis.opendocument.graphics', '1.1', 'odg'),
+        ('tests/data/valid_1.1.odp',
+         'application/vnd.oasis.opendocument.presentation', '1.1', 'odp'),
+        ('tests/data/valid_1.1.ods',
+         'application/vnd.oasis.opendocument.spreadsheet', '1.1', 'ods'),
+        ('tests/data/valid_1.1.odt',
+         'application/vnd.oasis.opendocument.text', '1.1', 'odt'),
     ]
 )
 # pylint: disable=invalid-name
@@ -846,19 +862,12 @@ def test_import_object_not_recognized(testpath, run_cli):
 @pytest.mark.parametrize(
     "input_file,expected_version",
     [
-        # TODO: None of these these tests will pass. File-scraper will
-        # corretly detect the version of .odg, .odp, .ods and .odt
-        # files, so DEFAULT_VERSIONS is not used. File-scraper does not
-        # detect the version of .odf, and therefore scraping fails with
-        # error:
+        # TODO: File-scraper does not detect the version of .odf, and
+        # therefore scraping fails with error:
         #
         # "ValueError: The format of file tests/data/valid_1.0.odf is
         # unacceptable."
         #
-        ('tests/data/valid_1.1.odg', '1.0'),
-        ('tests/data/valid_1.1.odp', '1.0'),
-        ('tests/data/valid_1.1.ods', '1.0'),
-        ('tests/data/valid_1.1.odt', '1.0'),
         ('tests/data/valid_1.0.odf', '1.0')
     ]
 )
