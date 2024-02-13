@@ -37,7 +37,7 @@ METS_MDTYPES = {
         'mdtype': 'MARC', 'version': 'marcxml=1.2; marc=marc21'
     },
     'http://www.loc.gov/mods/v3': {
-        'mdtype': 'MODS', 'version': '3.7'
+        'mdtype': 'MODS', 'version': '3.8'
     },
     'urn:isbn:1-931666-22-9': {
         'mdtype': 'EAD', 'version': '2002'
@@ -52,7 +52,7 @@ METS_MDTYPES = {
         'mdtype': 'EAC-CPF', 'version': '2.0'
     },
     'http://www.lido-schema.org': {
-        'mdtype': 'LIDO', 'version': '1.0'
+        'mdtype': 'LIDO', 'version': '1.1'
     },
     'ddi:instance:3_3': {
         'mdtype': 'DDI', 'version': '3.3'
