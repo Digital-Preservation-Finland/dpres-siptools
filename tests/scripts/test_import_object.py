@@ -414,7 +414,7 @@ def test_bit_level_missing_format(testpath, run_cli):
         ('tests/data/mets_valid_minimal.xml', 'text/xml; charset=UTF-8', '1.0',
          'xml'),
         ('tests/data/ODF_Text_Document.odt',
-         'application/vnd.oasis.opendocument.text', '1.1', 'odt'),
+         'application/vnd.oasis.opendocument.text', '1.2', 'odt'),
         ('tests/data/MS_Excel_97-2003.xls', 'application/vnd.ms-excel',
          '8X', 'excel'),
         ('tests/data/MS_Word_2007-2013_XML.docx',
@@ -424,14 +424,16 @@ def test_bit_level_missing_format(testpath, run_cli):
          'audio wav no version'),
         ('tests/data/audio/valid_2_bwf.wav', 'audio/x-wav', '2',
          'audio wav v2'),
-        ('tests/data/valid_1.1.odg',
-         'application/vnd.oasis.opendocument.graphics', '1.1', 'odg'),
-        ('tests/data/valid_1.1.odp',
-         'application/vnd.oasis.opendocument.presentation', '1.1', 'odp'),
-        ('tests/data/valid_1.1.ods',
-         'application/vnd.oasis.opendocument.spreadsheet', '1.1', 'ods'),
-        ('tests/data/valid_1.1.odt',
-         'application/vnd.oasis.opendocument.text', '1.1', 'odt'),
+        ('tests/data/valid_1.2.odg',
+         'application/vnd.oasis.opendocument.graphics', '1.2', 'odg'),
+        ('tests/data/valid_1.2.odp',
+         'application/vnd.oasis.opendocument.presentation', '1.2', 'odp'),
+        ('tests/data/valid_1.2.ods',
+         'application/vnd.oasis.opendocument.spreadsheet', '1.2', 'ods'),
+        ('tests/data/valid_1.2.odt',
+         'application/vnd.oasis.opendocument.text', '1.2', 'odt'),
+        ('tests/data/valid_1.2.odf',
+         'application/vnd.oasis.opendocument.formula', '1.2', 'odf'),
     ]
 )
 # pylint: disable=too-many-arguments
@@ -489,7 +491,7 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
         ('tests/data/mets_valid_minimal.xml', 'text/xml; charset=UTF-8', '1.0',
          'xml'),
         ('tests/data/ODF_Text_Document.odt',
-         'application/vnd.oasis.opendocument.text', '1.1', 'odt'),
+         'application/vnd.oasis.opendocument.text', '1.2', 'odt'),
         ('tests/data/MS_Excel_97-2003.xls', 'application/vnd.ms-excel',
          '8X', 'excel'),
         ('tests/data/MS_Word_2007-2013_XML.docx',
@@ -499,24 +501,16 @@ def test_import_object_cases(testpath, input_file, expected_mimetype,
          'audio wav no version'),
         ('tests/data/audio/valid_2_bwf.wav', 'audio/x-wav', '2',
          'audio wav v2'),
-        ('tests/data/valid_1.1.odg',
-         'application/vnd.oasis.opendocument.graphics', '1.1', 'odg'),
-        ('tests/data/valid_1.1.odp',
-         'application/vnd.oasis.opendocument.presentation', '1.1', 'odp'),
-        ('tests/data/valid_1.1.ods',
-         'application/vnd.oasis.opendocument.spreadsheet', '1.1', 'ods'),
-        ('tests/data/valid_1.1.odt',
-         'application/vnd.oasis.opendocument.text', '1.1', 'odt'),
-        # TODO: File-scraper does not detect the version of .odf, and
-        # therefore scraping fails with error:
-        #
-        # "ValueError: The format of file tests/data/valid_1.0.odf is
-        # unacceptable."
-        #
-        # Enable this this test case when issue TPASPKT-1278 is
-        # resolved.
-        # ('tests/data/valid_1.0.odf',
-        #  'application/vnd.oasis.opendocument.formula', '1.0', 'odf'),
+        ('tests/data/valid_1.2.odg',
+         'application/vnd.oasis.opendocument.graphics', '1.2', 'odg'),
+        ('tests/data/valid_1.2.odp',
+         'application/vnd.oasis.opendocument.presentation', '1.2', 'odp'),
+        ('tests/data/valid_1.2.ods',
+         'application/vnd.oasis.opendocument.spreadsheet', '1.2', 'ods'),
+        ('tests/data/valid_1.2.odt',
+         'application/vnd.oasis.opendocument.text', '1.2', 'odt'),
+        ('tests/data/valid_1.2.odf',
+         'application/vnd.oasis.opendocument.formula', '1.2', 'odf'),
     ]
 )
 # pylint: disable=invalid-name
