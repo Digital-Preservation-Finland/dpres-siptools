@@ -570,9 +570,9 @@ def test_streams(testpath, run_cli):
         tree = ET.parse(output[0])
         root = tree.getroot()
         if i == 2:
-            mime = 'audio/mp4'
+            mime = 'audio/aac'
         else:
-            mime = 'video/mp4'
+            mime = 'video/h264'
         stream_id.append(root.xpath('//premis:objectIdentifierValue',
                                     namespaces=NAMESPACES)[0].text)
         assert len(root.xpath('/mets:mets/mets:amdSec/mets:techMD',
