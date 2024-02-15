@@ -96,9 +96,9 @@ METS_PROFILE = {
 
 METS_SCHEMA = 'http://digitalpreservation.fi/schemas/mets/mets.xsd'
 
-METS_CATALOG = "1.7.5"
+METS_CATALOG = "1.7.6"
 
-METS_SPECIFICATION = "1.7.5"
+METS_SPECIFICATION = "1.7.6"
 
 RECORD_STATUS_TYPES = [
     'submission',
