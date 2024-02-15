@@ -18,34 +18,23 @@ Release notes and backwards compability
 
 See RELEASE_NOTES.rst
 
-Installation
+Requirements
 ------------
 
-Installation and usage requires Python 3.6 or newer.
-The software is tested with Python 3.6 on Centos 7.x release.
+Installation and usage requires Python 3.9 or newer.
+The software is tested with Python 3.9 on AlmaLinux 9 release.
 
-Packages python3-devel, openssl-devel, swig and gcc are required in your system
-to install M2Crypto, which is used for signing the packages with digital signature.
+Installation using RPM packages (preferred)
+-------------------------------------------
 
-Create a virtual environment::
-    
-    python3 -m venv venv
+Installation on Linux distributions is done by using the RPM Package Manager.
+See how to `configure the PAS-jakelu RPM repositories`_ to setup necessary software sources.
 
-Run the following to activate the virtual environment::
+.. _configure the PAS-jakelu RPM repositories: https://www.digitalpreservation.fi/user_guide/installation_of_tools 
 
-    source venv/bin/activate
+After the repository has been added, the package can be installed by running the following command::
 
-Install the required software with commands::
-
-    pip install --upgrade pip==20.2.4 setuptools
-    pip install -r requirements_github.txt
-    pip install .
-
-See the README from file-scraper repository for additional installation requirements:
-https://github.com/Digital-Preservation-Finland/file-scraper/blob/master/README.rst
-
-To deactivate the virtual environment, run ``deactivate``.
-To reactivate it, run the ``source`` command above.
+    sudo dnf install python3-dpres-siptools
 
 Scripts
 -------
@@ -368,6 +357,33 @@ The Pre-Ingest Tool does not support well-formedness checks of the following fil
     * text/xml file against XML schema or schematron files
 
 Should you append these files to your workspace, use the --skip_wellformed_check argument on them.
+
+Installation using Python Virtualenv for development purposes
+-------------------------------------------------------------
+
+Packages python3-devel, openssl-devel, swig and gcc are required in your system
+to install M2Crypto, which is used for signing the packages with digital signature.
+
+Create a virtual environment::
+
+    python3 -m venv venv
+
+Run the following to activate the virtual environment::
+
+    source venv/bin/activate
+
+Install the required software with commands::
+
+    pip install --upgrade pip==20.2.4 setuptools
+    pip install -r requirements_github.txt
+    pip install .
+
+See the README from file-scraper repository for additional installation requirements:
+https://github.com/Digital-Preservation-Finland/file-scraper/blob/master/README.rst
+
+To deactivate the virtual environment, run ``deactivate``.
+To reactivate it, run the ``source`` command above.
+
 
 Copyright
 ---------
