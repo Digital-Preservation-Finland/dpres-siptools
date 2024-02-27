@@ -4,6 +4,11 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.69:
+
+    * Update specifications to version 1.7.6.
+    * Code cleanups and syntax fixes.
+
 Version 0.68:
 
     * Add RHEL9 RPM spec file.
