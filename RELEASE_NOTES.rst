@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.70:
+
+    * Installation instructions for AlmaLinux 9 using RPM packages
+
 Version 0.69:
 
     * Update specifications to version 1.7.6.
