@@ -742,6 +742,42 @@ def _find_event(workspace,
 
     return os.path.exists(os.path.join(workspace, expected_filename))
 
+def import_representation_object(workspace, premis_representation_object):
+    """
+    WIP: kirjoittaa objektin tiedot METSiin
+    """
+    creator = PremisRepresentationCreator(workspace)
+    creator.add_premis_md(premis_representation_object)
+    creator.write()
+
+class PremisRepresentationCreator(MetsSectionCreator):
+    
+    def add_premis_md(self, premis_representation_object):
+        """
+        WIP: lisää objektin muihin objekteihin
+        """
+        object_identifier = premis.identifier(
+        identifier_type='UUID',
+        identifier_value=premis_representation_object.object_identifier_value)
+        
+        el_premis_object = premis.object(
+        object_identifier,
+        original_name=premis_representation_object.original_name,
+        representation=True)
+
+        self.add_md(el_premis_object)
+
+
+    def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3",
+              othermdtype=None, section="digiprovmd", stdout=False,
+              file_metadata_dict=None,
+              ref_file="import-object-md-references.jsonl"):
+        """Write PREMIS metadata."""
+        super().write(
+            mdtype=mdtype, mdtypeversion=mdtypeversion, section=section,
+            file_metadata_dict=file_metadata_dict, ref_file=ref_file
+        )
+    
 
 if __name__ == "__main__":
     RETVAL = main()  # pylint: disable=no-value-for-parameter
