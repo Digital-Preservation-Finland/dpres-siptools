@@ -774,7 +774,7 @@ class PremisRepresentationCreator(MetsSectionCreator):
               ref_file="import-object-md-references.jsonl"):
         """Write PREMIS metadata."""
         super().write(
-            mdtype=mdtype, mdtypeversion=mdtypeversion, section=section,
+            mdtype=mdtype, mdtypeversion=mdtypeversion, section="digiprovMD",
             file_metadata_dict=file_metadata_dict, ref_file=ref_file
         )
     
