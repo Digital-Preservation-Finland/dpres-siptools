@@ -768,8 +768,14 @@ class PremisRepresentationCreator(MetsSectionCreator):
             identifier_value=premis_representation_object.
             object_identifier_value)
 
+        object_alt_id = premis.identifier(
+            identifier_type='local',
+            identifier_value=premis_representation_object.
+            alt_identifier_value)
+
         el_premis_object = premis.object(
             object_identifier,
+            alt_id=object_alt_id,
             original_name=premis_representation_object.original_name,
             representation=True)
 
