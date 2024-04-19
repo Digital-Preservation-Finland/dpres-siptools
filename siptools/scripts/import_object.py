@@ -779,7 +779,10 @@ class PremisRepresentationCreator(MetsSectionCreator):
             original_name=premis_representation_object.original_name,
             representation=True)
 
-        self.add_md(el_premis_object)
+        filename = os.path.join("files",
+                                premis_representation_object.outcome_filename)
+        self.add_md(el_premis_object,
+                    filename=filename)
 
     def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3",
               othermdtype=None, section="digiprovmd", stdout=False,
