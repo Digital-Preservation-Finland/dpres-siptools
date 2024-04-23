@@ -743,14 +743,18 @@ def _find_event(workspace,
     return os.path.exists(os.path.join(workspace, expected_filename))
 
 
-def import_representation_object(workspace, premis_representation_object):
+def import_representation_object(workspace, object_id, alt_id, original_name,
+                                 target_filepath):
     """
     Import premis representation objects.
     :workspace: Workspace path
-    :premis_representation_object: premis representation object
+    :object_id: PREMIS representation object's identifier value
+    :alt_id: PREMIS representation object's alternative identifier value
+    :original_name: PREMIS representation object's original name
+    :target_filepath: Filepath of the outcome file
     """
     creator = PremisRepresentationCreator(workspace)
-    creator.add_premis_md(premis_representation_object)
+    creator.add_premis_md(object_id, alt_id, original_name, target_filepath)
     creator.write()
 
 
@@ -759,28 +763,31 @@ class PremisRepresentationCreator(MetsSectionCreator):
     Subclass of MetsSectionCreator. Generates PREMIS metadata for
     representation objects.
     """
-    def add_premis_md(self, premis_representation_object):
+    def add_premis_md(self, object_id, alt_id, original_name,
+                      target_filepath):
         """
         Add PREMIS metadata of the premis representation object.
+        :object_id: PREMIS representation object's identifier value
+        :alt_id: PREMIS representation object's alternative identifier value
+        :original_name: PREMIS representation object's original name
+        :target_filepath: Filepath of the outcome file
         """
         object_identifier = premis.identifier(
             identifier_type='UUID',
-            identifier_value=premis_representation_object.
-            object_identifier_value)
+            identifier_value=object_id)
 
         object_alt_id = premis.identifier(
             identifier_type='local',
-            identifier_value=premis_representation_object.
-            alt_identifier_value)
+            identifier_value=alt_id)
 
         el_premis_object = premis.object(
             object_identifier,
             alt_ids=[object_alt_id],
-            original_name=premis_representation_object.original_name,
+            original_name=original_name,
             representation=True)
 
         filename = os.path.join("files",
-                                premis_representation_object.outcome_filename)
+                                target_filepath)
         self.add_md(el_premis_object,
                     filename=filename)
 
