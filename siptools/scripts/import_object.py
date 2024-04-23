@@ -775,7 +775,7 @@ class PremisRepresentationCreator(MetsSectionCreator):
 
         el_premis_object = premis.object(
             object_identifier,
-            alt_id=object_alt_id,
+            alt_ids=[object_alt_id],
             original_name=premis_representation_object.original_name,
             representation=True)
 
