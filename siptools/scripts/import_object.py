@@ -766,26 +766,18 @@ class PremisRepresentationCreator(MetsSectionCreator):
     def add_premis_md(self, object_id, alt_id, original_name,
                       target_filepath):
         """
-        Add PREMIS metadata of the premis representation object.
+        Create PREMIS metadata. This method creates PREMIS metadata with
+        given arguments as a representation type object. It also adds a
+        linking between the representation object and the target file.
         :object_id: PREMIS representation object's identifier value
         :alt_id: PREMIS representation object's alternative identifier value
         :original_name: PREMIS representation object's original name
         :target_filepath: Filepath of the outcome file
         """
-        object_identifier = premis.identifier(
-            identifier_type='UUID',
-            identifier_value=object_id)
-
-        object_alt_id = premis.identifier(
-            identifier_type='local',
-            identifier_value=alt_id)
-
-        el_premis_object = premis.object(
-            object_identifier,
-            alt_ids=[object_alt_id],
-            original_name=original_name,
-            representation=True)
-
+        el_premis_object = create_premis_representation(object_id,
+                                                        alt_id,
+                                                        original_name,
+                                                        target_filepath)
         filename = os.path.join("files",
                                 target_filepath)
         self.add_md(el_premis_object,
@@ -800,6 +792,35 @@ class PremisRepresentationCreator(MetsSectionCreator):
             mdtype=mdtype, mdtypeversion=mdtypeversion, section=section,
             file_metadata_dict=file_metadata_dict, ref_file=ref_file
         )
+
+
+def create_premis_representation(object_id,
+                                 alt_id,
+                                 original_name,
+                                 target_filepath):
+    """
+    Create premis representation object with given arguments.
+    :object_id: PREMIS representation object's identifier value
+    :alt_id: PREMIS representation object's alternative identifier value
+    :original_name: PREMIS representation object's original name
+    :target_filepath: Filepath of the outcome file
+    :returns: PREMIS object element
+    """
+    object_identifier = premis.identifier(
+        identifier_type='UUID',
+        identifier_value=object_id)
+
+    object_alt_id = premis.identifier(
+        identifier_type='local',
+        identifier_value=alt_id)
+
+    el_premis_object = premis.object(
+        object_identifier,
+        alt_ids=[object_alt_id],
+        original_name=original_name,
+        representation=True)
+
+    return el_premis_object
 
 
 if __name__ == "__main__":
