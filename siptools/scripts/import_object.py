@@ -776,12 +776,9 @@ class PremisRepresentationCreator(MetsSectionCreator):
         """
         el_premis_object = create_premis_representation(object_id,
                                                         alt_id,
-                                                        original_name,
-                                                        target_filepath)
-        filename = os.path.join("files",
-                                target_filepath)
+                                                        original_name)
         self.add_md(el_premis_object,
-                    filename=filename)
+                    filename=target_filepath)
 
     def write(self, mdtype="PREMIS:OBJECT", mdtypeversion="2.3",
               othermdtype=None, section="digiprovmd", stdout=False,
@@ -796,8 +793,7 @@ class PremisRepresentationCreator(MetsSectionCreator):
 
 def create_premis_representation(object_id,
                                  alt_id,
-                                 original_name,
-                                 target_filepath):
+                                 original_name):
     """
     Create premis representation object with given arguments.
     :object_id: PREMIS representation object's identifier value
