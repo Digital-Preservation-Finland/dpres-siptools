@@ -59,7 +59,6 @@ def create_premis_representation(object_id,
     :object_id: PREMIS representation object's identifier value
     :alt_id: PREMIS representation object's alternative identifier value
     :original_name: PREMIS representation object's original name
-    :target_filepath: Filepath of the outcome file
     :returns: PREMIS object element
     """
     object_identifier = premis.identifier(
