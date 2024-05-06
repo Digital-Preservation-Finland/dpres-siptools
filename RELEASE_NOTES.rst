@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Unreleased:
+
+    * Add functionality to import PREMIS representation objects.
+
 Version 0.70:
 
     * Installation instructions for AlmaLinux 9 using RPM packages
