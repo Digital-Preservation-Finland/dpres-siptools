@@ -4,7 +4,7 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
-Unreleased:
+Version 0.71:
 
     * Add functionality to import PREMIS representation objects.
 
