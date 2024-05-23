@@ -50,9 +50,9 @@ click.disable_unicode_literals_warning = True
               help='Identifier for content. Defaults to <OBJID>.')
 @click.option('--create_date',
               type=str,
-              default=lambda: '{}+00:00'.format(
-                  datetime.datetime.utcnow().replace(
-                      microsecond=0).isoformat()),
+              default=lambda:
+              datetime.datetime.now(datetime.timezone.utc).replace(
+                  microsecond=0).isoformat(),
               metavar='<CREATION DATE>',
               help='SIP create datetime formatted as '
                    'yyyy-mm-ddThh:mm:ss. Defaults to current time.')
@@ -110,8 +110,8 @@ def _attribute_values(given_params, fill_contentid=False):
         "base_path": ".",
         "objid": str(uuid.uuid4()),
         "contentid": None,
-        "create_date": "{}+00:00".format(datetime.datetime.utcnow().replace(
-            microsecond=0).isoformat()),
+        "create_date": datetime.datetime.now(datetime.timezone.utc).replace(
+            microsecond=0).isoformat(),
         "record_status": "submission",
         "stdout": False,
         "clean": False,

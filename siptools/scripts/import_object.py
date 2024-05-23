@@ -191,7 +191,7 @@ def import_object(**kwargs):
                  supplementary: Object type for supplementary files
     """
     attributes = _attribute_values(kwargs)
-    date_now = datetime.datetime.utcnow().date().isoformat()
+    date_now = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
 
     # Loop files and create premis objects
     files = collect_filepaths(dirs=attributes["filepaths"],

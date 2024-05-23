@@ -73,7 +73,7 @@ def test_import_object_illegal_html_valid_text(testpath, run_cli):
     arguments = ['--workspace', testpath, input_file,
                  '--file_format', 'text/plain', '',
                  '--checksum', 'MD5', '1qw87geiewgwe9',
-                 '--date_created', datetime.datetime.utcnow().isoformat()]
+                 '--date_created', datetime.datetime.now(datetime.timezone.utc).isoformat()]
     run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
@@ -97,7 +97,7 @@ def test_import_object_skip_wellformed_check_ok(testpath, run_cli):
                  '--skip_wellformed_check',
                  '--file_format', 'text/html', '',
                  '--checksum', 'MD5', '1qw87geiewgwe9',
-                 '--date_created', datetime.datetime.utcnow().isoformat()]
+                 '--date_created', datetime.datetime.now(datetime.timezone.utc).isoformat()]
     run_cli(import_object.main, arguments)
 
     output = get_amd_file(testpath, input_file)
@@ -723,7 +723,7 @@ def test_import_object_event(testpath, run_cli):
     events instead of one. This is OK as we create events based on accuracy
     of a calendar day.
     """
-    day_start = datetime.datetime.utcnow().strftime("%d")
+    day_start = datetime.datetime.now(datetime.timezone.utc).strftime("%d")
     images = ["tiff1.tif", "tiff2.tif", "tiff_icc_profile_sRGB.tif"]
     for img in images:
         input_file = os.path.join("tests/data/images", img)
@@ -731,7 +731,7 @@ def test_import_object_event(testpath, run_cli):
                      "--file_format", "image/tiff", "6.0", "--checksum",
                      "MD5", "aabbccdd", input_file]
         run_cli(import_object.main, arguments)
-    day_end = datetime.datetime.utcnow().strftime("%d")
+    day_end = datetime.datetime.now(datetime.timezone.utc).strftime("%d")
 
     # Only one or two events should have been created
     new_ev_count = 0
