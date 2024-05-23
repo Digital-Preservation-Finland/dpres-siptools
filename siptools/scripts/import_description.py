@@ -268,8 +268,8 @@ def _create_event(
             agent_type=dmd_agent[1],
             create_agent_file='import-description')
 
-    event_datetime = "{}+00:00".format(
-        datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat())
+    event_datetime = datetime.datetime.now(datetime.timezone.utc) \
+        .replace(microsecond=0).isoformat()
     premis_event(event_type="metadata extraction",
                  event_datetime=event_datetime,
                  event_detail=("Descriptive metadata import from external "
