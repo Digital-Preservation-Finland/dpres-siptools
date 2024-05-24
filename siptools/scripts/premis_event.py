@@ -84,6 +84,13 @@ click.disable_unicode_literals_warning = True
               is_flag=True,
               help='Add PREMIS linking objects to event. Requires that'
                    'import_object has been run already.')
+@click.option('--linked_object_id', 'linked_object_ids',
+              nargs=3, type=str, multiple=True,
+              metavar=(
+                '<LINKING OBJECT ID TYPE> '
+                '<LINKING OBJECT ID VALUE> '
+                '<LINKING OBJECT ROLE>'),
+              help=('Linking object role and ID for the event'))
 @click.option('--stdout',
               is_flag=True,
               help='Print output to stdout')
@@ -123,7 +130,8 @@ def _attribute_values(given_params):
         "add_object_links": False,
         "linking_agents": set(),
         "linking_objects": (),
-        "linking_object_ids": set()
+        "linking_object_ids": set(),
+        "linked_object_ids":()
     }
     for key in given_params:
         if given_params[key] and key not in ["event_target"]:
@@ -164,6 +172,7 @@ def premis_event(**kwargs):
              add_object_links: True for adding linking objects. Requires
                                that import-object script has already been
                                used.
+            linking_object_ids: Roled IDs for linked objects
     """
     attributes = _attribute_values(kwargs)
     creator = PremisCreator(attributes["workspace"])
@@ -194,6 +203,9 @@ def premis_event(**kwargs):
                     event_file, attributes["workspace"])
                 attributes["linking_object_ids"].add(
                     (linking_object[0], linking_object[1], role))
+
+        for link in attributes["linked_object_ids"]:
+            attributes["linking_object_ids"].add((link[0], link[1], link[2]))
 
     event = create_premis_event(**attributes)
 
