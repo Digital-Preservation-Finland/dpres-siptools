@@ -133,7 +133,7 @@ def _attribute_values(given_params):
         "linking_agents": set(),
         "linking_objects": (),
         "linking_object_ids": set(),
-        "linked_object_ids":()
+        "linked_object_ids": ()
     }
     for key in given_params:
         if given_params[key] and key not in ["event_target"]:
