@@ -90,7 +90,9 @@ click.disable_unicode_literals_warning = True
                 '<LINKING OBJECT ID TYPE> '
                 '<LINKING OBJECT ID VALUE> '
                 '<LINKING OBJECT ROLE>'),
-              help=('Linking object role and ID for the event'))
+              help=('Linking object role and ID for the event. Used for '
+                    'objects that do not have a file path that is part of '
+                    'the contents to be included in the SIP.'))
 @click.option('--stdout',
               is_flag=True,
               help='Print output to stdout')
@@ -172,7 +174,8 @@ def premis_event(**kwargs):
              add_object_links: True for adding linking objects. Requires
                                that import-object script has already been
                                used.
-            linking_object_ids: Roled IDs for linked objects
+            linking_object_ids: Roled IDs for linked objects without
+                                supplied file paths
     """
     attributes = _attribute_values(kwargs)
     creator = PremisCreator(attributes["workspace"])
@@ -195,6 +198,8 @@ def premis_event(**kwargs):
         agent_creator.write(mdtype="PREMIS:AGENT",
                             stdout=attributes["stdout"])
 
+    # Add all objects, both those that are supplied with file paths
+    # and those that are supplied without
     if attributes["add_object_links"]:
         for (directory, event_file, role) in iterate_linking_objects(
                 attributes["base_path"], attributes["linking_objects"]):
