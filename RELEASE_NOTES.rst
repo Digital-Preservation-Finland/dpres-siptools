@@ -1,13 +1,12 @@
 Release notes for Pre-Ingest Tool
 =================================
 
-Unreleased
-----------
-
-    * Add possibility to link objects without file paths to events
-
 Changes
 -------
+
+Version 0.72:
+
+    * Add possibility to link objects without file paths to events.
 
 Version 0.71:
 
