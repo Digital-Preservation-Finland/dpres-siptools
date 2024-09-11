@@ -1,3 +1,6 @@
+**NOTE: This project is deprecated and is no longer maintained. Please use the new
+Pre-Ingest Library instead: https://github.com/Digital-Preservation-Finland/dpres-siptools-ng**
+
 Pre-Ingest Tool
 ===============
 

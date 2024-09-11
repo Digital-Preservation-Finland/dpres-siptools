@@ -4,6 +4,10 @@ Release notes for Pre-Ingest Tool
 Changes
 -------
 
+Version 0.73:
+
+    * Dpres-siptools officially deprecated.
+
 Version 0.72:
 
     * Add possibility to link objects without file paths to events.
